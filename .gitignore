@@ -1,0 +1,7 @@
+# Build artifacts -- everything here is reproducible with `make`.
+*.o
+/terraria-lite
+/selftest
+
+__pycache__/
+.DS_Store
