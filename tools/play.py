@@ -17,7 +17,9 @@ seed = sys.argv[2] if len(sys.argv) > 2 else "9"
 mfd, sfd = pty.openpty()
 fcntl.ioctl(sfd, termios.TIOCSWINSZ, struct.pack("HHHH", rows, cols, 0, 0))
 p = subprocess.Popen(
-    ["./terraria-lite", "--seed", seed],
+    # --lockstep: one tick per keystroke. A real-time frontend would advance
+    # the world between writes and make this replay nondeterministic.
+    ["./terraria-lite", "--lockstep", "--seed", seed],
     stdin=sfd, stdout=sfd, stderr=sfd, close_fds=True,
 )
 os.close(sfd)

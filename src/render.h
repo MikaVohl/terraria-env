@@ -14,10 +14,15 @@
 #define KEY_RIGHT  0x102
 #define KEY_LEFT   0x103
 #define KEY_RESIZE 0x104
+#define KEY_NONE   0x105   /* render_getkey_timeout() only: the wait elapsed */
 
 void render_init(void);      /* cbreak mode, hide cursor, arm atexit + signal restore */
 void render_shutdown(void);  /* restore termios and cursor; idempotent */
-int  render_getkey(void);    /* blocking single keypress */
+int  render_getkey(void);            /* blocking single keypress */
+int  render_getkey_timeout(int ms);  /* KEY_NONE if nothing arrives within ms */
+
+/* Monotonic milliseconds, for a frontend that wants to pace itself. */
+uint64_t render_now_ms(void);
 
 void render_frame(const Env *e, const char *log[], int nlog);
 void render_gameover(const Env *e);

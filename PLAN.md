@@ -27,6 +27,34 @@ Notes:
 `e` cycle placeable, `1`-`6` craft, `r` reset, `q` quit.
 `make check` runs the invariant suite and the scripted expert.
 
+### Real-time frontend (frontend only; the engine never changed)
+The core is still lockstep — one `env_step` per tick, one action per tick, every
+state transition an agent decision point. That is the MDP and it stays. What
+changed is who supplies the clock:
+
+- Default: the frontend ticks every `--tick-ms` (80ms → 12.5 tiles/s walk speed,
+  which is roughly Terraria's run speed under one-tile-per-tick physics). An
+  empty frame steps `ACT_NOOP`, so jump arcs and falls resolve on their own
+  instead of freezing until the next keystroke.
+- `--lockstep` restores one tick per keypress. `tools/play.py` **must** pass it:
+  replaying a key tape against a wall clock is not deterministic.
+- Terminals have no key-up event, so a held key arrives as an OS repeat burst
+  faster than the tick. Input is queued (cap 4) with a repeat of the queue tail
+  dropped: sustained holds run at exactly one action per tick with no banked
+  movement firing after release, while two *different* keys inside one frame
+  both survive.
+- Idle frames are elided. When nothing is queued and the player is grounded and
+  not mid-jump, the world is a fixed point — a `NOOP` tick would move only the
+  step counter, and 3000 of them at 80ms is four minutes of standing still into
+  a truncation. The loop blocks on input instead, without resetting the tick
+  deadline, so the rate cap still holds.
+
+Measured: 80ms/tick and 200ms/tick honoured with zero input; one `w` keypress
+plays a full 3-up-3-down jump arc unaided (lockstep freezes one tile up); a held
+`k` digs 16 tiles in 16 ticks over 1.27s and stops within the fall; the seed-9
+expert tape still replays through the TUI to 16/16 in 228 steps under
+`--lockstep`.
+
 ### Layout
 - `include/` — frozen contract: `tiles.h` (taxonomy + property tables), `env.h` (state
   struct, actions, achievements, recipes), `rng.h` (per-env PCG32).

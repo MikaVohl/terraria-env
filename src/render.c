@@ -12,7 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <poll.h>
 #include <sys/ioctl.h>
+#include <time.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -618,45 +620,52 @@ void render_shutdown(void)
 
 /* ---- Input -------------------------------------------------------------- */
 
-/* tenths == 0 blocks; otherwise waits at most tenths*100ms for a single byte. */
-static int read_byte(int tenths)
-{
-    unsigned char c;
-    ssize_t n;
+/* timeout_ms < 0 blocks. Returns the byte read, or KEY_NONE when the wait
+   elapses, KEY_RESIZE on SIGWINCH, KEY_EOF at end of input.
 
-    if (tenths > 0) {
-        struct termios cur, tmp;
-        if (!g_raw || tcgetattr(STDIN_FILENO, &cur) != 0) return KEY_EOF;
-        tmp = cur;
-        tmp.c_cc[VMIN]  = 0;
-        tmp.c_cc[VTIME] = (cc_t)tenths;
-        tcsetattr(STDIN_FILENO, TCSANOW, &tmp);
-        n = read(STDIN_FILENO, &c, 1);
-        tcsetattr(STDIN_FILENO, TCSANOW, &cur);
-        return n == 1 ? (int)c : KEY_EOF;
-    }
+   poll() rather than VMIN/VTIME because VTIME is deciseconds and a frame is
+   80ms. VMIN stays 1, which is safe: we only read once poll says readable. */
+static int read_byte(int timeout_ms)
+{
+    struct pollfd pfd;
+    unsigned char c;
+
+    pfd.fd = STDIN_FILENO;
+    pfd.events = POLLIN;
 
     for (;;) {
-        n = read(STDIN_FILENO, &c, 1);
-        if (n == 1) return (int)c;
-        if (n < 0 && errno == EINTR) {
+        int r;
+
+        pfd.revents = 0;
+        r = poll(&pfd, 1, timeout_ms);
+        if (r == 0) return KEY_NONE;
+        if (r < 0) {
+            if (errno != EINTR) return KEY_EOF;
             if (g_resized) { g_resized = 0; return KEY_RESIZE; }
+            /* Some other signal. A timed wait cannot resume without
+               recomputing its deadline, so hand control back and let the
+               caller re-arm against the clock it owns. */
+            if (timeout_ms >= 0) return KEY_NONE;
             continue;
         }
+        if (read(STDIN_FILENO, &c, 1) == 1) return (int)c;
+        if (errno == EINTR) continue;
         return KEY_EOF;
     }
 }
 
-int render_getkey(void)
+/* Escape sequences arrive as one burst, so a short fixed peek is enough even
+   when the caller itself was on a deadline. */
+static int getkey(int timeout_ms)
 {
-    int c = read_byte(0);
+    int c = read_byte(timeout_ms);
     int a, b;
 
     if (c != 0x1B) return c;
 
-    a = read_byte(1);
+    a = read_byte(100);
     if (a != '[' && a != 'O') return 0x1B;
-    b = read_byte(1);
+    b = read_byte(100);
     switch (b) {
     case 'A': return KEY_UP;
     case 'B': return KEY_DOWN;
@@ -664,4 +673,21 @@ int render_getkey(void)
     case 'D': return KEY_LEFT;
     default:  return 0x1B;
     }
+}
+
+int render_getkey(void)
+{
+    return getkey(-1);
+}
+
+int render_getkey_timeout(int ms)
+{
+    return getkey(ms < 0 ? 0 : ms);
+}
+
+uint64_t render_now_ms(void)
+{
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) return 0;
+    return (uint64_t)ts.tv_sec * 1000u + (uint64_t)ts.tv_nsec / 1000000u;
 }
