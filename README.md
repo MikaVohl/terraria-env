@@ -4,7 +4,7 @@ A small deterministic Terraria, in C. Built as an RL benchmark in the style of
 [Craftax](https://craftaxenv.github.io/), with a terminal frontend and a pixel
 frontend for humans.
 
-![Game Screenshot](image.png)
+![Game Screenshot](game.png)
 
 ## Build
 
