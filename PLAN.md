@@ -36,8 +36,8 @@ changed is who supplies the clock:
   which is roughly Terraria's run speed under one-tile-per-tick physics). An
   empty frame steps `ACT_NOOP`, so jump arcs and falls resolve on their own
   instead of freezing until the next keystroke.
-- `--lockstep` restores one tick per keypress. `tools/play.py` **must** pass it:
-  replaying a key tape against a wall clock is not deterministic.
+- `--lockstep` restores one tick per keypress, for stepping through physics by
+  hand and for replaying a `selftest --record` tape without a wall clock.
 - Terminals have no key-up event, so a held key arrives as an OS repeat burst
   faster than the tick. Input is queued (cap 4) with a repeat of the queue tail
   dropped: sustained holds run at exactly one action per tick with no banked
@@ -55,14 +55,168 @@ plays a full 3-up-3-down jump arc unaided (lockstep freezes one tile up); a held
 expert tape still replays through the TUI to 16/16 in 228 steps under
 `--lockstep`.
 
+## Checkpoint 1.5 — depth over fidelity
+
+Three changes, chosen because they close *incoherences* rather than add fidelity.
+The rule: fix what has a hole in the grammar, ignore what is merely less rich
+than Terraria. Depth is table entries; fidelity is systems.
+
+**The player is two tiles tall.** `(px, py)` is the FEET cell, head at
+`(px, py-1)`. Movement needs both cells clear, step-up needs clearance in both
+columns, jump clearance is measured above the head. `body_fits()` and
+`is_body()` in `env.h` are the only places that know the height, so a taller
+body stays a one-constant change.
+
+**Mine and place address ten targets**, the Moore neighbourhood of the body
+minus the two cells it fills (`REACH_DX`/`REACH_DY`). 19 actions became 36.
+This was not about fidelity: bridging was *incoherent*. The game had
+bridge-down (2 actions/tile, losing 1 tile of altitude each) and stair-up
+(4 actions/tile, gaining 2) and no way to cross level at all. With a
+down-diagonal target, `place-down-right` then `walk-right` spans 10 tiles in
+20 actions at unchanged altitude. Measured, not asserted.
+
+**The iron dead-end is closed.** `ITEM_IRON_ORE` had a tier gate, an
+achievement, and no recipe consuming it — the top rung of the tech tree was a
+stub. Now iron smelts to bars, bars build an anvil, the anvil makes an iron
+pickaxe, which gates a new gold band (rows 78-93, ~57 tiles/world against
+iron's 132), and gold smelts into the lantern. Ore→bar→tool is now the grammar
+on every rung. `Recipe.need_workbench`/`need_furnace` became `Recipe.station`.
+
+**Log and plank are two tiles.** `TILE_LOG` is grown by worldgen; `TILE_WOOD` is
+what you place. Both drop `ITEM_WOOD`, exactly as `TILE_GRASS` and `TILE_DIRT`
+both drop `ITEM_DIRT` — the pattern already existed. This is not decoration: a
+frontend can draw bark against planks, and the scripted expert can no longer
+mistake the scaffold it just placed for a tree worth chopping, which was a real
+hover-loop pathology. Worldgen grows 62 logs/world and zero planks.
+
+Counts: 16 tiles, 14 items, 4 tool tiers, 36 actions, **24 achievements**
+(Craftax-Classic has 22), 11 recipes.
+
+### The Makefile had no header dependencies
+Inserting `TILE_LOG` broke lighting in a way that looked like a physics bug and
+was not. `%.o: %.c` listed no header prerequisites, so `include/tiles.h`
+changing rebuilt nothing whose `.c` was untouched. `TILE_INFO` is a `static
+const` table in that header, so every stale object keeps a private outdated
+copy: fresh `sim.o` wrote the new `TILE_TORCH` id 10, stale `light.o` looked it
+up in its old 15-entry table where 10 was the lantern, and the torch emitted 15.
+The lantern hit the old workbench row and emitted 0.
+
+Fixed with `-MMD -MP` and `-include $(DEPS)`. Verified: touching
+`include/tiles.h` now rebuilds all six translation units. Any project with
+tables in headers needs this before the second contributor, not after.
+
+### Fall damage was optional (exploit, fixed)
+`physics()` resolved falling and landing in mutually exclusive branches of one
+tick, so touching down was detected a tick late. That left the player standing
+on solid ground for a whole action with `fall_dist` still owed — and `do_mine`
+on reach slot 8 zeroes `fall_dist` as a controlled descent. So:
+
+> fall 39 tiles while spamming mine-down → **arrive at full health**.
+
+Fall damage, the only real risk in the game and the thing that makes depth cost
+something, was opt-out. A policy would have found this immediately; it is
+exactly the phase-3 exploit class, found early.
+
+Fix: a fall settles on the tick the feet arrive, from either branch. One `if`.
+The `fall_dist` window an action could reach into no longer exists.
+
+Everything else held: `FALL_SAFE` threshold unchanged (4 tiles free, 5 costs
+2 hp), digging straight down is still free for 25+ rows, arresting your own
+fall with a placed block still costs you. Calibration barely moved — expert
+mean 446 steps and **0 deaths over 120 seeds**, so the bot was never leaning on
+the exploit, which is a good sign about the movement design.
+
+Locked with a regression test that was verified to fail against the pre-fix
+`sim.c` on all three symptoms (damage lagged, `fall_dist` still owed, digging
+erased the debt).
+
+### The procedural texture path is gone
+The pixel frontend used to carry a second, fully generated texture set as a
+per-texture fallback, so it ran without Terraria. It has been deleted: ~450
+lines of `gen_*` tile generators, item icons and the hand-drawn player sprite,
+plus the `bmp_*` scaffolding underneath them. A Terraria install is now
+required.
+
+Why it was worth deleting rather than keeping: it was a second code path the
+owner would never see, it had to be kept visually in step with the real art on
+every change, and because `px_init` built it first and then overwrote it, a
+partially-procedural state existed during startup and after any single sheet
+failed to load. One path cannot disagree with itself.
+
+The one genuine casualty was the lantern: `ITEM_ID[ITEM_LANTERN]` is -1, so it
+has no Terraria *item* sheet and was the only thing still drawn by hand. It now
+borrows its own tile texture, already cropped from `Tiles_42` — the right object
+and no new asset. Shared, so `item_owned[]` stays false and `px_shutdown` frees
+it exactly once; verified under ASan.
+
+Loading is all-or-nothing now, so the failure has to be good: the directory is
+checked before `SDL_Init`, so a bad `--textures` never creates a window, and the
+message names the first missing file and the directory searched rather than
+listing fifteen failures.
+
+### Calibration after
+20/20 seeds full-clear all 24 achievements including the lantern, 0 deaths,
+copper pickaxe in 331-446-727 steps. The 228-step full clear that made the old
+game an 18-second exercise is gone.
+
+### Pixel frontend
+`make terraria-px` — SDL2, links the core directly, no FFI. 60fps render over
+the 80ms sim tick with the player and camera interpolated between ticks; the
+engine stays strictly one `env_step` per tick and idle frames are still elided.
+Mouse drives the ten-target reach, which is the interaction the terminal cannot
+express well. Loads real Terraria tile and item art from a local install at
+runtime — **never vendored, never committed** — and falls back per texture to
+procedural generation.
+
+One real bug worth remembering: the cursor was accumulated from
+`SDL_MOUSEMOTION` events, so any gap in that stream (pointer moved while the
+window was unfocused) left it stale for good — measured 277 points, ~8 tiles,
+between the real pointer and the game's belief. The coordinate math was
+correct the whole time. Polling `SDL_GetMouseState` each frame is the fix;
+never accumulate pointer state from events.
+
+### Deduplication pass
+A complexity audit found the keyboard bindings transcribed in **four** places:
+`main.c` owned the tables, `render.c` kept its own copy of the craft row to
+label the HUD (with a comment saying "mirroring `key_to_action()` in main.c"),
+`px_main.c` re-spelled the reach keys as a switch over SDL keycodes, and
+`selftest.c` hand-aligned a 36-entry action→key array for its replay tapes. A
+fifth spelling turned up as an inline expression in the pixel frontend's usage
+text. Nothing made them agree.
+
+They now live in `src/keymap.h`, both directions, with `_Static_assert` tying
+the table lengths to `REACH_COUNT` and `RECIPE_COUNT`. SDL keycodes equal their
+ASCII character for printable keys, so the pixel frontend shares the tables
+verbatim and reads shift as a modifier instead of as a shifted character.
+
+`src/frontend.h` holds the three things both frontends need and neither owns:
+`parse_u64`, `at_rest`, and the achievement diff. **The input queue and the
+frame loop were deliberately left duplicated** — SDL has real key-up events and
+a terminal has only OS key repeat, so the pixel queue has no use for the
+repeat-collapsing the terminal one depends on. Folding them together would
+trade a real difference for a fake abstraction.
+
+`tools/play.py` and `tools/vtdump.py` (143 lines: a PTY driver plus a
+hand-written VT100 screen reconstructor) existed largely to notice the bindings
+drifting apart. One shared table plus a 16-line `test_keymap` round-trip is a
+stronger guarantee, so they are gone. The harness had also already cost more
+than it saved — the "parity regression" chased earlier was its fixed-duration
+drain truncating the capture, not a game bug.
+
+Verified the new test actually fails: duplicating one key in `KB_PLACE` and
+rebuilding produces `key 'y' maps to mine up-left, not place down-right` and
+`mine up-left and place down-right both answer to 'y'`.
+
 ### Layout
 - `include/` — frozen contract: `tiles.h` (taxonomy + property tables), `env.h` (state
   struct, actions, achievements, recipes), `rng.h` (per-env PCG32).
 - `src/worldgen.c` `src/light.c` `src/sim.c` — the environment core. No globals, no
   allocation in `env_step`, no `rand()`. Verified with `nm`.
 - `src/render.c` `src/main.c` — terminal frontend. Reads state, never mutates it.
-- `tools/selftest.c` — invariants + scripted expert. `tools/play.py`, `tools/vtdump.py`
-  drive and reconstruct the TUI headlessly.
+- `src/px_render.c` `src/px_main.c` — SDL2 pixel frontend. Same rule: reads state
+  only. `third_party/stb_image.h` decodes the Terraria PNGs.
+- `src/keymap.h` `src/frontend.h` — the only things both frontends share.
+- `tools/selftest.c` — invariants + scripted expert; `--record` emits a key tape.
 
 ### Decisions settled
 - **Autoreset:** same-step, with a `final_obs` buffer. Not yet built; no episode

@@ -1,9 +1,10 @@
 /* Human frontend entry point: argument parsing, key mapping, episode loop. */
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "frontend.h"
+#include "keymap.h"
 #include "render.h"
 
 #define LOG_COLS     96
@@ -41,26 +42,19 @@ static int log_view(const Log *lg, const char *out[RENDER_LOG_LINES])
     return lg->count;
 }
 
+/* Arrows are a terminal-only alias; everything printable comes from keymap.h,
+   which the pixel frontend and the selftest's replay tapes share. */
 static int key_to_action(int k)
 {
-    /* Digits index RECIPES directly; the craft actions are contiguous. */
-    if (k >= '1' && k < '1' + RECIPE_COUNT) return RECIPE_FIRST_ACTION + (k - '1');
+    int a = kb_action(k);
+    if (a >= 0) return a;
 
     switch (k) {
-    case 'a': case KEY_LEFT:  return ACT_LEFT;
-    case 'd': case KEY_RIGHT: return ACT_RIGHT;
-    case 'w': case KEY_UP:    return ACT_JUMP;
-    case 's': case KEY_DOWN:  return ACT_NOOP;
-    case 'i': return ACT_MINE_UP;
-    case 'k': return ACT_MINE_DOWN;
-    case 'j': return ACT_MINE_LEFT;
-    case 'l': return ACT_MINE_RIGHT;
-    case 't': return ACT_PLACE_UP;
-    case 'g': return ACT_PLACE_DOWN;
-    case 'f': return ACT_PLACE_LEFT;
-    case 'h': return ACT_PLACE_RIGHT;
-    case 'e': return ACT_SELECT_NEXT;
-    default:  return -1;
+    case KEY_LEFT:  return ACT_LEFT;
+    case KEY_RIGHT: return ACT_RIGHT;
+    case KEY_UP:    return ACT_JUMP;
+    case KEY_DOWN:  return ACT_NOOP;
+    default:        return -1;
     }
 }
 
@@ -82,28 +76,34 @@ static void usage(FILE *out, const char *prog)
         "action per tick. Real time only changes who supplies the clock: idle\n"
         "frames become no-ops, so falls and jumps play out on their own.\n"
         "\n"
+        "You are two tiles tall: the head is one row above the feet, and the\n"
+        "position the HUD calls depth is the feet. Ten cells surround the body\n"
+        "and every one of them can be mined or built into.\n"
+        "\n"
         "controls\n"
-        "  a d      walk left / right        w  jump        s  wait\n"
-        "  i k j l  mine up / down / left / right\n"
-        "  t g f h  place up / down / left / right\n"
-        "  e        cycle the selected placeable\n",
-        prog, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS);
-    for (i = 0; i < RECIPE_COUNT; i++)
-        fprintf(out, "  %d        craft %s\n", i + 1, RECIPES[i].name);
-    fprintf(out,
-        "  r        new world (seed + 1)\n"
-        "  q        quit\n");
-}
-
-static int parse_u64(const char *s, unsigned long long *out)
-{
-    char *end;
-    unsigned long long v;
-    errno = 0;
-    v = strtoull(s, &end, 10);
-    if (*s == '\0' || *s == '-' || *end != '\0' || errno == ERANGE) return 0;
-    *out = v;
-    return 1;
+        "  a d   walk left / right     w  jump     s  wait\n"
+        "  e     cycle the selected placeable\n"
+        "  r     new world (seed + 1)  q  quit\n"
+        "\n"
+        "reach -- lower case mines the cell, shift places into it\n"
+        "\n"
+        "        dx=-1   dx=0   dx=+1\n"
+        "  dy=-2   y/Y    u/U    i/I     above the head\n"
+        "  dy=-1   h/H   [head]  k/K\n"
+        "  dy= 0   n/N   [feet]  m/M\n"
+        "  dy=+1   ,/<    ./>    //?     below the feet\n"
+        "\n"
+        "Mining straight down (.) is a controlled descent and costs no fall\n"
+        "damage. Placing into a down-diagonal (< or ?) bridges without losing\n"
+        "altitude, and placing under your own feet (>) pillars upward.\n"
+        "\n"
+        "crafting -- the station must be within %d tiles of your feet\n",
+        prog, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS, STATION_RANGE);
+    for (i = 0; i < RECIPE_COUNT; i++) {
+        Tile st = RECIPES[i].station;
+        fprintf(out, "  %c     %-12s %s\n", KB_CRAFT[i], RECIPES[i].name,
+                st == TILE_AIR ? "anywhere" : TILE_INFO[st].name);
+    }
 }
 
 /* Actions banked between two ticks. Bounded, and a repeat of whatever is
@@ -183,6 +183,13 @@ static int classify(int key, int *act)
     *act = -1;
     if (key == KEY_EOF)    return K_QUIT;
     if (key == KEY_RESIZE) return K_REPAINT;
+
+    /* Place keys are the shifted letters, so they must be looked up before
+       the fold below -- which exists only so a stray Q or R still quits or
+       resets -- destroys the shift. */
+    *act = key_to_action(key);
+    if (*act >= 0) return K_ACTION;
+
     if (key >= 'A' && key <= 'Z') key += 'a' - 'A';
     if (key == 'q') return K_QUIT;
     if (key == 'r') return K_RESET;
@@ -190,8 +197,9 @@ static int classify(int key, int *act)
     return K_ACTION;
 }
 
-/* One tick per keypress. Deterministic under a scripted key tape, which is what
-   tools/play.py replays against, so this path has to stay. */
+/* One tick per keypress: the world only moves when you tell it to. Kept for
+   stepping through physics by hand and for replaying a `selftest --record`
+   tape, both of which want the clock out of the way. */
 static void play_lockstep(Env *e, Log *lg, unsigned long long *seed)
 {
     for (;;) {
@@ -209,14 +217,6 @@ static void play_lockstep(Env *e, Log *lg, unsigned long long *seed)
 
         apply(e, lg, act);
     }
-}
-
-/* True when an ACT_NOOP frame would change nothing but the step counter. The
-   player is the only thing in this world that moves on its own, so grounded and
-   not mid-jump is a genuine fixed point. */
-static int at_rest(const Env *e)
-{
-    return e->jump_left == 0 && tile_solid(tile_at(e, e->px, e->py + 1));
 }
 
 /* One tick per `tick_ms`, whether or not you pressed anything: an empty frame

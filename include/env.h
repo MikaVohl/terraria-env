@@ -27,15 +27,48 @@
 #define COPPER_MAX_Y   85
 #define IRON_MIN_Y     62
 #define IRON_MAX_Y     93
+#define GOLD_MIN_Y     78   /* deepest band: gated by the iron pickaxe */
+#define GOLD_MAX_Y     93
 
-/* ---- Player tuning ------------------------------------------------------ */
+/* ---- Player ------------------------------------------------------------- *
+ * The body is PLAYER_H tiles tall and one wide. (px, py) is the FEET cell;
+ * the head is (px, py - 1). Every physics and reach rule is written against
+ * that convention, so py is never less than PLAYER_H - 1. */
+
+#define PLAYER_H          2
 
 #define MAX_HEALTH        10
 #define FALL_SAFE         4    /* tiles you may fall without damage */
 #define FALL_DMG_PER_TILE 2
 #define JUMP_HEIGHT       3    /* tiles risen per jump, one per tick */
-#define STATION_RANGE     3    /* Chebyshev radius for workbench/furnace use */
+#define STATION_RANGE     3    /* Chebyshev radius for crafting-station use */
 #define DEEP_Y            70   /* depth that scores ACH_DESCEND_DEEP */
+
+/* ---- Reach -------------------------------------------------------------- *
+ * Mining and placing address the Moore neighbourhood of the body: a 3-wide by
+ * 4-tall block minus the two cells the body itself fills, so ten targets.
+ * Offsets are from the FEET cell, in reading order, top-left to bottom-right.
+ *
+ *          dx=-1     dx=0     dx=+1
+ *   dy=-2    0         1        2      above the head
+ *   dy=-1    3      [head]      4
+ *   dy= 0    5      [feet]      6
+ *   dy=+1    7         8        9      below the feet
+ *
+ * Indices line up with (action - ACT_MINE_FIRST) and (action - ACT_PLACE_FIRST)
+ * alike: the two action blocks share this ordering. */
+
+#define REACH_COUNT 10
+
+static const int REACH_DX[REACH_COUNT] = {-1,  0, +1, -1, +1, -1, +1, -1,  0, +1};
+static const int REACH_DY[REACH_COUNT] = {-2, -2, -2, -1, -1,  0,  0, +1, +1, +1};
+
+static const char *const REACH_NAME[REACH_COUNT] = {
+    "up-left",   "up",        "up-right",
+    "head-left",              "head-right",
+    "foot-left",              "foot-right",
+    "down-left", "down",      "down-right",
+};
 
 /* ---- Lighting ----------------------------------------------------------- */
 
@@ -45,32 +78,60 @@
 
 #define DEFAULT_MAX_STEPS 3000
 
-/* ---- Actions (19) ------------------------------------------------------- */
+/* ---- Actions (36) ------------------------------------------------------- */
 
 typedef enum {
     ACT_NOOP = 0,
     ACT_LEFT,
     ACT_RIGHT,
     ACT_JUMP,
+
+    /* Ten mine targets, in REACH_* order. */
+    ACT_MINE_UP_LEFT,
     ACT_MINE_UP,
+    ACT_MINE_UP_RIGHT,
+    ACT_MINE_HEAD_LEFT,
+    ACT_MINE_HEAD_RIGHT,
+    ACT_MINE_FOOT_LEFT,
+    ACT_MINE_FOOT_RIGHT,
+    ACT_MINE_DOWN_LEFT,
     ACT_MINE_DOWN,
-    ACT_MINE_LEFT,
-    ACT_MINE_RIGHT,
+    ACT_MINE_DOWN_RIGHT,
+
+    /* Ten place targets, same order. */
+    ACT_PLACE_UP_LEFT,
     ACT_PLACE_UP,
+    ACT_PLACE_UP_RIGHT,
+    ACT_PLACE_HEAD_LEFT,
+    ACT_PLACE_HEAD_RIGHT,
+    ACT_PLACE_FOOT_LEFT,
+    ACT_PLACE_FOOT_RIGHT,
+    ACT_PLACE_DOWN_LEFT,
     ACT_PLACE_DOWN,
-    ACT_PLACE_LEFT,
-    ACT_PLACE_RIGHT,
+    ACT_PLACE_DOWN_RIGHT,
+
     ACT_SELECT_NEXT,
+
     ACT_CRAFT_WORKBENCH,
     ACT_CRAFT_FURNACE,
     ACT_CRAFT_STONE_PICK,
     ACT_SMELT_COPPER,
     ACT_CRAFT_COPPER_PICK,
     ACT_CRAFT_TORCH,
+    ACT_SMELT_IRON,
+    ACT_CRAFT_ANVIL,
+    ACT_CRAFT_IRON_PICK,
+    ACT_SMELT_GOLD,
+    ACT_CRAFT_LANTERN,
+
     ACT_COUNT
 } Action;
 
-/* ---- Achievements (16) -------------------------------------------------- */
+#define ACT_MINE_FIRST  ACT_MINE_UP_LEFT
+#define ACT_PLACE_FIRST ACT_PLACE_UP_LEFT
+
+/* ---- Achievements (24) -------------------------------------------------- *
+ * Listed in progression order, which is also the order frontends draw them. */
 
 typedef enum {
     ACH_COLLECT_WOOD = 0,
@@ -88,6 +149,14 @@ typedef enum {
     ACH_PLACE_TORCH,
     ACH_CRAFT_COPPER_PICK,
     ACH_COLLECT_IRON,
+    ACH_SMELT_IRON,
+    ACH_CRAFT_ANVIL,
+    ACH_PLACE_ANVIL,
+    ACH_CRAFT_IRON_PICK,
+    ACH_COLLECT_GOLD,
+    ACH_SMELT_GOLD,
+    ACH_CRAFT_LANTERN,
+    ACH_PLACE_LANTERN,
     ACH_DESCEND_DEEP,
     ACH_COUNT
 } Achievement;
@@ -96,10 +165,12 @@ static const char *const ACH_NAME[ACH_COUNT] = {
     "collect wood", "collect dirt", "collect stone", "place block",
     "craft workbench", "place workbench", "craft stone pick", "craft furnace",
     "place furnace", "collect copper", "smelt copper", "craft torch",
-    "place torch", "craft copper pick", "collect iron", "descend deep",
+    "place torch", "craft copper pick", "collect iron", "smelt iron",
+    "craft anvil", "place anvil", "craft iron pick", "collect gold",
+    "smelt gold", "craft lantern", "place lantern", "descend deep",
 };
 
-/* ---- Recipes (6) -------------------------------------------------------- */
+/* ---- Recipes (11) ------------------------------------------------------- */
 
 typedef struct {
     const char *name;
@@ -109,28 +180,39 @@ typedef struct {
     int8_t      out_item;       /* Item produced, or -1 for none */
     int         out_qty;
     uint8_t     grant_tier;     /* tool tier granted, or 0 for none */
-    bool        need_workbench;
-    bool        need_furnace;
+    Tile        station;        /* station that must be near, or TILE_AIR */
     int         ach;
 } Recipe;
 
-#define RECIPE_COUNT        6
+#define RECIPE_COUNT        11
 #define RECIPE_FIRST_ACTION ACT_CRAFT_WORKBENCH
 
-/* Indexed by (action - RECIPE_FIRST_ACTION). */
+/* Indexed by (action - RECIPE_FIRST_ACTION). Ores always smelt to bars at a
+   furnace and bars always become tools at a bench or anvil, so the grammar is
+   the same on every rung of the ladder. */
 static const Recipe RECIPES[RECIPE_COUNT] = {
     {"workbench",   {ITEM_WOOD,       ITEM_WOOD},  { 8, 0}, 1,
-     ITEM_WORKBENCH,  1, 0, false, false, ACH_CRAFT_WORKBENCH},
+     ITEM_WORKBENCH,  1, 0,                TILE_AIR,       ACH_CRAFT_WORKBENCH},
     {"furnace",     {ITEM_STONE,      ITEM_STONE}, {12, 0}, 1,
-     ITEM_FURNACE,    1, 0, true,  false, ACH_CRAFT_FURNACE},
+     ITEM_FURNACE,    1, 0,                TILE_WORKBENCH, ACH_CRAFT_FURNACE},
     {"stone pick",  {ITEM_WOOD,       ITEM_STONE}, { 3, 5}, 2,
-     -1,              0, TIER_STONE_PICK,  true, false, ACH_CRAFT_STONE_PICK},
+     -1,              0, TIER_STONE_PICK,  TILE_WORKBENCH, ACH_CRAFT_STONE_PICK},
     {"copper bar",  {ITEM_COPPER_ORE, ITEM_WOOD},  { 3, 0}, 1,
-     ITEM_COPPER_BAR, 1, 0, false, true,  ACH_SMELT_COPPER},
+     ITEM_COPPER_BAR, 1, 0,                TILE_FURNACE,   ACH_SMELT_COPPER},
     {"copper pick", {ITEM_COPPER_BAR, ITEM_WOOD},  { 2, 3}, 2,
-     -1,              0, TIER_COPPER_PICK, true, false, ACH_CRAFT_COPPER_PICK},
+     -1,              0, TIER_COPPER_PICK, TILE_WORKBENCH, ACH_CRAFT_COPPER_PICK},
     {"torch x5",    {ITEM_COPPER_BAR, ITEM_WOOD},  { 1, 2}, 2,
-     ITEM_TORCH,      5, 0, true,  false, ACH_CRAFT_TORCH},
+     ITEM_TORCH,      5, 0,                TILE_WORKBENCH, ACH_CRAFT_TORCH},
+    {"iron bar",    {ITEM_IRON_ORE,   ITEM_WOOD},  { 3, 0}, 1,
+     ITEM_IRON_BAR,   1, 0,                TILE_FURNACE,   ACH_SMELT_IRON},
+    {"anvil",       {ITEM_IRON_BAR,   ITEM_WOOD},  { 5, 0}, 1,
+     ITEM_ANVIL,      1, 0,                TILE_WORKBENCH, ACH_CRAFT_ANVIL},
+    {"iron pick",   {ITEM_IRON_BAR,   ITEM_WOOD},  { 2, 3}, 2,
+     -1,              0, TIER_IRON_PICK,   TILE_ANVIL,     ACH_CRAFT_IRON_PICK},
+    {"gold bar",    {ITEM_GOLD_ORE,   ITEM_WOOD},  { 3, 0}, 1,
+     ITEM_GOLD_BAR,   1, 0,                TILE_FURNACE,   ACH_SMELT_GOLD},
+    {"lantern",     {ITEM_GOLD_BAR,   ITEM_WOOD},  { 1, 3}, 2,
+     ITEM_LANTERN,    1, 0,                TILE_ANVIL,     ACH_CRAFT_LANTERN},
 };
 
 /* ---- Environment state -------------------------------------------------- */
@@ -145,7 +227,7 @@ typedef struct Env {
     uint8_t light[WORLD_H][WORLD_W];
     int     surface[WORLD_W];    /* grass row per column, from worldgen */
 
-    /* player */
+    /* player -- (px, py) is the FEET cell; the head is (px, py - 1) */
     int     px, py;
     int     facing;              /* -1 left, +1 right */
     int     jump_left;           /* rising ticks remaining */
@@ -183,20 +265,32 @@ void world_generate(Env *e);
 /* Implemented in light.c: recomputes light[] from scratch. */
 void light_recompute(Env *e);
 
+const char *action_name(int action);
+
 /* ---- Shared helpers ----------------------------------------------------- */
 
 static inline bool in_bounds(int x, int y) {
     return x >= 0 && x < WORLD_W && y >= 0 && y < WORLD_H;
 }
 
+static inline bool has_ach(const Env *e, int ach) {
+    return (e->achievements >> ach) & 1u;
+}
+
 static inline Tile tile_at(const Env *e, int x, int y) {
     return in_bounds(x, y) ? (Tile)e->tiles[y][x] : TILE_BEDROCK;
 }
 
-static inline bool has_ach(const Env *e, int a) {
-    return (e->achievements >> a) & 1u;
+/* True when (x, y) is one of the two cells the body occupies. */
+static inline bool is_body(const Env *e, int x, int y) {
+    return x == e->px && y <= e->py && y > e->py - PLAYER_H;
 }
 
-const char *action_name(int action);
+/* A column the body fits in at feet-row `feet`: PLAYER_H clear cells. */
+static inline bool body_fits(const Env *e, int x, int feet) {
+    for (int i = 0; i < PLAYER_H; i++)
+        if (tile_solid(tile_at(e, x, feet - i))) return false;
+    return feet - (PLAYER_H - 1) >= 0;
+}
 
 #endif /* ENV_H */

@@ -43,7 +43,10 @@ void light_recompute(Env *e) {
             if (emit) seed_cell(e, x, y, emit);
         }
     }
-    if (in_bounds(e->px, e->py)) seed_cell(e, e->px, e->py, PLAYER_LIGHT);
+    /* Both body cells glow: a head-height source is what actually reveals the
+       tunnel you are walking into. */
+    for (int i = 0; i < PLAYER_H; i++)
+        if (in_bounds(e->px, e->py - i)) seed_cell(e, e->px, e->py - i, PLAYER_LIGHT);
 
     /* Counting-sort every seeded cell into a contiguous per-level bucket,
        brightest bucket first. Level 0 is not a seed. */

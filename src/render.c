@@ -18,6 +18,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "keymap.h"
 #include "render.h"
 
 /* ---- Terminal state ----------------------------------------------------- *
@@ -32,9 +33,10 @@ static volatile sig_atomic_t g_resized = 0;
 
 #define VIEW_W_MAX 72
 #define VIEW_H_MAX 30
-#define HUD_ROWS   12
+#define HUD_ROWS   15
 #define ACH_COL    10   /* achievement grid starts here */
-#define ACH_CELL   7    /* ...with fixed-width cells, so the two rows line up */
+#define ACH_CELL   7    /* ...with fixed-width cells, so the three rows line up */
+#define INV_TAIL   10   /* cols held back on the last inv line for "+N more" */
 #define MIN_COLS   40
 #define MIN_ROWS   20
 #define FRAME_CAP  (96 * 1024)
@@ -45,7 +47,9 @@ static volatile sig_atomic_t g_resized = 0;
  * hinted at), step 5 is full daylight. Torches cap out at emit 12, so step 5
  * is reachable only by sunlight -- which is why air's top step is sky blue
  * while its lower steps stay cave grey. Ore ramps start hued so a vein still
- * glints one step before the rock around it becomes readable. */
+ * glints one step before the rock around it becomes readable. LOG sits a
+ * couple of steps under WOOD across the whole ramp: bark reads as dark brown,
+ * planks as warm tan, so a built bridge never blends into a trunk. */
 
 #define RAMP_STEPS 6
 
@@ -59,13 +63,17 @@ static const Ramp TILE_RAMP[TILE_COUNT] = {
     /* DIRT      */ {{237,  58,  94, 137, 180, 223}, {233, 233, 234,  58,  94, 137}},
     /* GRASS     */ {{237,  58,  64,  70, 107, 113}, {233, 233,  22,  22,  64,  70}},
     /* STONE     */ {{236, 239, 240,  60, 103, 146}, {233, 234, 235, 236,  60, 103}},
+    /* LOG       */ {{234,  52,  58,  94, 130, 137}, {232, 232, 233,  52,  58,  94}},
     /* WOOD      */ {{ 52,  88,  94, 130, 137, 179}, {232, 233,  52,  88,  94, 130}},
     /* LEAVES    */ {{236,  22,  28,  34,  40,  77}, {233, 233,  22,  22,  22,  28}},
     /* COPPER    */ {{ 58,  94, 130, 166, 172, 208}, {233, 234, 234,  58,  94, 130}},
     /* IRON      */ {{ 52,  88, 124, 131, 167, 174}, {232, 232,  52,  52,  88, 124}},
+    /* GOLD      */ {{ 58, 100, 142, 178, 220, 227}, {233, 234, 234,  58, 100, 142}},
     /* TORCH     */ {{172, 208, 214, 220, 226, 227}, {234,  58,  94, 130, 166, 172}},
+    /* LANTERN   */ {{214, 220, 226, 229, 230, 231}, { 58,  94, 130, 172, 214, 220}},
     /* WORKBENCH */ {{237,  58,  94, 136, 173, 180}, {233, 233, 234,  58,  94, 136}},
     /* FURNACE   */ {{237, 238,  95, 131, 138, 174}, {233, 234,  52,  88,  95, 131}},
+    /* ANVIL     */ {{236, 238, 240, 103, 110, 153}, {232, 233, 234, 236,  60, 103}},
     /* BEDROCK   */ {{234, 235, 236, 238, 240, 242}, {232, 232, 233, 234, 235, 236}},
 };
 
@@ -98,18 +106,33 @@ static const char *const LOG_SHADE[RENDER_LOG_LINES] = {
 #define G_RULE  "\xe2\x94\x80"  /* U+2500 */
 #define G_DOT   "\xc2\xb7"      /* U+00B7 */
 
-static const char *const TOOL_NAME[3] = { "hand", "stone pickaxe", "copper pickaxe" };
-
-/* Alternating key / description pairs for the bottom legend. */
-static const char *const LEGEND[] = {
-    "wasd", " move  ", "ikjl", " mine  ", "tgfh", " place  ",
-    "e", " cycle  ", "1-6", " craft  ", "r", " reset  ", "q", " quit",
+static const char *const TOOL_NAME[4] = {
+    "hand", "stone pickaxe", "copper pickaxe", "iron pickaxe",
 };
 
-/* Short forms so all sixteen achievements fit two rows. Same order as ACH_NAME. */
+/* The body is two cells tall, so it needs two glyphs that read as one figure
+   and collide with no tile: 'O' is the lantern and 'A' the anvil, both of
+   which a player stands right next to. '@' is the head everyone already
+   expects; 'n' under it is two legs and a torso, light enough that the eye
+   still lands on the head. */
+#define GLYPH_HEAD '@'
+#define GLYPH_FEET 'n'
+
+/* Alternating key / description pairs for the bottom legend. Ten reach
+   directions will not fit on one line, so the legend names the mine keys in
+   layout order and leaves the target table to --help. */
+static const char *const LEGEND[] = {
+    "wad", " move ", KB_MINE, " mine ", "shift", "+place ",
+    "e", " cycle ", "1..0-", " craft ", "r", " reset ", "q", " quit",
+};
+
+/* Short forms so all twenty-four achievements fit three rows of ACH_CELL.
+   Same order as ACH_NAME; '+' prefixes the place-it half of a craft/place
+   pair, and a bare metal name is its bar. */
 static const char *const ACH_TAG[ACH_COUNT] = {
-    "wood",  "dirt",   "stone", "place",  "bench",  "+bench", "spick", "furn",
-    "+furn", "copper", "bar",   "torch",  "+torch", "cpick",  "iron",  "deep",
+    "wood",   "dirt",   "stone",  "place",  "bench",  "+bench", "spick",  "furn",
+    "+furn",  "copper", "cbar",   "torch",  "+torch", "cpick",  "iron",   "ibar",
+    "anvil",  "+anvil", "ipick",  "gold",   "gbar",   "lantrn", "+lantn", "deep",
 };
 
 static const int CUBE_LEVEL[6] = { 0, 95, 135, 175, 215, 255 };
@@ -294,7 +317,7 @@ static void draw_map(Buf *b, const Env *e, int *row, int vw, int vh)
         bline(b, row);
         for (sx = 0; sx < vw; sx++) {
             int wx = cam_x + sx;
-            int player = (wx == e->px && wy == e->py);
+            int player = is_body(e, wx, wy);
             int l = e->light[wy][wx];
             const Ramp *r;
             Tile t;
@@ -317,7 +340,7 @@ static void draw_map(Buf *b, const Env *e, int *row, int vw, int vh)
                 cf = -1;
                 bcolor(b, &cf, &cb,
                        color_luma(bg) > 128 ? COLOR_INK_ON : COLOR_INK, bg);
-                bc(b, '@');
+                bc(b, wy == e->py ? GLYPH_FEET : GLYPH_HEAD);
                 bs(b, "\033[0m");
                 cf = -1;
                 cb = -1;
@@ -345,7 +368,7 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
     held = PLACEABLES[sel].item;
     held_tile = PLACEABLES[sel].tile;
     cnt  = e->inv[held];
-    tier = e->tool_tier < 3 ? e->tool_tier : 2;
+    tier = e->tool_tier < 4 ? e->tool_tier : 3;
 
     /* rule + identity */
     lstart(&L, b, row, w);
@@ -383,13 +406,33 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
     lesc(&L, C_TEXT);  lfmt(&L, "%.2f", (double)e->ep_return);
 
     /* Inventory is the one genuinely unbounded row, so it gets the whole
-       window rather than the map width. */
-    lstart(&L, b, row, wide);
-    lesc(&L, C_LABEL); ltext(&L, "inv");
+       window rather than the map width -- and, with fourteen item kinds, a
+       second indented line when the first fills. Two lines is the reservation
+       in HUD_ROWS and therefore the hard limit: a stack that will not fit is
+       counted into a "+N more" tail rather than clipped mid-word, so the row
+       never lies about what you are carrying. */
     {
-        int any = 0;
+        int any = 0, wrapped = 0;
+        lstart(&L, b, row, wide);
+        lesc(&L, C_LABEL); ltext(&L, "inv");
         for (i = 0; i < ITEM_COUNT; i++) {
+            char t[40];
+            int n, rest, j;
             if (e->inv[i] <= 0) continue;
+            n = snprintf(t, sizeof t, "  %s %d", ITEM_NAME[i], e->inv[i]);
+            for (rest = 0, j = i + 1; j < ITEM_COUNT; j++)
+                if (e->inv[j] > 0) rest++;
+            /* Keep room for the tail only while there is still something it
+               would have to report. */
+            if (L.col + n > wide - (wrapped && rest ? INV_TAIL : 0)) {
+                if (wrapped) {
+                    lesc(&L, C_OFF); lfmt(&L, "  +%d more", rest + 1);
+                    break;
+                }
+                wrapped = 1;
+                lstart(&L, b, row, wide);
+                lpad(&L, 3);
+            }
             lesc(&L, C_MUTE);   lfmt(&L, "  %s ", ITEM_NAME[i]);
             lesc(&L, C_ACCENT); lfmt(&L, "%d", e->inv[i]);
             any = 1;
@@ -397,16 +440,25 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
         if (!any) { lesc(&L, C_OFF); ltext(&L, "  empty"); }
     }
 
-    /* craft menu, straight out of the recipe table */
-    lstart(&L, b, row, w);
-    for (i = 0; i < RECIPE_COUNT; i++) {
-        if (i) ltext(&L, " ");
-        lesc(&L, C_KEY);  lfmt(&L, "%d", i + 1);
-        lesc(&L, C_MUTE); lfmt(&L, " %s", RECIPES[i].name);
+    /* Craft menu, straight out of the recipe table. Eleven recipes overrun
+       any sane window, so it wraps once for the same reason inv does. */
+    {
+        int wrapped = 0;
+        lstart(&L, b, row, wide);
+        for (i = 0; i < RECIPE_COUNT; i++) {
+            char t[40];
+            int n = snprintf(t, sizeof t, "%c %s  ", KB_CRAFT[i], RECIPES[i].name);
+            if (L.col + n > wide && !wrapped) {
+                wrapped = 1;
+                lstart(&L, b, row, wide);
+            }
+            lesc(&L, C_KEY);  lfmt(&L, "%c", KB_CRAFT[i]);
+            lesc(&L, C_MUTE); lfmt(&L, " %s  ", RECIPES[i].name);
+        }
     }
 
     /* achievements: this is the score, so it gets a real grid */
-    for (i = 0; i < 2; i++) {
+    for (i = 0; i < 3; i++) {
         int j;
         lstart(&L, b, row, w);
         if (i == 0) {

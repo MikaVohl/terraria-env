@@ -12,17 +12,24 @@
 
 static const char *const ACTION_NAME[ACT_COUNT] = {
     "noop", "left", "right", "jump",
-    "mine up", "mine down", "mine left", "mine right",
-    "place up", "place down", "place left", "place right",
+    "mine up-left",   "mine up",   "mine up-right",
+    "mine head-left",              "mine head-right",
+    "mine foot-left",              "mine foot-right",
+    "mine down-left", "mine down", "mine down-right",
+    "place up-left",   "place up",   "place up-right",
+    "place head-left",               "place head-right",
+    "place foot-left",               "place foot-right",
+    "place down-left", "place down", "place down-right",
     "select next",
     "craft workbench", "craft furnace", "craft stone pick",
     "smelt copper", "craft copper pick", "craft torch",
+    "smelt iron", "craft anvil", "craft iron pick",
+    "smelt gold", "craft lantern",
 };
 
-/* Indexed by (action - ACT_MINE_UP) and (action - ACT_PLACE_UP) alike: the two
-   action blocks share the up/down/left/right ordering. */
-static const int DIR_DX[4] = { 0,  0, -1, 1};
-static const int DIR_DY[4] = {-1,  1,  0, 0};
+/* The one reach index that lowers you a tile: mining it is a controlled
+   descent, so it is the only one that clears accumulated fall distance. */
+#define REACH_UNDER_FEET 8
 
 /* ---- helpers ------------------------------------------------------------- */
 
@@ -52,17 +59,23 @@ static bool station_near(const Env *e, Tile want) {
 }
 
 static const char *pick_name(uint8_t tier) {
-    return tier == TIER_COPPER_PICK ? "copper" : "stone";
+    switch (tier) {
+    case TIER_IRON_PICK:   return "iron";
+    case TIER_COPPER_PICK: return "copper";
+    default:               return "stone";
+    }
 }
 
 static void award_collect(Env *e, Tile t) {
     switch (t) {
+    case TILE_LOG:
     case TILE_WOOD:       award(e, ACH_COLLECT_WOOD);   break;
     case TILE_DIRT:
     case TILE_GRASS:      award(e, ACH_COLLECT_DIRT);   break;
     case TILE_STONE:      award(e, ACH_COLLECT_STONE);  break;
     case TILE_COPPER_ORE: award(e, ACH_COLLECT_COPPER); break;
     case TILE_IRON_ORE:   award(e, ACH_COLLECT_IRON);   break;
+    case TILE_GOLD_ORE:   award(e, ACH_COLLECT_GOLD);   break;
     default: break;
     }
 }
@@ -73,8 +86,10 @@ static void award_place(Env *e, Tile t) {
     case TILE_DIRT:
     case TILE_WOOD:       award(e, ACH_PLACE_BLOCK);     break;
     case TILE_TORCH:      award(e, ACH_PLACE_TORCH);     break;
+    case TILE_LANTERN:    award(e, ACH_PLACE_LANTERN);   break;
     case TILE_WORKBENCH:  award(e, ACH_PLACE_WORKBENCH); break;
     case TILE_FURNACE:    award(e, ACH_PLACE_FURNACE);   break;
+    case TILE_ANVIL:      award(e, ACH_PLACE_ANVIL);     break;
     default: break;
     }
 }
@@ -85,20 +100,24 @@ static void do_move(Env *e, int dir) {
     e->facing = dir;
 
     int nx = e->px + dir;
-    if (!tile_solid(tile_at(e, nx, e->py))) {
+    if (body_fits(e, nx, e->py)) {
         e->px = nx;
         return;
     }
-    /* One-tile auto step-up: needs footing plus clearance over both the old and
-       the new column, so a walk into a single ledge climbs it. */
-    if (grounded(e) && !tile_solid(tile_at(e, nx, e->py - 1))
-                    && !tile_solid(tile_at(e, e->px, e->py - 1))) {
+    /* One-tile auto step-up. The whole body has to fit in the new column at the
+       raised feet row, and the old column needs clearance above the head for
+       the body to rise through -- otherwise you would scrape into a ceiling. */
+    if (grounded(e) && body_fits(e, nx, e->py - 1)
+                    && !tile_solid(tile_at(e, e->px, e->py - PLAYER_H))) {
         e->px = nx;
         e->py -= 1;
         return;
     }
     if (!in_bounds(nx, e->py)) SAY(e, "the world ends here");
-    else SAY(e, "blocked by %s", TILE_INFO[tile_at(e, nx, e->py)].name);
+    else if (tile_solid(tile_at(e, nx, e->py)))
+        SAY(e, "blocked by %s", TILE_INFO[tile_at(e, nx, e->py)].name);
+    else
+        SAY(e, "%s blocks your head", TILE_INFO[tile_at(e, nx, e->py - 1)].name);
 }
 
 static void do_jump(Env *e) {
@@ -106,7 +125,8 @@ static void do_jump(Env *e) {
         SAY(e, "already airborne");
         return;
     }
-    if (tile_solid(tile_at(e, e->px, e->py - 1))) {
+    /* Clearance is measured above the head, not above the feet. */
+    if (tile_solid(tile_at(e, e->px, e->py - PLAYER_H))) {
         SAY(e, "no headroom");
         return;
     }
@@ -114,9 +134,9 @@ static void do_jump(Env *e) {
     e->fall_dist = 0;
 }
 
-static void do_mine(Env *e, int d) {
-    int tx = e->px + DIR_DX[d];
-    int ty = e->py + DIR_DY[d];
+static void do_mine(Env *e, int r) {
+    int tx = e->px + REACH_DX[r];
+    int ty = e->py + REACH_DY[r];
 
     if (!in_bounds(tx, ty)) {
         SAY(e, "nothing to mine");
@@ -140,8 +160,9 @@ static void do_mine(Env *e, int d) {
     e->light_dirty = true;
 
     /* Lowering yourself one tile at a time is a controlled descent, not a fall;
-       genuine falls into pre-existing voids must still hurt. */
-    if (DIR_DY[d] == 1) e->fall_dist = 0;
+       genuine falls into pre-existing voids must still hurt. Only the cell
+       straight under the feet qualifies -- a diagonal dig does not drop you. */
+    if (r == REACH_UNDER_FEET) e->fall_dist = 0;
 
     int8_t drop = tile_drop(t);
     if (drop >= 0) give(e, drop, 1);
@@ -151,10 +172,10 @@ static void do_mine(Env *e, int d) {
 
 /* Placement needs no supporting neighbour on purpose: pillar-jumping upward and
    bridging across a chasm are both intended traversal tools. */
-static void do_place(Env *e, int d) {
+static void do_place(Env *e, int r) {
     Placeable p = PLACEABLES[e->selected];
-    int tx = e->px + DIR_DX[d];
-    int ty = e->py + DIR_DY[d];
+    int tx = e->px + REACH_DX[r];
+    int ty = e->py + REACH_DY[r];
 
     if (e->inv[p.item] <= 0) {
         SAY(e, "no %s to place", ITEM_NAME[p.item]);
@@ -169,8 +190,8 @@ static void do_place(Env *e, int d) {
         SAY(e, "%s is in the way", TILE_INFO[t].name);
         return;
     }
-    if (tx == e->px && ty == e->py) {   /* unreachable for a 1x1 player; keeps
-                                           the rule true if the body grows */
+    if (is_body(e, tx, ty)) {   /* no reach index targets the body, but the rule
+                                   must hold however the reach table changes */
         SAY(e, "you are standing there");
         return;
     }
@@ -206,12 +227,9 @@ static void do_craft(Env *e, int idx) {
         SAY(e, "already have it");
         return;
     }
-    if (r->need_workbench && !station_near(e, TILE_WORKBENCH)) {
-        SAY(e, "need to be near a workbench");
-        return;
-    }
-    if (r->need_furnace && !station_near(e, TILE_FURNACE)) {
-        SAY(e, "need to be near a furnace");
+    if (r->station != TILE_AIR && !station_near(e, r->station)) {
+        SAY(e, "need to be near %s %s",
+            r->station == TILE_ANVIL ? "an" : "a", TILE_INFO[r->station].name);
         return;
     }
     for (int i = 0; i < r->n_in; i++) {
@@ -231,10 +249,25 @@ static void do_craft(Env *e, int idx) {
 
 /* ---- phase 2: physics --------------------------------------------------- */
 
+/* Touching down: pay for the drop, then clear it. Split out of physics()
+   because a fall now has to settle on the tick the feet arrive, from either
+   branch below. */
+static void land(Env *e) {
+    if (e->fall_dist > FALL_SAFE) {
+        int dmg = (e->fall_dist - FALL_SAFE) * FALL_DMG_PER_TILE;
+        e->health -= dmg;
+        e->reward += -0.1f * (float)dmg;
+        SAY(e, "fell %d tiles (-%d hp)", e->fall_dist, dmg);
+    }
+    e->fall_dist = 0;
+}
+
 static void physics(Env *e) {
     if (e->jump_left > 0) {
-        /* Rising one tile per tick; a ceiling ends the jump early. */
-        if (in_bounds(e->px, e->py - 1) && !tile_solid(tile_at(e, e->px, e->py - 1))) {
+        /* Rising one tile per tick. The head leads, so a ceiling one row above
+           the head is what ends the jump early. */
+        int head_next = e->py - PLAYER_H;
+        if (in_bounds(e->px, head_next) && !tile_solid(tile_at(e, e->px, head_next))) {
             e->py--;
             e->jump_left--;
         } else {
@@ -243,18 +276,19 @@ static void physics(Env *e) {
     } else if (!tile_solid(tile_at(e, e->px, e->py + 1))) {
         e->py++;
         e->fall_dist++;
+        /* Settle on the tick the feet arrive, not the one after. Deferring it
+           left the player standing on the ground with fall_dist still live for
+           a whole action, and mining the block underneath zeroes fall_dist as
+           a controlled descent -- so a 39-tile drop cost nothing at all if you
+           dug on landing. Same-tick settlement closes that window. */
+        if (tile_solid(tile_at(e, e->px, e->py + 1))) land(e);
     } else {
-        if (e->fall_dist > FALL_SAFE) {
-            int dmg = (e->fall_dist - FALL_SAFE) * FALL_DMG_PER_TILE;
-            e->health -= dmg;
-            e->reward += -0.1f * (float)dmg;
-            SAY(e, "fell %d tiles (-%d hp)", e->fall_dist, dmg);
-        }
-        e->fall_dist = 0;
+        land(e);
     }
 
-    if (e->py < 0) e->py = 0;
-    if (e->py > WORLD_H - 1) e->py = WORLD_H - 1;
+    /* The head must stay in the world, so the feet floor is PLAYER_H - 1. */
+    if (e->py < PLAYER_H - 1) e->py = PLAYER_H - 1;
+    if (e->py > WORLD_H - 1)  e->py = WORLD_H - 1;
 }
 
 /* ---- API ---------------------------------------------------------------- */
@@ -306,31 +340,23 @@ void env_step(Env *e, int action) {
 
     int px0 = e->px, py0 = e->py;
 
-    switch (action) {
-    case ACT_LEFT:  do_move(e, -1); break;
-    case ACT_RIGHT: do_move(e, +1); break;
-    case ACT_JUMP:  do_jump(e);     break;
-
-    case ACT_MINE_UP:
-    case ACT_MINE_DOWN:
-    case ACT_MINE_LEFT:
-    case ACT_MINE_RIGHT:  do_mine(e, action - ACT_MINE_UP);   break;
-
-    case ACT_PLACE_UP:
-    case ACT_PLACE_DOWN:
-    case ACT_PLACE_LEFT:
-    case ACT_PLACE_RIGHT: do_place(e, action - ACT_PLACE_UP); break;
-
-    case ACT_SELECT_NEXT: do_select(e); break;
-
-    case ACT_CRAFT_WORKBENCH:
-    case ACT_CRAFT_FURNACE:
-    case ACT_CRAFT_STONE_PICK:
-    case ACT_SMELT_COPPER:
-    case ACT_CRAFT_COPPER_PICK:
-    case ACT_CRAFT_TORCH: do_craft(e, action - RECIPE_FIRST_ACTION); break;
-
-    default: break;             /* noop */
+    /* The three action blocks are contiguous, so a range test dispatches them
+       without enumerating 31 cases. */
+    if (action >= ACT_MINE_FIRST && action < ACT_MINE_FIRST + REACH_COUNT) {
+        do_mine(e, action - ACT_MINE_FIRST);
+    } else if (action >= ACT_PLACE_FIRST && action < ACT_PLACE_FIRST + REACH_COUNT) {
+        do_place(e, action - ACT_PLACE_FIRST);
+    } else if (action >= RECIPE_FIRST_ACTION
+               && action < RECIPE_FIRST_ACTION + RECIPE_COUNT) {
+        do_craft(e, action - RECIPE_FIRST_ACTION);
+    } else {
+        switch (action) {
+        case ACT_LEFT:        do_move(e, -1); break;
+        case ACT_RIGHT:       do_move(e, +1); break;
+        case ACT_JUMP:        do_jump(e);     break;
+        case ACT_SELECT_NEXT: do_select(e);   break;
+        default: break;             /* noop */
+        }
     }
 
     physics(e);

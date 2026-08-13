@@ -147,15 +147,20 @@ static void gen_caves(Env *e) {
 
 #define VEIN_MAX 9
 
-static bool ore_cell_ok(const Env *e, int x, int y) {
+/* [ylo, yhi] confines vein growth to an ore's own band. Copper and iron pass
+   the whole world and so keep their historical wander a few rows past their
+   seed band; only gold is band-locked, and widening the others would move
+   every existing seed's ore layout. */
+static bool ore_cell_ok(const Env *e, int x, int y, int ylo, int yhi) {
     if (!in_bounds(x, y)) return false;
+    if (y < ylo || y > yhi) return false;
     if (y >= bedrock_top()) return false;
     if (y < stone_top(e, x)) return false;
     return e->tiles[y][x] == TILE_STONE;
 }
 
-static void grow_vein(Env *e, int sx, int sy, Tile ore) {
-    if (!ore_cell_ok(e, sx, sy)) return;
+static void grow_vein(Env *e, int sx, int sy, Tile ore, int ylo, int yhi) {
+    if (!ore_cell_ok(e, sx, sy, ylo, yhi)) return;
 
     int cx[VEIN_MAX], cy[VEIN_MAX];
     int n = 0;
@@ -170,7 +175,7 @@ static void grow_vein(Env *e, int sx, int sy, Tile ore) {
         int i = (int)rng_below(&e->rng, (uint32_t)n);
         int d = (int)rng_below(&e->rng, 4);
         int nx = cx[i] + DX[d], ny = cy[i] + DY[d];
-        if (!ore_cell_ok(e, nx, ny)) continue;
+        if (!ore_cell_ok(e, nx, ny, ylo, yhi)) continue;
         e->tiles[ny][nx] = (uint8_t)ore;
         cx[n] = nx; cy[n] = ny; ++n;
     }
@@ -196,14 +201,25 @@ static void gen_ores(Env *e) {
     for (int i = 0; i < copper; ++i) {
         int x = (int)rng_below(&e->rng, WORLD_W);
         int y = weighted_row(e, COPPER_MIN_Y, clampi(COPPER_MAX_Y, 0, top), true);
-        grow_vein(e, x, y, TILE_COPPER_ORE);
+        grow_vein(e, x, y, TILE_COPPER_ORE, 0, WORLD_H - 1);
     }
 
     int iron = rng_range(&e->rng, 30, 40);
     for (int i = 0; i < iron; ++i) {
         int x = (int)rng_below(&e->rng, WORLD_W);
         int y = weighted_row(e, IRON_MIN_Y, clampi(IRON_MAX_Y, 0, top), false);
-        grow_vein(e, x, y, TILE_IRON_ORE);
+        grow_vein(e, x, y, TILE_IRON_ORE, 0, WORLD_H - 1);
+    }
+
+    /* Gold last, so its veins overwrite iron where the bands overlap: the
+       deepest rows should read as gold-bearing. Scarce by design — it is the
+       tier the iron pickaxe unlocks, so it must stay worth the descent, and it
+       is pinned inside its band so no gold is reachable before that gate. */
+    int gold = rng_range(&e->rng, 12, 20);
+    for (int i = 0; i < gold; ++i) {
+        int x = (int)rng_below(&e->rng, WORLD_W);
+        int y = weighted_row(e, GOLD_MIN_Y, clampi(GOLD_MAX_Y, 0, top), false);
+        grow_vein(e, x, y, TILE_GOLD_ORE, GOLD_MIN_Y, clampi(GOLD_MAX_Y, 0, top));
     }
 }
 
@@ -231,7 +247,7 @@ static bool try_tree(Env *e, int x) {
         if (!in_bounds(x, y) || e->tiles[y][x] != TILE_AIR) return false;
     }
     for (int y = s - 1; y >= top; --y)
-        e->tiles[y][x] = TILE_WOOD;
+        e->tiles[y][x] = TILE_LOG;
 
     bool big = rng_chance(&e->rng, 0.5f);
     if (big) {
@@ -285,12 +301,12 @@ static void place_player(Env *e, const bool *trunk) {
     if (best == -1) best = mid;
 
     e->px = best;
-    e->py = clampi(e->surface[best] - 1, 1, WORLD_H - 1);
+    e->py = clampi(e->surface[best] - 1, PLAYER_H - 1, WORLD_H - 1);
     e->facing = 1;
 
-    /* The spawn cell and the one above it must be clear, even if a neighbouring
-       tree dropped leaves into them. */
-    for (int y = e->py; y >= e->py - 1 && y >= 0; --y)
+    /* Clear the whole body column — feet at py up through the head at
+       py - PLAYER_H + 1 — even if a neighbouring tree dropped leaves into it. */
+    for (int y = e->py; y > e->py - PLAYER_H && y >= 0; --y)
         if (e->tiles[y][e->px] != TILE_BEDROCK)
             e->tiles[y][e->px] = TILE_AIR;
 }

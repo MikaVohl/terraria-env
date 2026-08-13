@@ -1,7 +1,12 @@
 # Build artifacts -- everything here is reproducible with `make`.
 *.o
+*.d
 /terraria-lite
 /selftest
+/terraria-px
 
 __pycache__/
 .DS_Store
+
+assets/
+*.png
