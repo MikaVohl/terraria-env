@@ -203,21 +203,24 @@ static void do_place(Env *e, int r) {
     SAY(e, "placed %s", TILE_INFO[p.tile].name);
 }
 
-/* Skip past placeables the player cannot actually use, but never spin: after a
-   full lap the original slot wins, and an empty inventory just steps by one. */
+/* Skip past placeables the player cannot actually use, and never spin: after a
+   full lap the original slot wins, and an empty inventory leaves the cursor
+   alone rather than stepping it to a slot holding nothing. That last case used
+   to advance `selected` pointlessly, which burned a tick and -- once the mask
+   existed -- made `select next` claim to be useful when it was not. */
 static void do_select(Env *e) {
-    int next = (e->selected + 1) % PLACEABLE_COUNT;
-    for (int i = 0; i < PLACEABLE_COUNT; i++) {
-        int cand = (e->selected + 1 + i) % PLACEABLE_COUNT;
+    /* i == PLACEABLE_COUNT lands back on the current slot, so a lone stocked
+       slot re-selects itself and nothing changes. */
+    for (int i = 1; i <= PLACEABLE_COUNT; i++) {
+        int cand = (e->selected + i) % PLACEABLE_COUNT;
         if (e->inv[PLACEABLES[cand].item] > 0) {
-            next = cand;
-            break;
+            e->selected = (uint8_t)cand;
+            Item it = PLACEABLES[cand].item;
+            SAY(e, "selected %s (%d)", ITEM_NAME[it], e->inv[it]);
+            return;
         }
     }
-    e->selected = (uint8_t)next;
-
-    Item it = PLACEABLES[next].item;
-    SAY(e, "selected %s (%d)", ITEM_NAME[it], e->inv[it]);
+    SAY(e, "nothing to select");
 }
 
 static void do_craft(Env *e, int idx) {
@@ -247,6 +250,91 @@ static void do_craft(Env *e, int idx) {
     SAY(e, "crafted %s", r->name);
 }
 
+/* ---- action validity ----------------------------------------------------- */
+
+/* An action is valid when applying it would change the world, the player's
+   position or the inventory. Turning on the spot does not count: `facing` is
+   observational only -- nothing reads it back -- so walking into a wall is
+   inert.
+
+   About two thirds of the raw action space is inert in any given state:
+   crafting without materials, placing without blocks, mining air. Sampling
+   that dead weight is a pure exploration tax, so the frontends mask it out.
+
+   These predicates mirror the guard clauses in the do_* handlers above. They
+   are deliberately not shared with them -- the handlers each report a distinct
+   reason on failure -- so `action_mask` in selftest.c applies every action to a
+   scratch copy and diffs the result, and the two cannot silently drift. */
+
+static bool can_move(const Env *e, int dir) {
+    int nx = e->px + dir;
+    if (body_fits(e, nx, e->py)) return true;
+    return grounded(e) && body_fits(e, nx, e->py - 1)
+                       && !tile_solid(tile_at(e, e->px, e->py - PLAYER_H));
+}
+
+static bool can_jump(const Env *e) {
+    return grounded(e) && !tile_solid(tile_at(e, e->px, e->py - PLAYER_H));
+}
+
+static bool can_mine(const Env *e, int r) {
+    int tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
+    if (!in_bounds(tx, ty)) return false;
+    Tile t = tile_at(e, tx, ty);
+    if (t == TILE_AIR) return false;
+    if (tile_tier(t) == TIER_NEVER) return false;
+    return tile_tier(t) <= e->tool_tier;
+}
+
+static bool can_place(const Env *e, int r) {
+    Placeable p = PLACEABLES[e->selected];
+    int tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
+    if (e->inv[p.item] <= 0)              return false;
+    if (!in_bounds(tx, ty))               return false;
+    if (tile_at(e, tx, ty) != TILE_AIR)   return false;
+    return !is_body(e, tx, ty);
+}
+
+/* Cycling only means something when a slot other than the current one holds
+   stock; otherwise do_select lands back where it started. */
+static bool can_select(const Env *e) {
+    for (int i = 1; i < PLACEABLE_COUNT; i++) {
+        int cand = (e->selected + i) % PLACEABLE_COUNT;
+        if (e->inv[PLACEABLES[cand].item] > 0) return true;
+    }
+    return false;
+}
+
+static bool can_craft(const Env *e, int idx) {
+    const Recipe *r = &RECIPES[idx];
+    if (r->grant_tier && e->tool_tier >= r->grant_tier)        return false;
+    if (r->station != TILE_AIR && !station_near(e, r->station)) return false;
+    for (int i = 0; i < r->n_in; i++)
+        if (e->inv[r->in_item[i]] < r->in_qty[i])              return false;
+    return true;
+}
+
+void env_action_mask(const Env *e, uint8_t *mask) {
+    for (int a = 0; a < ACT_COUNT; a++) mask[a] = 0;
+
+    /* Always legal, and the reason the mask is never empty: mid-fall there is
+       frequently nothing else worth doing, and a policy still needs somewhere
+       to put its probability mass. */
+    mask[ACT_NOOP] = 1;
+
+    mask[ACT_LEFT]        = (uint8_t)can_move(e, -1);
+    mask[ACT_RIGHT]       = (uint8_t)can_move(e, +1);
+    mask[ACT_JUMP]        = (uint8_t)can_jump(e);
+    mask[ACT_SELECT_NEXT] = (uint8_t)can_select(e);
+
+    for (int r = 0; r < REACH_COUNT; r++) {
+        mask[ACT_MINE_FIRST  + r] = (uint8_t)can_mine(e, r);
+        mask[ACT_PLACE_FIRST + r] = (uint8_t)can_place(e, r);
+    }
+    for (int i = 0; i < RECIPE_COUNT; i++)
+        mask[RECIPE_FIRST_ACTION + i] = (uint8_t)can_craft(e, i);
+}
+
 /* ---- phase 2: physics --------------------------------------------------- */
 
 /* Touching down: pay for the drop, then clear it. Split out of physics()
@@ -256,7 +344,7 @@ static void land(Env *e) {
     if (e->fall_dist > FALL_SAFE) {
         int dmg = (e->fall_dist - FALL_SAFE) * FALL_DMG_PER_TILE;
         e->health -= dmg;
-        e->reward += -0.1f * (float)dmg;
+        e->reward += FALL_REWARD_PER_HP * (float)dmg;
         SAY(e, "fell %d tiles (-%d hp)", e->fall_dist, dmg);
     }
     e->fall_dist = 0;
@@ -366,6 +454,7 @@ void env_step(Env *e, int action) {
     if (e->health <= 0) {
         e->health = 0;
         e->terminated = true;
+        e->reward += DEATH_REWARD;
         SAY(e, "you died");
     }
 

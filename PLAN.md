@@ -207,16 +207,80 @@ Verified the new test actually fails: duplicating one key in `KB_PLACE` and
 rebuilding produces `key 'y' maps to mine up-left, not place down-right` and
 `mine up-left and place down-right both answer to 'y'`.
 
+## Checkpoint 2 — the observation, and a way in
+
+### `env_obs` (src/obs.c)
+An 11×9 window centred on the **feet**, plus a 54-value status vector. Pure,
+allocation-free, `const Env *`.
+
+**Darkness is real for the agent.** A cell lit below `DARK_THRESHOLD` reads as
+`OBS_UNKNOWN`, not as its tile. Before this, `DARK_THRESHOLD` was referenced
+only by the two renderers — lighting was a display effect, and for a policy
+torches would have been decorative and the depth gate would not have existed.
+Measured through the binding: 79/99 cells visible in daylight, **20/99 forty
+tiles down with no torch**. This is the single decision that makes the lighting
+system part of the game.
+
+Out-of-world cells are *visible bedrock*, never `OBS_UNKNOWN`, so the map edge
+is never confused with an unlit cave.
+
+**Achievements are in the observation** because `award()` fires once per
+achievement — two states with identical worlds but different unlock masks pay
+differently for the same action. Omitting the mask would break the Markov
+property for no reason. `steps/max_steps` is in for the same reason: the
+horizon is finite.
+
+**Tiles are emitted as ids, not one-hot.** The C side stays compact and stable;
+the consumer picks the encoding. Adding a tile is then an embedding resize
+rather than an observation-layout change. The Python binding does the one-hot,
+so swapping it for an embedding never touches C.
+
+### Action representation
+Flat `Discrete(36)` for now, chosen deliberately over `MultiDiscrete`. The
+factored version is still the right answer if the action space keeps growing —
+revisit before it does, because it invalidates checkpoints.
+
+### Binding (src/capi.c, python/)
+Flat C ABI: scalars and caller-owned buffers only, no struct layout to agree
+on. `-fvisibility=hidden` so only the 23 `tl_*` symbols escape. Layout
+constants are *queried* from the library rather than restated in Python — a
+binding that hardcodes 11×9 is one that lies the day the window changes.
+
+`python/terraria_lite.py` needs only numpy; Gymnasium is optional and adds
+`TerrariaLite-v0`. Not vectorised — batching belongs here when a trainer is
+actually starved, and nothing forecloses it.
+
+### Baselines
+| | achievements | notes |
+|---|---|---|
+| random | **3.8 / 24** | stalls at `craft workbench`, 80% die to falls |
+| scripted expert | 24 / 24 | 446 steps, 0 deaths |
+
+Random scores within ~12 steps in 100% of episodes, so there is an immediate
+gradient, then a hard exploration cliff at the workbench (needs 8 wood; random
+never holds more than 1). Dense first rungs, sharp wall — the Crafter/Craftax
+shape, and where a learner will sit.
+
+FFI overhead is real but not yet interesting: 88k steps/s native, ~58k through
+ctypes one env at a time.
+
+`test_obs` in the selftest covers geometry, the darkness rule, self-visibility,
+the world edge, status ranges, purity and buffer initialisation. It was
+validated against **14 deliberately injected mutants of `obs.c`** — all caught.
+
 ### Layout
 - `include/` — frozen contract: `tiles.h` (taxonomy + property tables), `env.h` (state
   struct, actions, achievements, recipes), `rng.h` (per-env PCG32).
-- `src/worldgen.c` `src/light.c` `src/sim.c` — the environment core. No globals, no
-  allocation in `env_step`, no `rand()`. Verified with `nm`.
+- `src/worldgen.c` `src/light.c` `src/sim.c` `src/obs.c` — the environment core.
+  No globals, no allocation in `env_step`, no `rand()`. Verified with `nm`.
 - `src/render.c` `src/main.c` — terminal frontend. Reads state, never mutates it.
 - `src/px_render.c` `src/px_main.c` — SDL2 pixel frontend. Same rule: reads state
   only. `third_party/stb_image.h` decodes the Terraria PNGs.
 - `src/keymap.h` `src/frontend.h` — the only things both frontends share.
 - `tools/selftest.c` — invariants + scripted expert; `--record` emits a key tape.
+- `src/capi.c` — flat C ABI, built only into the shared library (`make lib`).
+- `python/terraria_lite.py` — ctypes binding, Gymnasium optional.
+  `python/random_agent.py` — random baseline and binding smoke test.
 
 ### Decisions settled
 - **Autoreset:** same-step, with a `final_obs` buffer. Not yet built; no episode

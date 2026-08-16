@@ -44,6 +44,19 @@
 #define STATION_RANGE     3    /* Chebyshev radius for crafting-station use */
 #define DEEP_Y            70   /* depth that scores ACH_DESCEND_DEEP */
 
+/* ---- Reward weights ----------------------------------------------------- *
+ * Unlocking an achievement pays +1, once. These two are the only other terms,
+ * and they are the only negative ones, so they set how much the agent is
+ * willing to risk to reach the next rung.
+ *
+ * Named rather than inlined because they are the knobs most worth sweeping:
+ * fall damage is the environment's only DENSE signal, and the death penalty is
+ * the only thing that still bites once a run has banked every achievement it
+ * can reach -- past that point the forfeited future is worth zero and dying is
+ * otherwise free. */
+#define FALL_REWARD_PER_HP ( 0.00f)  /* per hp of fall damage, paid on landing */
+#define DEATH_REWARD       (-1.00f)  /* one-off, on the tick health hits zero */
+
 /* ---- Reach -------------------------------------------------------------- *
  * Mining and placing address the Moore neighbourhood of the body: a 3-wide by
  * 4-tall block minus the two cells the body itself fills, so ten targets.
@@ -74,7 +87,7 @@ static const char *const REACH_NAME[REACH_COUNT] = {
 
 #define LIGHT_MAX       15
 #define PLAYER_LIGHT    3    /* faint self-light so the dark is hard, not blind */
-#define DARK_THRESHOLD  2    /* light below this renders as unknown */
+#define DARK_THRESHOLD  2    /* below this a cell is unlit: unseen, not just dim */
 
 #define DEFAULT_MAX_STEPS 3000
 
@@ -170,6 +183,55 @@ static const char *const ACH_NAME[ACH_COUNT] = {
     "smelt gold", "craft lantern", "place lantern", "descend deep",
 };
 
+/* ---- Observation --------------------------------------------------------
+ * An egocentric window plus a status vector. Filled by env_obs(), which is a
+ * pure function of Env -- it never mutates and never allocates.
+ *
+ * The window is centred on the FEET cell, so the head sits one row above
+ * centre and every reach target (dy -2..+1) is comfortably inside.
+ *
+ * Darkness is real for the agent, not just for the renderer: a cell lit below
+ * DARK_THRESHOLD reads as OBS_UNKNOWN rather than as its tile. That is what
+ * makes torches instrumentally necessary and keeps lighting part of the game
+ * instead of part of the display. Out-of-world cells are visible bedrock, so
+ * the map edge is legible and never confused with an unlit cave.
+ *
+ * Tiles are emitted as ids, not one-hot. Growing the taxonomy then costs an
+ * embedding resize instead of an observation-layout change; whoever consumes
+ * this picks the encoding.
+ */
+
+#define VIEW_W      11
+#define VIEW_H      9
+#define VIEW_CELLS  (VIEW_W * VIEW_H)
+
+#define OBS_UNKNOWN     TILE_COUNT              /* "unlit, cannot see" */
+#define OBS_TILE_KINDS  (TILE_COUNT + 1)        /* ids 0..TILE_COUNT inclusive */
+
+/* Status vector layout. Named so a consumer never counts offsets by hand. */
+#define OBS_HEALTH    0
+#define OBS_TIER      1
+#define OBS_FACING    2
+#define OBS_JUMP      3
+#define OBS_FALL      4
+#define OBS_DEPTH     5
+#define OBS_ACROSS    6
+#define OBS_TIME      7
+#define OBS_SEL_0     8                          /* PLACEABLE_COUNT one-hot */
+#define OBS_INV_0     (OBS_SEL_0 + PLACEABLE_COUNT)
+#define OBS_ACH_0     (OBS_INV_0 + ITEM_COUNT)
+#define OBS_STATUS    (OBS_ACH_0 + ACH_COUNT)
+
+/* Inventory is clipped rather than raw: the largest recipe cost is 12, so
+   anything past this is the same decision either way. */
+#define OBS_INV_CLIP  20
+
+typedef struct {
+    uint8_t tile[VIEW_CELLS];    /* tile id, or OBS_UNKNOWN */
+    uint8_t light[VIEW_CELLS];   /* 0..LIGHT_MAX, as seen */
+    float   status[OBS_STATUS];  /* all normalised to roughly 0..1 */
+} Obs;
+
 /* ---- Recipes (11) ------------------------------------------------------- */
 
 typedef struct {
@@ -258,6 +320,13 @@ void env_init (Env *e, EnvConfig cfg);
 void env_reset(Env *e, uint64_t seed);
 void env_step (Env *e, int action);
 void env_free (Env *e);
+
+/* Implemented in obs.c: fills `o` from `e`. Pure, allocation-free. */
+void env_obs(const Env *e, Obs *o);
+
+/* Implemented in sim.c: writes ACT_COUNT bytes, 1 where the action would
+   change the state. Never all-zero -- ACT_NOOP is always set. */
+void env_action_mask(const Env *e, uint8_t *mask);
 
 /* Implemented in worldgen.c: fills tiles[], surface[], and spawns the player. */
 void world_generate(Env *e);

@@ -97,13 +97,52 @@ wood ──▶ workbench ──▶ furnace ──▶ stone pick ──▶ copper
 copper pick ──▶ iron ──▶ iron bar ──▶ anvil ──▶ iron pick ──▶ gold ──▶ lantern
 ```
 
+## RL
+
+```sh
+uv sync --extra rl                       # venv + numpy, gymnasium, torch
+make lib                                 # libterraria into the package
+uv run python -m terraria_lite.random_agent
+```
+
+```python
+import terraria_lite                     # also registers TerrariaLite-v0
+from terraria_lite import TerrariaLite, SPEC
+
+env = TerrariaLite()
+obs, info = env.reset(seed=9)            # obs: flat float32, shape (1836,)
+obs, reward, terminated, truncated, info = env.step(action)   # action: 0..35
+```
+
+Or through Gymnasium — **import `terraria_lite` first**, that's what registers it:
+
+```python
+import terraria_lite
+import gymnasium as gym
+env = gym.make("TerrariaLite-v0")        # Box(1836) obs, Discrete(36) action
+```
+
+The binding itself needs only numpy; `gymnasium` and `torch` come from the
+`rl` extra. `uv sync` on its own gives you the environment without them.
+
+The observation is an 11×9 window centred on your feet, plus a 54-value status
+vector. **Unlit cells read as "unknown", not as their tile** — darkness is real
+for the agent, which is what makes torches worth crafting. In daylight ~79 of
+99 cells are visible; 40 tiles down with no torch, 20 are.
+
+Random policy scores **3.8 / 24** and stalls at `craft workbench`. That's the
+number to beat.
+
 ## Layout
 
 ```
-include/   frozen contract: tiles.h (taxonomy), env.h (state, actions, recipes)
-src/       worldgen.c light.c sim.c   the core: no globals, no malloc, no rand
-           keymap.h frontend.h        shared by both frontends
-           render.c main.c            terminal frontend
-           px_render.c px_main.c      SDL pixel frontend
-tools/     selftest.c                 invariants + scripted expert
+include/   frozen contract: tiles.h (taxonomy), env.h (state, actions, obs)
+src/       worldgen.c light.c sim.c obs.c   the core: no globals, no malloc
+           capi.c                           flat C ABI for the binding
+           keymap.h frontend.h              shared by both frontends
+           render.c main.c                  terminal frontend
+           px_render.c px_main.c            SDL pixel frontend
+python/    terraria_lite/__init__.py        ctypes binding + Gymnasium env
+           terraria_lite/random_agent.py    baseline / binding smoke test
+tools/     selftest.c                       invariants + scripted expert
 ```

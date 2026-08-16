@@ -1,0 +1,32 @@
+[project]
+name = "terraria-lite"
+version = "0.1.0"
+description = "A small deterministic Terraria as a reinforcement learning environment"
+readme = "README.md"
+requires-python = ">=3.11"
+
+# numpy is the only hard requirement: the ctypes binding works without a
+# trainer, so the environment stays runnable before you have picked one.
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+# Everything needed to actually train. Kept optional so `uv sync` without it
+# stays a small, fast install.
+rl = ["gymnasium>=1.0", "torch>=2.2"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# The C sources live in src/, so the Python package cannot: it is under
+# python/ and mapped back to the import name here.
+packages = ["python/terraria_lite"]
+# libterraria is produced by `make lib` into the package directory, which is
+# also where the binding looks for it.
+artifacts = ["python/terraria_lite/libterraria.*"]
+
+[tool.uv]
+# The environment is the project, so install it editable: edits to the binding
+# take effect without a reinstall, and `make lib` output is picked up in place.
+package = true

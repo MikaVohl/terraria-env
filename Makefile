@@ -14,14 +14,22 @@ BIN      := terraria-lite
 SELFTEST := selftest
 PXBIN    := terraria-px
 
+# macOS wants .dylib, everyone else .so. The Python binding probes for both.
+LIBEXT   := $(if $(filter Darwin,$(shell uname -s)),dylib,so)
+LIB      := python/terraria_lite/libterraria.$(LIBEXT)
+
 ALL_SRC  := $(wildcard src/*.c)
 PX_SRC   := src/px_main.c src/px_render.c
-GAME_SRC := $(filter-out $(PX_SRC),$(ALL_SRC))
+CAPI_SRC := src/capi.c
+
+# capi.c is the FFI surface and belongs to nothing but the shared library.
+GAME_SRC := $(filter-out $(PX_SRC) $(CAPI_SRC),$(ALL_SRC))
 CORE_SRC := $(filter-out src/main.c src/render.c,$(GAME_SRC))
 
 GAME_OBJ := $(GAME_SRC:.c=.o)
 CORE_OBJ := $(CORE_SRC:.c=.o)
 PX_OBJ   := $(PX_SRC:.c=.px.o)
+LIB_OBJ  := $(CORE_SRC:.c=.pic.o) $(CAPI_SRC:.c=.pic.o)
 
 # The pixel frontend is opt-in: `all` never needs SDL2, so a machine without it
 # still gets the terminal frontend and the selftest.
@@ -57,11 +65,21 @@ endif
 check: $(SELFTEST)
 	./$(SELFTEST)
 
-clean:
-	rm -f $(GAME_OBJ) $(PX_OBJ) tools/selftest.o $(DEPS) \
-	      $(BIN) $(SELFTEST) $(PXBIN)
+# The shared library the Python binding loads. Built PIC and separate from the
+# executables' objects so -fPIC never leaks into them.
+lib: $(LIB)
 
-DEPS := $(GAME_OBJ:.o=.d) $(PX_OBJ:.o=.d) tools/selftest.d
+$(LIB): $(LIB_OBJ)
+	$(CC) -shared $^ -o $@ $(LDFLAGS)
+
+src/%.pic.o: src/%.c
+	$(CC) $(CFLAGS) $(DEPFLAGS) -fPIC -fvisibility=hidden -c $< -o $@
+
+clean:
+	rm -f $(GAME_OBJ) $(PX_OBJ) $(LIB_OBJ) tools/selftest.o $(DEPS) \
+	      $(BIN) $(SELFTEST) $(PXBIN) $(LIB)
+
+DEPS := $(GAME_OBJ:.o=.d) $(PX_OBJ:.o=.d) $(LIB_OBJ:.o=.d) tools/selftest.d
 -include $(DEPS)
 
-.PHONY: all check clean
+.PHONY: all check clean lib

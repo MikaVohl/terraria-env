@@ -680,6 +680,362 @@ static void test_lighting(void) {
     free(e);
 }
 
+/* ---- observation -------------------------------------------------------- */
+
+/* Window index of world (x, y), written from the contract rather than read off
+   obs.c: the feet cell (px, py) sits at the centre, so the head is one row up. */
+static int obs_index(const Env *e, int x, int y) {
+    return (y - e->py + VIEW_H / 2) * VIEW_W + (x - e->px + VIEW_W / 2);
+}
+
+/* The single window cell holding `t`: -1 when absent, -2 when it shows up more
+   than once. The duplicate case is the point -- a mapping that folds two world
+   cells onto one index still satisfies a plain "the marker is at k" check. */
+static int obs_find(const Obs *o, Tile t) {
+    int found = -1;
+    for (int k = 0; k < VIEW_CELLS; k++) {
+        if (o->tile[k] != t) continue;
+        if (found >= 0) return -2;
+        found = k;
+    }
+    return found;
+}
+
+/* Every status entry is a ratio of small integers, so the encodings are exact
+   and the tolerance only guards against a stray last-bit difference. */
+static bool f_eq(float a, float b) {
+    float d = a - b;
+    return (d < 0.0f ? -d : d) < 1e-6f;
+}
+
+/* The [0,1] bound doubles as the finiteness check -- a NaN fails both
+   comparisons and an infinity fails one -- so this needs no math.h. */
+static void check_status_range(const Obs *o, const char *what) {
+    for (int i = 0; i < OBS_STATUS; i++)
+        CHECK(o->status[i] >= 0.0f && o->status[i] <= 1.0f,
+              "%s: status[%d] = %g is not a finite value in [0,1]", what, i, o->status[i]);
+}
+
+/* Solid stone everywhere, with a body-shaped air pocket. Nothing in the world
+   is lit afterwards except what the player carries. */
+static void bury(Env *e, int px, int py) {
+    memset(e->tiles, TILE_STONE, sizeof e->tiles);
+    e->px = px;
+    e->py = py;
+    for (int i = 0; i < PLAYER_H; i++) e->tiles[py - i][px] = TILE_AIR;
+    light_recompute(e);
+}
+
+static void test_obs(void) {
+    printf("egocentric observation\n");
+    Env *e = env_new(0);
+    Obs o;
+
+    const int centre = (VIEW_H / 2) * VIEW_W + (VIEW_W / 2);
+
+    env_reset(e, 12);
+
+    /* ---- 1. geometry: the window is centred on the feet ------------------ */
+
+    /* Two player positions, differing in both axes, because a window that
+       ignored (px, py) and always reported the same slab of world -- or that
+       centred on the head -- would still pass at a single position. */
+    sandbox(e, 20, 50);
+    e->tiles[e->py][e->px]         = TILE_ANVIL;      /* feet */
+    e->tiles[e->py - 1][e->px]     = TILE_FURNACE;    /* head */
+    e->tiles[e->py - 2][e->px + 3] = TILE_GOLD_ORE;   /* asymmetric, so a
+                                                         row/col swap shows */
+    light_recompute(e);
+    env_obs(e, &o);
+
+    CHECK(obs_find(&o, TILE_ANVIL) == centre,
+          "feet cell landed at window index %d, expected the centre %d",
+          obs_find(&o, TILE_ANVIL), centre);
+    CHECK(obs_find(&o, TILE_FURNACE) == centre - VIEW_W,
+          "head cell landed at window index %d, expected one row above centre (%d)",
+          obs_find(&o, TILE_FURNACE), centre - VIEW_W);
+    CHECK(obs_find(&o, TILE_GOLD_ORE) == obs_index(e, e->px + 3, e->py - 2),
+          "marker at (+3,-2) landed at window index %d, expected %d",
+          obs_find(&o, TILE_GOLD_ORE), obs_index(e, e->px + 3, e->py - 2));
+
+    /* Second position, markers in opposite corners of the frame. The expected
+       indices here are literals, independent of obs_index(). */
+    sandbox(e, 77, 33);
+    e->tiles[e->py + VIEW_H / 2][e->px - VIEW_W / 2] = TILE_LOG;
+    e->tiles[e->py - VIEW_H / 2][e->px + VIEW_W / 2] = TILE_LEAVES;
+    light_recompute(e);
+    env_obs(e, &o);
+
+    CHECK(obs_find(&o, TILE_LOG) == (VIEW_H - 1) * VIEW_W,
+          "bottom-left corner landed at window index %d, expected %d",
+          obs_find(&o, TILE_LOG), (VIEW_H - 1) * VIEW_W);
+    CHECK(obs_find(&o, TILE_LEAVES) == VIEW_W - 1,
+          "top-right corner landed at window index %d, expected %d",
+          obs_find(&o, TILE_LEAVES), VIEW_W - 1);
+
+    /* ---- 2. darkness is real, and a torch undoes it ---------------------- */
+
+    /* A sealed pocket three tiles right of the body: well inside the window,
+       but walled off from the only light in this world -- the player's own
+       glow, which dies inside the first stone tile it enters. */
+    bury(e, 60, 50);
+    e->tiles[50][62] = TILE_AIR;
+    e->tiles[50][63] = TILE_AIR;
+    e->tiles[50][64] = TILE_GOLD_ORE;   /* back wall: a distinctive true id */
+    light_recompute(e);
+    env_obs(e, &o);
+
+    const int c_near = obs_index(e, 62, 50);
+    const int c_far  = obs_index(e, 63, 50);
+    const int c_wall = obs_index(e, 64, 50);
+    const int c_past = obs_index(e, 65, 50);
+
+    CHECK(o.light[c_near] < DARK_THRESHOLD,
+          "the chamber is not actually dark (light %u): the test proves nothing",
+          o.light[c_near]);
+    CHECK(o.tile[c_near] == OBS_UNKNOWN, "unlit chamber cell reads %u, expected OBS_UNKNOWN (%d)",
+          o.tile[c_near], OBS_UNKNOWN);
+    CHECK(o.tile[c_far] == OBS_UNKNOWN, "unlit chamber cell reads %u, expected OBS_UNKNOWN (%d)",
+          o.tile[c_far], OBS_UNKNOWN);
+    CHECK(o.tile[c_wall] == OBS_UNKNOWN, "unlit chamber wall reads %u, expected OBS_UNKNOWN (%d)",
+          o.tile[c_wall], OBS_UNKNOWN);
+
+    /* Same cells, one torch later. If the visibility test were ever
+       "optimised" into reporting tiles unconditionally, the block above passes
+       nothing and this block passes everything -- so both halves are needed. */
+    e->tiles[50][63] = TILE_TORCH;
+    light_recompute(e);
+    env_obs(e, &o);
+
+    CHECK(o.tile[c_near] == TILE_AIR, "lit chamber air reads %u, expected air", o.tile[c_near]);
+    CHECK(o.tile[c_far] == TILE_TORCH, "lit torch cell reads %u, expected torch (%d)",
+          o.tile[c_far], TILE_TORCH);
+    CHECK(o.tile[c_wall] == TILE_GOLD_ORE, "lit chamber wall reads %u, expected gold ore (%d)",
+          o.tile[c_wall], TILE_GOLD_ORE);
+    CHECK(o.tile[c_past] == OBS_UNKNOWN,
+          "stone behind the lit chamber reads %u: the torch lit cells it cannot reach",
+          o.tile[c_past]);
+
+    /* ---- 3. the player always sees itself -------------------------------- */
+
+    /* PLAYER_LIGHT (3) beats DARK_THRESHOLD (2) with one level to spare, so a
+       buried player sees both body cells and one orthogonal step out. Light
+       spreads on the 4-neighbourhood, so the diagonals are two steps away and
+       are legitimately dark -- they are deliberately not asserted here. */
+    bury(e, 40, 60);
+    env_obs(e, &o);
+
+    static const int NDX[5] = { 0, -1, +1,  0,  0};
+    static const int NDY[5] = { 0,  0,  0, -1, +1};
+
+    for (int b = 0; b < PLAYER_H; b++)
+        for (int n = 0; n < 5; n++) {
+            int x = e->px + NDX[n], y = e->py - b + NDY[n];
+            int k = obs_index(e, x, y);
+            CHECK(o.tile[k] != OBS_UNKNOWN,
+                  "buried player cannot see (%+d,%+d) from body cell %d", NDX[n], NDY[n], b);
+            CHECK(o.tile[k] == e->tiles[y][x],
+                  "buried player reads %u at (%+d,%+d) from body cell %d, world holds %u",
+                  o.tile[k], NDX[n], NDY[n], b, e->tiles[y][x]);
+        }
+
+    /* ...and the rest of the window is dark, or the checks above are vacuous. */
+    int unknown = 0;
+    for (int k = 0; k < VIEW_CELLS; k++) if (o.tile[k] == OBS_UNKNOWN) unknown++;
+    CHECK(unknown > 0, "a buried player's whole window is visible");
+
+    /* ---- 4. the world edge is visible bedrock, never unknown ------------- */
+
+    static const int EDGE_X[3] = {2, WORLD_W - 3, 60};
+    static const int EDGE_Y[3] = {50, 50, WORLD_H - 3};
+
+    for (int p = 0; p < 3; p++) {
+        sandbox(e, EDGE_X[p], EDGE_Y[p]);
+        env_obs(e, &o);
+
+        int outside = 0, not_bedrock = 0, not_bright = 0, edge_unknown = 0;
+        for (int row = 0; row < VIEW_H; row++)
+            for (int col = 0; col < VIEW_W; col++) {
+                int x = e->px - VIEW_W / 2 + col, y = e->py - VIEW_H / 2 + row;
+                int k = row * VIEW_W + col;
+                if (in_bounds(x, y)) continue;
+                outside++;
+                if (o.tile[k]  != TILE_BEDROCK) not_bedrock++;
+                if (o.light[k] != LIGHT_MAX)    not_bright++;
+                if (o.tile[k]  == OBS_UNKNOWN)  edge_unknown++;
+            }
+
+        CHECK(outside > 0, "player at (%d,%d) sees no out-of-world cells: nothing was tested",
+              e->px, e->py);
+        CHECK(not_bedrock == 0, "%d of %d out-of-world cells at (%d,%d) are not bedrock",
+              not_bedrock, outside, e->px, e->py);
+        CHECK(not_bright == 0, "%d of %d out-of-world cells at (%d,%d) are not at LIGHT_MAX",
+              not_bright, outside, e->px, e->py);
+        CHECK(edge_unknown == 0,
+              "%d out-of-world cells at (%d,%d) read OBS_UNKNOWN: the map edge is "
+              "indistinguishable from an unlit cave", edge_unknown, e->px, e->py);
+    }
+
+    /* ---- 5. status vector ------------------------------------------------ */
+
+    env_reset(e, 21);
+    env_obs(e, &o);
+    check_status_range(&o, "fresh reset");
+    CHECK(f_eq(o.status[OBS_HEALTH], 1.0f), "full health encodes as %g, expected 1",
+          o.status[OBS_HEALTH]);
+
+    static const char *const STATE_NAME[5] = {
+        "clean sandbox", "mid-fall", "damaged", "full inventory", "late and decorated"
+    };
+    for (int s = 0; s < 5; s++) {
+        sandbox(e, 30 + s * 10, 40 + s);
+        switch (s) {
+        case 0: break;
+        case 1: e->fall_dist = 3 * FALL_SAFE; e->jump_left = JUMP_HEIGHT; break;
+        case 2: e->health = 1; e->facing = -1; break;
+        case 3:
+            for (int i = 0; i < ITEM_COUNT; i++) e->inv[i] = 30000;
+            e->selected = PLACEABLE_COUNT - 1;
+            break;
+        case 4:
+            for (int i = 0; i < ACH_COUNT; i++) e->achievements |= 1u << i;
+            e->tool_tier = TIER_IRON_PICK;
+            e->steps = e->max_steps * 3;   /* past the horizon: must saturate */
+            break;
+        }
+        env_obs(e, &o);
+        check_status_range(&o, STATE_NAME[s]);
+        if (s == 4)
+            CHECK(f_eq(o.status[OBS_TIME], 1.0f), "steps past max_steps encodes as %g, expected 1",
+                  o.status[OBS_TIME]);
+    }
+
+    /* The specific encodings, one field at a time. */
+    sandbox(e, 60, 50);
+
+    e->tool_tier = TIER_IRON_PICK;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_TIER], 1.0f), "TIER_IRON_PICK encodes as %g, expected 1",
+          o.status[OBS_TIER]);
+    e->tool_tier = TIER_HAND;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_TIER], 0.0f), "TIER_HAND encodes as %g, expected 0",
+          o.status[OBS_TIER]);
+
+    e->facing = 1;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_FACING], 1.0f), "facing right encodes as %g, expected 1",
+          o.status[OBS_FACING]);
+    e->facing = -1;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_FACING], 0.0f), "facing left encodes as %g, expected 0",
+          o.status[OBS_FACING]);
+
+    e->health = MAX_HEALTH / 2;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_HEALTH], 0.5f), "half health encodes as %g, expected 0.5",
+          o.status[OBS_HEALTH]);
+    e->health = MAX_HEALTH;
+
+    /* Depth and across are normalised over the last valid index, not the size. */
+    e->px = WORLD_W - 1;
+    e->py = WORLD_H - 1;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_DEPTH], 1.0f), "the bottom row encodes as depth %g, expected 1",
+          o.status[OBS_DEPTH]);
+    CHECK(f_eq(o.status[OBS_ACROSS], 1.0f), "the last column encodes as across %g, expected 1",
+          o.status[OBS_ACROSS]);
+
+    sandbox(e, 60, 50);
+    for (int sel = 0; sel < PLACEABLE_COUNT; sel++) {
+        e->selected = (uint8_t)sel;
+        env_obs(e, &o);
+        int hot = 0;
+        for (int i = 0; i < PLACEABLE_COUNT; i++)
+            if (o.status[OBS_SEL_0 + i] != 0.0f) hot++;
+        CHECK(hot == 1, "selecting %s sets %d one-hot slots, expected exactly 1",
+              ITEM_NAME[PLACEABLES[sel].item], hot);
+        CHECK(f_eq(o.status[OBS_SEL_0 + sel], 1.0f),
+              "selecting %s leaves its own slot at %g, expected 1",
+              ITEM_NAME[PLACEABLES[sel].item], o.status[OBS_SEL_0 + sel]);
+    }
+
+    memset(e->inv, 0, sizeof e->inv);
+    e->inv[ITEM_STONE] = OBS_INV_CLIP;
+    e->inv[ITEM_WOOD]  = OBS_INV_CLIP + 7;
+    e->inv[ITEM_TORCH] = OBS_INV_CLIP / 4;
+    env_obs(e, &o);
+    CHECK(f_eq(o.status[OBS_INV_0 + ITEM_STONE], 1.0f),
+          "a count of exactly OBS_INV_CLIP encodes as %g, expected a saturated 1",
+          o.status[OBS_INV_0 + ITEM_STONE]);
+    CHECK(f_eq(o.status[OBS_INV_0 + ITEM_WOOD], 1.0f),
+          "a count past OBS_INV_CLIP encodes as %g, expected a saturated 1",
+          o.status[OBS_INV_0 + ITEM_WOOD]);
+    CHECK(f_eq(o.status[OBS_INV_0 + ITEM_TORCH], 0.25f),
+          "a quarter of OBS_INV_CLIP encodes as %g, expected 0.25",
+          o.status[OBS_INV_0 + ITEM_TORCH]);
+    CHECK(f_eq(o.status[OBS_INV_0 + ITEM_ANVIL], 0.0f), "an empty slot encodes as %g, expected 0",
+          o.status[OBS_INV_0 + ITEM_ANVIL]);
+
+    e->achievements = 0;
+    for (int i = 0; i < ACH_COUNT; i += 3) e->achievements |= 1u << i;
+    env_obs(e, &o);
+    for (int i = 0; i < ACH_COUNT; i++)
+        CHECK(f_eq(o.status[OBS_ACH_0 + i], has_ach(e, i) ? 1.0f : 0.0f),
+              "achievement %s reads %g, has_ach says %d",
+              ACH_NAME[i], o.status[OBS_ACH_0 + i], has_ach(e, i));
+
+    /* ---- 6. purity ------------------------------------------------------- */
+
+    /* A played-in state, so every field holds something worth corrupting. */
+    env_reset(e, 33);
+    for (int i = 0; i < 40; i++) env_step(e, i % ACT_COUNT);
+
+    Env *snap = malloc(sizeof *snap);
+    if (!snap) { fprintf(stderr, "oom\n"); exit(1); }
+    memcpy(snap, e, sizeof *e);
+    env_obs(e, &o);
+    CHECK(memcmp(snap, e, sizeof *e) == 0, "env_obs mutated the Env it was handed");
+    free(snap);
+
+    /* Two calls on one state must agree byte for byte. Both destinations start
+       from the same fill so the struct's padding cannot differ. */
+    Obs a, b;
+    memset(&a, 0xAA, sizeof a);
+    memset(&b, 0xAA, sizeof b);
+    env_obs(e, &a);
+    env_obs(e, &b);
+    CHECK(memcmp(&a, &b, sizeof a) == 0, "two env_obs calls on one state disagree");
+
+    /* ---- 7. no stale bytes ----------------------------------------------- */
+
+    /* 0xAA is 170: outside every valid tile id and every light level, so any
+       cell env_obs forgets to write is unmistakable. */
+    for (int p = 0; p < 3; p++) {
+        const char *what = "mid-world";
+        switch (p) {
+        case 0: sandbox(e, 60, 50); break;
+        case 1: bury(e, 44, 66);    what = "buried";      break;
+        case 2: sandbox(e, 1, WORLD_H - 3); what = "corner"; break;
+        }
+
+        memset(&o, 0xAA, sizeof o);
+        env_obs(e, &o);
+
+        int bad_tile = -1, bad_light = -1;
+        for (int k = 0; k < VIEW_CELLS; k++) {
+            if (bad_tile < 0 && o.tile[k] >= OBS_TILE_KINDS) bad_tile = k;
+            if (bad_light < 0 && o.light[k] > LIGHT_MAX) bad_light = k;
+        }
+        CHECK(bad_tile < 0, "%s: window cell %d holds tile id %u, outside 0..%d",
+              what, bad_tile, o.tile[bad_tile < 0 ? 0 : bad_tile], OBS_TILE_KINDS - 1);
+        CHECK(bad_light < 0, "%s: window cell %d holds light %u, above LIGHT_MAX",
+              what, bad_light, o.light[bad_light < 0 ? 0 : bad_light]);
+    }
+
+    free(e);
+}
+
 /* ---- scripted expert ---------------------------------------------------- */
 
 typedef struct {
@@ -1277,6 +1633,69 @@ static void test_beatable(int nseeds, int verbose) {
     free(e);
 }
 
+/* The mask predicates in sim.c deliberately duplicate the guard clauses in the
+   do_* handlers, because the handlers each report a distinct failure message
+   and cannot simply return a bool. This pins the copy to the original.
+
+   The test cannot diff raw Env states: env_step also runs physics, which moves
+   the player whether or not the action did anything. So it uses the definition
+   that actually matters -- an inert action is one that is INDISTINGUISHABLE
+   FROM NOOP. Step two copies, one with the action and one with noop, and the
+   states must match exactly iff the mask said the action was invalid. */
+static void test_action_mask(void) {
+    printf("action mask\n");
+    Env *base = env_new(0), *wa = env_new(0), *wn = env_new(0);
+    uint8_t mask[ACT_COUNT];
+    long inert = 0, total = 0;
+
+    for (uint64_t seed = 1; seed <= 12; seed++) {
+        env_reset(base, seed);
+        uint64_t s = seed * 7919u + 13u;
+
+        for (int t = 0; t < 300 && alive(base); t++) {
+            env_action_mask(base, mask);
+
+            CHECK(mask[ACT_NOOP] == 1, "seed %llu: noop masked off -- the mask "
+                  "must never be empty", (unsigned long long)seed);
+
+            /* ACT_NOOP is exempt: it is the always-available safety valve, and
+               by construction it is the thing everything else is compared to. */
+            for (int a = 1; a < ACT_COUNT; a++) {
+                *wa = *base;
+                *wn = *base;
+                env_step(wa, a);
+                env_step(wn, ACT_NOOP);
+
+                /* `facing` is observational only and `msg` is human text; a
+                   move into a wall sets both and changes nothing real. */
+                wa->facing = wn->facing = 0;
+                memset(wa->msg, 0, sizeof wa->msg);
+                memset(wn->msg, 0, sizeof wn->msg);
+
+                bool changed = memcmp(wa, wn, sizeof(Env)) != 0;
+                total++;
+                if (!changed) inert++;
+                if (changed != (mask[a] != 0)) {
+                    CHECK(false, "seed %llu step %d: %s -- mask says %s but it "
+                          "%s the state", (unsigned long long)seed, t,
+                          action_name(a), mask[a] ? "valid" : "inert",
+                          changed ? "changed" : "did not change");
+                    goto done;   /* one report is enough; the rest would echo */
+                }
+            }
+
+            s = s * 6364136223846793005ULL + 1442695040888963407ULL;
+            env_step(base, (int)((s >> 33) % ACT_COUNT));
+        }
+    }
+done:
+    printf("  %ld/%ld action-states inert (%.0f%%) -- that is the tax masking "
+           "removes\n", inert, total, 100.0 * (double)inert / (double)total);
+    free(base);
+    free(wa);
+    free(wn);
+}
+
 int main(int argc, char **argv) {
     int verbose = 0, nseeds = 20, record_seed = 0;
     for (int i = 1; i < argc; i++) {
@@ -1295,6 +1714,8 @@ int main(int argc, char **argv) {
     test_body();
     test_keymap();
     test_reach();
+    test_obs();
+    test_action_mask();
     test_fall_damage();
     test_lighting();
     test_beatable(nseeds, verbose);

@@ -4,8 +4,13 @@
 /terraria-lite
 /selftest
 /terraria-px
+python/terraria_lite/libterraria.*
+
+# uv manages this; uv.lock is committed, .venv is not.
+.venv/
 
 __pycache__/
 .DS_Store
 
 assets/
+*.pt
