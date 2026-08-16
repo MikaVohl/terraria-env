@@ -137,7 +137,8 @@ def update(Q, Q_target, opt, batch) -> float:
     opt.step()
     return loss.item()
 
-def run(episodes: int = 200, seed0: int = 1, quiet: bool = False) -> dict:
+def run(episodes: int = 200, seed0: int = 1, quiet: bool = False,
+        save: str = "dqn_terraria.pt") -> dict:
     # The world seed alone is not the run seed: network init, epsilon-greedy
     # draws and replay sampling all pull from torch/random/numpy. Leaving
     # those unseeded made two "identical" runs differ by 0.4 achievements.
@@ -265,6 +266,13 @@ def run(episodes: int = 200, seed0: int = 1, quiet: bool = False) -> dict:
     print(f"\n  never reached in the last {w} ({len(walls)}): "
           f"{walls[0] if walls else '-'} is the first wall")
 
+    if save:
+        # Plain Sequential state dict; terraria_lite.watch sniffs the keys to
+        # tell it apart from a PPO ActorCritic.
+        torch.save(Q.state_dict(), save)
+        if not quiet:
+            print(f"\n  saved {save}")
+
     summary = {
         "agent": "dqn", "seed": seed0, "gamma": GAMMA, "nstep": NSTEP,
         "episodes": episodes, "env_steps": steps, "sps": round(steps / dt),
@@ -298,7 +306,10 @@ if __name__ == "__main__":
                    help="world/torch seed; sweep it before trusting a delta")
     p.add_argument("--json", action="store_true",
                    help="emit the trailing-window summary as one JSON line")
+    p.add_argument("--save", type=str, default="dqn_terraria.pt",
+                   help='checkpoint path, "" to skip; '
+                        "terraria_lite.watch replays one")
     a = p.parse_args()
-    s = run(a.episodes, seed0=a.seed, quiet=a.json)
+    s = run(a.episodes, seed0=a.seed, quiet=a.json, save=a.save)
     if a.json:
         print(json.dumps(s))

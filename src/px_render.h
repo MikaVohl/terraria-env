@@ -55,6 +55,10 @@ PxUi *px_init(int scale, const char *tex_dir);
 void  px_shutdown(PxUi *ui);
 void  px_draw(PxUi *ui, const Env *e, const PxView *v);
 
+/* Out-of-band status for the frame loop -- a replay's step counter, say --
+   that does not belong in the drawn HUD. */
+void  px_set_title(PxUi *ui, const char *title);
+
 /* Current pointer position in window pixels. False when the window does not
    have mouse focus, in which case there is no meaningful pointer at all.
    Polled rather than tracked, so a gap in the motion-event stream cannot leave

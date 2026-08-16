@@ -72,6 +72,95 @@ typedef struct {
     int  mx, my;          /* window pixels */
 } Input;
 
+/* ---- Agent tape --------------------------------------------------------- *
+ *
+ * A recorded rollout: the seed a policy played, and the action it chose on
+ * every tick. Replaying that reproduces the episode exactly rather than
+ * approximating it, because the engine is deterministic -- selftest pins
+ * byte-identical state after 1500 identical actions.
+ *
+ * Which is why the trainer does not have to live in this process. torch stays
+ * on the Python side, SDL stays out of the shared library the trainer loads,
+ * and neither has to know the other exists. The alternative -- driving this
+ * renderer live from Python -- would mean re-implementing the interpolation,
+ * camera easing and frame pacing below on that side, or exporting all of it. */
+
+typedef struct {
+    int  *act;
+    int   n, i;
+    unsigned long long seed;
+    int   max_steps;
+    char  label[80];
+} Tape;
+
+static bool tape_fail(const char *prog, const char *path, int line,
+                      const char *what)
+{
+    if (line > 0) fprintf(stderr, "%s: %s:%d: %s\n", prog, path, line, what);
+    else          fprintf(stderr, "%s: %s: %s\n", prog, path, what);
+    return false;
+}
+
+/* Header lines are `key value`, then `actions N` followed by N integers, one
+   per line. Blank lines and `#` comments are skipped. Deliberately text: a
+   tape is small, worth diffing, and worth being able to hand-edit. */
+static bool tape_load(Tape *t, const char *path, const char *prog)
+{
+    char  buf[256];
+    FILE *f = fopen(path, "r");
+    int   line = 0, got = 0;
+
+    if (!f) return tape_fail(prog, path, 0, strerror(errno));
+
+    memset(t, 0, sizeof *t);
+    t->seed = 1;
+    snprintf(t->label, sizeof t->label, "agent");
+
+    while (fgets(buf, sizeof buf, f)) {
+        char *s = buf;
+        line++;
+        while (*s == ' ' || *s == '\t') s++;
+        if (*s == '#' || *s == '\n' || *s == '\0') continue;
+
+        if (t->act) {                     /* past the header: action lines */
+            char *end;
+            long v = strtol(s, &end, 10);
+            if (end == s) { fclose(f); return tape_fail(prog, path, line, "not an action"); }
+            if (v < 0 || v >= ACT_COUNT) {
+                fclose(f);
+                return tape_fail(prog, path, line, "action out of range");
+            }
+            if (got == t->n) { fclose(f); return tape_fail(prog, path, line, "more actions than declared"); }
+            t->act[got++] = (int)v;
+            continue;
+        }
+
+        if (!strncmp(s, "seed ", 5))            t->seed = strtoull(s + 5, NULL, 10);
+        else if (!strncmp(s, "max_steps ", 10)) t->max_steps = (int)strtol(s + 10, NULL, 10);
+        else if (!strncmp(s, "label ", 6)) {
+            size_t k = strcspn(s + 6, "\r\n");
+            if (k >= sizeof t->label) k = sizeof t->label - 1;
+            memcpy(t->label, s + 6, k);
+            t->label[k] = '\0';
+        } else if (!strncmp(s, "actions ", 8)) {
+            long n = strtol(s + 8, NULL, 10);
+            if (n <= 0) { fclose(f); return tape_fail(prog, path, line, "actions count must be positive"); }
+            t->n   = (int)n;
+            t->act = calloc((size_t)n, sizeof *t->act);
+            if (!t->act) { fclose(f); return tape_fail(prog, path, 0, "out of memory"); }
+        } else {
+            fclose(f);
+            return tape_fail(prog, path, line, "unknown header key");
+        }
+    }
+    fclose(f);
+
+    if (!t->act)     return tape_fail(prog, path, 0, "no 'actions N' header");
+    if (got != t->n) return tape_fail(prog, path, 0, "fewer actions than declared");
+    return true;
+}
+
+
 /* ---- Argument parsing (same shape as src/main.c) ------------------------ */
 
 static void usage(FILE *out, const char *prog)
@@ -81,7 +170,7 @@ static void usage(FILE *out, const char *prog)
         "terraria-px -- the pixel frontend for terraria-lite\n"
         "\n"
         "usage: %s [--seed N] [--steps N] [--tick-ms N] [--scale N]\n"
-        "          [--textures DIR] [--help]\n"
+        "          [--textures DIR] [--watch TAPE] [--help]\n"
         "\n"
         "  --seed N        world seed (default 1)\n"
         "  --steps N       episode step limit (default %d)\n"
@@ -90,6 +179,10 @@ static void usage(FILE *out, const char *prog)
         "  --textures DIR  Terraria ExtractedTextures directory; without one\n"
         "                  the default Steam location is probed. A Terraria\n"
         "                  install is required -- there is no fallback art\n"
+        "  --watch TAPE    replay a recorded agent rollout instead of taking\n"
+        "                  input. The tape carries its own seed and step\n"
+        "                  limit, so --seed and --steps are ignored. Write one\n"
+        "                  with: uv run python -m terraria_lite.watch\n"
         "  --help          this message\n"
         "\n"
         "The simulation still takes exactly one step per tick. The window\n"
@@ -111,6 +204,12 @@ static void usage(FILE *out, const char *prog)
         fprintf(out, "  %c             craft %s\n", KB_CRAFT[i], RECIPES[i].name);
     fprintf(out,
         "  r             new world (seed + 1)\n"
+        "  q or escape   quit\n"
+        "\n"
+        "watch mode (--watch) ignores the controls above except\n"
+        "  space         pause / resume\n"
+        "  . or right    single step while paused\n"
+        "  r             restart the tape from the top\n"
         "  q or escape   quit\n");
 }
 
@@ -270,6 +369,10 @@ int main(int argc, char **argv)
 {
     const char *prog = argc > 0 && argv[0] ? argv[0] : "terraria-px";
     const char *tex_dir = NULL;
+    const char *tape_path = NULL;
+    Tape tape;
+    bool watching = false, paused = false;
+    int  step_once = 0;
     unsigned long long seed = 1;
     unsigned long long steps = DEFAULT_MAX_STEPS;
     unsigned long long tick = DEFAULT_TICK_MS;
@@ -286,6 +389,8 @@ int main(int argc, char **argv)
     bool running = true;
     int i;
 
+    memset(&tape, 0, sizeof tape);
+
     for (i = 1; i < argc; i++) {
         const char *a = argv[i];
         unsigned long long *slot = NULL;
@@ -297,6 +402,14 @@ int main(int argc, char **argv)
                 return 2;
             }
             tex_dir = argv[++i];
+            continue;
+        }
+        if (!strcmp(a, "--watch")) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s: '%s' needs a value\n", prog, a);
+                return 2;
+            }
+            tape_path = argv[++i];
             continue;
         }
         if (!strcmp(a, "--seed"))    slot = &seed;
@@ -330,6 +443,18 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s: --scale must be between %d and %d\n",
                 prog, MIN_SCALE, MAX_SCALE);
         return 2;
+    }
+
+    if (tape_path) {
+        if (!tape_load(&tape, tape_path, prog)) return 2;
+        /* The tape owns the world it was recorded against. Honouring --seed
+           here would replay a policy's actions into a different world, which
+           looks plausible for a few ticks and then diverges into nonsense. */
+        watching = true;
+        seed     = tape.seed;
+        if (tape.max_steps > 0) steps = (unsigned long long)tape.max_steps;
+        printf("watching %s: %d actions, seed %llu\n",
+               tape.label, tape.n, (unsigned long long)tape.seed);
     }
 
     e = calloc(1, sizeof *e);   /* ~25 KB: too big for a comfortable stack frame */
@@ -416,6 +541,29 @@ int main(int argc, char **argv)
                 SDL_Keycode k2 = ev.key.keysym.sym;
                 int r;
 
+                /* Watch mode owns the action stream, so gameplay keys would
+                   only fight the tape. Transport controls only. */
+                if (watching) {
+                    if (!down || ev.key.repeat) break;
+                    if (k2 == SDLK_ESCAPE || k2 == SDLK_q) { running = false; break; }
+                    if (k2 == SDLK_SPACE) { paused = !paused; break; }
+                    if (k2 == SDLK_PERIOD || k2 == SDLK_RIGHT) {
+                        paused = true;
+                        step_once = 1;
+                        break;
+                    }
+                    if (k2 == SDLK_r) {
+                        tape.i = 0;
+                        env_reset(e, (uint64_t)seed);
+                        toast.until = 0.0;
+                        snap_camera(&view, e);
+                        prev_px = e->px;
+                        prev_py = e->py;
+                        last_act = ACT_NOOP;
+                    }
+                    break;
+                }
+
                 switch (k2) {
                 case SDLK_a: case SDLK_LEFT:  in.left  = down; continue;
                 case SDLK_d: case SDLK_RIGHT: in.right = down; continue;
@@ -455,7 +603,7 @@ int main(int argc, char **argv)
         }
 
         now  = SDL_GetTicks64();
-        over = e->terminated || e->truncated;
+        over = e->terminated || e->truncated || (watching && tape.i >= tape.n);
 
         /* The pointer is polled, never accumulated from motion events. Any gap
            in that stream -- the cursor moved while another window had focus, a
@@ -481,8 +629,18 @@ int main(int argc, char **argv)
         }
 
         while (!over && now >= next_tick) {
-            int act = q_pop(&q);
-            if (act < 0) act = continuous_action(e, &view, &in);
+            int act;
+
+            if (watching) {
+                /* Re-arm the deadline before bailing, or unpausing would cash
+                   in every tick banked while the window sat still. */
+                if (paused && step_once == 0) { next_tick = now + tick; break; }
+                if (step_once > 0) step_once--;
+                act = tape.act[tape.i++];
+            } else {
+                act = q_pop(&q);
+                if (act < 0) act = continuous_action(e, &view, &in);
+            }
 
             prev_px = e->px;
             prev_py = e->py;
@@ -541,6 +699,27 @@ int main(int argc, char **argv)
             view.toast_a = 0.0f;
         }
 
+        /* The title bar is the whole watch-mode HUD: it costs nothing in
+           px_render.c, which knows nothing about tapes and should stay that
+           way. Refreshed only when something in it changed -- setting a window
+           title talks to the window server, and at 60 fps that would be 60
+           round trips a second to rewrite a string that changes 12 times. */
+        if (watching) {
+            static int  shown_i = -1;
+            static bool shown_p = false, shown_o = false;
+            if (tape.i != shown_i || paused != shown_p || over != shown_o) {
+                char t[192];
+                shown_i = tape.i;
+                shown_p = paused;
+                shown_o = over;
+                snprintf(t, sizeof t, "%s -- step %d/%d | %s | %s%s",
+                         tape.label, tape.i, tape.n, action_name(last_act),
+                         paused ? "PAUSED" : "playing",
+                         over ? " | done" : "");
+                px_set_title(ui, t);
+            }
+        }
+
         px_draw(ui, e, &view);
 
         /* Deadline-based rather than "sleep the remainder": SDL_Delay rounds
@@ -559,5 +738,6 @@ int main(int argc, char **argv)
     px_shutdown(ui);
     env_free(e);
     free(e);
+    free(tape.act);
     return 0;
 }

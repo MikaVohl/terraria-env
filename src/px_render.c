@@ -896,6 +896,14 @@ PxUi *px_init(int scale, const char *tex_dir)
     return &ui;
 }
 
+/* The window title is the only chrome a caller can write to. The frame loop
+   uses it for out-of-band status -- which recorded step a replay is on --
+   that has no place in the drawn HUD. */
+void px_set_title(PxUi *ui, const char *title)
+{
+    if (ui && ui->win && title) SDL_SetWindowTitle(ui->win, title);
+}
+
 void px_shutdown(PxUi *ui)
 {
     int i;

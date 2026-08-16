@@ -130,8 +130,46 @@ vector. **Unlit cells read as "unknown", not as their tile** — darkness is rea
 for the agent, which is what makes torches worth crafting. In daylight ~79 of
 99 cells are visible; 40 tiles down with no torch, 20 are.
 
-Random policy scores **3.8 / 24** and stalls at `craft workbench`. That's the
-number to beat.
+Both agents are **action-masked**: about 70% of the 36 actions are inert in any
+given state (crafting without materials, mining air), so `env.action_mask()`
+returns the ones that would change something. `noop` is always legal, so the
+mask is never empty.
+
+```sh
+uv run python -m terraria_lite.ppo_agent --steps 600000   # ~40s -> ppo_terraria.pt
+uv run python -m terraria_lite.deep_Q_agent 300           # -> dqn_terraria.pt
+```
+
+Masked-random scores **4.2 / 24** and never crafts a workbench; that's the
+number to beat. PPO reaches ~5.5 and stalls at `craft furnace`.
+
+Compare an agent against the **matched** random control, not a stale one:
+masking lifts the floor by itself, so an agent's raw gain overstates what it
+learned. Against its own control, DQN went from *losing* to random (−0.02
+achievements) to beating it (+0.77), while PPO's margin barely moved
+(+1.37 → +1.29) — most of PPO's headline gain was the floor rising underneath
+it.
+
+### Watch a policy play
+
+```sh
+uv run python -m terraria_lite.watch --policy ppo_terraria.pt --best-of 8 --play
+```
+
+This plays episodes, writes the best one to a *tape* — the seed plus the action
+taken on every tick — and replays it in the pixel frontend:
+
+```sh
+./terraria-px --watch rollout.tape --tick-ms 40
+#   space  pause      . step one tick      r restart      q quit
+```
+
+torch and SDL never share a process. The engine is deterministic, so replaying
+a tape reproduces the episode exactly rather than approximating it — which is
+what lets `libterraria` stay free of an SDL dependency the trainer would
+otherwise pay for, and lets the replay reuse the frontend's interpolation and
+camera easing unchanged. A tape is a small text file, so a good run is worth
+keeping. The checkpoint kind (PPO or DQN) is sniffed from its keys.
 
 ## Layout
 
@@ -141,8 +179,11 @@ src/       worldgen.c light.c sim.c obs.c   the core: no globals, no malloc
            capi.c                           flat C ABI for the binding
            keymap.h frontend.h              shared by both frontends
            render.c main.c                  terminal frontend
-           px_render.c px_main.c            SDL pixel frontend
+           px_render.c px_main.c            SDL pixel frontend, --watch replay
 python/    terraria_lite/__init__.py        ctypes binding + Gymnasium env
            terraria_lite/random_agent.py    baseline / binding smoke test
+           terraria_lite/deep_Q_agent.py    DQN: n-step, masked, replay buffer
+           terraria_lite/ppo_agent.py       PPO: vectorised, masked
+           terraria_lite/watch.py           record a rollout tape and play it
 tools/     selftest.c                       invariants + scripted expert
 ```
