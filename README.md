@@ -1,10 +1,10 @@
-# terraria-lite
+# Mini Terraria Env
 
 A small deterministic Terraria, in C. Built as an RL benchmark in the style of
 [Craftax](https://craftaxenv.github.io/), with a terminal frontend and a pixel
 frontend for humans.
 
-![Game Screenshot](game.png)
+![Game Demo](TerrariaDemo.mp4)
 
 ## Build
 
@@ -141,7 +141,22 @@ uv run python -m terraria_lite.deep_Q_agent 300           # -> dqn_terraria.pt
 ```
 
 Masked-random scores **4.2 / 24** and never crafts a workbench; that's the
-number to beat. PPO reaches ~5.5 and stalls at `craft furnace`.
+number to beat. The original unshaped PPO reaches ~5.5 and stalls at
+`craft furnace`.
+
+An extended 22.8M-step experiment found a substantially stronger training
+recipe: capped prerequisite-progress feedback, linearly annealed away so the
+late policy optimises the original reward. A four-million-step from-scratch run
+scores **10.75 / 24** on 256 fixed unseen seeds, with 2.3% deaths; it crafts a
+furnace in 94% of worlds and smelts copper in 32%. The next wall is the copper
+pickaxe. Full protocol, ablations, recurrent controls, and the separate
+scripted-expert warm-start results are in [PPO_EXPERIMENTS.md](PPO_EXPERIMENTS.md).
+
+```sh
+uv run python -m terraria_lite.ppo_agent --steps 4000000 --seed 71 \
+  --progress-coef 0.5 --progress-anneal --save ppo_terraria.pt
+uv run python -m terraria_lite.ppo_eval ppo_terraria.pt --episodes 256
+```
 
 Compare an agent against the **matched** random control, not a stale one:
 masking lifts the floor by itself, so an agent's raw gain overstates what it
