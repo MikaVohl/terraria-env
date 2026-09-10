@@ -56,7 +56,8 @@ _P_I32 = ctypes.POINTER(ctypes.c_int)
 
 for _name in ("tl_view_w", "tl_view_h", "tl_view_cells", "tl_tile_kinds",
               "tl_status_len", "tl_action_count", "tl_ach_count",
-              "tl_item_count", "tl_unknown_tile", "tl_default_steps"):
+              "tl_item_count", "tl_unknown_tile", "tl_default_steps",
+              "tl_status_inv0", "tl_status_ach0", "tl_inv_clip"):
     getattr(_lib, _name).restype = ctypes.c_int
     getattr(_lib, _name).argtypes = []
 
@@ -64,6 +65,8 @@ _lib.tl_action_name.restype = ctypes.c_char_p
 _lib.tl_action_name.argtypes = [ctypes.c_int]
 _lib.tl_ach_name.restype = ctypes.c_char_p
 _lib.tl_ach_name.argtypes = [ctypes.c_int]
+_lib.tl_item_name.restype = ctypes.c_char_p
+_lib.tl_item_name.argtypes = [ctypes.c_int]
 
 _lib.tl_create.restype = ctypes.c_void_p
 _lib.tl_create.argtypes = [ctypes.c_int]
@@ -107,11 +110,15 @@ class _Spec:
         self.n_items = lib.tl_item_count()
         self.unknown_tile = lib.tl_unknown_tile()
         self.default_steps = lib.tl_default_steps()
+        self.status_inv0 = lib.tl_status_inv0()
+        self.status_ach0 = lib.tl_status_ach0()
+        self.inventory_clip = lib.tl_inv_clip()
         # one-hot tiles + normalised light + status
         self.obs_size = self.cells * self.tile_kinds + self.cells + self.status_len
         self.action_names = [lib.tl_action_name(i).decode() for i in range(self.n_actions)]
         self.achievement_names = [lib.tl_ach_name(i).decode()
                                   for i in range(self.n_achievements)]
+        self.item_names = [lib.tl_item_name(i).decode() for i in range(self.n_items)]
         # Mirrors TILE_INFO rather than restating it, so a new tile cannot make
         # the text view lie. unknown_tile has no glyph; render_ascii blanks it.
         self.tile_glyphs = [chr(lib.tl_tile_glyph(t))

@@ -1,0 +1,46 @@
+{
+  "platform": "macOS-26.4-arm64-arm-64bit",
+  "torch": "2.13.0",
+  "threads": 6,
+  "training_seeds": [
+    101,
+    202,
+    303
+  ],
+  "validation_seeds": [
+    1000001,
+    1000128
+  ],
+  "evaluation_sample_seed": 54321,
+  "evaluation_batch": 64,
+  "test_policy": "Final test seeds reserved; this run uses validation only.",
+  "git_head": "af7dfbf9dbdfd51c6fa42ad02e5546213cbfeecf",
+  "sources": {
+    "include/env.h": "ec9d259bd19a722724be3184aa3761cb891a119068d793cf82b8ae82caffddf1",
+    "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+    "include/tiles.h": "e501ab1c1e1cc0455a15bd4047d10d6388fd1e48e05d7c2a5348c2c8b8d8a9fe",
+    "python/terraria_lite/__init__.py": "cda356e7d89922902dd5365ad097870fcf7badeb7276fb86184f64e05e175943",
+    "python/terraria_lite/baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+    "python/terraria_lite/deep_Q_agent.py": "636fef5f298f41c02a88bddf3b8ae345ee593e32199ad872eda047ad40da2141",
+    "python/terraria_lite/ppo_agent.py": "cfc7900b1680710f3c6b2f47c735aa59167d8ad9a86bd540e3b77502203b4a56",
+    "python/terraria_lite/ppo_bc.py": "c18bbac901ca14f1321e1ef42993dd6deb7a87cbcfbe3ab96ddf3bcfcac4586b",
+    "python/terraria_lite/ppo_eval.py": "cee5308ead8dcaf9e94eb53f393e75bb9b43e0336b0761670a7c9a7f545d3b2c",
+    "python/terraria_lite/ppo_selftest.py": "48bdababe73c0713b47063962078b318c957ee0f4caaf15c0801fc97b37c3cd1",
+    "python/terraria_lite/random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+    "python/terraria_lite/recurrent_ppo_agent.py": "f49c7ba10953f0be3f26b9b937df4e5967a128390e37740094ff2a69faf0b8d6",
+    "python/terraria_lite/watch.py": "a0c75dbba7fbb7c686b86cc70af82150af8772661f8a3b133ec41e210fb6ddf1",
+    "src/capi.c": "6d31e30ef4d454e0f0bc0d17d1f7b9fcabb1d7ae1d97ae6791e91b52f24a50a9",
+    "src/frontend.h": "6928833d9c08f724aabc65c3cdb3d3f0ddc5466c3fea20d4e08ebf175709be8a",
+    "src/keymap.h": "b7214254e9ef660f65c707714e6b6896cd9869b9864ecd32472cd8fd75c7507f",
+    "src/light.c": "50939d8c16a52e461fda8675e74a5704c7ba3f7e646d0f5a664b53a82844c9a1",
+    "src/main.c": "7560c480095a836df53671fdcb0ace74d2ceaa2d21ebf3525d38434a04514426",
+    "src/obs.c": "e8c70a75f9482e8bf7bc1f12c354d95cffdf781cd1b592e1b7e30f7b4b96c0f6",
+    "src/px_main.c": "c3f4f244221b95c0c6536b22a4caaf8e7bec353464def2ae29dd0604ad639120",
+    "src/px_render.c": "6599391bca3c1ae074aea024eed3990619fe7db48ec4d6b0949757d412a2f10b",
+    "src/px_render.h": "f88d2d97ce42b690888b77114666213dd474b9c5623c6fab4b6b36497312e842",
+    "src/render.c": "123c41b86a2bea40ff8ed8fa3f25540bc3d74384ce256105731d898df7796598",
+    "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+    "src/sim.c": "f01f115085b9da0490628996e5d80c13722083a5df533e267e3356e06723362a",
+    "src/worldgen.c": "dec202a8b63298747f9d6a59fc48facd7668917eafbcad7994086d19ae508cc4"
+  }
+}

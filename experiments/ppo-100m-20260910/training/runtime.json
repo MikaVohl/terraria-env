@@ -1,0 +1,5 @@
+{
+  "torch": "2.13.0",
+  "mps_available": true,
+  "cpu_threads": 2
+}

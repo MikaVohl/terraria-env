@@ -1,0 +1,32 @@
+[
+  {
+    "workers": 1,
+    "returncode": 0,
+    "stdout": "{\"check\": \"passed\", \"transitions\": 65536, \"envs\": 256}\n",
+    "stderr": ""
+  },
+  {
+    "workers": 2,
+    "returncode": 0,
+    "stdout": "{\"check\": \"passed\", \"transitions\": 65536, \"envs\": 256}\n",
+    "stderr": ""
+  },
+  {
+    "workers": 4,
+    "returncode": 0,
+    "stdout": "{\"check\": \"passed\", \"transitions\": 65536, \"envs\": 256}\n",
+    "stderr": ""
+  },
+  {
+    "workers": 6,
+    "returncode": 0,
+    "stdout": "{\"check\": \"passed\", \"transitions\": 65536, \"envs\": 256}\n",
+    "stderr": ""
+  },
+  {
+    "workers": 8,
+    "returncode": 0,
+    "stdout": "{\"check\": \"passed\", \"transitions\": 65536, \"envs\": 256}\n",
+    "stderr": ""
+  }
+]

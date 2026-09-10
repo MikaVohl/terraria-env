@@ -1,0 +1,26 @@
+{
+  "driver_sha256": "db57a8a4c36bae3aa70f17c0bafb9652f0561f729ae52c04f3768013537de5c4",
+  "analysis_sha256": "e95f718a8cdc7f3d061c85cfdce5898ec54222c99b9737f9c65fde27fcfd3685",
+  "libraries": {
+    "cached": "4240e3cdec01dfad8de627c02b4a6c940c85d34150d78707c039355407ca1ea1",
+    "reference": "e5bf52147c50b48fef4cc60d991a035ffb56b6a9ea0feb9d07e785955c9f4434"
+  },
+  "smoke": "Uninstrumented and synchronized-profile smoke final model hashes match: 1f4571c1d9257535325149f6e2bc4de96260d970e37635ab74854761bc7e1d98.",
+  "batching_driver_sha256": "477f1b0d2f1b99fe8d2c1a7c762a5442d11a5da40b007f373547cd27008bde5b",
+  "batching_analysis_sha256": "380b7cfda2265fd4ac419bc79f78b34a2645aecf9dcd48b25895576b0e038f07",
+  "results_sha256": {
+    "results.jsonl": "36b0592a58475bb1506969830e352c2c73ffadcf85046c088440469c4d66a2fd",
+    "batching.jsonl": "f9e623091f1dd12d5efa8ca35afb414e45a26f8d85a4040f70ce724de07f5ab5",
+    "summary.json": "22f1ba25ac9ca1196eab531b3b14fd5570a0175cfe3e6107bb6b448017051855",
+    "batching-summary.json": "bd5d373e9630b48ca24222794ffab5ca48e89f8fafe716b0717ddc00c8d8188f",
+    "correctness.json": "6fb6d6efd0b6cdcd88b16d8086f931304ffbf45abdf8950ea1f3eb3f01a5398a"
+  },
+  "runtime": {
+    "torch": "2.13.0",
+    "python": "3.12.13",
+    "cpu": "Apple M5 Pro",
+    "os": "macOS 26.4 arm64",
+    "compiler": "Apple clang 21.0.0"
+  },
+  "verification": "73 successful child runs; finite final weights and checked legal sampling; native equivalence passed for five worker counts; exact final-weight agreement across worker/lighting/profile comparisons; matching archived input hashes."
+}

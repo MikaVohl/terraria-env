@@ -1,0 +1,1309 @@
+{
+  "episodes": 128,
+  "mean_achievements": 11.1953125,
+  "std_achievements": 2.4272495807690957,
+  "median_achievements": 11.0,
+  "p90_achievements": 14.0,
+  "max_achievements": 14,
+  "mean_return": 11.140625,
+  "mean_length": 2950.6796875,
+  "death_rate": 0.0546875,
+  "hits": {
+    "collect wood": 128,
+    "collect dirt": 128,
+    "collect stone": 127,
+    "place block": 128,
+    "craft workbench": 128,
+    "place workbench": 128,
+    "craft stone pick": 116,
+    "craft furnace": 116,
+    "place furnace": 116,
+    "collect copper": 70,
+    "smelt copper": 56,
+    "craft torch": 53,
+    "place torch": 53,
+    "descend deep": 86
+  },
+  "records": [
+    {
+      "seed": 1000027,
+      "steps": 422,
+      "episode_return": 9.0,
+      "health": 0,
+      "depth": 78,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": true
+    },
+    {
+      "seed": 1000033,
+      "steps": 2534,
+      "episode_return": 13.0,
+      "health": 0,
+      "depth": 51,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": true
+    },
+    {
+      "seed": 1000049,
+      "steps": 2671,
+      "episode_return": 9.0,
+      "health": 0,
+      "depth": 24,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": true
+    },
+    {
+      "seed": 1000001,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 8,
+      "depth": 44,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000002,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 24,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000003,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 4,
+      "depth": 23,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000004,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 21,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000005,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 27,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000006,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 19,
+      "achievements": 10,
+      "achievement_mask": 1023,
+      "died": false
+    },
+    {
+      "seed": 1000007,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 10,
+      "depth": 37,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000008,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 33,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000009,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 29,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000010,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 26,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000011,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 36,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000012,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 46,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000013,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000014,
+      "steps": 3000,
+      "episode_return": 12.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 12,
+      "achievement_mask": 8390655,
+      "died": false
+    },
+    {
+      "seed": 1000015,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 20,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000016,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 17,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000017,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 22,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000018,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 6,
+      "depth": 28,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000019,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 32,
+      "achievements": 9,
+      "achievement_mask": 8389247,
+      "died": false
+    },
+    {
+      "seed": 1000020,
+      "steps": 3000,
+      "episode_return": 8.0,
+      "health": 4,
+      "depth": 20,
+      "achievements": 8,
+      "achievement_mask": 447,
+      "died": false
+    },
+    {
+      "seed": 1000021,
+      "steps": 3000,
+      "episode_return": 12.0,
+      "health": 10,
+      "depth": 33,
+      "achievements": 12,
+      "achievement_mask": 8390655,
+      "died": false
+    },
+    {
+      "seed": 1000022,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000023,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 17,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000024,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 49,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000025,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 22,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000026,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000028,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 10,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000029,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 6,
+      "depth": 22,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000030,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 20,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000031,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 33,
+      "achievements": 9,
+      "achievement_mask": 8389247,
+      "died": false
+    },
+    {
+      "seed": 1000032,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 8,
+      "depth": 26,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000034,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 6,
+      "depth": 28,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000035,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 22,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000036,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000037,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 8,
+      "depth": 21,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000038,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 33,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000039,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 27,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000040,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 24,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000041,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 6,
+      "depth": 31,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000042,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 44,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000043,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 2,
+      "depth": 24,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000044,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 22,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000045,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 5,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000046,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 27,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000047,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 20,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000048,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000050,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 22,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000051,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 6,
+      "depth": 28,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000052,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 35,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000053,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 23,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000054,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 8,
+      "depth": 26,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000055,
+      "steps": 3000,
+      "episode_return": 5.0,
+      "health": 10,
+      "depth": 44,
+      "achievements": 5,
+      "achievement_mask": 59,
+      "died": false
+    },
+    {
+      "seed": 1000056,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 8,
+      "depth": 31,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000057,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 6,
+      "depth": 23,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000058,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 8,
+      "depth": 23,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000059,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 28,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000060,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 18,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000061,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 17,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000062,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 8,
+      "depth": 24,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000063,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 39,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000064,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 31,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000126,
+      "steps": 1485,
+      "episode_return": 10.0,
+      "health": 0,
+      "depth": 26,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": true
+    },
+    {
+      "seed": 1000076,
+      "steps": 2022,
+      "episode_return": 9.0,
+      "health": 0,
+      "depth": 29,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": true
+    },
+    {
+      "seed": 1000124,
+      "steps": 2671,
+      "episode_return": 13.0,
+      "health": 0,
+      "depth": 61,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": true
+    },
+    {
+      "seed": 1000072,
+      "steps": 2882,
+      "episode_return": 13.0,
+      "health": 0,
+      "depth": 26,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": true
+    },
+    {
+      "seed": 1000065,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 8,
+      "depth": 28,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000066,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000067,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000068,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000069,
+      "steps": 3000,
+      "episode_return": 8.0,
+      "health": 10,
+      "depth": 30,
+      "achievements": 8,
+      "achievement_mask": 639,
+      "died": false
+    },
+    {
+      "seed": 1000070,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 8,
+      "depth": 28,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000071,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 19,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000073,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 34,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000074,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 26,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000075,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000077,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 10,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000078,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 22,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000079,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000080,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 6,
+      "depth": 20,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000081,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 15,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000082,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 10,
+      "depth": 18,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000083,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 30,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000084,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 8,
+      "depth": 60,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000085,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 53,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000086,
+      "steps": 3000,
+      "episode_return": 8.0,
+      "health": 8,
+      "depth": 22,
+      "achievements": 8,
+      "achievement_mask": 447,
+      "died": false
+    },
+    {
+      "seed": 1000087,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 24,
+      "achievements": 9,
+      "achievement_mask": 8389247,
+      "died": false
+    },
+    {
+      "seed": 1000088,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 2,
+      "depth": 49,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000089,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 45,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000090,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 39,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000091,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 28,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000092,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000093,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 20,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000094,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 8,
+      "depth": 39,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000095,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 51,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000096,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 29,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000097,
+      "steps": 3000,
+      "episode_return": 6.0,
+      "health": 10,
+      "depth": 18,
+      "achievements": 6,
+      "achievement_mask": 63,
+      "died": false
+    },
+    {
+      "seed": 1000098,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 8,
+      "depth": 40,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000099,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 50,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000100,
+      "steps": 3000,
+      "episode_return": 8.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 8,
+      "achievement_mask": 447,
+      "died": false
+    },
+    {
+      "seed": 1000101,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 8,
+      "depth": 27,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000102,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 26,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000103,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 36,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000104,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 14,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000105,
+      "steps": 3000,
+      "episode_return": 12.0,
+      "health": 10,
+      "depth": 23,
+      "achievements": 12,
+      "achievement_mask": 8390655,
+      "died": false
+    },
+    {
+      "seed": 1000106,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 31,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000107,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 24,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000108,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 8,
+      "depth": 17,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000109,
+      "steps": 3000,
+      "episode_return": 8.0,
+      "health": 8,
+      "depth": 24,
+      "achievements": 8,
+      "achievement_mask": 447,
+      "died": false
+    },
+    {
+      "seed": 1000110,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 40,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000111,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 8,
+      "depth": 29,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000112,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 10,
+      "depth": 26,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000113,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 6,
+      "depth": 24,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000114,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 15,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000115,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 30,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000116,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 23,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000117,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 10,
+      "depth": 27,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000118,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 43,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000119,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 10,
+      "depth": 22,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000120,
+      "steps": 3000,
+      "episode_return": 11.0,
+      "health": 10,
+      "depth": 28,
+      "achievements": 11,
+      "achievement_mask": 8389631,
+      "died": false
+    },
+    {
+      "seed": 1000121,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 25,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000122,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 2,
+      "depth": 27,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    },
+    {
+      "seed": 1000123,
+      "steps": 3000,
+      "episode_return": 13.0,
+      "health": 10,
+      "depth": 39,
+      "achievements": 13,
+      "achievement_mask": 8191,
+      "died": false
+    },
+    {
+      "seed": 1000125,
+      "steps": 3000,
+      "episode_return": 9.0,
+      "health": 10,
+      "depth": 17,
+      "achievements": 9,
+      "achievement_mask": 511,
+      "died": false
+    },
+    {
+      "seed": 1000127,
+      "steps": 3000,
+      "episode_return": 10.0,
+      "health": 10,
+      "depth": 21,
+      "achievements": 10,
+      "achievement_mask": 8389119,
+      "died": false
+    },
+    {
+      "seed": 1000128,
+      "steps": 3000,
+      "episode_return": 14.0,
+      "health": 8,
+      "depth": 28,
+      "achievements": 14,
+      "achievement_mask": 8396799,
+      "died": false
+    }
+  ]
+}

@@ -38,12 +38,42 @@ def _load(path: Path):
     Sequential. Sniffing the checkpoint beats a --kind flag the user would
     have to remember and could get wrong.
     """
-    sd = torch.load(path, map_location="cpu")
+    raw = torch.load(path, map_location="cpu", weights_only=True)
+    if isinstance(raw, dict) and raw.get("architecture") == "lstm":
+        from terraria_lite.recurrent_ppo_agent import RecurrentActorCritic
+        sd = raw["model"]
+        net = RecurrentActorCritic(SPEC.obs_size, SPEC.n_actions,
+                                   encoder=int(raw["encoder"]),
+                                   hidden=int(raw["hidden"]))
+        net.load_state_dict(sd)
+        net.eval()
+        state = net.initial_state(1, "cpu")
+
+        def recurrent(obs, mask, greedy):
+            nonlocal state
+            with torch.no_grad():
+                h, state = net.core_step(torch.as_tensor(obs).unsqueeze(0), state,
+                                         torch.zeros(1))
+                logits = net.actor(h).masked_fill(
+                    ~torch.as_tensor(mask).unsqueeze(0), float("-inf"))
+                if greedy:
+                    return int(logits.argmax())
+                return int(torch.distributions.Categorical(logits=logits).sample())
+
+        def reset_recurrent():
+            nonlocal state
+            state = net.initial_state(1, "cpu")
+
+        recurrent.reset = reset_recurrent
+        return recurrent, "recurrent-ppo"
+
+    sd = raw.get("model", raw) if isinstance(raw, dict) else raw
     keys = set(sd)
 
     if any(k.startswith("actor.") for k in keys):
         from terraria_lite.ppo_agent import ActorCritic
-        net = ActorCritic(SPEC.obs_size, SPEC.n_actions)
+        hidden = int(sd["trunk.0.weight"].shape[0])
+        net = ActorCritic(SPEC.obs_size, SPEC.n_actions, hidden=hidden)
         net.load_state_dict(sd)
         net.eval()
 
@@ -84,6 +114,8 @@ def _load(path: Path):
 
 
 def rollout(act_fn, seed: int, greedy: bool, max_steps: int | None = None):
+    if hasattr(act_fn, "reset"):
+        act_fn.reset()
     env = TerrariaLite(max_steps=max_steps)
     obs, _ = env.reset(seed=seed)
     actions: list[int] = []

@@ -15,3 +15,7 @@ __pycache__/
 assets/
 *.pt
 *.tape
+
+# Experiment outputs are local by default. Curated protocols, summaries, and
+# compact evidence are force-added deliberately; checkpoints remain local.
+/experiments/

@@ -1,0 +1,82 @@
+[
+  {
+    "event": "checkpoint",
+    "threshold": 1000000,
+    "steps": 1015808,
+    "wall_seconds": 24.780766584000958,
+    "file": "step-1015808.pt",
+    "sha256": "576422866036207677835b0c59ad5a37fa040558d1aa408ee73a1634d66e8574"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 4000000,
+    "steps": 4030464,
+    "wall_seconds": 95.29597458399803,
+    "file": "step-4030464.pt",
+    "sha256": "26a967a45a5eaee076804282305420e0f01e6ebb3281ee7b4bce0f3b90b4153a"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 8000000,
+    "steps": 8028160,
+    "wall_seconds": 181.130023042002,
+    "file": "step-8028160.pt",
+    "sha256": "dcb0722bea5c710de445752a521de14dcb0f84447a70592c6223f43969c49196"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 16000000,
+    "steps": 16023552,
+    "wall_seconds": 355.83681033400353,
+    "file": "step-16023552.pt",
+    "sha256": "769d6fad9f3868222eaf29b3889854feb0babd48803005f62217aab200685794"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 24000000,
+    "steps": 24018944,
+    "wall_seconds": 528.857307834005,
+    "file": "step-24018944.pt",
+    "sha256": "189a04920d8e1881e13a778c0d0d8f5b23633fc60f4b6fb907ac44e7dc857242"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 32000000,
+    "steps": 32014336,
+    "wall_seconds": 704.245672625002,
+    "file": "step-32014336.pt",
+    "sha256": "850fedf0f565482a0ac39de85bbf14ecdfe3d4ac2447eeb1ad278c455254cac4"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 48000000,
+    "steps": 48005120,
+    "wall_seconds": 1060.442297417001,
+    "file": "step-48005120.pt",
+    "sha256": "065d186a05b6b855a1071a366f849e68ebbbbad882f276ed131b6e9602f17f3c"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 64000000,
+    "steps": 64028672,
+    "wall_seconds": 1418.1689227090028,
+    "file": "step-64028672.pt",
+    "sha256": "f3ee5f32e2816f31669090a143114d57b83810fa7b69d498807efde86699ddbe"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 80000000,
+    "steps": 80019456,
+    "wall_seconds": 1777.963704834001,
+    "file": "step-80019456.pt",
+    "sha256": "8b30162792f6dd14b1ac3edaf4a2c45e058a90df0ff43825e39da1baed8a7782"
+  },
+  {
+    "event": "checkpoint",
+    "threshold": 100007936,
+    "steps": 100007936,
+    "wall_seconds": 2238.3814574589996,
+    "file": "step-100007936.pt",
+    "sha256": "6d5d373df8c86df49c4e9535b34fbb52db4efdfcc60ae9e7fac401b3828a9787"
+  }
+]

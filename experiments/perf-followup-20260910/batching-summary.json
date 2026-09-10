@@ -1,0 +1,153 @@
+{
+  "runs": 27,
+  "groups": [
+    {
+      "workload": "fresh",
+      "envs": 128,
+      "rollout": 256,
+      "device": "mps",
+      "workers": 8,
+      "repeats": 2,
+      "median_sps": 32019.059105734843,
+      "min_sps": 31946.91846236273,
+      "max_sps": 32091.19974910696,
+      "final_model_hashes": [
+        "d19b81be235b7f50f5d4aac04fce3213bb78f99ac9da813c0370ce28172f2cbc"
+      ]
+    },
+    {
+      "workload": "fresh",
+      "envs": 256,
+      "rollout": 128,
+      "device": "mps",
+      "workers": 8,
+      "repeats": 2,
+      "median_sps": 41498.00662682892,
+      "min_sps": 41438.14142596917,
+      "max_sps": 41557.87182768869,
+      "final_model_hashes": [
+        "4fd734a2ab3d3b4fde9269c71bf0a767256d87361ebc7f049e9498dc43c0b29a"
+      ]
+    },
+    {
+      "workload": "fresh",
+      "envs": 512,
+      "rollout": 64,
+      "device": "mps",
+      "workers": 8,
+      "repeats": 2,
+      "median_sps": 52130.23821939985,
+      "min_sps": 52125.12115593632,
+      "max_sps": 52135.35528286337,
+      "final_model_hashes": [
+        "82fb9a07255e75d61b109618f6602766fd17136f07791c01000dc2bd72a0c726"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 128,
+      "rollout": 256,
+      "device": "cpu",
+      "workers": 8,
+      "repeats": 3,
+      "median_sps": 28639.36514538567,
+      "min_sps": 28602.243744980387,
+      "max_sps": 28694.665834046864,
+      "final_model_hashes": [
+        "09962d4f2be76ad0825841db84a568fc3c312c61ebdba75fe86a26a1439f45d0"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 128,
+      "rollout": 256,
+      "device": "mps",
+      "workers": 8,
+      "repeats": 3,
+      "median_sps": 32001.705075221806,
+      "min_sps": 31584.327687400724,
+      "max_sps": 32299.351407210568,
+      "final_model_hashes": [
+        "60153aff5df10491860c87b721959e14c8076af61b35623a06f4687b5e205618"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 256,
+      "rollout": 128,
+      "device": "cpu",
+      "workers": 8,
+      "repeats": 3,
+      "median_sps": 29918.130168814037,
+      "min_sps": 29890.458220131968,
+      "max_sps": 30080.68382882696,
+      "final_model_hashes": [
+        "5eb0d934d2e3bb9f6e31619848e01f2edb9068866900ff92c4fd94796f567776"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 256,
+      "rollout": 128,
+      "device": "mps",
+      "workers": 4,
+      "repeats": 3,
+      "median_sps": 35955.442838357005,
+      "min_sps": 35774.81530435443,
+      "max_sps": 36865.598552592935,
+      "final_model_hashes": [
+        "1703bc8e3d0ac05e396f0ced62ccb5e3079dc51932e53377ffa7a6a58d608c1d"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 256,
+      "rollout": 128,
+      "device": "mps",
+      "workers": 8,
+      "repeats": 3,
+      "median_sps": 42370.69313725985,
+      "min_sps": 42314.85832138441,
+      "max_sps": 42374.0545972512,
+      "final_model_hashes": [
+        "1703bc8e3d0ac05e396f0ced62ccb5e3079dc51932e53377ffa7a6a58d608c1d"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 512,
+      "rollout": 64,
+      "device": "cpu",
+      "workers": 8,
+      "repeats": 3,
+      "median_sps": 30542.18123042279,
+      "min_sps": 30371.026733622344,
+      "max_sps": 30574.068070748195,
+      "final_model_hashes": [
+        "bad2f0db5d67bf9b75cdf913e43d332f94ece07efc5ee1de2cfe136e707b3630"
+      ]
+    },
+    {
+      "workload": "mature",
+      "envs": 512,
+      "rollout": 64,
+      "device": "mps",
+      "workers": 8,
+      "repeats": 3,
+      "median_sps": 51987.66534979989,
+      "min_sps": 51792.19086117048,
+      "max_sps": 52002.184234340915,
+      "final_model_hashes": [
+        "faff7a96a324823dfc59ffca648a91d741a265fcc5c517a18a7fd38cae070c75"
+      ]
+    }
+  ],
+  "paired_eight_vs_four_worker_speedups": [
+    1.1493287726445909,
+    1.1828113705518961,
+    1.178515719796583
+  ],
+  "median_eight_vs_four_worker_speedup": 1.178515719796583,
+  "total_child_wall_seconds": 806.666029584987,
+  "caveat": "Changing num_envs and rollout changes trajectories and GAE boundaries even with fixed total batch. Device changes also produce different numerical/RNG trajectories. This is a throughput comparison, not a sample-efficiency or learning-quality claim."
+}

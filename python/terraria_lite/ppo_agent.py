@@ -23,10 +23,11 @@ they are the ones worth reading:
 3.  Observations already live in [0, 1] (env_obs normalises them), so there is
     no observation normaliser here. One less thing to get subtly wrong.
 
-Known next lever, deliberately not taken: the environment is partially
-observable by design -- roughly 80% of the underground view reads as unlit --
-so an LSTM over the trunk is where the next real gain is. The rollout buffer is
-laid out (T, N, ...) so adding recurrence does not mean rewriting this.
+The environment is partially observable by design -- roughly 80% of the
+underground view reads as unlit. `recurrent_ppo_agent.py` tests the natural LSTM
+extension while preserving the (T, N, ...) rollout layout. At 600k steps it was
+slower and worse than the feed-forward progression-shaped agent: memory alone
+did not solve the hierarchical credit problem. See PPO_EXPERIMENTS.md.
 """
 
 from __future__ import annotations
@@ -68,10 +69,16 @@ class Config:
     vf_coef: float = 0.5
     max_grad_norm: float = 0.5
     target_kl: float | None = 0.03   # early-stop an epoch that moves too far
+    # Optional dense training-only feedback for progress toward the next
+    # crafting prerequisites. Environment returns and evaluation remain purely
+    # extrinsic, so this knob can be compared honestly against vanilla PPO.
+    progress_coef: float = 0.0
+    progress_anneal: bool = False
     seed: int = 1
     device: str = "cpu"              # a 1.5M MLP at batch 2048 loses to MPS overhead
     quiet: bool = False              # suppress per-iteration lines when sweeping
     save: str = "ppo_terraria.pt"    # "" to skip, so parallel sweeps don't collide
+    init: str = ""                    # optional actor/critic state_dict warm start
 
     @property
     def batch(self) -> int:
@@ -181,17 +188,107 @@ class VecTerraria:
             e.close()
 
 
+class ProgressShaper:
+    """Capped episodic feedback for making useful crafting progress.
+
+    Sparse +1 achievements make gathering the eighth wood indistinguishable
+    from wandering after the first. Each component below tracks readiness for
+    one tech-tree milestone and pays only for a new per-episode maximum. That
+    prevents mining/crafting cycles from farming shaping reward. This changes
+    training reward only; reported episode returns remain the environment's.
+    """
+
+    def __init__(self, n: int):
+        self.n = n
+        self.best = np.zeros((n, 11), dtype=np.float32)
+        self.status0 = SPEC.cells * SPEC.tile_kinds + SPEC.cells
+        self.inv0 = self.status0 + SPEC.status_inv0
+        self.ach0 = self.status0 + SPEC.status_ach0
+        self.item = {name: i for i, name in enumerate(SPEC.item_names)}
+        self.ach = {name: i for i, name in enumerate(SPEC.achievement_names)}
+
+    def _features(self, obs: np.ndarray) -> np.ndarray:
+        obs = np.atleast_2d(obs)
+        inv = (obs[:, self.inv0:self.inv0 + SPEC.n_items]
+               * float(SPEC.inventory_clip))
+        ach = obs[:, self.ach0:self.ach0 + SPEC.n_achievements]
+        item = lambda name: inv[:, self.item[name]]
+        done = lambda name: ach[:, self.ach[name]]
+        gate = lambda name: done(name) > 0.5
+        ratio = lambda have, need: np.minimum(have / need, 1.0)
+        ready = lambda *parts: np.minimum.reduce(parts)
+
+        f = np.zeros((len(obs), 11), dtype=np.float32)
+        # A completed milestone pins its component at one. Before its immediate
+        # prerequisite exists the component stays zero, so future-tier ore
+        # cannot accidentally shape an exploit.
+        f[:, 0] = np.where(gate("craft workbench"), 1.0, ratio(item("wood"), 8))
+        wb = gate("craft workbench")
+        f[:, 1] = np.where(gate("craft furnace"), 1.0,
+                           np.where(wb, ratio(item("stone"), 12), 0.0))
+        f[:, 2] = np.where(gate("craft stone pick"), 1.0,
+                           np.where(wb, ready(ratio(item("wood"), 3),
+                                             ratio(item("stone"), 5)), 0.0))
+        stone_pick = gate("craft stone pick")
+        f[:, 3] = np.where(gate("smelt copper"), 1.0,
+                           np.where(stone_pick, ratio(item("copper ore"), 3), 0.0))
+        smelt_copper = gate("smelt copper")
+        f[:, 4] = np.where(gate("craft torch"), 1.0,
+                           np.where(smelt_copper,
+                                    ready(ratio(item("copper bar"), 1),
+                                          ratio(item("wood"), 2)), 0.0))
+        f[:, 5] = np.where(gate("craft copper pick"), 1.0,
+                           np.where(smelt_copper,
+                                    ready(ratio(item("copper bar"), 2),
+                                          ratio(item("wood"), 3)), 0.0))
+        copper_pick = gate("craft copper pick")
+        f[:, 6] = np.where(gate("smelt iron"), 1.0,
+                           np.where(copper_pick, ratio(item("iron ore"), 3), 0.0))
+        smelt_iron = gate("smelt iron")
+        f[:, 7] = np.where(gate("craft anvil"), 1.0,
+                           np.where(smelt_iron, ratio(item("iron bar"), 5), 0.0))
+        anvil = gate("craft anvil")
+        f[:, 8] = np.where(gate("craft iron pick"), 1.0,
+                           np.where(anvil,
+                                    ready(ratio(item("iron bar"), 2),
+                                          ratio(item("wood"), 3)), 0.0))
+        iron_pick = gate("craft iron pick")
+        f[:, 9] = np.where(gate("smelt gold"), 1.0,
+                           np.where(iron_pick, ratio(item("gold ore"), 3), 0.0))
+        smelt_gold = gate("smelt gold")
+        f[:, 10] = np.where(gate("craft lantern"), 1.0,
+                            np.where(smelt_gold,
+                                     ready(ratio(item("gold bar"), 1),
+                                           ratio(item("wood"), 3)), 0.0))
+        return f
+
+    def reset(self, obs: np.ndarray) -> None:
+        self.best[:] = self._features(obs)
+
+    def step(self, obs: np.ndarray, final_obs: np.ndarray,
+             term: np.ndarray, trunc: np.ndarray) -> np.ndarray:
+        boundary = np.logical_or(term, trunc)
+        state = obs.copy()
+        state[boundary] = final_obs[boundary]
+        current = self._features(state)
+        gain = np.maximum(current - self.best, 0.0).sum(axis=1)
+        self.best = np.maximum(self.best, current)
+        # `obs` is already the reset state in boundary lanes.
+        if boundary.any():
+            self.best[boundary] = self._features(obs[boundary])
+        return gain
+
+
 # ------------------------------------------------------------------ train ---
 
 def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device):
     """Fold the bootstrap for truncated episodes into the reward.
 
-    GAE below masks the future with `1 - done`. If `done` included truncation,
-    a cut-off episode would be treated as though the world genuinely ended and
-    its tail value thrown away. Instead: truncated lanes keep `done = False`
-    for the value target and have gamma * V(final_obs) added to their reward,
-    which is exactly the missing bootstrap. Terminated lanes get nothing --
-    death really is the end.
+    Autoreset means the observation after a boundary belongs to a fresh world.
+    Both termination and truncation must therefore cut GAE recurrence; otherwise
+    an advantage leaks into the next episode. A truncation still has a future
+    value, though, so gamma * V(final_obs) is folded into its reward before that
+    cut. A true termination gets no such bootstrap -- death really is the end.
     """
     cut = np.logical_and(trunc, np.logical_not(term))
     if not cut.any():
@@ -201,13 +298,39 @@ def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device):
     rewards[t, torch.as_tensor(cut, device=device)] += cfg.gamma * v
 
 
-def train(cfg: Config):
+def compute_gae(rewards, dones, values, next_value, next_done,
+                gamma: float, gae_lambda: float):
+    """Generalized advantages for a (T,N) rollout.
+
+    `dones[t]` means obs[t] starts a new episode. `next_done` applies to the
+    observation immediately after the rollout. Keeping this small and pure
+    makes the autoreset-boundary convention directly testable.
+    """
+    advantages = torch.zeros_like(rewards)
+    last = torch.zeros_like(next_value)
+    for t in reversed(range(len(rewards))):
+        if t == len(rewards) - 1:
+            nonterminal, next_val = 1.0 - next_done, next_value
+        else:
+            nonterminal, next_val = 1.0 - dones[t + 1], values[t + 1]
+        delta = rewards[t] + gamma * next_val * nonterminal - values[t]
+        last = delta + gamma * gae_lambda * nonterminal * last
+        advantages[t] = last
+    return advantages
+
+
+def train(cfg: Config, checkpoint_callback=None):
+    if cfg.num_envs < 1 or cfg.rollout < 1 or cfg.total_steps < cfg.batch:
+        raise ValueError("training requires positive dimensions and at least one batch")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
 
     envs = VecTerraria(cfg.num_envs, seed=cfg.seed)
     agent = ActorCritic(SPEC.obs_size, SPEC.n_actions).to(device)
+    if cfg.init:
+        raw = torch.load(cfg.init, map_location=device, weights_only=True)
+        agent.load_state_dict(raw.get("model", raw) if isinstance(raw, dict) else raw)
     opt = torch.optim.Adam(agent.parameters(), lr=cfg.lr, eps=1e-5)
 
     T, N = cfg.rollout, cfg.num_envs
@@ -223,6 +346,9 @@ def train(cfg: Config):
     msk_b = torch.zeros((T, N, SPEC.n_actions), dtype=torch.bool, device=device)
 
     o0, m0 = envs.reset()
+    shaper = ProgressShaper(N) if cfg.progress_coef else None
+    if shaper is not None:
+        shaper.reset(o0)
     next_obs = torch.as_tensor(o0, device=device)
     next_mask = torch.as_tensor(m0, device=device)
     next_done = torch.zeros(N, device=device)
@@ -232,6 +358,7 @@ def train(cfg: Config):
     ep_masks: list[int] = []          # which achievements, not just how many
     start = time.perf_counter()
     step_count = 0
+    collection_seconds = optimisation_seconds = 0.0
 
     print(f"{SPEC}")
     print(f"PPO: {N} envs x {T} steps = batch {cfg.batch}, "
@@ -243,8 +370,12 @@ def train(cfg: Config):
         if cfg.anneal_lr:
             for g in opt.param_groups:
                 g["lr"] = cfg.lr * (1.0 - (it - 1.0) / n_iters)
+        progress_coef = cfg.progress_coef
+        if cfg.progress_anneal:
+            progress_coef *= 1.0 - (it - 1.0) / n_iters
 
         # ---- collect ----------------------------------------------------
+        phase_start = time.perf_counter()
         for t in range(T):
             obs_b[t] = next_obs
             done_b[t] = next_done
@@ -254,13 +385,19 @@ def train(cfg: Config):
             act_b[t], logp_b[t], val_b[t] = a, logp, v
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
+            if shaper is not None:
+                r = r + progress_coef * shaper.step(obs, final, term, trunc)
             rew_b[t] = torch.as_tensor(r, device=device)
             _absorb_truncation(cfg, agent, rew_b, term, trunc, final, t, device)
 
             next_obs = torch.as_tensor(obs, device=device)
             next_mask = torch.as_tensor(msk, device=device)
-            # Only true termination cuts the value bootstrap.
-            next_done = torch.as_tensor(term.astype(np.float32), device=device)
+            # Autoreset makes both kinds episode boundaries. Truncation's true
+            # final-state bootstrap was already folded into rew_b above; using
+            # only `term` here would add V(reset_obs) as well and carry GAE from
+            # an unrelated fresh world across the boundary.
+            boundary = np.logical_or(term, trunc)
+            next_done = torch.as_tensor(boundary.astype(np.float32), device=device)
             step_count += N
 
             for _, info in finished:
@@ -270,19 +407,13 @@ def train(cfg: Config):
                 ep_deaths.append(1.0 if info["health"] <= 0 else 0.0)
                 ep_masks.append(info["achievement_mask"])
 
+        collection_seconds += time.perf_counter() - phase_start
+        phase_start = time.perf_counter()
         # ---- GAE ---------------------------------------------------------
         with torch.no_grad():
             next_value = agent.value(next_obs)
-            adv = torch.zeros_like(rew_b)
-            last = 0.0
-            for t in reversed(range(T)):
-                if t == T - 1:
-                    nonterminal, next_val = 1.0 - next_done, next_value
-                else:
-                    nonterminal, next_val = 1.0 - done_b[t + 1], val_b[t + 1]
-                delta = rew_b[t] + cfg.gamma * next_val * nonterminal - val_b[t]
-                last = delta + cfg.gamma * cfg.gae_lambda * nonterminal * last
-                adv[t] = last
+            adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
+                              cfg.gamma, cfg.gae_lambda)
             ret = adv + val_b
 
         b_obs = obs_b.reshape(-1, SPEC.obs_size)
@@ -338,6 +469,12 @@ def train(cfg: Config):
             if cfg.target_kl is not None and approx_kl > cfg.target_kl:
                 break
 
+        optimisation_seconds += time.perf_counter() - phase_start
+        if checkpoint_callback is not None:
+            checkpoint_callback(agent, step_count, {
+                "collection_seconds": collection_seconds,
+                "optimisation_seconds": optimisation_seconds,
+            })
         # ---- report ------------------------------------------------------
         y = b_ret.cpu().numpy()
         yhat = b_val.cpu().numpy()
@@ -360,7 +497,12 @@ def train(cfg: Config):
     summary = {
         "agent": "ppo",
         "gamma": cfg.gamma, "seed": cfg.seed, "ent_coef": cfg.ent_coef,
-        "lr": cfg.lr, "envs": cfg.num_envs, "steps": cfg.total_steps,
+        "progress_coef": cfg.progress_coef,
+        "progress_anneal": cfg.progress_anneal,
+        "lr": cfg.lr, "envs": cfg.num_envs, "steps": step_count,
+        "requested_steps": cfg.total_steps,
+        "collection_seconds": collection_seconds,
+        "optimisation_seconds": optimisation_seconds,
         "sps": round(sps), "n_ep": len(ep_returns), "window": len(tail),
         "ach": float(np.mean(ep_achievements[-50:])) if ep_achievements else 0.0,
         "ret": float(np.mean(ep_returns[-50:])) if ep_returns else 0.0,
@@ -417,10 +559,12 @@ if __name__ == "__main__":
             "Baselines: masked-random 4.18 / 24 achievements, unmasked 3.91."
         ),
         epilog=(
-            "examples (3-seed means at the current defaults):\n"
-            "  --steps 100000     ~7s   sanity check that it clears random\n"
-            "  --steps 600000    ~40s   5.18 ach; workbench crafted in 22%\n"
-            "  --steps 2000000    ~2m   5.28 ach; plateaus at 'craft furnace'\n"
+            "examples:\n"
+            "  --steps 100000\n"
+            "      short unshaped smoke run\n"
+            "  --steps 4000000 --seed 71 --progress-coef 0.5 --progress-anneal\n"
+            "      best tested from-scratch recipe: 10.75/24 on 256 holdouts\n"
+            "See PPO_EXPERIMENTS.md for ablations and evaluation protocol.\n"
         ),
     )
     p.add_argument("--steps", type=int, default=Config.total_steps,
@@ -436,12 +580,18 @@ if __name__ == "__main__":
                         "3000-step episodes")
     p.add_argument("--ent-coef", type=float, default=Config.ent_coef,
                    help="entropy bonus; raise it to delay premature convergence")
+    p.add_argument("--progress-coef", type=float, default=Config.progress_coef,
+                   help="training-only capped prerequisite-progress feedback")
+    p.add_argument("--progress-anneal", action="store_true",
+                   help="linearly anneal prerequisite feedback to zero")
     p.add_argument("--seed", type=int, default=Config.seed,
                    help="torch/numpy/env seed; sweep it before trusting a delta")
     p.add_argument("--device", type=str, default=Config.device,
                    help="cpu or mps; cpu usually wins for a net this small")
     p.add_argument("--save", type=str, default=Config.save,
                    help='checkpoint path, "" to skip')
+    p.add_argument("--init", type=str, default=Config.init,
+                   help="optional state_dict checkpoint to warm-start from")
     p.add_argument("--quiet", action="store_true",
                    help="only the final summary; for parallel sweeps")
     p.add_argument("--json", action="store_true",
@@ -449,6 +599,8 @@ if __name__ == "__main__":
     a = p.parse_args()
     s = train(Config(total_steps=a.steps, num_envs=a.envs, rollout=a.rollout,
                      lr=a.lr, gamma=a.gamma, ent_coef=a.ent_coef, seed=a.seed,
-                     device=a.device, save=a.save, quiet=a.quiet))
+                     progress_coef=a.progress_coef,
+                     progress_anneal=a.progress_anneal, device=a.device,
+                     save=a.save, init=a.init, quiet=a.quiet))
     if a.json:
         print(json.dumps(s))

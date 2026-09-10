@@ -37,11 +37,18 @@ TL_API int tl_ach_count(void)   { return ACH_COUNT; }
 TL_API int tl_item_count(void)  { return ITEM_COUNT; }
 TL_API int tl_unknown_tile(void){ return OBS_UNKNOWN; }
 TL_API int tl_default_steps(void){ return DEFAULT_MAX_STEPS; }
+TL_API int tl_status_inv0(void)  { return OBS_INV_0; }
+TL_API int tl_status_ach0(void)  { return OBS_ACH_0; }
+TL_API int tl_inv_clip(void)     { return OBS_INV_CLIP; }
 
 TL_API const char *tl_action_name(int a) { return action_name(a); }
 TL_API const char *tl_ach_name(int i)
 {
     return (i >= 0 && i < ACH_COUNT) ? ACH_NAME[i] : "";
+}
+TL_API const char *tl_item_name(int i)
+{
+    return (i >= 0 && i < ITEM_COUNT) ? ITEM_NAME[i] : "";
 }
 
 /* Ascii glyph per tile, straight from TILE_INFO, so a text renderer on the

@@ -1,0 +1,1 @@
+Completed 46 worker/lighting/profile runs and 27 device/batching runs (52,428,800 training transitions). Native equivalence checks passed for 1/2/4/6/8 workers. Final-model agreement verified across matched worker/lighting/profile configurations. Archived input hashes verified. Results and reproduction instructions documented in PERFORMANCE_EXPLORATION.md.
