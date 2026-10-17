@@ -1,0 +1,19 @@
+{
+  "provider": "openrouter",
+  "model": "openai/gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "seeds": [31000009],
+  "replicates": 1,
+  "max_steps": 3000,
+  "max_calls": 16,
+  "max_actions_per_call": 16,
+  "max_output_tokens": 8192,
+  "max_context_bytes": 100000,
+  "max_total_tokens_per_episode": 1000000,
+  "max_wall_seconds": 1200,
+  "request_timeout_seconds": 120,
+  "max_cost_usd_total": 2.0,
+  "input_usd_per_token_ceiling": 0.000005,
+  "output_usd_per_token_ceiling": 0.000015,
+  "pricing_source": "OpenRouter /api/v1/models, 2026-10-17; ceilings include listed cache-write and long-context tiers. Provider-reported actual usage/cost retained."
+}

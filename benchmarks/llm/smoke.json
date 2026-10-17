@@ -1,0 +1,8 @@
+{
+  "provider": "random",
+  "seeds": [31000001, 31000002],
+  "replicates": 2,
+  "max_steps": 32,
+  "max_calls": 32,
+  "max_actions_per_call": 1
+}
