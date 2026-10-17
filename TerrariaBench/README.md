@@ -91,7 +91,7 @@ client termination can leave an open journal; results disclose this.
 ../.venv/bin/python -m terrariabench doctor
 ```
 
-All 28 tests pass, including regression against seven archived public results.
+All 29 tests pass, including regression against seven archived public results.
 Public URLs/statuses/hashes are recorded in `reference/evidence.json`;
 `tools/snapshot_reference.py` refreshes that archive.
 

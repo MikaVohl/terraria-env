@@ -5,9 +5,20 @@ import tempfile
 import unittest
 
 from terrariabench.experiments import DEFAULT, Ledger, VARIANTS, metrics, tools_for, pixel_actions
+from tools.analyze_experiments import verify_event_snapshot
 
 
 class ExperimentTests(unittest.TestCase):
+    def test_shutdown_tail_only_accepts_unchanged_heartbeats(self):
+        first={'event':'heartbeat','life':100,'inventory':[{'name':'Wood','stack':10}],
+               'game_updates':60,'elapsed_seconds':1,'unix_seconds':100,'timestamp_utc':'first'}
+        tail=first|{'game_updates':120,'elapsed_seconds':2,'unix_seconds':101,'timestamp_utc':'later'}
+        self.assertEqual(verify_event_snapshot([first],[first]),0)
+        self.assertEqual(verify_event_snapshot([first],[first,tail]),1)
+        with self.assertRaises(AssertionError):verify_event_snapshot([first],[first,tail|{'life':94}])
+        with self.assertRaises(AssertionError):verify_event_snapshot([first],[first,tail|{'event':'checkpoint'}])
+        with self.assertRaises(AssertionError):verify_event_snapshot([first],[tail])
+
     def test_normalized_contract_is_declared_and_does_not_mutate_model_output(self):
         config=DEFAULT|VARIANTS['normalized']
         actions=[{'x':1000,'y':500,'ms':100}]

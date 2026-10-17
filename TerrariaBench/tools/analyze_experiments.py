@@ -15,6 +15,23 @@ from terrariabench.linux_control import validate_actions
 from terrariabench.experiments import metrics, pixel_actions
 
 
+def verify_event_snapshot(events, source_events):
+    """Legacy shutdowns may append unchanged heartbeats after snapshot creation."""
+    if events==source_events:return 0
+    assert source_events[:len(events)]==events, 'telemetry snapshot is not a raw journal prefix'
+    trailing=source_events[len(events):]
+    assert trailing, 'telemetry export extends beyond raw journal'
+    last=next(e for e in reversed(events) if e['event']=='heartbeat')
+    temporal={'game_updates','elapsed_seconds','unix_seconds','timestamp_utc'}
+    stable=lambda e:{k:v for k,v in e.items() if k not in temporal}
+    for e in trailing:
+        assert e['event']=='heartbeat', 'unexported non-heartbeat event'
+        assert stable(e)==stable(last), 'post-snapshot heartbeat changes observed state'
+        assert e['game_updates']>last['game_updates'] and e['unix_seconds']>=last['unix_seconds']
+        last=e
+    return len(trailing)
+
+
 def audit(root):
     manifest=json.loads((root/'manifest.json').read_text());result=json.loads((root/'result.json').read_text())
     config=manifest['config'];assert config==result['config']
@@ -65,7 +82,7 @@ def audit(root):
     assert not any(e.get('event')=='calibration_probe' for e in events)
     source_events=[]
     for p in (root/'telemetry').glob('*.jsonl'):source_events.extend(json.loads(s) for s in p.read_text().splitlines())
-    assert events==source_events
+    inert_tail=verify_event_snapshot(events,source_events)
     # Start tick is a runner measurement, not independently attested.
     start_tick=max(e['game_updates'] for e in events)-result['metrics']['game_updates_during_agent']
     recomputed=metrics(events,receipts,start_tick)
@@ -75,7 +92,9 @@ def audit(root):
     assert recomputed==result['metrics']
     if not config['pve']:assert all(e['hostile_npcs_active']==0 for e in events if e['event']=='heartbeat')
     complete=len(responses)==result['calls'] and not Decimal(result['accounting']['uncertain_reserved_usd'])
-    out={'artifact_checks_passed':True,'all_calls_accounted':complete,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),'official_eligible':False}
+    out={'artifact_checks_passed':True,'all_calls_accounted':complete,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),
+         'exact_telemetry_export_match':not inert_tail,'inert_post_snapshot_heartbeats':inert_tail,
+         'raw_telemetry_hashes':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'telemetry').glob('*.jsonl')},'official_eligible':False}
     (root/'audit.json').write_text(json.dumps(out,indent=2)+'\n');return out
 
 
@@ -83,7 +102,9 @@ def analyze(root):
     root=Path(root);rows=[]
     for path in sorted(root.glob('*/result.json')):
         result=json.loads(path.read_text());config=result['config'];m=result['metrics'];sc=m['public_subset_score']
-        try:aud=audit(path.parent);status='pass' if aud['all_calls_accounted'] else 'partial'
+        try:
+            aud=audit(path.parent)
+            status=('pass_with_inert_tail' if aud['inert_post_snapshot_heartbeats'] else 'pass') if aud['all_calls_accounted'] else 'partial'
         except Exception as e:status='FAIL: '+type(e).__name__+': '+str(e)
         inv=m['inventory_stack_maxima'];milestones=sc['milestones']
         traces=[json.loads(s) for s in (path.parent/'tool-results.jsonl').read_text().splitlines()] if (path.parent/'tool-results.jsonl').exists() else []

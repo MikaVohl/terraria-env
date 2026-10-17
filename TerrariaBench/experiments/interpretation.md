@@ -62,6 +62,17 @@ Neither prepared task constitutes fresh-world campaign progress.
   prepared-task protocol needs an explicit scenario-ready/render barrier.
 - The tests below do not evaluate native OpenCode/Claude Code/Codex scaffolds,
   learned motor controllers, unfamiliar worlds, bosses or full campaign success.
+- Case 22 revealed an asynchronous shutdown race: one raw heartbeat followed
+  result export. The exported events are an exact prefix, and all observed
+  state in the trailing heartbeat is identical; only clocks advance. Preserve
+  the original result/export and mark a qualified `pass_with_inert_tail` after
+  checking that property and hashing the raw journal. Any state change or
+  trailing checkpoint remains an audit failure. Future attempts wait for their
+  owned game process to terminate before reading the final journal. This changes
+  cleanup synchronization, not prompts, observations or action semantics.
+  The screening driver paused after case 24 completed; case 25 onward and the
+  shuffled repeat cohort use the synchronized cleanup. Source hashes distinguish
+  this boundary, and every older result/export is preserved.
 
 ## Early selection log
 

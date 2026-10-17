@@ -5,12 +5,11 @@ import json
 import os
 from pathlib import Path
 import shutil
-import signal
 import sys
 import time
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from terrariabench.experiments import dump
-from terrariabench.linux_control import GameControl, launch
+from terrariabench.linux_control import GameControl, launch, stop_owned_game
 
 
 def main():
@@ -62,8 +61,7 @@ def main():
         if game:game.close()
         if pid:
             time.sleep(1.05)
-            cmd=Path(f'/proc/{pid}/cmdline')
-            if cmd.exists() and str(root/'tml').encode() in cmd.read_bytes():os.killpg(pid,signal.SIGTERM)
+            dump(root/'termination.json',stop_owned_game(pid,root/'tml'))
         ev=events();targets=[e['target'] for e in ev if 'target' in e]
         killed=any(t['killed'] for t in targets)
         damage=max((t['player_damage'] for t in targets),default=0)

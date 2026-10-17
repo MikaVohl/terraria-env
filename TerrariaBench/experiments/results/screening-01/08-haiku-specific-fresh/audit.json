@@ -5,5 +5,10 @@
   "commands": 23,
   "images_verified": 15,
   "source_files_verified": 22,
+  "exact_telemetry_export_match": true,
+  "inert_post_snapshot_heartbeats": 0,
+  "raw_telemetry_hashes": {
+    "telemetry/d0f47f5598f1445287fa5ffb50176eaf.jsonl": "af3f47dd2e5e56cc9862b4589056cdc9ace443d9666526fc0c86c65da76b68a6"
+  },
   "official_eligible": false
 }

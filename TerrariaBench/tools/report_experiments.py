@@ -36,7 +36,7 @@ def main():
             groups[(r['model'].split('/')[1],r['run'].split('-')[2])].append(r)
     for (model,condition),rs in sorted(groups.items()):
         cost=sum((Decimal(r['usd']) for r in rs),Decimal(0))
-        good=[r for r in rs if r['audit']=='pass'];n=len(good)
+        good=[r for r in rs if r['audit'].startswith('pass')];n=len(good)
         if not good:
             out.append(f'| {model} / {condition} | 0/{len(rs)}/3 | — | — | — | — | — | ${cost:.5f} |')
             continue
@@ -73,6 +73,9 @@ def main():
           'Received damage is not evidence of successful combat; natural loot may come from the Guide.',
           '- A partial audit marks an unaccounted provider response/charge, not a model failure. '
           'Completed unsuccessful agent trajectories are retained.',
+          '- A qualified `pass_with_inert_tail` requires an exact exported journal prefix followed only by '
+          'heartbeats with identical observed state and advancing timestamps/ticks. Raw data and original '
+          'result stay unchanged. Future runs wait for process termination before export.',
           '- Named native coding-agent frameworks, learned motor policies, new world seeds, bosses and post-Hardmode progression were not evaluated.',
           '- See [interpretation rules](../../interpretation.md), [selection plan](../../repeats-01.json) '
           'and [research rationale](../../design-rationale.md).','']

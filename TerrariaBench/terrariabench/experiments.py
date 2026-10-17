@@ -13,7 +13,7 @@ import shutil
 import signal
 import time
 
-from .linux_control import GameControl, launch, validate_actions
+from .linux_control import GameControl, launch, validate_actions, stop_owned_game
 from .openrouter import Budget, hermes_key, request
 from .reference_live import ACTION_SCHEMA
 from .reference_scoring import checkpoint_view, reference_score
@@ -334,8 +334,7 @@ def run(args):
         # Finish a heartbeat before terminating; exclude this observation tail from claims of exact stepping.
         if pid and Path(f'/proc/{pid}').exists():
             time.sleep(1.05)
-            path=Path(f'/proc/{pid}/cmdline')
-            if path.exists() and str(root/'tml').encode() in path.read_bytes():os.killpg(pid,signal.SIGTERM)
+            dump(root/'termination.json',stop_owned_game(pid,root/'tml'))
         ev=events();receipts=[json.loads(s) for s in (root/'inputs.jsonl').read_text().splitlines()] if (root/'inputs.jsonl').exists() else []
         dump(root/'evaluation-events.json',ev);dump(root/'accounting.json',budget.summary())
         result={'run':root.name,'config':config,'model':args.model,'stop_reason':stop,'calls':calls,'commands':len(receipts),

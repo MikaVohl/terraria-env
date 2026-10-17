@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **25 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **28 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$0.978054**; unresolved reservations: **$0.113971**. Combined accounted exposure: **$1.092025** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$1.100954**; unresolved reservations: **$0.043008**. Combined accounted exposure: **$1.143962** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -49,6 +49,8 @@ Starting 50 wood, 50 stone and 5 gel are inherited setup. Wood maxima include in
 | [03-haiku-json-crafting](03-haiku-json-crafting/result.json) | 50 | yes | 0 / no | n/a | 98 / 0 | 15 / 15 | $0.02780 | pass |
 | [20-haiku-tools-crafting](20-haiku-tools-crafting/result.json) | 50 | no | 0 / no | n/a | 104 / 1 | 16 / 17 | $0.03156 | pass |
 | [21-haiku-inventory-crafting](21-haiku-inventory-crafting/result.json) | 50 | yes | 0 / no | n/a | 14 / 0 | 16 / 8 | $0.02049 | pass |
+| [22-gemini-json-crafting](22-gemini-json-crafting/result.json) | 50 | yes | 15 / no | n/a | 106 / 1 | 10 / 10 | $0.08888 | pass_with_inert_tail |
+| [23-haiku-guided-crafting](23-haiku-guided-crafting/result.json) | 50 | yes | 0 / no | n/a | 69 / 0 | 16 / 16 | $0.03058 | pass |
 
 ## Prepared combat
 
@@ -57,6 +59,7 @@ Guide removed; one blue slime is armed after window setup. The initial rendered 
 | Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / frames | Cost | Audit |
 |---|---:|---|---|---|---|---|---:|---|
 | [02-haiku-paused-slime](02-haiku-paused-slime/result.json) | 0 | no | 0 / no | 0 / no | 0 / 0 | 16 / 17 | $0.02552 | pass |
+| [24-haiku-tools-slime](24-haiku-tools-slime/result.json) | 0 | no | 0 / no | 0 / no | 132 / 1 | 16 / 17 | $0.02760 | pass |
 | [N02-gemini-normalized-slime](N02-gemini-normalized-slime/result.json) | 0 | no | 0 / no | 0 / no | 54 / 0 | 16 / 9 | $0.07700 | pass |
 
 ## Interpretation boundaries
@@ -64,5 +67,6 @@ Guide removed; one blue slime is armed after window setup. The initial rendered 
 - Equal API calls do not mean equal action/observation opportunities. Stop limits include nominal observer updates; inference and cleanup can cross the simulation threshold. This is not an exact fixed-tick API.
 - PvE is enabled except the explicitly labeled peaceful ablation. Natural hostile encounters differ. Received damage is not evidence of successful combat; natural loot may come from the Guide.
 - A partial audit marks an unaccounted provider response/charge, not a model failure. Completed unsuccessful agent trajectories are retained.
+- A qualified `pass_with_inert_tail` requires an exact exported journal prefix followed only by heartbeats with identical observed state and advancing timestamps/ticks. Raw data and original result stay unchanged. Future runs wait for process termination before export.
 - Named native coding-agent frameworks, learned motor policies, new world seeds, bosses and post-Hardmode progression were not evaluated.
 - See [interpretation rules](../../interpretation.md), [selection plan](../../repeats-01.json) and [research rationale](../../design-rationale.md).

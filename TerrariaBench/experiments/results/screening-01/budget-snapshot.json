@@ -1,9 +1,8 @@
 {
   "limit_usd": "2.90",
-  "spent_usd": "0.891653771",
+  "spent_usd": "1.014553796",
   "pending": {
-    "01-haiku-tools-fresh": "0.0430080",
-    "22-gemini-json-crafting": "0.070963200"
+    "01-haiku-tools-fresh": "0.0430080"
   },
   "prior_session_reported_usd": "0.086400375"
 }

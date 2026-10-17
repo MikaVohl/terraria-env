@@ -7,6 +7,7 @@ import io
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import time
 
@@ -91,6 +92,32 @@ def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEI
         proc = subprocess.Popen(args, cwd=tml, env=env, stdin=subprocess.DEVNULL,
                                 stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
     return proc.pid
+
+
+def stop_owned_game(pid, profile, timeout=5):
+    """Wait for our direct game child to finish before snapshotting its journal."""
+    path=Path(f'/proc/{pid}/cmdline')
+    if not path.exists():return {'already_exited':True}
+    if str(Path(profile).resolve()).encode() not in path.read_bytes():
+        raise RuntimeError('refuse to terminate a process outside this game profile')
+    started=time.monotonic();stamp=time.time();forced=False
+    os.killpg(pid,signal.SIGTERM)
+    deadline=started+timeout
+    while True:
+        try:
+            child,_=os.waitpid(pid,os.WNOHANG)
+            if child==pid:break
+        except ChildProcessError:
+            if not path.exists():break
+        if time.monotonic()>=deadline:
+            # Only this owned process group; never Steam or another client.
+            if path.exists() and str(Path(profile).resolve()).encode() in path.read_bytes():
+                os.killpg(pid,signal.SIGKILL);forced=True
+            try:os.waitpid(pid,0)
+            except ChildProcessError:pass
+            break
+        time.sleep(.02)
+    return {'termination_requested_unix':stamp,'forced':forced,'wait_seconds':time.monotonic()-started}
 
 
 class GameControl:
