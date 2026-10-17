@@ -1,33 +1,16 @@
-"""PPO for terraria-lite.
+"""PPO with native vector rollouts and explicit episode-boundary handling.
 
-Feedforward, synchronous-vectorised, single file. Not optimised -- the point is
-that every part is correct and legible, so that when it is optimised later the
-baseline it is being compared against is trustworthy.
+Default training uses a general MLP, legal masks and achievement rewards.
+Spatial CNN and shared-cell encoders are experiment options. Optional Random
+Network Distillation supplies learned novelty during training; it is disabled
+by default and never changes evaluation rewards or physical action legality.
 
-    uv run python -m terraria_lite.ppo_agent --steps 500000
+    uv run python -m terraria_lite.ppo_agent --steps 4194304 --envs 64
 
-Three things here are specific to this environment rather than boilerplate, and
-they are the ones worth reading:
-
-1.  Truncation is bootstrapped, termination is not. Dying means there is no
-    future; hitting the 3000-step limit means the world carried on without us.
-    This env keeps `terminated` and `truncated` separate precisely so that
-    distinction is expressible, and collapsing them teaches the agent that the
-    world ends at 3000 steps. See `_absorb_truncation`.
-
-2.  The environment is cheap (~58k steps/s through ctypes) and the network is
-    small, so the gradient step dominates, not the simulator. That argues for
-    many parallel envs and big batches rather than a faster env, which is why
-    NUM_ENVS is high and why there is no C-side batching yet.
-
-3.  Observations already live in [0, 1] (env_obs normalises them), so there is
-    no observation normaliser here. One less thing to get subtly wrong.
-
-The environment is partially observable by design -- roughly 80% of the
-underground view reads as unlit. `recurrent_ppo_agent.py` tests the natural LSTM
-extension while preserving the (T, N, ...) rollout layout. At 600k steps it was
-slower and worse than the feed-forward progression-shaped agent: memory alone
-did not solve the hierarchical credit problem. See PPO_EXPERIMENTS.md.
+Rollouts preserve true final observations. Death and the benchmark's finite
+action deadline cut GAE with zero future value. External truncation bootstrap
+is an explicit option, not the default for this finite-horizon benchmark.
+Policy updates reuse the masks that defined their original sampling support.
 """
 
 from __future__ import annotations
@@ -49,16 +32,16 @@ from terraria_lite import SPEC, TerrariaLite
 
 @dataclass
 class Config:
-    total_steps: int = 500_000
-    num_envs: int = 16
-    rollout: int = 128          # steps per env per iteration -> batch 2048
+    total_steps: int = 4_194_304
+    num_envs: int = 64
+    rollout: int = 128          # steps per env per iteration -> default batch 8192
     epochs: int = 4
     minibatches: int = 4
     lr: float = 3e-4
     anneal_lr: bool = True
     # Episodes run to 3000 steps and the payoffs are sparse and one-shot, so
     # the usual 0.99 (69-step half-life) discounts the entire tech tree to
-    # noise. Measured over 3 seeds at 600k steps: 0.99 -> 3.86 achievements and
+    # noise. Historical v1 evidence over 3 seeds at 600k: 0.99 -> 3.86 and
     # the workbench never once crafted; 0.999 -> 5.18 and 22% workbench rate.
     # 0.9995 overshoots (4.33) -- the horizon stops helping before 1.0.
     gamma: float = 0.999
@@ -75,10 +58,15 @@ class Config:
     progress_coef: float = 0.0
     progress_anneal: bool = False
     seed: int = 1
-    device: str = "cpu"              # a 1.5M MLP at batch 2048 loses to MPS overhead
+    device: str = "cpu"              # benchmark device/batch together; CNN can benefit from MPS
     quiet: bool = False              # suppress per-iteration lines when sweeping
     save: str = "ppo_terraria.pt"    # "" to skip, so parallel sweeps don't collide
     init: str = ""                    # optional actor/critic state_dict warm start
+    architecture: str = "mlp"         # general spatial CNN is an optional control
+    curiosity_coef: float = 0.0       # generic learned novelty; extrinsic eval unchanged
+    curiosity_anneal: bool = True
+    curiosity_balanced: bool = False
+    bootstrap_time_limit: bool = False  # legacy/control only for the inherent deadline
 
     @property
     def batch(self) -> int:
@@ -91,6 +79,16 @@ class Config:
 
 # ----------------------------------------------------------------- model ---
 
+def sample_categorical(dist, mask=None):
+    """Same distribution, with CPU sampling for the known MPS multinomial bug."""
+    if dist.logits.device.type == "mps":
+        probs=dist.probs.detach().cpu()
+        action=torch.multinomial(probs,1).squeeze(-1)
+        if mask is not None and not bool(mask.detach().cpu().gather(-1,action[:,None]).all()):
+            raise RuntimeError("categorical sampler selected an illegal action")
+        return action.to(dist.logits.device)
+    return dist.sample()
+
 def layer_init(layer: nn.Linear, std: float = np.sqrt(2), bias: float = 0.0):
     """Orthogonal init. The head gains matter: 0.01 on the policy keeps the
     initial distribution near-uniform (so early exploration is real), 1.0 on
@@ -101,9 +99,11 @@ def layer_init(layer: nn.Linear, std: float = np.sqrt(2), bias: float = 0.0):
 
 
 class ActorCritic(nn.Module):
-    """Shared trunk, separate heads. The trunk is shared because the features
-    that predict value are the features that pick actions here; the heads are
-    separate because their output scales are nothing alike."""
+    """Parameter-efficient baseline: shared features, separate policy/value heads.
+
+    Sharing is a design choice, not an assumption that the two objectives always
+    want identical features. SeparateActorCritic tests that alternative.
+    """
 
     def __init__(self, obs_size: int, n_actions: int, hidden: int = 512):
         super().__init__()
@@ -127,7 +127,7 @@ class ActorCritic(nn.Module):
             logits = logits.masked_fill(~mask, float("-inf"))
         dist = Categorical(logits=logits)
         if action is None:
-            action = dist.sample()
+            action = sample_categorical(dist,mask)
         return action, dist.log_prob(action), dist.entropy(), self.critic(h).squeeze(-1)
 
 
@@ -137,8 +137,9 @@ class VecTerraria:
     """Synchronous vector of environments with explicit autoreset.
 
     Rolled by hand rather than using gymnasium's vector API for one reason:
-    when an episode ends we need the *true* terminal observation to bootstrap
-    a truncation, and owning the reset makes that unambiguous.
+        when an episode ends we retain its true final observation rather than
+        confuse it with the autoreset observation. External truncation controls
+        can bootstrap it; the benchmark's inherent action deadline does not.
     """
 
     def __init__(self, n: int, seed: int = 1):
@@ -147,6 +148,8 @@ class VecTerraria:
         self._next_seed = seed
         self.obs = np.zeros((n, SPEC.obs_size), dtype=np.float32)
         self.mask = np.zeros((n, SPEC.n_actions), dtype=bool)
+        from terraria_lite.batch import NativeBatch
+        self.native = NativeBatch(self.envs)
 
     def _fresh_seed(self) -> int:
         s = self._next_seed
@@ -164,22 +167,17 @@ class VecTerraria:
 
         `obs`/`mask` are what to act from next -- already reset where an
         episode ended. `final_obs` holds the real terminal observation for
-        those lanes, which is what a truncated episode must bootstrap from.
+        those lanes, for diagnostics or an explicit external-truncation control.
         """
-        rew = np.zeros(self.n, dtype=np.float32)
-        term = np.zeros(self.n, dtype=bool)
-        trunc = np.zeros(self.n, dtype=bool)
+        rew, term, trunc = self.native.step(actions, self.obs, self.mask)
         final = np.zeros((self.n, SPEC.obs_size), dtype=np.float32)
         finished = []
 
-        for i, e in enumerate(self.envs):
-            o, r, te, tr, info = e.step(int(actions[i]))
-            rew[i], term[i], trunc[i] = r, te, tr
-            if te or tr:
-                final[i] = o                      # before it is thrown away
-                finished.append((i, info))
-                o = e.reset(seed=self._fresh_seed())[0]
-            self.obs[i] = o
+        for i in np.flatnonzero(term | trunc):
+            e = self.envs[i]
+            final[i] = self.obs[i]
+            finished.append((int(i), e._info()))
+            self.obs[i] = e.reset(seed=self._fresh_seed())[0]
             self.mask[i] = e.action_mask()
         return self.obs, self.mask, rew, term, trunc, final, finished
 
@@ -282,14 +280,17 @@ class ProgressShaper:
 # ------------------------------------------------------------------ train ---
 
 def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device):
-    """Fold the bootstrap for truncated episodes into the reward.
+    """Bootstrap external truncations only, never the finite benchmark deadline.
 
     Autoreset means the observation after a boundary belongs to a fresh world.
     Both termination and truncation must therefore cut GAE recurrence; otherwise
-    an advantage leaks into the next episode. A truncation still has a future
-    value, though, so gamma * V(final_obs) is folded into its reward before that
-    cut. A true termination gets no such bootstrap -- death really is the end.
+    an advantage leaks into the next episode. Our C API labels the action budget
+    as truncated, but it is an inherent finite-horizon endpoint: there is no
+    reward after it. Keep the old bootstrap behind an explicit control flag so
+    the mismatch can be measured without changing game mechanics or old runs.
     """
+    if not cfg.bootstrap_time_limit:
+        return
     cut = np.logical_and(trunc, np.logical_not(term))
     if not cut.any():
         return
@@ -320,16 +321,23 @@ def compute_gae(rewards, dones, values, next_value, next_done,
 
 
 def train(cfg: Config, checkpoint_callback=None):
+    if SPEC.version >= 2 and cfg.progress_coef:
+        raise ValueError("v2 uses achievement rewards only; v1 shaping is incompatible")
     if cfg.num_envs < 1 or cfg.rollout < 1 or cfg.total_steps < cfg.batch:
         raise ValueError("training requires positive dimensions and at least one batch")
+    if cfg.minibatches < 1 or cfg.batch % cfg.minibatches:
+        raise ValueError("rollout batch must be divisible by positive minibatches")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
 
-    envs = VecTerraria(cfg.num_envs, seed=cfg.seed)
-    agent = ActorCritic(SPEC.obs_size, SPEC.n_actions).to(device)
+    envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed)
+    from terraria_lite.spatial_agent import build_agent
+    agent = build_agent(cfg.architecture).to(device)
     if cfg.init:
         raw = torch.load(cfg.init, map_location=device, weights_only=True)
+        from terraria_lite.checkpoints import validate_checkpoint
+        validate_checkpoint(raw)
         agent.load_state_dict(raw.get("model", raw) if isinstance(raw, dict) else raw)
     opt = torch.optim.Adam(agent.parameters(), lr=cfg.lr, eps=1e-5)
 
@@ -344,6 +352,9 @@ def train(cfg: Config, checkpoint_callback=None):
     # support they were sampled from, or the ratio is against a distribution
     # that never existed.
     msk_b = torch.zeros((T, N, SPEC.n_actions), dtype=torch.bool, device=device)
+    from terraria_lite.curiosity import RND
+    curiosity=RND(SPEC.obs_size,device,balanced=cfg.curiosity_balanced) if cfg.curiosity_coef else None
+    novelty_b=torch.empty_like(obs_b) if curiosity is not None else None
 
     o0, m0 = envs.reset()
     shaper = ProgressShaper(N) if cfg.progress_coef else None
@@ -385,6 +396,10 @@ def train(cfg: Config, checkpoint_callback=None):
             act_b[t], logp_b[t], val_b[t] = a, logp, v
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
+            if novelty_b is not None:
+                novelty_b[t]=torch.as_tensor(obs,device=device)
+                ended=np.flatnonzero(term|trunc)
+                if len(ended): novelty_b[t,torch.as_tensor(ended,device=device)]=torch.as_tensor(final[ended],device=device)
             if shaper is not None:
                 r = r + progress_coef * shaper.step(obs, final, term, trunc)
             rew_b[t] = torch.as_tensor(r, device=device)
@@ -392,8 +407,8 @@ def train(cfg: Config, checkpoint_callback=None):
 
             next_obs = torch.as_tensor(obs, device=device)
             next_mask = torch.as_tensor(msk, device=device)
-            # Autoreset makes both kinds episode boundaries. Truncation's true
-            # final-state bootstrap was already folded into rew_b above; using
+            # Autoreset makes both kinds episode boundaries. An explicitly
+            # enabled external bootstrap was folded into rew_b above; using
             # only `term` here would add V(reset_obs) as well and carry GAE from
             # an unrelated fresh world across the boundary.
             boundary = np.logical_or(term, trunc)
@@ -410,6 +425,13 @@ def train(cfg: Config, checkpoint_callback=None):
         collection_seconds += time.perf_counter() - phase_start
         phase_start = time.perf_counter()
         # ---- GAE ---------------------------------------------------------
+        novelty_error=0.0
+        if curiosity is not None:
+            bonus,novelty_error=curiosity.bonus_and_update(novelty_b.reshape(-1,SPEC.obs_size))
+            scale=cfg.curiosity_coef
+            if cfg.curiosity_anneal:
+                scale*=max(0.,1.-2.*(it-1)/n_iters)
+            rew_b+=scale*bonus.reshape(T,N)
         with torch.no_grad():
             next_value = agent.value(next_obs)
             adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
@@ -474,6 +496,8 @@ def train(cfg: Config, checkpoint_callback=None):
             checkpoint_callback(agent, step_count, {
                 "collection_seconds": collection_seconds,
                 "optimisation_seconds": optimisation_seconds,
+                "novelty_error": novelty_error,
+                "policy_entropy": float(entropy.detach().mean()),
             })
         # ---- report ------------------------------------------------------
         y = b_ret.cpu().numpy()
@@ -500,6 +524,7 @@ def train(cfg: Config, checkpoint_callback=None):
         "progress_coef": cfg.progress_coef,
         "progress_anneal": cfg.progress_anneal,
         "lr": cfg.lr, "envs": cfg.num_envs, "steps": step_count,
+        "architecture": cfg.architecture,"curiosity_coef": cfg.curiosity_coef,
         "requested_steps": cfg.total_steps,
         "collection_seconds": collection_seconds,
         "optimisation_seconds": optimisation_seconds,
@@ -520,8 +545,7 @@ def train(cfg: Config, checkpoint_callback=None):
         # MASKED random, because this agent is masked -- comparing against an
         # unmasked baseline flatters it by the +0.27 that masking alone buys.
         # Re-measure whenever a reward weight changes; it has moved twice.
-        print(f"masked-random:     4.18 / {SPEC.n_achievements} achievements, "
-              f"return +3.41\n")
+        print("Compare with a fresh uniform-legal control on the same validation worlds.\n")
 
         # Counts, not just a rounded percentage: once the agent starts cracking
         # a wall it does so a handful of times in hundreds of episodes, and
@@ -537,7 +561,9 @@ def train(cfg: Config, checkpoint_callback=None):
                   f"{walls[0]} is the wall")
 
     if cfg.save:
-        torch.save(agent.state_dict(), cfg.save)
+        torch.save({"model": agent.state_dict(), "architecture": cfg.architecture,
+                    "environment_version": SPEC.version,
+                    "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions}, cfg.save)
         if not cfg.quiet:
             print(f"\nsaved {cfg.save}")
     return summary
@@ -555,16 +581,15 @@ if __name__ == "__main__":
             "PPO for terraria-lite.\n\n"
             "Work is measured in environment STEPS, not episodes: PPO's unit is\n"
             "the rollout batch, and episodes here run anywhere from ~300 to 3000\n"
-            "steps. There is no positional argument -- use --steps.\n\n"
-            "Baselines: masked-random 4.18 / 24 achievements, unmasked 3.91."
+            "steps. There is no positional argument -- use --steps."
         ),
         epilog=(
             "examples:\n"
             "  --steps 100000\n"
             "      short unshaped smoke run\n"
-            "  --steps 4000000 --seed 71 --progress-coef 0.5 --progress-anneal\n"
-            "      best tested from-scratch recipe: 10.75/24 on 256 holdouts\n"
-            "See PPO_EXPERIMENTS.md for ablations and evaluation protocol.\n"
+            "  --steps 4194304 --envs 64 --seed 101\n"
+            "      sparse-reward baseline\n"
+            "See ITERATION_2026_10.md for current evidence.\n"
         ),
     )
     p.add_argument("--steps", type=int, default=Config.total_steps,
@@ -580,6 +605,13 @@ if __name__ == "__main__":
                         "3000-step episodes")
     p.add_argument("--ent-coef", type=float, default=Config.ent_coef,
                    help="entropy bonus; raise it to delay premature convergence")
+    p.add_argument("--gae-lambda",type=float,default=Config.gae_lambda)
+    p.add_argument("--bootstrap-time-limit",action="store_true",
+                   help="legacy/external-truncation control; incompatible with the finite benchmark objective")
+    p.add_argument("--architecture",choices=["mlp","cnn","tokens","separate","targets"],default=Config.architecture)
+    p.add_argument("--curiosity-coef",type=float,default=0.,help="optional learned novelty; experimental")
+    p.add_argument("--balanced-curiosity",action="store_true")
+    p.add_argument("--threads",type=int,default=6)
     p.add_argument("--progress-coef", type=float, default=Config.progress_coef,
                    help="training-only capped prerequisite-progress feedback")
     p.add_argument("--progress-anneal", action="store_true",
@@ -597,10 +629,13 @@ if __name__ == "__main__":
     p.add_argument("--json", action="store_true",
                    help="emit the summary as one JSON line on stdout")
     a = p.parse_args()
+    torch.set_num_threads(a.threads)
     s = train(Config(total_steps=a.steps, num_envs=a.envs, rollout=a.rollout,
                      lr=a.lr, gamma=a.gamma, ent_coef=a.ent_coef, seed=a.seed,
                      progress_coef=a.progress_coef,
                      progress_anneal=a.progress_anneal, device=a.device,
-                     save=a.save, init=a.init, quiet=a.quiet))
+                     save=a.save, init=a.init, quiet=a.quiet,architecture=a.architecture,
+                     gae_lambda=a.gae_lambda,bootstrap_time_limit=a.bootstrap_time_limit,curiosity_coef=a.curiosity_coef,
+                     curiosity_balanced=a.balanced_curiosity))
     if a.json:
         print(json.dumps(s))

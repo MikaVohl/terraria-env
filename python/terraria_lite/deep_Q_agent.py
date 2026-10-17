@@ -267,9 +267,9 @@ def run(episodes: int = 200, seed0: int = 1, quiet: bool = False,
           f"{walls[0] if walls else '-'} is the first wall")
 
     if save:
-        # Plain Sequential state dict; terraria_lite.watch sniffs the keys to
-        # tell it apart from a PPO ActorCritic.
-        torch.save(Q.state_dict(), save)
+        torch.save({"model": Q.state_dict(), "architecture": "dqn",
+                    "environment_version": SPEC.version,
+                    "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions}, save)
         if not quiet:
             print(f"\n  saved {save}")
 

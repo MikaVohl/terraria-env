@@ -18,24 +18,29 @@ import numpy as np
 import torch
 
 from terraria_lite import SPEC, TerrariaLite
-from terraria_lite.ppo_agent import ActorCritic
+from terraria_lite.ppo_agent import ActorCritic, sample_categorical
 
 
 def load_agent(path: str | Path, device: str = "cpu"):
     raw = torch.load(Path(path), map_location=device, weights_only=True)
-    # Keep compatibility with both the original plain state_dict checkpoints
-    # and richer experiment checkpoints if those are introduced later.
+    from terraria_lite.checkpoints import validate_checkpoint
+    validate_checkpoint(raw)
     state = raw.get("model", raw) if isinstance(raw, dict) else raw
-    if isinstance(raw, dict) and raw.get("architecture") == "lstm":
-        from terraria_lite.recurrent_ppo_agent import RecurrentActorCritic
-        agent = RecurrentActorCritic(SPEC.obs_size, SPEC.n_actions,
-                                     encoder=int(raw["encoder"]),
+    if raw.get("architecture") == "double_dqn":
+        from terraria_lite.replay_agent import ReplayQ
+        agent=ReplayQ(int(raw.get("hidden",512))).to(device)
+        agent.load_state_dict(state);agent.eval();return agent
+    if isinstance(raw, dict) and raw.get("architecture") in ("lstm", "lstm_targets"):
+        from terraria_lite.recurrent_ppo_agent import build_recurrent_agent
+        agent = build_recurrent_agent(raw["architecture"], encoder=int(raw["encoder"]),
                                      hidden=int(raw["hidden"])).to(device)
         agent.load_state_dict(state)
         agent.eval()
         return agent
-    hidden = int(state["trunk.0.weight"].shape[0])
-    agent = ActorCritic(SPEC.obs_size, SPEC.n_actions, hidden=hidden).to(device)
+    from terraria_lite.spatial_agent import build_agent
+    architecture=raw.get("architecture","mlp")
+    hidden=int(state["actor.weight"].shape[1])
+    agent = build_agent(architecture,hidden).to(device)
     agent.load_state_dict(state)
     agent.eval()
     return agent
@@ -57,6 +62,15 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
             obs = np.stack([e.reset(seed=s)[0] for e, s in zip(envs, batch_seeds)])
             mask = np.stack([e.action_mask() for e in envs])
             active = np.ones(len(envs), dtype=bool)
+            from terraria_lite.batch import NativeBatch
+            native=NativeBatch(envs,workers=4)
+            status_start=SPEC.cells*(SPEC.tile_kinds+1)
+            depth_index=status_start+SPEC.status_depth
+            ach_index=status_start+SPEC.status_ach0
+            peak_depth=np.rint(obs[:,depth_index]*(SPEC.world_h-1)).astype(np.int32)
+            first_steps=np.zeros((len(envs),SPEC.n_achievements),np.int32)
+            last_achievement=np.zeros(len(envs),np.int32)
+            tick=0
             if recurrent:
                 state = agent.initial_state(len(envs), device)
                 done = torch.zeros(len(envs), device=device)
@@ -71,19 +85,19 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
                     h = agent.trunk(x)
                     logits = agent.actor(h).masked_fill(~m, float("-inf"))
                 actions = (logits.argmax(-1) if greedy else
-                           torch.distributions.Categorical(logits=logits).sample())
+                           sample_categorical(torch.distributions.Categorical(logits=logits),m))
 
-                for i, e in enumerate(envs):
-                    if not active[i]:
-                        continue
-                    o, _, term, trunc, info = e.step(int(actions[i]))
-                    obs[i] = o
-                    if term or trunc:
-                        active[i] = False
-                        records.append({"seed": batch_seeds[i], **info,
-                                        "died": info["health"] <= 0})
-                    else:
-                        mask[i] = e.action_mask()
+                _,term,trunc=native.step(actions.cpu().numpy(),obs,mask)
+                tick+=1
+                peak_depth[active]=np.maximum(peak_depth[active],np.rint(obs[active,depth_index]*(SPEC.world_h-1)).astype(np.int32))
+                new=(first_steps==0)&(obs[:,ach_index:ach_index+SPEC.n_achievements]>.5)&active[:,None]
+                first_steps[new]=tick
+                last_achievement[new.any(axis=1)]=tick
+                for i in np.flatnonzero(active & (term | trunc)):
+                    active[i]=False; info=envs[i]._info()
+                    records.append({"seed":batch_seeds[i],**info,"died":info["health"]<=0,
+                        "peak_depth":int(peak_depth[i]),"last_achievement_step":int(last_achievement[i]),
+                        "first_achievement_steps":{name:int(first_steps[i,j]) for j,name in enumerate(SPEC.achievement_names) if first_steps[i,j]>0}})
         finally:
             for e in envs:
                 e.close()
@@ -108,6 +122,10 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
         "mean_return": float(returns.mean()),
         "mean_length": float(lengths.mean()),
         "death_rate": float(np.mean([r["died"] for r in records])),
+        "mean_peak_depth":float(np.mean([r["peak_depth"] for r in records])),
+        "mean_steps_after_last_achievement":float(np.mean([r["steps"]-r["last_achievement_step"] for r in records])),
+        "first_achievement_steps":{name:{"episodes":len(times),"mean":float(np.mean(times)),"median":float(np.median(times))}
+            for name in SPEC.achievement_names if (times:=[r["first_achievement_steps"][name] for r in records if name in r["first_achievement_steps"]])},
         "hits": {name: hits[name] for name in SPEC.achievement_names if hits[name]},
         "records": records,
     }

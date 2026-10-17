@@ -117,6 +117,9 @@ def main() -> None:
     p.add_argument("--save", type=Path, default=Path("ppo_bc.pt"))
     a = p.parse_args()
 
+    if SPEC.version >= 2:
+        p.error("This historical expert-cloning experiment targets v1. Use experiments/v1-frozen; v2 baselines learn from scratch.")
+
     torch.manual_seed(a.seed)
     np.random.seed(a.seed)
     obs, mask, action = collect(range(a.seed_start, a.seed_start + a.seeds),

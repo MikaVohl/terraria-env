@@ -34,17 +34,26 @@ from terraria_lite import SPEC, TerrariaLite
 def _load(path: Path):
     """Return (act_fn, kind). Distinguishes PPO from DQN by state-dict keys.
 
-    PPO saves an ActorCritic (trunk/actor/critic); the DQN saves a plain
-    Sequential. Sniffing the checkpoint beats a --kind flag the user would
+    PPO saves an ActorCritic (trunk/actor/critic); DQN wraps a Sequential
+    state dict in the same versioned metadata. Sniffing beats a --kind flag the user would
     have to remember and could get wrong.
     """
     raw = torch.load(path, map_location="cpu", weights_only=True)
-    if isinstance(raw, dict) and raw.get("architecture") == "lstm":
-        from terraria_lite.recurrent_ppo_agent import RecurrentActorCritic
+    from terraria_lite.checkpoints import validate_checkpoint
+    validate_checkpoint(raw)
+    if raw.get("architecture") == "double_dqn":
+        from terraria_lite.ppo_eval import load_agent
+        net=load_agent(path)
+        def replay_q(obs,mask,greedy):
+            with torch.no_grad():
+                values=net(torch.as_tensor(obs).unsqueeze(0)).masked_fill(~torch.as_tensor(mask).unsqueeze(0),float('-inf'))
+                return int(values.argmax())
+        return replay_q,"double-dqn-greedy"
+    if isinstance(raw, dict) and raw.get("architecture") in ("lstm", "lstm_targets"):
+        from terraria_lite.recurrent_ppo_agent import build_recurrent_agent
         sd = raw["model"]
-        net = RecurrentActorCritic(SPEC.obs_size, SPEC.n_actions,
-                                   encoder=int(raw["encoder"]),
-                                   hidden=int(raw["hidden"]))
+        net = build_recurrent_agent(raw["architecture"],encoder=int(raw["encoder"]),
+                                    hidden=int(raw["hidden"]))
         net.load_state_dict(sd)
         net.eval()
         state = net.initial_state(1, "cpu")
@@ -71,9 +80,9 @@ def _load(path: Path):
     keys = set(sd)
 
     if any(k.startswith("actor.") for k in keys):
-        from terraria_lite.ppo_agent import ActorCritic
-        hidden = int(sd["trunk.0.weight"].shape[0])
-        net = ActorCritic(SPEC.obs_size, SPEC.n_actions, hidden=hidden)
+        from terraria_lite.spatial_agent import build_agent
+        hidden = int(sd["actor.weight"].shape[1])
+        net = build_agent(raw.get("architecture","mlp"),hidden)
         net.load_state_dict(sd)
         net.eval()
 
@@ -132,7 +141,8 @@ def rollout(act_fn, seed: int, greedy: bool, max_steps: int | None = None):
 def write_tape(path: Path, seed: int, max_steps: int, label: str,
                actions: list[int]) -> None:
     with path.open("w") as f:
-        f.write("# terraria-lite tape v1\n")
+        f.write("# terraria-lite tape\n")
+        f.write(f"environment {SPEC.version}\n")
         f.write(f"seed {seed}\n")
         f.write(f"max_steps {max_steps}\n")
         f.write(f"label {label}\n")
@@ -165,6 +175,8 @@ def main(argv=None) -> int:
     p.add_argument("--policy", type=Path, default=Path("ppo_terraria.pt"),
                    help="checkpoint; PPO or DQN is detected from its keys")
     p.add_argument("--seed", type=int, default=1, help="world seed to play")
+    p.add_argument("--sample-seed",type=int,default=12345,help="reproducible policy sampling seed")
+    p.add_argument("--threads",type=int,default=1,help="Torch threads for single-world inference")
     p.add_argument("--out", type=Path, default=Path("rollout.tape"))
     p.add_argument("--greedy", action="store_true",
                    help="argmax instead of sampling. Cleaner to watch, but it "
@@ -176,6 +188,9 @@ def main(argv=None) -> int:
     p.add_argument("--tick-ms", type=int, default=80, metavar="MS",
                    help="playback speed passed to terraria-px, 10..1000")
     a = p.parse_args(argv)
+    if a.threads<1 or a.best_of<1:
+        p.error("--threads and --best-of must be positive")
+    torch.set_num_threads(a.threads)
 
     if not a.policy.exists():
         print(f"no checkpoint at {a.policy}. Train one first:\n"
@@ -191,6 +206,8 @@ def main(argv=None) -> int:
         return 2
 
     act_fn, kind = _load(a.policy)
+    torch.manual_seed(a.sample_seed)
+    np.random.seed(a.sample_seed)
     print(f"{a.policy.name}: {kind}, {'greedy' if a.greedy else 'sampled'}")
 
     best = None

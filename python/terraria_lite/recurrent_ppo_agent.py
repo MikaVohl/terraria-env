@@ -21,7 +21,7 @@ from torch.distributions import Categorical
 
 from terraria_lite import SPEC
 from terraria_lite.ppo_agent import (ProgressShaper, VecTerraria, compute_gae,
-                                     layer_init)
+                                     layer_init, sample_categorical)
 
 
 @dataclass
@@ -47,6 +47,9 @@ class Config:
     device: str = "cpu"
     save: str = "recurrent_ppo_terraria.pt"
     quiet: bool = False
+    anneal_lr: bool = True
+    bootstrap_time_limit: bool = False
+    architecture: str = "lstm"
 
     @property
     def batch(self):
@@ -97,7 +100,7 @@ class RecurrentActorCritic(nn.Module):
             logits = logits.masked_fill(~mask, float("-inf"))
         dist = Categorical(logits=logits)
         if action is None:
-            action = dist.sample()
+            action = sample_categorical(dist,mask)
         return (action, dist.log_prob(action), dist.entropy(),
                 self.critic(h).squeeze(-1), state)
 
@@ -112,7 +115,9 @@ class RecurrentActorCritic(nn.Module):
         at timesteps where at least one lane resets, using the optimized fused
         LSTM for the usually-long segments between them.
         """
-        z = self.encoder(obs)
+        return self._sequence_encoded(self.encoder(obs), state, done)
+
+    def _sequence_encoded(self, z, state, done):
         pieces, start = [], 0
         cuts = torch.nonzero(done.any(dim=1), as_tuple=False).flatten().tolist()
         for cut in cuts:
@@ -127,8 +132,61 @@ class RecurrentActorCritic(nn.Module):
         return torch.cat(pieces, dim=0), state
 
 
+class RecurrentTargetActorCritic(RecurrentActorCritic):
+    """Generic spatial target policy with residual recurrent global memory.
+
+    Current local target contexts still go to the shared mine/place scorer.
+    The LSTM consumes global spatial/status features, with no goals, recipe
+    order, map oracle, demonstrations or manually maintained strategic state.
+    """
+    def __init__(self, hidden=128):
+        nn.Module.__init__(self)
+        from terraria_lite.target_agent import TargetEncoder, TargetActor, GlobalCritic
+        self.encoder_size = self.hidden_size = hidden
+        self.encoder = TargetEncoder(hidden)
+        self.lstm = nn.LSTM(hidden, hidden)
+        for name, param in self.lstm.named_parameters():
+            if "bias" in name:
+                nn.init.constant_(param, 0.0)
+            elif "weight_hh" in name:
+                for block in param.chunk(4, 0):
+                    nn.init.orthogonal_(block)
+            else:
+                nn.init.xavier_uniform_(param)
+        self.actor = TargetActor(hidden)
+        self.critic = layer_init(GlobalCritic(hidden, 1), std=1.0)
+
+    def core_step(self, obs, state, done):
+        state = self._reset(state, done)
+        encoded = self.encoder(obs)
+        global_features = encoded[:, :self.hidden_size]
+        memory, state = self.lstm(global_features.unsqueeze(0), state)
+        return torch.cat((global_features + memory.squeeze(0),
+                          encoded[:, self.hidden_size:]), dim=-1), state
+
+    def sequence(self, obs, state, done):
+        t, n = obs.shape[:2]
+        encoded = self.encoder(obs.reshape(t*n, -1)).reshape(t, n, -1)
+        global_features = encoded[:, :, :self.hidden_size]
+        memory, state = self._sequence_encoded(global_features, state, done)
+        return torch.cat((global_features + memory,
+                          encoded[:, :, self.hidden_size:]), dim=-1), state
+
+
+def build_recurrent_agent(architecture, encoder=256, hidden=256):
+    if architecture == "lstm":
+        return RecurrentActorCritic(SPEC.obs_size, SPEC.n_actions, encoder, hidden)
+    if architecture == "lstm_targets":
+        if encoder != hidden:
+            raise ValueError("Spatial recurrent encoder and memory widths must match")
+        return RecurrentTargetActorCritic(hidden)
+    raise ValueError(f"Unknown recurrent architecture {architecture}")
+
+
 def _bootstrap_truncation(cfg, agent, rewards, term, trunc, final_obs,
                           state, t, device):
+    if not cfg.bootstrap_time_limit:
+        return
     cut = np.logical_and(trunc, np.logical_not(term))
     if not cut.any():
         return
@@ -141,15 +199,18 @@ def _bootstrap_truncation(cfg, agent, rewards, term, trunc, final_obs,
     rewards[t, pick] += cfg.gamma * value
 
 
-def train(cfg: Config) -> dict:
+def train(cfg: Config, checkpoint_callback=None) -> dict:
+    if SPEC.version >= 2 and cfg.progress_coef:
+        raise ValueError("v2 uses achievement rewards only; v1 shaping is incompatible")
+    if cfg.num_envs < 1 or cfg.rollout < 1 or cfg.total_steps < cfg.batch or cfg.minibatches < 1:
+        raise ValueError("At least one complete positive rollout batch required")
     if cfg.num_envs % cfg.minibatches:
         raise ValueError("num_envs must be divisible by recurrent minibatches")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
-    envs = VecTerraria(cfg.num_envs, seed=cfg.seed)
-    agent = RecurrentActorCritic(SPEC.obs_size, SPEC.n_actions,
-                                 cfg.encoder, cfg.hidden).to(device)
+    envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed)
+    agent = build_recurrent_agent(cfg.architecture, cfg.encoder, cfg.hidden).to(device)
     opt = torch.optim.Adam(agent.parameters(), lr=cfg.lr, eps=1e-5)
 
     T, N = cfg.rollout, cfg.num_envs
@@ -173,17 +234,19 @@ def train(cfg: Config) -> dict:
     n_iters = cfg.total_steps // cfg.batch
     ep_returns, ep_ach, ep_lengths, ep_deaths, ep_masks = [], [], [], [], []
     step_count, start_time = 0, time.perf_counter()
+    collection_seconds = optimisation_seconds = 0.0
 
     if not cfg.quiet:
         print(f"recurrent PPO: {N} envs x {T} steps, {n_iters} iterations")
 
     for it in range(1, n_iters + 1):
-        lr_frac = 1.0 - (it - 1.0) / n_iters
+        lr_frac = 1.0 - (it - 1.0) / n_iters if cfg.anneal_lr else 1.0
         for group in opt.param_groups:
             group["lr"] = cfg.lr * lr_frac
         progress_coef = cfg.progress_coef * (lr_frac if cfg.progress_anneal else 1.0)
         initial_state = (state[0].detach().clone(), state[1].detach().clone())
 
+        phase_start = time.perf_counter()
         for t in range(T):
             obs_b[t], done_b[t], msk_b[t] = next_obs, next_done, next_mask
             with torch.no_grad():
@@ -209,6 +272,8 @@ def train(cfg: Config) -> dict:
                 ep_deaths.append(info["health"] <= 0)
                 ep_masks.append(info["achievement_mask"])
 
+        collection_seconds += time.perf_counter() - phase_start
+        phase_start = time.perf_counter()
         with torch.no_grad():
             next_value, _ = agent.value_step(next_obs, state, next_done)
             adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
@@ -226,12 +291,15 @@ def train(cfg: Config) -> dict:
                             initial_state[1][:, lane_t].contiguous())
                 core, _ = agent.sequence(obs_b[:, lane_t], mb_state,
                                          done_b[:, lane_t])
-                logits = agent.actor(core).masked_fill(
+                # Shared target scorers accept flat observation batches; keep
+                # the temporal/lane layout outside the actor/critic heads.
+                flat_core = core.reshape(-1, core.shape[-1])
+                logits = agent.actor(flat_core).reshape(T, len(lanes), SPEC.n_actions).masked_fill(
                     ~msk_b[:, lane_t], float("-inf"))
                 dist = Categorical(logits=logits)
                 newlogp = dist.log_prob(act_b[:, lane_t])
                 entropy = dist.entropy()
-                newval = agent.critic(core).squeeze(-1)
+                newval = agent.critic(flat_core).reshape(T, len(lanes))
                 logratio = newlogp - logp_b[:, lane_t]
                 ratio = logratio.exp()
                 with torch.no_grad():
@@ -256,6 +324,13 @@ def train(cfg: Config) -> dict:
             if cfg.target_kl is not None and approx_kl > cfg.target_kl:
                 break
 
+        optimisation_seconds += time.perf_counter() - phase_start
+        if checkpoint_callback is not None:
+            checkpoint_callback(agent,step_count,{
+                "collection_seconds":collection_seconds,
+                "optimisation_seconds":optimisation_seconds,
+                "approx_kl":float(approx_kl),
+            })
         if not cfg.quiet and (it == 1 or it % 10 == 0):
             tail = slice(-50, None)
             sps = step_count / (time.perf_counter() - start_time)
@@ -268,7 +343,9 @@ def train(cfg: Config) -> dict:
     sps = step_count / (time.perf_counter() - start_time)
     tail = ep_masks[-200:]
     summary = {
-        "agent": "recurrent_ppo", "seed": cfg.seed, "steps": cfg.total_steps,
+        "agent": "recurrent_ppo", "seed": cfg.seed, "steps": step_count,
+        "requested_steps":cfg.total_steps,"architecture":cfg.architecture,
+        "collection_seconds":collection_seconds,"optimisation_seconds":optimisation_seconds,
         "progress_coef": cfg.progress_coef,
         "progress_anneal": cfg.progress_anneal, "sps": round(sps),
         "n_ep": len(ep_ach),
@@ -280,8 +357,10 @@ def train(cfg: Config) -> dict:
                  if any((bits >> i) & 1 for bits in tail)},
     }
     if cfg.save:
-        torch.save({"model": agent.state_dict(), "architecture": "lstm",
-                    "encoder": cfg.encoder, "hidden": cfg.hidden}, cfg.save)
+        torch.save({"model": agent.state_dict(), "architecture": cfg.architecture,
+                    "encoder": cfg.encoder, "hidden": cfg.hidden,
+                    "environment_version": SPEC.version,
+                    "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions}, cfg.save)
     return summary
 
 
@@ -298,13 +377,22 @@ def main():
     p.add_argument("--device", default=Config.device)
     p.add_argument("--save", default=Config.save)
     p.add_argument("--quiet", action="store_true")
+    p.add_argument("--architecture", choices=["lstm","lstm_targets"], default=Config.architecture)
+    p.add_argument("--encoder", type=int, default=Config.encoder)
+    p.add_argument("--hidden", type=int, default=Config.hidden)
+    p.add_argument("--gae-lambda", type=float, default=Config.gae_lambda)
+    p.add_argument("--gamma", type=float, default=Config.gamma)
+    p.add_argument("--bootstrap-time-limit", action="store_true")
     p.add_argument("--json", action="store_true")
     a = p.parse_args()
     result = train(Config(total_steps=a.steps, num_envs=a.envs,
                           rollout=a.rollout, lr=a.lr, ent_coef=a.ent_coef,
                           progress_coef=a.progress_coef,
                           progress_anneal=a.progress_anneal, seed=a.seed,
-                          device=a.device, save=a.save, quiet=a.quiet))
+                          device=a.device, save=a.save, quiet=a.quiet,
+                          architecture=a.architecture,encoder=a.encoder,hidden=a.hidden,
+                          gae_lambda=a.gae_lambda,gamma=a.gamma,
+                          bootstrap_time_limit=a.bootstrap_time_limit))
     if a.json or a.quiet:
         print(json.dumps(result))
 
