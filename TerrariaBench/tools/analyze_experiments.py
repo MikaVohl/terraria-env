@@ -9,6 +9,7 @@ import json
 import math
 from pathlib import Path
 import struct
+from statistics import median
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from terrariabench.linux_control import validate_actions
@@ -38,7 +39,7 @@ def audit(root):
     outputs=[json.loads(s) for s in (root/'tool-results.jsonl').read_text().splitlines()] if (root/'tool-results.jsonl').exists() else []
     by_id={o.get('call_id'):o for o in outputs if o.get('call_id')}
     json_steps={o['step']:o for o in outputs if o['name']=='json'}
-    expected=[];cost=Decimal(0);tokens=0;images=set();prior=[];prior_response=None
+    expected=[];capture_times=[];cost=Decimal(0);tokens=0;images=set();prior=[];prior_response=None
     responses=sorted(root.glob('response-*.json'))
     for i,path in enumerate(responses):
         response=json.loads(path.read_text());req=json.loads((root/f'request-{i:03d}.json').read_text())
@@ -49,6 +50,7 @@ def audit(root):
             assert msgs[:len(prior)]==prior
             if prior_response is not None:assert msgs[len(prior)]==prior_response
         prior=msgs;prior_response=response['choices'][0]['message']
+        captured=[];before=len(expected)
         for msg in msgs:
             if isinstance(msg.get('content'),list):
                 for part in msg['content']:
@@ -57,6 +59,7 @@ def audit(root):
                         assert hashlib.sha256(data).hexdigest()==im['sha256']
                         assert struct.unpack('>II',data[16:24])==(1024,1024)
                         images.add(im['artifact'])
+                        captured.append(im['capture']['captured_unix'])
         if config['scaffold']=='json':
             o=json_steps.get(i)
             if o and 'dispatched_commands' in o['result']:
@@ -70,8 +73,11 @@ def audit(root):
                 params=json.loads(call['function']['arguments'])
                 if call['function']['name']=='act':expected.extend(pixel_actions(params['actions'],config))
                 elif call['function']['name']=='use_item':expected.extend(pixel_actions([{'keys':[str(params['slot']%10)],'ms':50},{'x':params['x'],'y':params['y'],'mouse':'left','ms':params['ms']}],config))
+        capture_times.extend([max(captured)]*(len(expected)-before))
     receipts=[json.loads(s) for s in (root/'inputs.jsonl').read_text().splitlines()] if (root/'inputs.jsonl').exists() else []
     assert expected==[r['action'] for r in receipts]
+    ages=[r['started_unix']-stamp for r,stamp in zip(receipts,capture_times)]
+    assert len(capture_times)==len(receipts) and all(age>=0 for age in ages)
     for action in expected:validate_actions([action],width=1024,height=1024,max_hold_ms=config['hold_ms'])
     assert all(r['actor']=='agent' for r in receipts)
     assert cost==Decimal(result['accounting']['reported_usd']);assert tokens==result['accounting']['tokens']
@@ -94,6 +100,7 @@ def audit(root):
     complete=len(responses)==result['calls'] and not Decimal(result['accounting']['uncertain_reserved_usd'])
     out={'artifact_checks_passed':True,'all_calls_accounted':complete,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),
          'exact_telemetry_export_match':not inert_tail,'inert_post_snapshot_heartbeats':inert_tail,
+         'latest_observation_wall_age_seconds':{'median':round(median(ages),2) if ages else None,'max':round(max(ages),2) if ages else None,'samples':len(ages)},
          'raw_telemetry_hashes':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'telemetry').glob('*.jsonl')},'official_eligible':False}
     (root/'audit.json').write_text(json.dumps(out,indent=2)+'\n');return out
 
@@ -102,6 +109,7 @@ def analyze(root):
     root=Path(root);rows=[]
     for path in sorted(root.glob('*/result.json')):
         result=json.loads(path.read_text());config=result['config'];m=result['metrics'];sc=m['public_subset_score']
+        aud={}
         try:
             aud=audit(path.parent)
             status=('pass_with_inert_tail' if aud['inert_post_snapshot_heartbeats'] else 'pass') if aud['all_calls_accounted'] else 'partial'
@@ -119,7 +127,8 @@ def analyze(root):
              'coordinates':config.get('coordinates','pixels'),
              'calls':result['calls'],'commands':result['commands'],'frames':result['frames'],'invalid':result['invalid_outputs'],
              'usd':result['accounting']['reported_usd'],'uncertain_usd':result['accounting']['uncertain_reserved_usd'],
-             'wood_max':inv.get('Wood',0),'workbench':'workbench_1' in milestones,'torch_max':inv.get('Torch',0),'furnace':'furnace_1' in milestones,
+             'wood_max':inv.get('Wood',0),'held_wood_25':'wood_25' in milestones,'workbench':'workbench_1' in milestones,'torch_max':inv.get('Torch',0),'furnace':'furnace_1' in milestones,
+             'milestones':';'.join(milestones),
              'families':';'.join(m['progress_families']),'deaths':m['deaths'],'damage_received':m['damage_received'],
              'minimum_hp':m['minimum_hp'],'hits_received':m['hits_received'],
              'hostile_observed_heartbeats':m['hostile_observed_heartbeats'],
@@ -130,6 +139,8 @@ def analyze(root):
              'max_input_hold_ms':max(holds,default=0),'holds_above_2000ms':sum(h>2000 for h in holds),
              'tool_counts':json.dumps(dict(tool_counts),sort_keys=True),
              'error_counts':json.dumps(dict(errors),sort_keys=True),
+             'median_observation_age_wall_seconds':aud.get('latest_observation_wall_age_seconds',{}).get('median'),
+             'max_observation_age_wall_seconds':aud.get('latest_observation_wall_age_seconds',{}).get('max'),
              'max_prompt_tokens':max((r['usage']['prompt_tokens'] for r in replies),default=0),
              'length_truncations':sum(r['choices'][0].get('finish_reason')=='length' for r in replies),
              'stop':result['stop_reason'],'audit':status}

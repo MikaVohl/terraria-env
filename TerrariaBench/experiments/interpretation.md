@@ -40,6 +40,11 @@ every other NPC.
   create identical hostile encounters or bitwise deterministic trajectories.
 - Models use medium reasoning where supported, low for DeepSeek. Effort labels
   and equal token ceilings do not imply equal inference compute.
+- The task prompt does not reveal numeric remaining call/time budgets. Open-goal
+  agents may choose bulk resource gathering for later progression. Early cutoffs
+  measure achieved progress, not an optimized finite-horizon policy or proof
+  that an unachieved station is beyond the model's capability. Budget awareness
+  should be an explicit choice in a future protocol.
 - Screening has 16 API calls, 300 wall seconds and a nominal 120 seconds of
   observer updates (60 updates/second). Whole-process stopping is verified, but
   update counts are observer measurements rather than an attested step API;

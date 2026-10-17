@@ -28,7 +28,7 @@ def main():
          'shuffled within three blocks. Initial/pilot attempts are excluded from this table. '
          'These remain small development samples, with unpinned encounter RNG. Outcome rates and distributions '
          'use fully accounted attempts; attempt counts and costs retain interrupted attempts.','',
-         '| Model / condition | Accounted / recorded / planned | ≥25 wood | Workbench | Deaths (runs) | Wood maximum, median [range] | Median calls / frames | Reported cost |',
+         '| Model / condition | Accounted / recorded / planned | Held ≥25 wood | Workbench | Deaths (runs) | Wood maximum, median [range] | Median calls / frames | Reported cost |',
          '|---|---:|---:|---:|---:|---|---|---:|']
     groups=defaultdict(list)
     for r in rows:
@@ -41,7 +41,7 @@ def main():
             out.append(f'| {model} / {condition} | 0/{len(rs)}/3 | — | — | — | — | — | ${cost:.5f} |')
             continue
         wood=[r['wood_max'] for r in good]
-        out.append(f'| {model} / {condition} | {n}/{len(rs)}/3 | {sum(v>=25 for v in wood)}/{n} | '
+        out.append(f'| {model} / {condition} | {n}/{len(rs)}/3 | {sum(r["held_wood_25"] for r in good)}/{n} | '
                    f'{sum(r["workbench"] for r in good)}/{n} | {sum(r["deaths"]>0 for r in good)}/{n} | '
                    f'{median(wood):g} [{min(wood)}, {max(wood)}] | '
                    f'{median(r["calls"] for r in good):g} / {median(r["frames"] for r in good):g} | ${cost:.5f} |')
@@ -69,6 +69,11 @@ def main():
     out+=['','## Interpretation boundaries','',
           '- Equal API calls do not mean equal action/observation opportunities. Stop limits include nominal observer updates; '
           'inference and cleanup can cross the simulation threshold. This is not an exact fixed-tick API.',
+          '- Wood maxima are sampled heartbeat inventory maxima, not cumulative gathered resources. '
+          'Held-wood thresholds and station milestones use per-update checkpoints; consuming or placing an item '
+          'can make a heartbeat maximum smaller than a briefly held quantity. Cursor-held items can escape inventory checks.',
+          '- Observation age in the CSV is wall time from the latest screenshot in the model request to each input start. '
+          'It includes inference and earlier actions in the same batch. In paused mode, wall age does not mean equal game-state age.',
           '- PvE is enabled except the explicitly labeled peaceful ablation. Natural hostile encounters differ. '
           'Received damage is not evidence of successful combat; natural loot may come from the Guide.',
           '- A partial audit marks an unaccounted provider response/charge, not a model failure. '

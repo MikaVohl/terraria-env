@@ -7,6 +7,11 @@
   "source_files_verified": 22,
   "exact_telemetry_export_match": true,
   "inert_post_snapshot_heartbeats": 0,
+  "latest_observation_wall_age_seconds": {
+    "median": 6.94,
+    "max": 12.76,
+    "samples": 63
+  },
   "raw_telemetry_hashes": {
     "telemetry/9f9f7656fe414819a29c551e699bda5e.jsonl": "a5415068074c5b9c8a51566faf12c3ddf2d78eda95ff3df4512e55ac7f573031"
   },

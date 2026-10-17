@@ -1,0 +1,108 @@
+{
+  "run": "R1-haiku-json-fresh",
+  "config": {
+    "clock": "realtime",
+    "pve": true,
+    "checkpoints": false,
+    "goal": "open",
+    "guide": false,
+    "inventory": false,
+    "scaffold": "json",
+    "history": "full",
+    "hold_ms": 2000,
+    "motor": false,
+    "scenario": "fresh",
+    "reasoning": "medium"
+  },
+  "model": "anthropic/claude-haiku-5.5",
+  "stop_reason": "TimeoutError: simulation_limit_before_batch",
+  "calls": 13,
+  "commands": 92,
+  "frames": 13,
+  "invalid_outputs": 0,
+  "agent_wall_seconds": 121.70456536579877,
+  "paused_seconds": 0,
+  "inference_seconds": 76.95116270589642,
+  "latencies": [
+    4.7256953900214285,
+    4.943959939060733,
+    5.4739544310141355,
+    4.868014836218208,
+    5.281659819884226,
+    4.937618498923257,
+    5.821422382956371,
+    5.042043772991747,
+    6.364086563931778,
+    7.5741463580634445,
+    7.216162321856245,
+    6.866949446033686,
+    7.835448944941163
+  ],
+  "accounting": {
+    "usd_limit": "0.35",
+    "reported_usd": "0.0219541",
+    "uncertain_reserved_usd": "0",
+    "tokens": 193741,
+    "reservation_per_call_usd": "0.0430080"
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 0,
+      "checkpoint_count": 0,
+      "furthest_level": 0,
+      "level_counts": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [],
+      "first_unlocks": {},
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon",
+        "inventory_opened"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Gel": 4,
+      "Copper Coin": 69
+    },
+    "progress_families": [],
+    "deaths": 0,
+    "minimum_hp": 33,
+    "damage_received": 78,
+    "hits_received": 12,
+    "max_hostile_npcs": 2,
+    "hostile_observed_heartbeats": 99,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 7380,
+    "input_hold_seconds": 35.05,
+    "journal_closed": false
+  },
+  "official_eligible": false,
+  "exact_simulation_stepper": false,
+  "observation_and_cleanup_windows_advance_game": true
+}

@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **31 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **37 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$1.220928**; unresolved reservations: **$0.138547**. Combined accounted exposure: **$1.359475** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$1.480162**; unresolved reservations: **$0.184934**. Combined accounted exposure: **$1.665096** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -10,10 +10,13 @@ Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-
 
 The repeat plan was selected after initial screening signals. Each cell has three planned new attempts, shuffled within three blocks. Initial/pilot attempts are excluded from this table. These remain small development samples, with unpinned encounter RNG. Outcome rates and distributions use fully accounted attempts; attempt counts and costs retain interrupted attempts.
 
-| Model / condition | Accounted / recorded / planned | ≥25 wood | Workbench | Deaths (runs) | Wood maximum, median [range] | Median calls / frames | Reported cost |
+| Model / condition | Accounted / recorded / planned | Held ≥25 wood | Workbench | Deaths (runs) | Wood maximum, median [range] | Median calls / frames | Reported cost |
 |---|---:|---:|---:|---:|---|---|---:|
-
-Repeats have not completed yet.
+| claude-haiku-5.5 / json | 1/1/3 | 0/1 | 0/1 | 0/1 | 0 [0, 0] | 13 / 13 | $0.02195 |
+| claude-haiku-5.5 / paused | 1/1/3 | 1/1 | 1/1 | 0/1 | 45 [45, 45] | 16 / 17 | $0.03127 |
+| claude-haiku-5.5 / tools | 1/1/3 | 1/1 | 1/1 | 0/1 | 46 [46, 46] | 16 / 17 | $0.02742 |
+| gemini-3.8-flash / normalized | 1/1/3 | 1/1 | 0/1 | 1/1 | 94 [94, 94] | 16 / 9 | $0.06956 |
+| gemini-3.8-flash / tools | 1/1/3 | 1/1 | 0/1 | 0/1 | 41 [41, 41] | 16 / 9 | $0.06267 |
 
 ## All fresh-world attempts
 
@@ -39,6 +42,11 @@ Repeats have not completed yet.
 | [N01-gemini-normalized-fresh](N01-gemini-normalized-fresh/result.json) | 89 | no | 0 / no | n/a | 82 / 0 | 16 / 9 | $0.06766 | pass |
 | [N03-haiku-normalized-fresh](N03-haiku-normalized-fresh/result.json) | 45 | no | 0 / no | n/a | 55 / 0 | 14 / 14 | $0.02343 | pass |
 | [N04-deepseek-normalized-fresh](N04-deepseek-normalized-fresh/result.json) | 0 | no | 0 / no | n/a | 35 / 0 | 16 / 9 | $0.00492 | pass |
+| [R1-gemini-normalized-fresh](R1-gemini-normalized-fresh/result.json) | 94 | no | 0 / no | n/a | 124 / 1 | 16 / 9 | $0.06956 | pass |
+| [R1-gemini-tools-fresh](R1-gemini-tools-fresh/result.json) | 41 | no | 0 / no | n/a | 73 / 0 | 16 / 9 | $0.06267 | pass |
+| [R1-haiku-json-fresh](R1-haiku-json-fresh/result.json) | 0 | no | 0 / no | n/a | 78 / 0 | 13 / 13 | $0.02195 | pass |
+| [R1-haiku-paused-fresh](R1-haiku-paused-fresh/result.json) | 45 | yes | 0 / no | n/a | 23 / 0 | 16 / 17 | $0.03127 | pass |
+| [R1-haiku-tools-fresh](R1-haiku-tools-fresh/result.json) | 46 | yes | 0 / no | n/a | 48 / 0 | 16 / 17 | $0.02742 | pass |
 
 ## Prepared crafting
 
@@ -63,11 +71,14 @@ Guide removed; one designated blue slime is armed after window setup, while natu
 | [25-gemini-tools-slime](25-gemini-tools-slime/result.json) | 0 | no | 0 / no | 0 / no | 40 / 0 | 16 / 9 | $0.06012 | pass |
 | [26-haiku-json-slime](26-haiku-json-slime/result.json) | 0 | no | 0 / no | 0 / no | 80 / 0 | 16 / 17 | $0.02681 | pass |
 | [27-gemini-paused-slime](27-gemini-paused-slime/result.json) | 0 | no | 0 / no | 4 / no | 15 / 0 | 8 / 4 | $0.02849 | partial |
+| [28-deepseek-json-slime](28-deepseek-json-slime/result.json) | 0 | no | 0 / no | 0 / no | 35 / 0 | 11 / 11 | $0.00495 | pass |
 | [N02-gemini-normalized-slime](N02-gemini-normalized-slime/result.json) | 0 | no | 0 / no | 0 / no | 54 / 0 | 16 / 9 | $0.07700 | pass |
 
 ## Interpretation boundaries
 
 - Equal API calls do not mean equal action/observation opportunities. Stop limits include nominal observer updates; inference and cleanup can cross the simulation threshold. This is not an exact fixed-tick API.
+- Wood maxima are sampled heartbeat inventory maxima, not cumulative gathered resources. Held-wood thresholds and station milestones use per-update checkpoints; consuming or placing an item can make a heartbeat maximum smaller than a briefly held quantity. Cursor-held items can escape inventory checks.
+- Observation age in the CSV is wall time from the latest screenshot in the model request to each input start. It includes inference and earlier actions in the same batch. In paused mode, wall age does not mean equal game-state age.
 - PvE is enabled except the explicitly labeled peaceful ablation. Natural hostile encounters differ. Received damage is not evidence of successful combat; natural loot may come from the Guide.
 - A partial audit marks an unaccounted provider response/charge, not a model failure. Completed unsuccessful agent trajectories are retained.
 - A qualified `pass_with_inert_tail` requires an exact exported journal prefix followed only by heartbeats with identical observed state and advancing timestamps/ticks. Raw data and original result stay unchanged. Future runs wait for process termination before export.
