@@ -9,6 +9,7 @@
       "tokens": 2170,
       "reservation_per_call_usd": "0.0092160"
     },
+    "finish_reason": "stop",
     "raw_json_valid": false,
     "status": "semantically_scored",
     "prediction": {
@@ -36,6 +37,7 @@
       "tokens": 1641,
       "reservation_per_call_usd": "0.0092160"
     },
+    "finish_reason": "stop",
     "raw_json_valid": false,
     "status": "semantically_scored",
     "prediction": {
@@ -63,6 +65,7 @@
       "tokens": 1775,
       "reservation_per_call_usd": "0.0092160"
     },
+    "finish_reason": "stop",
     "raw_json_valid": false,
     "status": "semantically_scored",
     "prediction": {
@@ -90,6 +93,7 @@
       "tokens": 1398,
       "reservation_per_call_usd": "0.0049152"
     },
+    "finish_reason": "stop",
     "raw_json_valid": true,
     "status": "semantically_scored",
     "prediction": {
@@ -117,6 +121,7 @@
       "tokens": 1344,
       "reservation_per_call_usd": "0.0049152"
     },
+    "finish_reason": "stop",
     "raw_json_valid": true,
     "status": "semantically_scored",
     "prediction": {
@@ -144,6 +149,7 @@
       "tokens": 2803,
       "reservation_per_call_usd": "0.0049152"
     },
+    "finish_reason": "length",
     "raw_json_valid": false,
     "status": "unparseable"
   },
@@ -157,6 +163,7 @@
       "tokens": 1720,
       "reservation_per_call_usd": "0.015206400"
     },
+    "finish_reason": "stop",
     "raw_json_valid": true,
     "status": "semantically_scored",
     "prediction": {
@@ -184,6 +191,7 @@
       "tokens": 1763,
       "reservation_per_call_usd": "0.015206400"
     },
+    "finish_reason": "stop",
     "raw_json_valid": true,
     "status": "semantically_scored",
     "prediction": {
@@ -211,6 +219,7 @@
       "tokens": 1925,
       "reservation_per_call_usd": "0.015206400"
     },
+    "finish_reason": "stop",
     "raw_json_valid": true,
     "status": "semantically_scored",
     "prediction": {

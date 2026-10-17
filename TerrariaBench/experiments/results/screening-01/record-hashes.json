@@ -44,6 +44,26 @@
     "result.json": "2b4ae45150ef568bb873fa38e080e780755d6c0cbb311cca59dd41cfbabdcd8b",
     "audit.json": "4d4e1df4cf1179954a9edf18f5925cca9e89e2efc720a166de681a2c61098885"
   },
+  "10-haiku-guided-fresh": {
+    "manifest.json": "42ad36528de288c62aa4518697f1fc82ebc8e84f53bc2eeb1ebb9a970118a69a",
+    "result.json": "859b4c25b74b7de9c64ae3e5624d52eae7beb9a5a3a3243cd6522f09cbd64bf5",
+    "audit.json": "ebc5184f04512f079b44f25ba2e3125b26445cad9bd2164bd85841b29be7ca66"
+  },
+  "11-haiku-inventory-fresh": {
+    "manifest.json": "835b29a528e3c3765a3922b1b702c7989519b7653de228a369a4026bf79b7f77",
+    "result.json": "788db9f03e15105149bc9a7cd945f2ea4d191d769f3d3c5efe16481cdce1b53b",
+    "audit.json": "78804612e52c63974f8b4e12a1ff519152fb208c6a0836da2be97652dbcf38c8"
+  },
+  "12-gemini-paused-fresh": {
+    "manifest.json": "45711269d71f452544e9348f8a043cf29f9b9d9e77be056bcd288bdb17666013",
+    "result.json": "03e46de7592b0f9e159f92d0df7a11c1aecf278e6b76e4f90a02013624038cca",
+    "audit.json": "320b791b0e3a28a28c33ec5e35f42f304df4d597a5a8537a2b4f21b39cf5234e"
+  },
+  "13-haiku-notes-fresh": {
+    "manifest.json": "bf9251eabfa235a1928a612dacd7ea5e5e88907ec1ce49526ecb04080e38342a",
+    "result.json": "fd3edceb9a815176393ffa04a39e9d81cc5827659fb6717931d3157fba363d0d",
+    "audit.json": "2558f50bf8ee3640bf0f141f36122bc4ca9d3f53ed1704eef0b1d85e9408fbb3"
+  },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",

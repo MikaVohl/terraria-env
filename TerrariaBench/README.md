@@ -9,6 +9,26 @@ before selecting benchmark variants. See the [campaign plan](experiments/campaig
 and [interpretation rules](experiments/interpretation.md). The reconstructed
 reference below is retained as a historical baseline, not the final benchmark.
 
+The [audited development results](experiments/results/screening-01/README.md)
+are committed incrementally. Current trials cover early gathering, prepared
+crafting and one-slime control across three model families; they do not measure
+complete-game success. Native coding-agent frameworks and progression beyond
+Wall of Flesh through Moon Lord remain future scope.
+
+The experiment worker uses a shared locked campaign ledger, normal PvE by
+default, copied immutable fixtures, and explicit condition manifests. On the
+configured Omarchy worker:
+
+```sh
+.venv/bin/python tools/diagnostic_campaign.py experiments/screening-01.json
+.venv/bin/python tools/analyze_experiments.py runs/diagnostic-campaign-01
+```
+
+Only one graphical campaign may run at a time; the current job plans share one
+dedicated worker and an already initialized budget ledger. Completed attempts
+are skipped, never overwritten. The user-authorized session cap is $3 including
+earlier tests; this is not continuing authorization for later sessions.
+
 The default historical `run` command uses
 `reference-reconstructed-v1`. Its confirmed settings, explicit inferences and
 test results are in [REFERENCE_BASELINE.md](REFERENCE_BASELINE.md). The original
@@ -71,7 +91,7 @@ client termination can leave an open journal; results disclose this.
 ../.venv/bin/python -m terrariabench doctor
 ```
 
-All 23 tests pass, including regression against seven archived public results.
+All 28 tests pass, including regression against seven archived public results.
 Public URLs/statuses/hashes are recorded in `reference/evidence.json`;
 `tools/snapshot_reference.py` refreshes that archive.
 
@@ -81,8 +101,9 @@ hints, and custom 29-point scorer are **not the reference baseline**. The `demo`
 and `score` commands still target that historical scorer.
 
 The parent `terraria-lite` simulator remains independent; its results cannot
-share this benchmark's scores. Commercial saves, generated packages and run
-artifacts stay outside Git. All results remain `official_eligible: false`.
+share this benchmark's scores. Commercial saves, generated packages and raw run
+artifacts stay outside Git; compact audited experiment records are versioned.
+All results remain `official_eligible: false`.
 
 [SPEC.md](SPEC.md) defines the current protocol and extension boundaries.
 [ROADMAP.md](ROADMAP.md) records the remaining gates. [VALIDATION.md](VALIDATION.md)
