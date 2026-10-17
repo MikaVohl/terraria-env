@@ -1,0 +1,231 @@
+[
+  {
+    "case": "craft",
+    "model": "anthropic/claude-haiku-5.5",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.0004894",
+      "uncertain_reserved_usd": "0",
+      "tokens": 2170,
+      "reservation_per_call_usd": "0.0092160"
+    },
+    "raw_json_valid": false,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        510,
+        512
+      ],
+      "target": [
+        40,
+        537
+      ],
+      "answer": "Wooden Platform"
+    },
+    "player_in_box": true,
+    "target_in_box": false,
+    "answer_correct": false
+  },
+  {
+    "case": "slime",
+    "model": "anthropic/claude-haiku-5.5",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.0002241",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1641,
+      "reservation_per_call_usd": "0.0092160"
+    },
+    "raw_json_valid": false,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        511,
+        510
+      ],
+      "target": [
+        375,
+        509
+      ],
+      "answer": "no"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  },
+  {
+    "case": "tree",
+    "model": "anthropic/claude-haiku-5.5",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.0002919",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1775,
+      "reservation_per_call_usd": "0.0092160"
+    },
+    "raw_json_valid": false,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        514,
+        500
+      ],
+      "target": [
+        524,
+        530
+      ],
+      "answer": "Copper Axe"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  },
+  {
+    "case": "craft",
+    "model": "deepseek/deepseek-v4.1-flash-1017",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.00038274",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1398,
+      "reservation_per_call_usd": "0.0049152"
+    },
+    "raw_json_valid": true,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        512,
+        495
+      ],
+      "target": [
+        39,
+        612
+      ],
+      "answer": "Work Bench"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  },
+  {
+    "case": "slime",
+    "model": "deepseek/deepseek-v4.1-flash-1017",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.00035238",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1344,
+      "reservation_per_call_usd": "0.0049152"
+    },
+    "raw_json_valid": true,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        509,
+        496
+      ],
+      "target": [
+        372,
+        500
+      ],
+      "answer": "no"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  },
+  {
+    "case": "tree",
+    "model": "deepseek/deepseek-v4.1-flash-1017",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.0010844",
+      "uncertain_reserved_usd": "0",
+      "tokens": 2803,
+      "reservation_per_call_usd": "0.0049152"
+    },
+    "raw_json_valid": false,
+    "status": "unparseable"
+  },
+  {
+    "case": "craft",
+    "model": "google/gemini-3.8-flash",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.002943",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1720,
+      "reservation_per_call_usd": "0.015206400"
+    },
+    "raw_json_valid": true,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        500,
+        497
+      ],
+      "target": [
+        40,
+        607
+      ],
+      "answer": "Work Bench"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  },
+  {
+    "case": "slime",
+    "model": "google/gemini-3.8-flash",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.00309525",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1763,
+      "reservation_per_call_usd": "0.015206400"
+    },
+    "raw_json_valid": true,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        500,
+        497
+      ],
+      "target": [
+        366,
+        498
+      ],
+      "answer": "no"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  },
+  {
+    "case": "tree",
+    "model": "google/gemini-3.8-flash",
+    "accounting": {
+      "usd_limit": "0.1",
+      "reported_usd": "0.00370875",
+      "uncertain_reserved_usd": "0",
+      "tokens": 1925,
+      "reservation_per_call_usd": "0.015206400"
+    },
+    "raw_json_valid": true,
+    "status": "semantically_scored",
+    "prediction": {
+      "player": [
+        499,
+        497
+      ],
+      "target": [
+        513,
+        518
+      ],
+      "answer": "Copper Axe"
+    },
+    "player_in_box": true,
+    "target_in_box": true,
+    "answer_correct": true
+  }
+]

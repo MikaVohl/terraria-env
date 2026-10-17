@@ -25,6 +25,8 @@ Neither prepared task constitutes fresh-world campaign progress.
   This is open-loop automation, not a learned controller or perception helper.
 - tools vs peaceful: hostile NPC/projectile suppression; also removes hostile
   loot sources, so conclusions apply only to early-game gathering/control.
+- tools vs normalized: explicitly request coordinates on a 0..1000 square and
+  linearly map them to 0..1023 pixels. No targeting or perception helper is used.
 
 ## Limits and confounds
 
@@ -65,3 +67,12 @@ Neither prepared task constitutes fresh-world campaign progress.
   and guided conditions, and inspect mob exposure, before attributing failure.
 - Crafting and slime probes expose behavior that a wood-only score would miss.
   Keep both task families in diagnostic follow-ups.
+- After screening cases 01..09, three static Gemini predictions appeared closer
+  to the annotated targets after scaling from 0..1000 than as literal pixels.
+  Inserted four explicitly labeled normalized-coordinate attempts (two Gemini,
+  one Haiku, one DeepSeek). This is an adaptive hypothesis, not retrospective
+  correction of previous executed actions or independent confirmation.
+- The coordinator stopped only the screening driver between games, inserted
+  normalized attempts, and resumes it afterward. Source synchronization at that
+  boundary adds the declared variant; default pixel behavior stays the same.
+  Each attempt retains its actual source snapshot/hash, including earlier code.

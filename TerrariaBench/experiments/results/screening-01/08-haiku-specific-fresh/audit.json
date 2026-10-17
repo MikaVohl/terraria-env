@@ -1,0 +1,9 @@
+{
+  "artifact_checks_passed": true,
+  "all_calls_accounted": true,
+  "responses": 15,
+  "commands": 23,
+  "images_verified": 15,
+  "source_files_verified": 22,
+  "official_eligible": false
+}

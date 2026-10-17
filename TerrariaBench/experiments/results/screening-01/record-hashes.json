@@ -1,0 +1,47 @@
+{
+  "01-haiku-tools-fresh": {
+    "manifest.json": "ef5797c6fd041c2217a42e1f6e4c17d33c6f4d697b5888802c01cecd76ce4573",
+    "result.json": "2021356a2b2fb4c79c1bf74931352a4fd2d36cb050f5eef290ca25c7f85397bb",
+    "audit.json": "41c55271234a3f179b5fc754aaf3b2766180db246aa7b1a2dea15502d99bbdf7"
+  },
+  "02-haiku-paused-slime": {
+    "manifest.json": "e7caec3ac4a9615c031f3c5786576c5d8f7578c0811f4f2a003606d8be5ef997",
+    "result.json": "a87586a46734a3a981d3c4b8d65ef91995b1c845258f2bea97d2b1046c1683f8",
+    "audit.json": "1837d5c174a1810f68bc0030f0648bfa42330a73c17ab86b8b39a5f370c17dd2"
+  },
+  "03-haiku-json-crafting": {
+    "manifest.json": "ad23c9db6661e53c7a6bffac2ac96b37131fced02340c889a3b9abe54b0b5928",
+    "result.json": "5dc31a19209c78af702ec30fd70870cc1c0e8db9b707adf54557f796ccbfe995",
+    "audit.json": "af826f1e0b1fb6300f6a632df85459d0f5bf13ee8e3244ab7abb90587ae8066b"
+  },
+  "04-gemini-tools-fresh": {
+    "manifest.json": "bec5122e35a9568d7c17a80f6cf0809d7c8d6a5e5421a4d42eac13222dd7e922",
+    "result.json": "689c295507549a76069f3bdaba5918921c8a7a3beb309c5695822b15d4d80770",
+    "audit.json": "320b791b0e3a28a28c33ec5e35f42f304df4d597a5a8537a2b4f21b39cf5234e"
+  },
+  "05-haiku-json-fresh": {
+    "manifest.json": "17508268b38073ac2403e88252cfa71945653a1d602bbade2c0dbcc73905b92a",
+    "result.json": "6905fff85155be9ab5766b92f37a83dfa2aed4d07a49b78c2a67b9634204a666",
+    "audit.json": "8997661ab0d111f326c75020fe37ea37109173b39b1fabb4890e8fad1b014d7f"
+  },
+  "06-haiku-paused-fresh": {
+    "manifest.json": "6d1af5e4cbd10456e541ec6c2df930468f749d4b9a2c6824b128010c46cd8236",
+    "result.json": "fd3fceb623b2e71b6feae203e98c19fb1a85aaac3850895b7866a3c812f0119c",
+    "audit.json": "1fd01e7108a36c316ee3dd21fe20561680a5402430c9a419ddc61d99af3c3194"
+  },
+  "07-deepseek-tools-fresh": {
+    "manifest.json": "e16733a91d460e66fe1edc8c795847b9b2728542d23cdc95af76f1e15b7de071",
+    "result.json": "eea62cb0c248336141293d657aaf225d3c737141090206088000b149a1d8965b",
+    "audit.json": "3109bd447490d3a0cfbc2b9a75951ed02377bb94701a3922d9715a5fa620c64b"
+  },
+  "08-haiku-specific-fresh": {
+    "manifest.json": "75938e437365b5b20001410965ba560ca765330b2c3717e50c20be48895f600d",
+    "result.json": "cf2e9f19783073b4109bb7abc35c24b2abafdffccb87a4932e08a93f8b75efd9",
+    "audit.json": "58fdcbe18bdadcd1c136dfcbd5b023c8a9610644564ac682dfe177866f730387"
+  },
+  "09-gemini-json-fresh": {
+    "manifest.json": "cc891e484b0b8f39e15aee6ecc63b1bf217d8599522d586eefe95a8dbbc93793",
+    "result.json": "2b4ae45150ef568bb873fa38e080e780755d6c0cbb311cca59dd41cfbabdcd8b",
+    "audit.json": "4d4e1df4cf1179954a9edf18f5925cca9e89e2efc720a166de681a2c61098885"
+  }
+}

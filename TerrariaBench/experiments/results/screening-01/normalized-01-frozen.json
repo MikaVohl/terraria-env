@@ -1,0 +1,51 @@
+{
+  "campaign": "runs/diagnostic-campaign-01",
+  "fixture": "runs/fixtures/diagnostic-v04",
+  "description": "Adaptive follow-up: Gemini three-image probe outputs closely match a 0..1000 normalized frame. New attempts explicitly declare normalized coordinates; previous results remain unchanged.",
+  "jobs": [
+    {
+      "id": "N01-gemini-normalized-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "N02-gemini-normalized-slime",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "scenario": "slime",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "N03-haiku-normalized-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "normalized",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "N04-deepseek-normalized-fresh",
+      "model": "deepseek/deepseek-v4.1-flash-1017",
+      "variant": "normalized",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "low"
+    }
+  ]
+}

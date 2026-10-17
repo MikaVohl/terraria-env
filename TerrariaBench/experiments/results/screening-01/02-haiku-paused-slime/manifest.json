@@ -1,0 +1,333 @@
+{
+  "protocol": "diagnostic-v1",
+  "config": {
+    "clock": "paused",
+    "pve": true,
+    "checkpoints": false,
+    "goal": "open",
+    "guide": false,
+    "inventory": false,
+    "scaffold": "tools",
+    "history": "full",
+    "hold_ms": 2000,
+    "motor": false,
+    "scenario": "slime",
+    "reasoning": "medium"
+  },
+  "task_prompt": "This is a prepared combat diagnostic. A blue slime starts nearby and the Guide was removed during setup. Defeat the slime using your starter equipment, avoid damage, and recover if necessary. Afterward continue progressing.\nThe window is 1024x1024. Coordinates are pixels 0..1023 on both axes. Actions may combine keys, mouse (left/right/middle), x,y, and ms. A/D move, space jumps, esc toggles inventory, number keys select hotbar slots. Keys/buttons release after every action. Batches contain 1..16 actions and execute without intermediate feedback. Max hold is 2000 ms. Continue until the harness budget ends; do not stop after your first milestone.\nThe entire game process pauses while the model thinks. It runs during action and observation windows.\nNormal hostile mobs and damage are enabled.\nUse look to observe and act to send actions. Request observations whenever needed.\n",
+  "system_prompt": "You control a live Terraria game using the documented interface. Screenshots and tool results are observations. Follow the task, use normal gameplay, and recover from errors.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "look",
+        "description": "Capture the current 1024x1024 screenshot.",
+        "parameters": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "act",
+        "description": "Send normal keyboard/mouse actions in screenshot pixels.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "actions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b",
+                        "c",
+                        "d",
+                        "e",
+                        "f",
+                        "g",
+                        "h",
+                        "i",
+                        "j",
+                        "k",
+                        "l",
+                        "m",
+                        "n",
+                        "o",
+                        "p",
+                        "q",
+                        "r",
+                        "s",
+                        "t",
+                        "u",
+                        "v",
+                        "w",
+                        "x",
+                        "y",
+                        "z",
+                        "0",
+                        "1",
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "space",
+                        "esc",
+                        "enter",
+                        "backspace",
+                        "tab",
+                        "leftshift",
+                        "leftctrl",
+                        "up",
+                        "down",
+                        "left",
+                        "right",
+                        "minus"
+                      ]
+                    }
+                  },
+                  "mouse": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "right",
+                      "middle"
+                    ]
+                  },
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1023
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1023
+                  },
+                  "ms": {
+                    "type": "integer",
+                    "minimum": 20,
+                    "maximum": 2000
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "actions"
+          ]
+        }
+      }
+    }
+  ],
+  "model": {
+    "id": "anthropic/claude-haiku-5.5",
+    "canonical_slug": "anthropic/claude-haiku-5.5-20261007",
+    "hugging_face_id": null,
+    "name": "Anthropic: Claude Haiku 5.5",
+    "created": 1791397883,
+    "description": "Claude Haiku 5.5 is Anthropic's small, fast model for high-volume, cost-sensitive work such as summarization, subagents, and browser use. It succeeds Claude Haiku 4.5 with stronger coding, computer use, and...",
+    "context_length": 1000000,
+    "architecture": {
+      "modality": "text+image+file->text",
+      "input_modalities": [
+        "text",
+        "image",
+        "file"
+      ],
+      "output_modalities": [
+        "text"
+      ],
+      "tokenizer": "Claude",
+      "instruct_type": null
+    },
+    "pricing": {
+      "prompt": "0.0000001",
+      "completion": "0.0000005",
+      "web_search": "0.01",
+      "input_cache_read": "0.00000001",
+      "input_cache_write": "0.000000125",
+      "input_cache_write_1h": "0.0000002",
+      "overrides": [
+        {
+          "min_prompt_tokens": 100000,
+          "prompt": "0.0000005",
+          "completion": "0.0000025",
+          "input_cache_read": "0.00000005",
+          "input_cache_write": "0.000000625",
+          "input_cache_write_1h": "0.000001"
+        }
+      ]
+    },
+    "top_provider": {
+      "context_length": 1000000,
+      "max_completion_tokens": 128000,
+      "is_moderated": true
+    },
+    "per_request_limits": null,
+    "supported_parameters": [
+      "include_reasoning",
+      "max_completion_tokens",
+      "max_tokens",
+      "reasoning",
+      "reasoning_effort",
+      "response_format",
+      "stop",
+      "structured_outputs",
+      "tool_choice",
+      "tools",
+      "verbosity"
+    ],
+    "default_parameters": {},
+    "supported_voices": null,
+    "knowledge_cutoff": null,
+    "expiration_date": null,
+    "links": {
+      "details": "/api/v1/models/anthropic/claude-haiku-5.5-20261007/endpoints"
+    },
+    "benchmarks": {
+      "design_arena": [
+        {
+          "arena": "models",
+          "category": "3d",
+          "elo": 1349,
+          "win_rate": 59.3,
+          "rank": 9
+        },
+        {
+          "arena": "models",
+          "category": "codecategories",
+          "elo": 1279,
+          "win_rate": 50.1,
+          "rank": 22
+        },
+        {
+          "arena": "models",
+          "category": "dataviz",
+          "elo": 1287,
+          "win_rate": 54,
+          "rank": 16
+        },
+        {
+          "arena": "models",
+          "category": "gamedev",
+          "elo": 1316,
+          "win_rate": 53.7,
+          "rank": 12
+        },
+        {
+          "arena": "models",
+          "category": "uicomponent",
+          "elo": 1300,
+          "win_rate": 53.3,
+          "rank": 18
+        },
+        {
+          "arena": "models",
+          "category": "website",
+          "elo": 1264,
+          "win_rate": 48.5,
+          "rank": 34
+        }
+      ],
+      "artificial_analysis": {
+        "intelligence_index": 43.4,
+        "coding_index": null,
+        "agentic_index": null
+      }
+    },
+    "reasoning": {
+      "mandatory": false,
+      "supported_efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
+      "default_effort": "medium"
+    }
+  },
+  "reservation_pricing": {
+    "prompt": "5E-7",
+    "completion": "0.0000025",
+    "web_search": "0.01",
+    "input_cache_read": "0.00000001",
+    "input_cache_write": "0.000000125",
+    "input_cache_write_1h": "0.0000002",
+    "overrides": [
+      {
+        "min_prompt_tokens": 100000,
+        "prompt": "0.0000005",
+        "completion": "0.0000025",
+        "input_cache_read": "0.00000005",
+        "input_cache_write": "0.000000625",
+        "input_cache_write_1h": "0.000001"
+      }
+    ]
+  },
+  "limits": {
+    "calls": 16,
+    "wall_seconds": 300,
+    "simulation_seconds": 120,
+    "usd": 0.35
+  },
+  "source_hashes": {
+    "terrariabench/__init__.py": "2ed1092205bad95278117d2cf91be5dda99ecd8487bca6c76c3a90776ebc5fd2",
+    "terrariabench/catalog.py": "edbac258e34f6a3c3d3b8f35b734580830bcab88162c2cc4b2fe78a66e22cf2e",
+    "terrariabench/report.py": "274ba94115961128b00dfa3f531f1e3cc8de95d40f5c874a3dd19c4da79a33aa",
+    "terrariabench/live.py": "f1174c630380f11f1983f20cf149d85600db66a3884eb9e6da4b5adc31c12f59",
+    "terrariabench/audit.py": "ba0daaf97cd87ab8db8c07e8386316bb1c1956a79b0ce9f9c3dc23d9201bdd68",
+    "terrariabench/openrouter.py": "27c77940b5d643ddf90bbb1f18b28bfc8744fe0c503b644dfc0cee948d2943bd",
+    "terrariabench/scoring.py": "fb52f4f627cffd1d3f3a0b7eecd7ea720cd858e038bac8c8247ed705210ac70f",
+    "terrariabench/reference_scoring.py": "5ceeeb647ef4a5295022eea915c9e957e5489e19e2fbee0b07b9d4acadb77f6d",
+    "terrariabench/linux_control.py": "47297aef10e18489a995d0b668be6bf5528ccc0b8e972028c339848fa38d5b99",
+    "terrariabench/__main__.py": "b802afe2c42a9b03c62df3d8b6035760076ceb1b66a6baa2d9c7c58af455923d",
+    "terrariabench/reference_audit.py": "89971f686588d96ad9016c8d5515aabc31bb07b53faadc64a6e91f190249ddba",
+    "terrariabench/reference_live.py": "0f5fda1f2dd4c634712083d1b755f0849f9f65b48c383d28c051f783bafe9bca",
+    "terrariabench/experiments.py": "5dd1ea54894408f41026eb99e45d8a6809205804672b416dc2e81ed0a0c93093",
+    "configs/models.example.json": "ab82eea0f01f8d93963de4389392596389f3d465a26746b9143e2869ed289fb8",
+    "configs/protocol.json": "fd0b93d79d94e24cf909bc6afb39662df1c8bb2e35524941ffc9f6f387ceb285",
+    "configs/reference-reconstructed.json": "7b46e2bd0ac70114e334c701cccd5d93c446dfc32f191749c5b70f2dabae0d02",
+    "prompts/reference_open_ended.txt": "503af610ed02ac01078dcc633fbc5b9ada1091f2095e20b739ad4373cc990d9f",
+    "mod/TerrariaBenchObserver/Observer.cs": "1f87ddddab9e06ffbd1c2f6c7b268669d9d86d0ec2d6e5a2a07e45cbc6ab8345",
+    "mod/TerrariaBenchObserver/description.txt": "9930ab704a0428d0736dc4b75961baa89aa2cc5948acc3511a445de20d1aa4c5",
+    "mod/TerrariaBenchObserver/build.txt": "8da8cfd6fbb699d2fa891fd327ed5284a9278c0aa97054b4b91ec54b41bfcef6",
+    "mod/TerrariaBenchObserver/ReferenceMode.cs": "66b2113644be7db2fa5a494522fc89e7d9e8df547b5364f550ae2335f021a1c9",
+    "mod/TerrariaBenchObserver/Localization/en-US_Mods.TerrariaBenchObserver.hjson": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  "fixture_hashes": {
+    "LastLaunchedMods.txt": "21d246ffa8e775d433bb1dc9ea475b549e09866d87766daa1bd621b7625ba3dd",
+    "config.json": "8d45a45a6dec85333ea3c4668252d34b6de1f6cee669a03266ffff33cd09d0cc",
+    "input profiles.json": "0008a93c60757e11bd916ee486e6e2432a80d9fb5c1a1829e7bac4696a3c7593",
+    "achievements.dat": "60e60d403e0d46cedda5cb24f44228420df8ce7e701e5e7b3b566d0349fbc5e8",
+    "favorites.json": "637c146ff16d49ce109238109d6ece4a972f47d70a4f881377525c64bb656685",
+    "fixture.json": "4a1b548f85c756288e937844ffa984cc8fcaf0fb6c9736df596df1dc810cd941",
+    "Mods/TerrariaBenchObserver.tmod": "fb23c9c3dcc0c5519b9ead6a7975dc7249e64d902acef49b826b8fc8a351a112",
+    "Mods/enabled.json": "b7803e1594803ef77f3cc5b08a0aa7ab8fc27f05c06c93b580b85cb6e0757921",
+    "Players/TBpilot.plr": "b2b58d5908980ce706f142f6961359733ed7f5656a14656c67d17bb7b7de4c2a",
+    "Players/TBpilot.tplr": "528a2b92e017877302fa2e36bb34254d18a2be973e4afd9746689c4118a49a85",
+    "Worlds/TBworld.wld": "0945e768c6d04c72ec789c7040b4d174368eb864ee0d16403ee4922ce8d4e9b2",
+    "Worlds/TBworld.twld": "1282a4e3d7fd088af405aff5ed91af2d250bcb4adb2642ee4ae822e5444837b5",
+    "Players/Backups/2026-10-17-TBpilot.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+  },
+  "official_eligible": false,
+  "started_unix": 1792275115.898803
+}
