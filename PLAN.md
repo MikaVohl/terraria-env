@@ -1,4 +1,72 @@
+Historical v1 plan. The combat/exploration contract is in [V2.md](V2.md);
+the v3 iteration is in [ITERATION_2026_10.md](ITERATION_2026_10.md).
+Current v4 fidelity changes and remeasurements are in [FIDELITY_V4.md](FIDELITY_V4.md).
+The earlier completed credit sequence is in [CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md):
+356,515,840 main transitions across 55 runs with five paired training seeds.
+Memory stabilized early mining but did not materially separate from the target
+control at 16M (17.95 versus 17.79/32), and the selected policy's fresh test was
+18.83/32 with zero furnaces. RND and longer-credit conditions did not solve
+progression. The finite-deadline objective correction is retained; no default
+architecture/checkpoint is promoted. Test worlds 9,000,001–9,000,128 are consumed.
+The earlier 247.5M sequence and its 20.79/32 policy remain preserved in
+[LEARNING_V4_2026_10.md](LEARNING_V4_2026_10.md).
+
+Joint resource/station diagnostics and no-concurrent-RL footprint timings are
+now completed in [CRAFTING_BOTTLENECKS_2026_10.md](CRAFTING_BOTTLENECKS_2026_10.md).
+The newer policy lacks both wood and a nearby bench on 96.1% of its
+stone-sufficient pre-furnace actions. The footprint simulator gate passes again.
+The original v4/v5 cohort was **stopped at the user deadline**, under
+[FOOTPRINT_LEARNING_PROTOCOL.md](FOOTPRINT_LEARNING_PROTOCOL.md): 30 runs,
+503.3M planned main transitions, three packages, five paired seeds each.
+The user shortened completion to 7 p.m.; workers stopped at 6:52 p.m. Edmonton
+on 2026-10-11. [Audited partial results](FOOTPRINT_LEARNING_PARTIAL_2026_10.md)
+cover 15 complete runs, three interrupted and twelve unstarted. Plain PPO rose
+15.85→21.56/32 over three pairs; spatial/recurrent scores declined over two.
+Do not interpret the time-limited subset as the completed 30-run protocol or
+consume reserved tests for it. Frozen sources and trial order are unchanged.
+At that stop the five-seed protocol was unfinished; this partial history remains
+unchanged. The [v5 preview](OBJECT_SCALE_V5.md) is still not promoted.
+
+**2026-10-12 update:** the user authorized running the remaining trials.
+[Completion is audited](FOOTPRINT_LEARNING_COMPLETION.md) in a separate frozen
+cohort: 15 completed results retained without retraining, three interrupted
+trials restarted from scratch, twelve unstarted trials trained under the same
+settings. No optimizer-state resume or warm start; old partial evidence stays
+preserved. The earlier time cutoff is superseded. Final selection/test/diagnostic
+stages executed after all 30 complete results were available. The
+[completed 503.3M report](FOOTPRINT_LEARNING_2026_10.md) finds MLP 13.79→17.32/32
+and furnace 6.6%→38.8%, targets 17.68→17.07, memory 17.76→17.05. None supports
+the exploratory five-seed non-inferiority gate; all are inconclusive. The
+validation-selected paired memory seed scored 18.46 versus 17.02 on one-shot
+tests. Test worlds 11,000,001–11,000,128 are now consumed once per version.
+All 30 final-policy diagnostics and exact checkpoint/Python/SDL replays passed
+the [artifact audit](FOOTPRINT_LEARNING_2026_10.audit.json). No workers or new
+experiments run; follow-up paused and main v4/model defaults unchanged.
+
+[DESIGN_DIRECTION_2026_10.md](DESIGN_DIRECTION_2026_10.md) sets the working
+priority: a fair learnable core, meaningful strategic diversity, learning
+efficiency, then detail-level fidelity. Neutral direct inventory selection is
+a proposed independent interface experiment; tool ownership and necessary
+resource-supply fixes remain separate versioned changes. Generic replay or
+predictive learning is a proposed next agent track, not part of the completed
+footprint comparison. Do not pool future game changes with frozen studies.
+
 Inspiration: [Craftax](https://craftaxenv.github.io/)
+
+**Authorized next steps, 2026-10-12:** [CORE_NEXT_2026_10.md](CORE_NEXT_2026_10.md)
+records separate v6/v7 implementations, regression tests, simulator/CPU/MPS
+measurements, a completed 25.2M exploratory pilot and completed 16.8M follow-on
+spatial-target control (41.9M total). Initial MLP policies remain surface-bound; replay is
+not a demonstrated improvement. V6 fixes tool ownership and
+necessary ore supply atop v5; v7 independently adds direct selection. Generic
+uniform n-step Double DQN is a replay reference, not a world-model port or a
+causal replay ablation. No LLM calls: the initial JSON-lines harness is offline.
+Do not promote game/method defaults from two-seed pilots, reuse reserved tests,
+or change the frozen pilot sources. Targets mine but craft no benches; direct
+selection alone is insufficient. Large scaling runs need a fresh schedule and
+a better prerequisite-learning mechanism. Bigger-batch MPS training with CPU
+checkpoint evaluation is calibrated, not learning-quality validated. All workers
+stopped; reserved tests unused.
 
 Plan:
 1. Write terraria-lite in C

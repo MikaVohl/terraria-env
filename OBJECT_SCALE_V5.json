@@ -1,0 +1,541 @@
+{
+  "date": "2026-10-11",
+  "hardware": "Apple M5 Pro, 48 GiB, macOS",
+  "context": "Concurrent frozen PPO training on active desktop; alternate measurement order; five pairs by default, three repeats inside each probe. Changed task trajectories and legal-action workloads, not an exact optimization comparison or end-to-end neural training benchmark.",
+  "status_before": {
+    "stage": "screen",
+    "runner_pid": 94795,
+    "active": {
+      "trace-405": 5672,
+      "long_rollout-405": 5744,
+      "memory-405": 6155
+    },
+    "updated_utc": 1791738674.69799,
+    "pending": [
+      "novelty-405"
+    ],
+    "completed": [
+      "legacy_mlp-101",
+      "finite_mlp-101",
+      "legacy_targets-101",
+      "undiscounted-101",
+      "finite_targets-101",
+      "trace-101",
+      "long_rollout-101",
+      "memory-101",
+      "novelty-101",
+      "legacy_mlp-202",
+      "finite_mlp-202",
+      "legacy_targets-202",
+      "finite_targets-202",
+      "undiscounted-202",
+      "trace-202",
+      "long_rollout-202",
+      "legacy_mlp-303",
+      "memory-202",
+      "novelty-202",
+      "finite_mlp-303",
+      "legacy_targets-303",
+      "finite_targets-303",
+      "undiscounted-303",
+      "trace-303",
+      "long_rollout-303",
+      "legacy_mlp-404",
+      "memory-303",
+      "novelty-303",
+      "finite_mlp-404",
+      "legacy_targets-404",
+      "finite_targets-404",
+      "undiscounted-404",
+      "trace-404",
+      "long_rollout-404",
+      "legacy_mlp-405",
+      "memory-404",
+      "novelty-404",
+      "finite_mlp-405",
+      "legacy_targets-405",
+      "finite_targets-405",
+      "undiscounted-405"
+    ]
+  },
+  "status_after": {
+    "stage": "screen",
+    "runner_pid": 94795,
+    "active": {
+      "trace-405": 5672,
+      "long_rollout-405": 5744,
+      "memory-405": 6155
+    },
+    "updated_utc": 1791738694.748241,
+    "pending": [
+      "novelty-405"
+    ],
+    "completed": [
+      "legacy_mlp-101",
+      "finite_mlp-101",
+      "legacy_targets-101",
+      "undiscounted-101",
+      "finite_targets-101",
+      "trace-101",
+      "long_rollout-101",
+      "memory-101",
+      "novelty-101",
+      "legacy_mlp-202",
+      "finite_mlp-202",
+      "legacy_targets-202",
+      "finite_targets-202",
+      "undiscounted-202",
+      "trace-202",
+      "long_rollout-202",
+      "legacy_mlp-303",
+      "memory-202",
+      "novelty-202",
+      "finite_mlp-303",
+      "legacy_targets-303",
+      "finite_targets-303",
+      "undiscounted-303",
+      "trace-303",
+      "long_rollout-303",
+      "legacy_mlp-404",
+      "memory-303",
+      "novelty-303",
+      "finite_mlp-404",
+      "legacy_targets-404",
+      "finite_targets-404",
+      "undiscounted-404",
+      "trace-404",
+      "long_rollout-404",
+      "legacy_mlp-405",
+      "memory-404",
+      "novelty-404",
+      "finite_mlp-405",
+      "legacy_targets-405",
+      "finite_targets-405",
+      "undiscounted-405"
+    ]
+  },
+  "measurements": [
+    {
+      "pair": 0,
+      "order": [
+        "v4",
+        "v5"
+      ],
+      "measurements": {
+        "v4": {
+          "core": {
+            "environment_version": 4,
+            "env_bytes": 38712,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.247622,
+              0.251695,
+              0.250961
+            ],
+            "median_sps": 1044560.7,
+            "checksum": 756285
+          },
+          "batch": {
+            "environment_version": 4,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.37298887502402067,
+              0.35925612499704584,
+              0.3703013330232352
+            ],
+            "median_sps": 707920.7570218261
+          }
+        },
+        "v5": {
+          "core": {
+            "environment_version": 5,
+            "env_bytes": 51000,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.245046,
+              0.249717,
+              0.25673
+            ],
+            "median_sps": 1049764.3,
+            "checksum": 760494
+          },
+          "batch": {
+            "environment_version": 5,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3836041250033304,
+              0.38793016696581617,
+              0.3900667499983683
+            ],
+            "median_sps": 675750.4889355504
+          }
+        }
+      },
+      "v5_over_v4_sps": {
+        "core": 1.00498161571654,
+        "batch": 0.9545566819913379
+      }
+    },
+    {
+      "pair": 1,
+      "order": [
+        "v5",
+        "v4"
+      ],
+      "measurements": {
+        "v5": {
+          "core": {
+            "environment_version": 5,
+            "env_bytes": 51000,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.247243,
+              0.252996,
+              0.253877
+            ],
+            "median_sps": 1036158.7,
+            "checksum": 760494
+          },
+          "batch": {
+            "environment_version": 5,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3620200000004843,
+              0.36234487500041723,
+              0.37255729199387133
+            ],
+            "median_sps": 723465.45538887
+          }
+        },
+        "v4": {
+          "core": {
+            "environment_version": 4,
+            "env_bytes": 38712,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.241276,
+              0.249087,
+              0.244831
+            ],
+            "median_sps": 1070714.1,
+            "checksum": 756285
+          },
+          "batch": {
+            "environment_version": 4,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3852704999735579,
+              0.38032062497222796,
+              0.3826267499825917
+            ],
+            "median_sps": 685116.7619930564
+          }
+        }
+      },
+      "v5_over_v4_sps": {
+        "core": 0.9677267722541432,
+        "batch": 1.0559739529423486
+      }
+    },
+    {
+      "pair": 2,
+      "order": [
+        "v4",
+        "v5"
+      ],
+      "measurements": {
+        "v4": {
+          "core": {
+            "environment_version": 4,
+            "env_bytes": 38712,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.248485,
+              0.252158,
+              0.255428
+            ],
+            "median_sps": 1039602.2,
+            "checksum": 756285
+          },
+          "batch": {
+            "environment_version": 4,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3912182920030318,
+              0.3460802920162678,
+              0.3701916249701753
+            ],
+            "median_sps": 708130.5527133947
+          }
+        },
+        "v5": {
+          "core": {
+            "environment_version": 5,
+            "env_bytes": 51000,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.249389,
+              0.250477,
+              0.249047
+            ],
+            "median_sps": 1051145,
+            "checksum": 760494
+          },
+          "batch": {
+            "environment_version": 5,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3872729580034502,
+              0.37579141597962007,
+              0.38812287495238706
+            ],
+            "median_sps": 676897.2492979089
+          }
+        }
+      },
+      "v5_over_v4_sps": {
+        "core": 1.011103093086952,
+        "batch": 0.9558932977883711
+      }
+    },
+    {
+      "pair": 3,
+      "order": [
+        "v5",
+        "v4"
+      ],
+      "measurements": {
+        "v5": {
+          "core": {
+            "environment_version": 5,
+            "env_bytes": 51000,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.256291,
+              0.250834,
+              0.250871
+            ],
+            "median_sps": 1044935.4,
+            "checksum": 760494
+          },
+          "batch": {
+            "environment_version": 5,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3954944590223022,
+              0.3773875840124674,
+              0.361159999971278
+            ],
+            "median_sps": 694628.0458218249
+          }
+        },
+        "v4": {
+          "core": {
+            "environment_version": 4,
+            "env_bytes": 38712,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.243092,
+              0.245344,
+              0.245929
+            ],
+            "median_sps": 1068475.3,
+            "checksum": 756285
+          },
+          "batch": {
+            "environment_version": 4,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3889281250303611,
+              0.3760911250137724,
+              0.38410216599004343
+            ],
+            "median_sps": 682485.086550632
+          }
+        }
+      },
+      "v5_over_v4_sps": {
+        "core": 0.9779686998847797,
+        "batch": 1.0177922704986346
+      }
+    },
+    {
+      "pair": 4,
+      "order": [
+        "v4",
+        "v5"
+      ],
+      "measurements": {
+        "v4": {
+          "core": {
+            "environment_version": 4,
+            "env_bytes": 38712,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.250285,
+              0.250856,
+              0.253472
+            ],
+            "median_sps": 1044997.9,
+            "checksum": 756285
+          },
+          "batch": {
+            "environment_version": 4,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.39436162495985627,
+              0.4036219159606844,
+              0.369262374995742
+            ],
+            "median_sps": 664729.9924953011
+          }
+        },
+        "v5": {
+          "core": {
+            "environment_version": 5,
+            "env_bytes": 51000,
+            "envs": 64,
+            "transitions_per_repeat": 262144,
+            "seconds": [
+              0.247943,
+              0.244742,
+              0.24797
+            ],
+            "median_sps": 1057275.3,
+            "checksum": 760494
+          },
+          "batch": {
+            "environment_version": 5,
+            "transitions": 262144,
+            "envs": 64,
+            "workers": 4,
+            "seconds": [
+              0.3945882500265725,
+              0.39203641697531566,
+              0.3703474590438418
+            ],
+            "median_sps": 668672.573896383
+          }
+        }
+      },
+      "v5_over_v4_sps": {
+        "core": 1.011748731743863,
+        "batch": 1.005931102019757
+      }
+    }
+  ],
+  "summary": {
+    "core": {
+      "v4_median_sps": 1044997.9,
+      "v5_median_sps": 1049764.3,
+      "paired_ratio_median": 1.00498161571654,
+      "paired_ratio_min": 0.9677267722541432,
+      "paired_ratio_max": 1.011748731743863
+    },
+    "batch": {
+      "v4_median_sps": 685116.7619930564,
+      "v5_median_sps": 676897.2492979089,
+      "paired_ratio_median": 1.005931102019757,
+      "paired_ratio_min": 0.9545566819913379,
+      "paired_ratio_max": 1.0559739529423486
+    }
+  },
+  "gate": {
+    "max_native_batch_median_sps_loss": 0.1,
+    "passes": true,
+    "note": "Provisional contended simulator-cost gate only. Isolated confirmation and fresh v5 RL are required before claiming learning performance is preserved."
+  },
+  "source_sha256": {
+    "v4": {
+      "include/env.h": "0da1853338aebd2537af3ccabb51a3a15bb74baff289b9da9cd9ff70aa2d9705",
+      "include/tiles.h": "59de6530eba136b277dca393e983b87744272b5a851e1e2661d286c1e16a3220",
+      "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+      "src/sim.c": "1ecbe3e12f631d87c975c20593de181ce2a5fd9ccb960fafbe1ce5c4a9d12188",
+      "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+      "src/px_render.h": "5b0220d2acaba5727023d8bef8ae69ed99df919ebad33b6dad4cab288ca91300",
+      "src/px_main.c": "155f69dcb130826630be65c4317e895c56c916a8f953532a9d37fade4bb0ac6b",
+      "src/capi.c": "8df222ff524e472ca8ad3adef6eb7da16d4e1b23e5426b12d97287acb7e30c4f",
+      "src/render.c": "aa9a3153b6fe39bfc44a6bc200028e6475bed6d8998e876b42216b66813a9b7d",
+      "src/px_render.c": "06befc8f985a702c4c2dfdb7abaa13d3b7c281f788b9c6e7b67be178be46b2ed",
+      "src/frontend.h": "7b9c13ec1c6877d400f0a94051bb38ae19c3dbe2745e3bbe6058e8dfdb7ecbf1",
+      "src/main.c": "e763a6e85df07d4d4abc4e9a59b3811ac0c661b32eceb3c59c0917a62a59a511",
+      "src/light.c": "67e7a09fc9696d7a91cf96f0a6a371456ba08ae9f91a6609fa1318c5a942fd3c",
+      "src/worldgen.c": "7220009d25a718e3139d626d17887a0aa25db66bcd5c01e0d8b8dc1018d0500a",
+      "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+      "src/keymap.h": "18176d2ee49bd2fbc461807a966b0690b20880589067df295d83cfa7e62781f9"
+    },
+    "v5": {
+      "include/env.h": "70325cebeaeaaa5a8bee78046a3994750074861e051f48bb84912698164967fe",
+      "include/tiles.h": "6c61e7547363d97a9e3e42746584794448d2b6a15e0c9443866636c6af8eb08d",
+      "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+      "src/sim.c": "8180904a4023903ba35418bf75875bebe6306cd9dac2824a526cb70613b054b4",
+      "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+      "src/px_render.h": "5b0220d2acaba5727023d8bef8ae69ed99df919ebad33b6dad4cab288ca91300",
+      "src/px_main.c": "155f69dcb130826630be65c4317e895c56c916a8f953532a9d37fade4bb0ac6b",
+      "src/capi.c": "8df222ff524e472ca8ad3adef6eb7da16d4e1b23e5426b12d97287acb7e30c4f",
+      "src/render.c": "aa9a3153b6fe39bfc44a6bc200028e6475bed6d8998e876b42216b66813a9b7d",
+      "src/px_render.c": "ae5aada69388fea2e3b121d2115ad81e88b436099775653fef5eef2d5c8204af",
+      "src/frontend.h": "7b9c13ec1c6877d400f0a94051bb38ae19c3dbe2745e3bbe6058e8dfdb7ecbf1",
+      "src/main.c": "e763a6e85df07d4d4abc4e9a59b3811ac0c661b32eceb3c59c0917a62a59a511",
+      "src/light.c": "208a7e2a86a3bd43f22bc1fc6f011f9b109824e4865b099529fe0a33f1f598cb",
+      "src/worldgen.c": "dddd633c3954c7f4d058a3c7a96e597123fa9f203dc88a09fc8b11809a76a151",
+      "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+      "src/keymap.h": "18176d2ee49bd2fbc461807a966b0690b20880589067df295d83cfa7e62781f9"
+    }
+  },
+  "harness_sha256": {
+    "core_benchmark.c": "bd0b9b9236939369edc4eaf9df53bb8c76750c67a093577d7b1ef85ee9562b19",
+    "v2_benchmark.py": "6501f79e61226290696a332a600eff9effc58656c0a7cb01492d61d562e1e1d1",
+    "measure_object_scale.py": "8451cd3e1cd2e83f2185ad466a9f15acfb130f9dc33409dec2fb6029fa8abc3b"
+  },
+  "preview_root": "/Users/mikavohl/Projects/terraria-lite/experiments/object-scale-v5-20261011.44UmHy/v5",
+  "main_checkout_promoted": false,
+  "verification": {
+    "mechanics_generated_worlds": 100,
+    "incremental_full_light_edits": 24000,
+    "complete_footprint_worlds": 256,
+    "scalar_native_transitions": 64000,
+    "worker_counts": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "atomic_placement_and_removal": true,
+    "one_drop_per_object": true,
+    "adjacent_identical_object_isolation": true,
+    "hidden_obstacle_mask_no_leak": true,
+    "full_chest_interaction_and_opening": true,
+    "original_textures_and_three_armor_variants": true,
+    "full_footprint_placement_ghost_visually_checked": true,
+    "patch_git_apply_check": true
+  },
+  "remaining_gate": "Isolated timing after concurrent training ends and matched fresh v4/v5 RL. No learning-performance claim."
+}

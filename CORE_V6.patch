@@ -1,0 +1,624 @@
+--- a/Makefile
++++ b/Makefile
+@@ -68,10 +68,14 @@
+ fidelity-selftest: $(CORE_OBJ) tools/fidelity_test.o
+ 	$(CC) $^ -o $@ $(LDFLAGS)
+ 
+-check: $(SELFTEST) light-selftest fidelity-selftest
++object-selftest: $(CORE_OBJ) tools/object_selftest.o
++	$(CC) $^ -o $@ $(LDFLAGS)
++
++check: $(SELFTEST) light-selftest fidelity-selftest object-selftest
+ 	./$(SELFTEST)
+ 	./light-selftest
+ 	./fidelity-selftest
++	./object-selftest
+ 
+ px-selftest: $(CORE_OBJ) src/px_render.px.o tools/px_smoke.o
+ 	$(CC) $^ -o $@ $(LDFLAGS) $(SDL_LIBS)
+@@ -91,9 +95,9 @@
+ 
+ clean:
+ 	rm -f $(GAME_OBJ) $(PX_OBJ) $(LIB_OBJ) tools/selftest.o $(DEPS) \
+-	      $(BIN) $(SELFTEST) $(PXBIN) $(LIB) tools/selftest_v2.o tools/px_smoke.o px-selftest tools/light_incremental_test.o light-selftest tools/fidelity_test.o fidelity-selftest
++      $(BIN) $(SELFTEST) $(PXBIN) $(LIB) tools/selftest_v2.o tools/px_smoke.o px-selftest tools/light_incremental_test.o light-selftest tools/fidelity_test.o fidelity-selftest tools/object_selftest.o object-selftest
+ 
+-DEPS := $(GAME_OBJ:.o=.d) $(PX_OBJ:.o=.d) $(LIB_OBJ:.o=.d) tools/selftest_v2.d tools/px_smoke.d tools/light_incremental_test.d tools/fidelity_test.d
++DEPS := $(GAME_OBJ:.o=.d) $(PX_OBJ:.o=.d) $(LIB_OBJ:.o=.d) tools/selftest_v2.d tools/px_smoke.d tools/light_incremental_test.d tools/fidelity_test.d tools/object_selftest.d
+ -include $(DEPS)
+ 
+ .PHONY: all check clean lib check-pixel
+--- a/include/env.h
++++ b/include/env.h
+@@ -4,7 +4,7 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ #include "tiles.h"
+-#define ENV_VERSION 4
++#define ENV_VERSION 6
+ #define WORLD_W 128
+ #define WORLD_H 96
+ #define SURFACE_BASE 30
+@@ -134,8 +134,8 @@
+  {"silver bar",{ITEM_SILVER_ORE},{4},1,ITEM_SILVER_BAR,1,0,TILE_FURNACE,ACH_SMELT_SILVER},
+  {"gold bar",{ITEM_GOLD_ORE},{4},1,ITEM_GOLD_BAR,1,0,TILE_FURNACE,ACH_SMELT_GOLD},
+  {"anvil",{ITEM_IRON_BAR},{5},1,ITEM_ANVIL,1,0,TILE_WORKBENCH,ACH_CRAFT_ANVIL},
+- {"iron pickaxe",{ITEM_IRON_BAR,ITEM_WOOD},{10,3},2,-1,0,TIER_IRON_PICK,TILE_ANVIL,ACH_CRAFT_IRON_PICK},
+- {"gold pickaxe",{ITEM_GOLD_BAR,ITEM_WOOD},{10,4},2,-1,0,TIER_GOLD_PICK,TILE_ANVIL,ACH_CRAFT_GOLD_PICK},
++ {"iron pickaxe",{ITEM_IRON_BAR,ITEM_WOOD},{10,3},2,ITEM_IRON_PICK,1,TIER_IRON_PICK,TILE_ANVIL,ACH_CRAFT_IRON_PICK},
++ {"gold pickaxe",{ITEM_GOLD_BAR,ITEM_WOOD},{10,4},2,ITEM_GOLD_PICK,1,TIER_GOLD_PICK,TILE_ANVIL,ACH_CRAFT_GOLD_PICK},
+  {"wooden sword",{ITEM_WOOD},{7},1,ITEM_WOOD_SWORD,1,0,TILE_WORKBENCH,ACH_CRAFT_WOOD_SWORD},
+  {"copper sword",{ITEM_COPPER_BAR},{6},1,ITEM_COPPER_SWORD,1,0,TILE_ANVIL,ACH_CRAFT_METAL_SWORD},
+  {"iron sword",{ITEM_IRON_BAR},{8},1,ITEM_IRON_SWORD,1,0,TILE_ANVIL,ACH_CRAFT_METAL_SWORD},
+@@ -152,6 +152,9 @@
+ typedef struct { int max_steps; } EnvConfig;
+ typedef struct Env {
+  uint8_t tiles[WORLD_H][WORLD_W],light[WORLD_H][WORLD_W],terrain_light[WORLD_H][WORLD_W];
++ /* Row-major sub-tile frame index. No object entities or dynamic allocation;
++    ordinary tiles remain unchanged, so the RL taxonomy/observation stays small. */
++ uint8_t object_part[WORLD_H][WORLD_W];
+  uint8_t sky_cutoff[WORLD_W];
+  bool terrain_dirty; int surface[WORLD_W];
+  int px,py,facing,jump_left,fall_dist,health;
+@@ -178,6 +181,40 @@
+ static inline bool in_bounds(int x,int y) { return x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H; }
+ static inline bool has_ach(const Env *e,int a) { return a>=0&&a<ACH_COUNT&&((e->achievements>>a)&1u); }
+ static inline Tile tile_at(const Env *e,int x,int y) { return in_bounds(x,y)?(Tile)e->tiles[y][x]:TILE_BEDROCK; }
++static inline uint8_t cell_emit(const Env *e,int x,int y) {
++ Tile t=tile_at(e,x,y);
++ if(!tile_emit(t)) return 0;
++ /* A larger campfire remains one light source at its bottom-left anchor. */
++ if(tile_object_h(t)>1 && e->object_part[y][x]!=(tile_object_h(t)-1)*tile_object_w(t)) return 0;
++ return tile_emit(t);
++}
++/* The selected target is the object's bottom-left anchor. Callers check empty
++   space before placing; worldgen/fixtures clear their reserved rectangles. */
++static inline bool env_object_write(Env *e,Tile t,int left,int bottom) {
++ int w=tile_object_w(t),h=tile_object_h(t),top=bottom-h+1;
++ if(!in_bounds(left,top)||!in_bounds(left+w-1,bottom)) return false;
++ for(int row=0;row<h;row++) for(int col=0;col<w;col++) {
++  int x=left+col,y=top+row;Tile before=tile_at(e,x,y);
++  e->tiles[y][x]=(uint8_t)t;e->object_part[y][x]=(uint8_t)(row*w+col);
++  light_tile_changed(e,x,y,before);
++ }
++ e->light_dirty=true;return true;
++}
++static inline void env_object_remove(Env *e,int x,int y) {
++ Tile t=tile_at(e,x,y);int w=tile_object_w(t),h=tile_object_h(t);
++ if(w==1&&h==1) {
++  e->tiles[y][x]=TILE_AIR;e->object_part[y][x]=0;light_tile_changed(e,x,y,t);e->light_dirty=true;return;
++ }
++ int part=e->object_part[y][x];
++ int left=x-part%w,top=y-part/w;
++ for(int row=0;row<h;row++) for(int col=0;col<w;col++) {
++  int cx=left+col,cy=top+row;
++  if(in_bounds(cx,cy)&&tile_at(e,cx,cy)==t&&e->object_part[cy][cx]==row*w+col) {
++   e->tiles[cy][cx]=TILE_AIR;e->object_part[cy][cx]=0;light_tile_changed(e,cx,cy,t);
++  }
++ }
++ e->light_dirty=true;
++}
+ static inline bool is_body(const Env *e,int x,int y) { return x>=e->px&&x<e->px+PLAYER_W&&y<=e->py&&y>e->py-PLAYER_H; }
+ static inline bool body_fits(const Env *e,int x,int feet) {
+  if(x<0||x+PLAYER_W>WORLD_W||feet<PLAYER_H-1||feet>=WORLD_H) return false;
+--- a/include/tiles.h
++++ b/include/tiles.h
+@@ -17,7 +17,7 @@
+  ITEM_GEL,ITEM_PLATFORM,ITEM_ROPE,ITEM_MUSHROOM,ITEM_LESSER_POTION,
+  ITEM_LIFE_CRYSTAL,ITEM_CLOUD_BOTTLE,ITEM_COPPER_SHORTSWORD,ITEM_WOOD_SWORD,
+  ITEM_COPPER_SWORD,ITEM_IRON_SWORD,ITEM_GOLD_SWORD,ITEM_SILVER_SWORD,ITEM_WOOD_ARMOR,
+- ITEM_IRON_ARMOR,ITEM_COUNT
++ ITEM_IRON_ARMOR,ITEM_IRON_PICK,ITEM_GOLD_PICK,ITEM_COUNT
+ } Item;
+ #define TIER_HAND 0
+ #define TIER_COPPER_PICK 1
+@@ -53,11 +53,11 @@
+  "silver ore","silver bar","gel","wood platform","rope","mushroom",
+  "lesser healing potion","life crystal","Cloud in a Bottle","copper shortsword",
+  "wooden sword","copper broadsword","iron broadsword","gold broadsword",
+- "silver broadsword","wood breastplate","iron chainmail"
++ "silver broadsword","wood breastplate","iron chainmail","iron pickaxe","gold pickaxe"
+ };
+ static const int ITEM_TERRARIA_ID[ITEM_COUNT] = {
+  9,3,2,12,11,13,20,22,19,8,966,36,33,35,14,21,23,94,965,5,28,29,53,
+- 3507,24,3508,4,3520,3514,728,81
++ 3507,24,3508,4,3520,3514,728,81,1,3521
+ };
+ #define WEAPON_COUNT 6
+ static const Item WEAPON_ITEM[WEAPON_COUNT] = {ITEM_COPPER_SHORTSWORD,ITEM_WOOD_SWORD,
+@@ -71,6 +71,18 @@
+ static inline uint8_t tile_tier(Tile t) { return TILE_INFO[t].min_tier; }
+ static inline int8_t tile_drop(Tile t) { return TILE_INFO[t].drop; }
+ static inline uint8_t tile_emit(Tile t) { return TILE_INFO[t].emit; }
++/* Shared logical footprints: original Terraria tiles, not inventory icon sizes. */
++static inline int tile_object_w(Tile t) {
++ switch(t) {
++ case TILE_CAMPFIRE: case TILE_FURNACE: return 3;
++ case TILE_WORKBENCH: case TILE_ANVIL: case TILE_CHEST:
++ case TILE_CHEST_OPEN: case TILE_LIFE_CRYSTAL: return 2;
++ default: return 1;
++ }
++}
++static inline int tile_object_h(Tile t) {
++ return t==TILE_CAMPFIRE||t==TILE_FURNACE||t==TILE_CHEST||t==TILE_CHEST_OPEN||t==TILE_LIFE_CRYSTAL?2:1;
++}
+ typedef struct { Item item; Tile tile; } Placeable;
+ #define PLACEABLE_COUNT 10
+ static const Placeable PLACEABLES[PLACEABLE_COUNT] = {
+--- a/src/light.c
++++ b/src/light.c
+@@ -39,7 +39,7 @@
+     /* Emitters, then the player's own glow; brightest candidate wins. */
+     for (int y = 0; y < WORLD_H; y++) {
+         for (int x = 0; x < WORLD_W; x++) {
+-            uint8_t emit = tile_emit((Tile)e->tiles[y][x]);
++            uint8_t emit = cell_emit(e,x,y);
+             if (emit) seed_cell(e, x, y, emit);
+         }
+     }
+@@ -133,7 +133,9 @@
+     _Static_assert(WORLD_H<256 && LIGHT_CELLS<=65536,"light index bounds");
+     if(e->terrain_dirty) return; /* full invalidation owns initial/bulk edits */
+     Tile after=(Tile)e->tiles[y][x];
+-    if(tile_opaque(before)==tile_opaque(after) && tile_emit(before)==tile_emit(after)) return;
++    /* Multi-tile emitter identity also depends on its frame/anchor, not just
++       the tile kind. Always relax an emitter edit; non-emitters keep fast skip. */
++    if(tile_opaque(before)==tile_opaque(after) && !tile_emit(before) && !tile_emit(after)) return;
+     LightQueue q={.head=0,.tail=0,.count=0,.queued={0}};
+     static const int dx[4]={1,-1,0,0},dy[4]={0,0,1,-1};
+     int old=e->sky_cutoff[x],fresh=column_cutoff(e,x);
+@@ -146,7 +148,7 @@
+         int k=q.cells[q.head],cx=k%WORLD_W,cy=k/WORLD_W;
+         q.head=(q.head+1)%LIGHT_CELLS; q.count--;
+         q.queued[k>>3]&=(uint8_t)~(1u<<(k&7));
+-        uint8_t value=cy<e->sky_cutoff[cx]?LIGHT_MAX:tile_emit((Tile)e->tiles[cy][cx]);
++        uint8_t value=cy<e->sky_cutoff[cx]?LIGHT_MAX:cell_emit(e,cx,cy);
+         for(int d=0;d<4;d++) {
+             int nx=cx+dx[d],ny=cy+dy[d];
+             if(in_bounds(nx,ny) && !tile_opaque((Tile)e->tiles[ny][nx])) {
+--- a/src/px_main.c
++++ b/src/px_main.c
+@@ -333,10 +333,9 @@
+     v->hover_y = e->py + REACH_DY[best];
+ 
+     {
+-        Tile t = tile_at(e, v->hover_x, v->hover_y);
+-        v->can_mine  = !e->mine_cd && t != TILE_AIR && tile_tier(t) != TIER_NEVER &&
+-                       e->tool_tier >= tile_tier(t);
+-        v->can_place = t == TILE_AIR && e->inv[PLACEABLES[e->selected].item] > 0;
++        uint8_t legal[ACT_COUNT];env_action_mask(e,legal);
++        v->can_mine=legal[ACT_MINE_FIRST+best]!=0;
++        v->can_place=legal[ACT_PLACE_FIRST+best]!=0;
+     }
+ }
+ 
+@@ -518,7 +517,7 @@
+             case SDL_WINDOWEVENT:
+                 if(ev.window.event==SDL_WINDOWEVENT_FOCUS_LOST && !watching) {
+                     paused=true; memset(&in,0,sizeof in); memset(&q,0,sizeof q);
+-                    px_set_title(ui,"terraria-lite v4 -- PAUSED (F2 to resume)");
++                    px_set_title(ui,"terraria-lite v5 preview -- PAUSED (F2 to resume)");
+                 }
+                 break;
+ 
+@@ -609,7 +608,7 @@
+                 case SDLK_f: in.attack=down; continue;
+                 case SDLK_F2:
+                     if(down && !ev.key.repeat) { paused=!paused;
+-                        px_set_title(ui,paused?"terraria-lite v4 -- PAUSED (F2 to resume)":"terraria-lite v4"); }
++                        px_set_title(ui,paused?"terraria-lite v5 preview -- PAUSED (F2 to resume)":"terraria-lite v5 preview"); }
+                     continue;
+                 case SDLK_a: case SDLK_LEFT:  in.left  = down; continue;
+                 case SDLK_d: case SDLK_RIGHT: in.right = down; continue;
+--- a/src/px_render.c
++++ b/src/px_render.c
+@@ -385,14 +385,12 @@
+     return true;
+ }
+ 
+-/* Furniture that spans several Terraria tiles but one of ours: splice the
+-   frames together, then shrink the whole object into a single cell. */
++/* Reassemble original 16px sub-tiles at native scale. Drawing selects each
++   footprint cell's own frame, so clipping, lighting and world occupancy agree. */
+ static bool load_object(PxUi *ui, Tile t, const char *dir, const char *name,
+                         int x0, int y0, int cols, int rows)
+ {
+     Sheet s, obj;
+-    int src[1][4];
+-    bool ok;
+ 
+     if (!sheet_load(ui, &s, dir, name)) return false;
+     obj.w  = cols * 16;
+@@ -402,8 +400,10 @@
+     gather_frames(&s, x0, y0, cols, rows, obj.px);
+     sheet_free(&s);
+ 
+-    src[0][0] = 0; src[0][1] = 0; src[0][2] = obj.w; src[0][3] = obj.h;
+-    ok = load_fitted(ui, t, &obj, src, 1, true);
++    if(cols!=tile_object_w(t)||rows!=tile_object_h(t)) { sheet_free(&obj);return false; }
++    ui->art[t].tex=mk_tex(ui->ren,obj.px,obj.w,obj.h);
++    ui->art[t].nvar=1;ui->art[t].masked=false;ui->real_tiles++;
++    bool ok=ui->art[t].tex!=NULL;
+     sheet_free(&obj);
+     return ok;
+ }
+@@ -1175,6 +1175,10 @@
+             src.y = a->masked ? tile_mask(e, tx, ty) * PX_TILE : 0;
+             src.w = PX_TILE;
+             src.h = PX_TILE;
++            if(tile_object_w(t)>1||tile_object_h(t)>1) {
++                int part=e->object_part[ty][tx],width=tile_object_w(t);
++                src.x=(part%width)*PX_TILE;src.y=(part/width)*PX_TILE;
++            }
+             SDL_SetTextureAlphaMod(a->tex, 255);
+             /* A canopy is a solid green rectangle otherwise: Terraria draws
+                tree tops as one big sprite, we tile them, so the depth has to
+@@ -1266,13 +1270,28 @@
+     if (v->hover_reach >= 0) {
+         int tx = e->px + REACH_DX[v->hover_reach], ty = e->py + REACH_DY[v->hover_reach];
+         int sx = tx * PX_TILE - camx, sy = ty * PX_TILE - camy;
+-        bool empty = tile_at(e, tx, ty) == TILE_AIR;
+-        bool ok = empty ? v->can_place : v->can_mine;
++        bool known=e->light[ty][tx]>=DARK_THRESHOLD;
++        bool empty = known && tile_at(e, tx, ty) == TILE_AIR;
++        bool ok = known?(empty ? v->can_place : v->can_mine):(v->can_place||v->can_mine);
+         uint32_t c = ok ? UI_GOOD : UI_BAD;
++
++        Tile object=empty?PLACEABLES[e->selected].tile:tile_at(e,tx,ty);
++        int ow=tile_object_w(object),oh=tile_object_h(object);
++        if(known&&(ow>1||oh>1)) {
++            int left=tx,top=ty-oh+1;
++            if(!empty) {int part=e->object_part[ty][tx];left=tx-part%ow;top=ty-part/ow;}
++            SDL_Rect footprint={left*PX_TILE-camx,top*PX_TILE-camy,ow*PX_TILE,oh*PX_TILE};
++            if(empty&&v->can_place) {
++                SDL_SetTextureAlphaMod(ui->art[object].tex,110);
++                SDL_RenderCopy(ui->ren,ui->art[object].tex,NULL,&footprint);
++                SDL_SetTextureAlphaMod(ui->art[object].tex,255);
++            }
++            frame(ui,footprint.x,footprint.y,footprint.w,footprint.h,c);
++        }
+ 
+         /* A placement preview only makes sense on an empty cell, and only when
+            the placement would actually land. */
+-        if (empty && v->can_place)
++        if (empty && v->can_place && ow==1 && oh==1)
+             tile_icon(ui, PLACEABLES[e->selected].tile, sx, sy, PX_TILE, 110);
+ 
+         /* The cell now *snaps* to whichever reach square the cursor is nearest,
+@@ -1393,7 +1412,7 @@
+         const char *hint="crafting material";
+         if(it==ITEM_LESSER_POTION) hint="[c] heal 50; shared cooldown 60";
+         else if(it==ITEM_MUSHROOM) hint="[v] heal 15; shared cooldown 60";
+-        else if(it==ITEM_LIFE_CRYSTAL) hint="[b] +20 max life, up to 200";
++        else if(it==ITEM_LIFE_CRYSTAL) hint="[b] +20 max life, up to 400";
+         else if(it==ITEM_CLOUD_BOTTLE) hint="[w] one extra airborne jump";
+         else if(it==ITEM_WOOD_ARMOR || it==ITEM_IRON_ARMOR) hint="crafting equips torso armor";
+         else for(int k=0;k<WEAPON_COUNT;k++) if(it==WEAPON_ITEM[k]) hint="[t] cycle owned weapons";
+@@ -1415,12 +1434,14 @@
+         else if (t != TILE_AIR)
+             snprintf(buf, sizeof buf, "target  %s  %s  -  %s", REACH_NAME[v->hover_reach],
+                      TILE_INFO[t].name,
+-                     v->can_mine ? "lmb mines it"
++                     v->can_mine ? (tile_object_w(t)*tile_object_h(t)>1?"lmb removes whole object":"lmb mines it")
+                                  : (tile_tier(t) == TIER_NEVER ? "unbreakable"
+                                                                : "pickaxe too weak"));
+         else
+-            snprintf(buf, sizeof buf, "target  %s  empty  -  %s", REACH_NAME[v->hover_reach],
+-                     v->can_place ? "rmb places it" : "nothing to place");
++            snprintf(buf, sizeof buf, "place %s %dx%d (bottom-left): %s",
++                     TILE_INFO[PLACEABLES[e->selected].tile].name,
++                     tile_object_w(PLACEABLES[e->selected].tile),tile_object_h(PLACEABLES[e->selected].tile),
++                     v->can_place ? "rmb" : "blocked or no stock");
+         text(ui, 6, HY + 76, (v->can_mine || v->can_place) ? UI_GOOD : UI_BAD, buf);
+     } else {
+         text(ui, 6, HY + 76, UI_FAINT, "target  -  point into the world to aim");
+--- a/src/sim.c
++++ b/src/sim.c
+@@ -197,7 +197,7 @@
+         give(e,ITEM_WOOD,wood);
+         harvested_wood=wood;
+     } else {
+-        e->tiles[ty][tx] = TILE_AIR; light_tile_changed(e,tx,ty,t);
++        env_object_remove(e,tx,ty);
+     }
+     e->light_dirty = true;
+     e->mine_cd = t==TILE_LOG?3:4-e->tool_tier;
+@@ -229,18 +229,14 @@
+         SAY(e, "cannot place outside the world");
+         return;
+     }
+-    Tile t = tile_at(e, tx, ty);
+-    if (t != TILE_AIR) {
+-        SAY(e, "%s is in the way", TILE_INFO[t].name);
+-        return;
+-    }
+-    if (tile_solid(p.tile) && is_body(e, tx, ty)) {
+-        SAY(e, "you are standing there");
+-        return;
+-    }
+-
+-    e->tiles[ty][tx] = (uint8_t)p.tile;
+-    light_tile_changed(e,tx,ty,t);
++    int w=tile_object_w(p.tile),h=tile_object_h(p.tile);
++    if(!in_bounds(tx+w-1,ty-h+1)) { SAY(e,"object does not fit inside world");return; }
++    for(int row=0;row<h;row++) for(int col=0;col<w;col++) {
++        int x=tx+col,y=ty-row;Tile t=tile_at(e,x,y);
++        if(t!=TILE_AIR) { SAY(e,"%s is in the way",TILE_INFO[t].name);return; }
++        if(tile_solid(p.tile)&&is_body(e,x,y)) { SAY(e,"you are standing there");return; }
++    }
++    env_object_write(e,p.tile,tx,ty);
+     e->inv[p.item]--;
+     e->light_dirty = true;
+     award_place(e, p.tile);
+@@ -270,10 +266,6 @@
+ static void do_craft(Env *e, int idx) {
+     const Recipe *r = &RECIPES[idx];
+ 
+-    if (r->grant_tier && e->tool_tier >= r->grant_tier) {
+-        SAY(e, "already have it");
+-        return;
+-    }
+     if (r->station != TILE_AIR && !station_near(e, r->station)) {
+         SAY(e, "need to be near %s %s",
+             r->station == TILE_ANVIL ? "an" : "a", TILE_INFO[r->station].name);
+@@ -289,7 +281,9 @@
+ 
+     for (int i = 0; i < r->n_in; i++) e->inv[r->in_item[i]] -= (int16_t)r->in_qty[i];
+     if (r->out_item >= 0) give(e, r->out_item, r->out_qty);
+-    if (r->grant_tier) e->tool_tier = r->grant_tier;
++    /* Ownership is independent of the strongest automatically used pick.
++       Crafting iron after gold stays legal and never downgrades mining. */
++    if (r->grant_tier > e->tool_tier) e->tool_tier = r->grant_tier;
+     /* Crafting explicitly chooses this equipment, rather than auto-selecting
+        the best item found in a chest. Weapon cycling can select weaker ones. */
+     for (int i=0;i<WEAPON_COUNT;i++) if (r->out_item == (int)WEAPON_ITEM[i]) e->weapon=i;
+@@ -337,8 +331,16 @@
+     int tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
+     if (e->inv[p.item] <= 0)              return false;
+     if (!in_bounds(tx, ty))               return false;
+-    if (e->light[ty][tx] >= DARK_THRESHOLD && tile_at(e,tx,ty)!=TILE_AIR) return false;
+-    return !tile_solid(p.tile)||!is_body(e, tx, ty);
++    int w=tile_object_w(p.tile),h=tile_object_h(p.tile);
++    if(!in_bounds(tx+w-1,ty-h+1)) return false;
++    for(int row=0;row<h;row++) for(int col=0;col<w;col++) {
++        int x=tx+col,y=ty-row;
++        /* Hidden occupied sub-cells still permit attempts, never disclose
++           hidden terrain by asking whether a large object fits there. */
++        if(e->light[y][x]>=DARK_THRESHOLD&&tile_at(e,x,y)!=TILE_AIR) return false;
++        if(tile_solid(p.tile)&&is_body(e,x,y)) return false;
++    }
++    return true;
+ }
+ 
+ /* Cycling only means something when a slot other than the current one holds
+@@ -353,7 +355,6 @@
+ 
+ static bool can_craft(const Env *e, int idx,uint32_t stations) {
+     const Recipe *r = &RECIPES[idx];
+-    if (r->grant_tier && e->tool_tier >= r->grant_tier)        return false;
+     if (r->station != TILE_AIR && !(stations&(1u<<r->station))) return false;
+     for (int i = 0; i < r->n_in; i++)
+         if (e->inv[r->in_item[i]] < r->in_qty[i])              return false;
+@@ -363,8 +364,12 @@
+ static int nearby_chest(const Env *e) {
+     for (int i=0;i<e->chest_count;i++) {
+         const Chest *c=&e->chests[i];
+-        if (!c->opened && c->x>=e->px-1 && c->x<=e->px+PLAYER_W && c->y>=e->py-PLAYER_H && c->y<=e->py+1
+-            && e->light[c->y][c->x]>=DARK_THRESHOLD) return i;
++        if(c->opened) continue;
++        for(int row=0;row<2;row++) for(int col=0;col<2;col++) {
++            int x=c->x+col,y=c->y-row;
++            if(x>=e->px-1&&x<=e->px+PLAYER_W&&y>=e->py-PLAYER_H&&y<=e->py+1
++               &&in_bounds(x,y)&&tile_at(e,x,y)==TILE_CHEST&&e->light[y][x]>=DARK_THRESHOLD) return i;
++        }
+     }
+     return -1;
+ }
+@@ -493,8 +498,7 @@
+     if(i<0) return;
+     Chest *c=&e->chests[i]; c->opened=true;
+     for(int k=0;k<ITEM_COUNT;k++) give(e,k,c->loot[k]);
+-    e->tiles[c->y][c->x]=TILE_CHEST_OPEN;
+-    light_tile_changed(e,c->x,c->y,TILE_CHEST);
++    env_object_write(e,TILE_CHEST_OPEN,c->x,c->y);
+     e->light_dirty=true;
+     award(e,ACH_OPEN_CHEST); SAY(e,"chest looted (check inventory)");
+ }
+--- a/src/worldgen.c
++++ b/src/worldgen.c
+@@ -315,6 +315,24 @@
+     for(int col=0;col<PLAYER_W;col++) for (int y = e->py; y > e->py - PLAYER_H && y >= 0; --y)
+         if (tile_solid((Tile)e->tiles[y][e->px+col]) && e->tiles[y][e->px+col] != TILE_BEDROCK)
+             e->tiles[y][e->px+col] = TILE_AIR;
++}
++
++/* Necessary material supply, not a route, reward, or time-budget guarantee.
++   Rooms are carved first, so their erased ore cannot invalidate these floors.
++   Supplement only deficient ore by replacing randomized in-band stone cells;
++   preserve all existing ores, object components and bedrock. */
++static void guarantee_ore(Env *e,Tile ore,int have,int minimum,int lo,int hi) {
++    if(have>=minimum) return;
++    int cells[WORLD_W*WORLD_H],n=0;
++    for(int y=0;y<WORLD_H;y++) for(int x=0;x<WORLD_W;x++) {
++        if(x>0 && x<WORLD_W-1 && y>=lo && y<=hi &&
++           e->tiles[y][x]==TILE_STONE && !e->object_part[y][x]) cells[n++]=y*WORLD_W+x;
++    }
++    int need=minimum-have;
++    for(int i=0;i<need && n>0;i++) {
++        int j=(int)rng_below(&e->rng,(uint32_t)n),cell=cells[j];
++        cells[j]=cells[--n]; e->tiles[cell/WORLD_W][cell%WORLD_W]=(uint8_t)ore;
++    }
+ }
+ 
+ /* ------------------------------------------------------------------------- */
+@@ -338,13 +356,16 @@
+         if(i>=2) {
+             for(int y=c->y-3;y<=c->y;y++) for(int x=c->x-3;x<=c->x+3;x++) e->tiles[y][x]=TILE_AIR;
+             for(int x=c->x-3;x<=c->x+3;x++) e->tiles[c->y+1][x]=TILE_WOOD;
+-            e->tiles[c->y][c->x+2]=TILE_LIFE_CRYSTAL;
++            env_object_write(e,TILE_LIFE_CRYSTAL,c->x+2,c->y);
+             e->mobs[i-2]=(Mob){c->x-2,c->y-2,16,i%8,0,1,MOB_CAVE_BAT};
+         } else {
+-            e->tiles[c->y][c->x]=TILE_AIR;
+-            e->tiles[c->y-1][c->x]=TILE_AIR;
+-        }
+-        e->tiles[c->y][c->x]=TILE_CHEST;
++            int other=e->surface[c->x+1]-1;
++            if(other<c->y) c->y=other;
++            for(int row=0;row<2;row++) for(int col=0;col<2;col++)
++                e->tiles[c->y-row][c->x+col]=TILE_AIR;
++            for(int col=0;col<2;col++) e->tiles[c->y+1][c->x+col]=TILE_GRASS;
++        }
++        env_object_write(e,TILE_CHEST,c->x,c->y);
+         c->loot[ITEM_LESSER_POTION]=rng_range(&e->rng,2,4);
+         c->loot[ITEM_ROPE]=rng_range(&e->rng,20,40);
+         c->loot[ITEM_TORCH]=rng_range(&e->rng,6,12);
+@@ -362,4 +383,13 @@
+         if(in_bounds(x,e->py) && !tile_solid(tile_at(e,x,e->surface[x]-1)))
+             e->mobs[i]=(Mob){x,e->surface[x]-1,25,i*4,0,1,MOB_BLUE_SLIME};
+     }
+-}
++    /* 18 copper = one copper sword (also satisfies smelting); 120 iron =
++       anvil + iron pick + chainmail; 40 gold = gold pick; 4 silver = one bar.
++       No inventory gifts and no guarantee of gathering them in 3000 actions. */
++    int ore_counts[TILE_COUNT]={0};
++    for(int y=0;y<WORLD_H;y++)for(int x=0;x<WORLD_W;x++)ore_counts[e->tiles[y][x]]++;
++    guarantee_ore(e,TILE_COPPER_ORE,ore_counts[TILE_COPPER_ORE],18,COPPER_MIN_Y,COPPER_MAX_Y);
++    guarantee_ore(e,TILE_IRON_ORE,ore_counts[TILE_IRON_ORE],120,IRON_MIN_Y,IRON_MAX_Y);
++    guarantee_ore(e,TILE_SILVER_ORE,ore_counts[TILE_SILVER_ORE],4,52,WORLD_H-BEDROCK_ROWS-1);
++    guarantee_ore(e,TILE_GOLD_ORE,ore_counts[TILE_GOLD_ORE],40,GOLD_MIN_Y,GOLD_MAX_Y);
++}
+--- /dev/null
++++ b/tools/core_contract_test.c
+@@ -0,0 +1,37 @@
++/* State fixtures only: never policy training trajectories. */
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "env.h"
++int main(void) {
++    Env e; uint8_t mask[ACT_COUNT];
++    env_init(&e,(EnvConfig){3000}); env_reset(&e,7);
++    memset(e.tiles,0,sizeof e.tiles); memset(e.object_part,0,sizeof e.object_part);
++    memset(e.mobs,0,sizeof e.mobs); e.chest_count=0; e.px=64;e.py=39;
++    for(int x=0;x<WORLD_W;x++) e.tiles[40][x]=TILE_STONE;
++    env_object_write(&e,TILE_ANVIL,62,39);
++    e.inv[ITEM_WOOD]=20;e.inv[ITEM_GOLD_BAR]=10;e.inv[ITEM_IRON_BAR]=10;
++    e.terrain_dirty=true;light_recompute(&e);
++    env_step(&e,ACT_CRAFT_GOLD_PICK);
++    assert(e.inv[ITEM_GOLD_PICK]==1 && e.tool_tier==TIER_GOLD_PICK);
++    env_action_mask(&e,mask);assert(mask[ACT_CRAFT_IRON_PICK] && !mask[ACT_CRAFT_GOLD_PICK]); /* gold bars consumed */
++    env_step(&e,ACT_CRAFT_IRON_PICK);
++    assert(e.inv[ITEM_IRON_PICK]==1 && e.tool_tier==TIER_GOLD_PICK);
++    assert(has_ach(&e,ACH_CRAFT_IRON_PICK) && has_ach(&e,ACH_CRAFT_GOLD_PICK));
++    int wood=e.inv[ITEM_WOOD];e.inv[ITEM_IRON_BAR]=10;env_action_mask(&e,mask);assert(mask[ACT_CRAFT_IRON_PICK]);
++    env_step(&e,ACT_CRAFT_IRON_PICK);assert(e.inv[ITEM_IRON_PICK]==2 && e.inv[ITEM_WOOD]==wood-3 && e.reward==0);
++    int minima[4]={99999,99999,99999,99999},minwood=99999,minstone=99999;
++    for(int seed=0;seed<1024;seed++) {
++        env_reset(&e,(unsigned)seed);int count[TILE_COUNT]={0};
++        for(int y=0;y<WORLD_H;y++)for(int x=0;x<WORLD_W;x++)count[e.tiles[y][x]]++;
++        int woodn=count[TILE_LOG]+count[TILE_WOOD];
++        int c[4]={count[TILE_COPPER_ORE],count[TILE_IRON_ORE],count[TILE_SILVER_ORE],count[TILE_GOLD_ORE]};
++        assert(c[0]>=18 && c[1]>=120 && c[2]>=4 && c[3]>=40);
++        assert(woodn>=64 && count[TILE_STONE]>=21);
++        for(int i=0;i<4;i++)if(c[i]<minima[i])minima[i]=c[i];
++        if(woodn<minwood)minwood=woodn;if(count[TILE_STONE]<minstone)minstone=count[TILE_STONE];
++        assert(!e.inv[ITEM_WOOD] && !e.inv[ITEM_GOLD_PICK] && !e.inv[ITEM_IRON_PICK]);
++    }
++    printf("v%d core contract: gold-before-iron legal without downgrade; 1024 worlds min copper/iron/silver/gold=%d/%d/%d/%d, wood=%d, stone=%d; no ingredient gifts\n",ENV_VERSION,minima[0],minima[1],minima[2],minima[3],minwood,minstone);
++    env_free(&e);return 0;
++}
+--- /dev/null
++++ b/tools/object_selftest.c
+@@ -0,0 +1,91 @@
++/* Footprint correctness fixtures, never demonstrations or learner input. */
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "env.h"
++
++static void flat(Env *e) {
++ env_init(e,(EnvConfig){3000});env_reset(e,7);
++ memset(e->tiles,0,sizeof e->tiles);memset(e->object_part,0,sizeof e->object_part);
++ memset(e->mobs,0,sizeof e->mobs);memset(e->chests,0,sizeof e->chests);e->chest_count=0;
++ for(int x=0;x<WORLD_W;x++) { e->surface[x]=40;e->tiles[40][x]=TILE_STONE; }
++ e->px=40;e->py=39;e->terrain_dirty=true;light_recompute(e);
++}
++static void oracle(Env *e) {
++ light_recompute(e);Env other=*e;light_reference(&other);assert(!memcmp(other.light,e->light,sizeof e->light));
++}
++static void footprint(const Env *e,Tile t,int left,int bottom) {
++ int w=tile_object_w(t),h=tile_object_h(t);
++ for(int row=0;row<h;row++) for(int col=0;col<w;col++) {
++  assert(tile_at(e,left+col,bottom-h+1+row)==t);
++  assert(e->object_part[bottom-h+1+row][left+col]==row*w+col);
++ }
++}
++int main(void) {
++ assert(tile_object_w(TILE_CHEST)==2&&tile_object_h(TILE_CHEST)==2);
++ assert(tile_object_w(TILE_LIFE_CRYSTAL)==2&&tile_object_h(TILE_LIFE_CRYSTAL)==2);
++ assert(tile_object_w(TILE_FURNACE)==3&&tile_object_h(TILE_FURNACE)==2);
++ assert(tile_object_w(TILE_CAMPFIRE)==3&&tile_object_h(TILE_CAMPFIRE)==2);
++ assert(tile_object_w(TILE_WORKBENCH)==2&&tile_object_h(TILE_WORKBENCH)==1);
++ assert(tile_object_w(TILE_ANVIL)==2&&tile_object_h(TILE_ANVIL)==1);
++ Env e;uint8_t mask[ACT_COUNT];Obs obs;
++ flat(&e);e.selected=6;e.inv[ITEM_FURNACE]=1;
++ env_action_mask(&e,mask);assert(mask[ACT_PLACE_BODY_FOOT_LEFT]);
++ env_step(&e,ACT_PLACE_BODY_FOOT_LEFT);assert(e.inv[ITEM_FURNACE]==0);footprint(&e,TILE_FURNACE,40,39);oracle(&e);
++ flat(&e);e.selected=6;e.inv[ITEM_FURNACE]=1;e.tiles[38][42]=TILE_STONE;e.terrain_dirty=true;light_recompute(&e);
++ env_action_mask(&e,mask);assert(!mask[ACT_PLACE_BODY_FOOT_LEFT]);
++ e.light[38][42]=0;env_action_mask(&e,mask);assert(mask[ACT_PLACE_BODY_FOOT_LEFT]);
++ env_step(&e,ACT_PLACE_BODY_FOOT_LEFT);assert(e.inv[ITEM_FURNACE]==1&&tile_at(&e,40,39)==TILE_AIR);
++ flat(&e);e.px=WORLD_W-PLAYER_W;e.selected=6;e.inv[ITEM_FURNACE]=1;
++ env_action_mask(&e,mask);assert(!mask[ACT_PLACE_BODY_FOOT_LEFT]);
++ flat(&e);e.py=2;e.selected=6;e.inv[ITEM_FURNACE]=1;
++ env_action_mask(&e,mask);assert(!mask[ACT_PLACE_HEAD_LEFT]);
++ /* Every crystal quadrant breaks the whole object and drops exactly one. */
++ for(int part=0;part<4;part++) {
++  flat(&e);assert(env_object_write(&e,TILE_LIFE_CRYSTAL,42,39));e.px=40+part%2;
++  env_step(&e,part<2?ACT_MINE_MIDDLE_RIGHT:ACT_MINE_FOOT_RIGHT);
++  assert(e.inv[ITEM_LIFE_CRYSTAL]==1);
++  for(int y=38;y<=39;y++) for(int x=42;x<=43;x++) assert(tile_at(&e,x,y)==TILE_AIR);
++  while(e.mine_cd) env_step(&e,ACT_NOOP);
++  env_step(&e,ACT_MINE_FOOT_RIGHT);assert(e.inv[ITEM_LIFE_CRYSTAL]==1);oracle(&e);
++ }
++ flat(&e);env_object_write(&e,TILE_WORKBENCH,42,39);env_object_write(&e,TILE_WORKBENCH,44,39);e.px=41;
++ env_step(&e,ACT_MINE_FOOT_RIGHT);assert(e.inv[ITEM_WORKBENCH]==1);footprint(&e,TILE_WORKBENCH,44,39);
++ assert(tile_at(&e,42,39)==TILE_AIR&&tile_at(&e,43,39)==TILE_AIR);
++ flat(&e);env_object_write(&e,TILE_WORKBENCH,42,39);e.px=43;e.py=38;
++ env_step(&e,ACT_NOOP);assert(e.py==38);env_step(&e,ACT_DROP);assert(e.py==39);
++ flat(&e);env_object_write(&e,TILE_FURNACE,42,39);env_step(&e,ACT_RIGHT);assert(e.px==41);
++ flat(&e);env_object_write(&e,TILE_FURNACE,35,39);e.inv[ITEM_COPPER_ORE]=3;
++ env_action_mask(&e,mask);assert(mask[ACT_SMELT_COPPER]);env_step(&e,ACT_SMELT_COPPER);assert(e.inv[ITEM_COPPER_BAR]==1);
++ /* Visibility/proximity of any chest component works, not just its anchor. */
++ flat(&e);e.chest_count=1;e.chests[0].x=38;e.chests[0].y=39;e.chests[0].loot[ITEM_ROPE]=30;
++ env_object_write(&e,TILE_CHEST,38,39);oracle(&e);
++ for(int y=38;y<=39;y++) for(int x=38;x<=39;x++) e.light[y][x]=0;
++ env_action_mask(&e,mask);assert(!mask[ACT_INTERACT]);e.light[38][39]=DARK_THRESHOLD;
++ env_action_mask(&e,mask);assert(mask[ACT_INTERACT]);env_step(&e,ACT_INTERACT);
++ assert(e.inv[ITEM_ROPE]==30);footprint(&e,TILE_CHEST_OPEN,38,39);
++ env_step(&e,ACT_INTERACT);assert(e.inv[ITEM_ROPE]==30&&e.reward==0);oracle(&e);
++ flat(&e);env_object_write(&e,TILE_CAMPFIRE,42,39);int emitters=0;
++ for(int y=38;y<=39;y++) for(int x=42;x<=44;x++) emitters+=cell_emit(&e,x,y)>0;
++ assert(emitters==1);oracle(&e);env_step(&e,ACT_MINE_FOOT_RIGHT);
++ assert(e.inv[ITEM_CAMPFIRE]==1);oracle(&e);
++ flat(&e);env_object_write(&e,TILE_LIFE_CRYSTAL,42,39);env_obs(&e,&obs);
++ int count=0;for(int i=0;i<VIEW_CELLS;i++) {assert(obs.tile[i]<OBS_TILE_KINDS);count+=obs.tile[i]==TILE_LIFE_CRYSTAL;}
++ assert(count==4);
++ /* Valid complete footprints on generated worlds, not four independent hearts. */
++ for(int seed=0;seed<256;seed++) {
++  env_reset(&e,seed);int crystals=0,chests=0;
++  for(int y=0;y<WORLD_H;y++) for(int x=0;x<WORLD_W;x++) {
++   Tile t=tile_at(&e,x,y);int w=tile_object_w(t),h=tile_object_h(t);
++   if(w*h==1) continue;
++   int part=e.object_part[y][x];assert(part<w*h);
++   footprint(&e,t,x-part%w,y-part/w+h-1);
++   if(!part) {crystals+=t==TILE_LIFE_CRYSTAL;chests+=t==TILE_CHEST;}
++  }
++  assert(crystals==8&&chests==10&&body_fits(&e,e.px,e.py));
++  for(int i=0;i<e.chest_count;i++) for(int col=0;col<2;col++)
++   assert(tile_supports(tile_at(&e,e.chests[i].x+col,e.chests[i].y+1),false));
++ }
++ puts("v5 footprints: full placement/masks/darkness/bounds, atomic one-drop removal, adjacent-object isolation, stations, support, chest visibility/opening, lighting, unchanged observation taxonomy; 256 generated worlds passed");
++ return 0;
++}

@@ -1,5 +1,7 @@
 # Performance exploration — 2026-09-09
 
+Historical v1 measurements. Historical v2 benchmarks and caveats are in [V2.md](V2.md) and [V2_BENCHMARKS.json](V2_BENCHMARKS.json). Current v4 measurements are in [FIDELITY_V4.md](FIDELITY_V4.md).
+
 Exploratory prototypes only. Production simulator, PPO implementation, rewards,
 and defaults were not changed in this task. Existing worktree edits were preserved.
 Hardware runtime: macOS 26.4 arm64, Torch 2.13.0, MPS available.

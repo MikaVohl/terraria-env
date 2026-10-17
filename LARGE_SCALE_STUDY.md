@@ -1,5 +1,8 @@
 # Large-scale unshaped PPO study
 
+Historical v1 task and results. The changed v2 universe, first learning curves and reserved test split are documented in [V2.md](V2.md); achievement counts are not cross-version comparable.
+Current v4 fidelity changes and fresh method comparisons are in [FIDELITY_V4.md](FIDELITY_V4.md).
+
 ## Fixed contract
 
 Two fresh runs, requested budgets 16M and 32M transitions, seed 101 for both.

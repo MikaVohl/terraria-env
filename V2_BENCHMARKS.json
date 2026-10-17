@@ -1,0 +1,138 @@
+{
+  "environment_version": 2,
+  "date": "2026-09-26",
+  "hardware": {
+    "chip": "Apple M5 Pro",
+    "memory_bytes": 51539607552,
+    "os": "macOS 26.4",
+    "architecture": "arm64"
+  },
+  "gate": {
+    "metric": "v2 rollout slowdown relative to v1",
+    "maximum_slowdown": 2,
+    "observed_v2_over_cached_v1_sps": 1.7309944840244857,
+    "passed": true
+  },
+  "core_harness": {
+    "source": "tools/core_benchmark.c",
+    "envs": 64,
+    "transitions_per_repeat": 262144,
+    "repeats": 3,
+    "initial_seeds": [
+      100,
+      163
+    ],
+    "action_sampler_seed": 54321,
+    "includes": [
+      "legal mask",
+      "step",
+      "raw observation",
+      "episode autoreset"
+    ],
+    "excludes": [
+      "initial world generation",
+      "Python encoding",
+      "policy inference",
+      "PPO optimization",
+      "rendering"
+    ],
+    "runs": [
+      {
+        "name": "v1_original",
+        "commit": "0f9170bd0571e872c1e8fea666a4a2f06cdc3ad8",
+        "env_bytes": 25256,
+        "seconds": [
+          9.561784,
+          9.5083,
+          9.286219
+        ],
+        "median_sps": 27570,
+        "checksum": 1386
+      },
+      {
+        "name": "v1_cached_light_prototype",
+        "env_bytes": 25256,
+        "seconds": [
+          8.311339,
+          8.267457,
+          8.236053
+        ],
+        "median_sps": 31707.9,
+        "checksum": 1386,
+        "note": "tools/perf_probe.c owns an external static Cache[512]; sizeof Env does not count its tile/light snapshots."
+      },
+      {
+        "name": "v2_production",
+        "env_bytes": 38576,
+        "seconds": [
+          4.856896,
+          4.75912,
+          4.776133
+        ],
+        "median_sps": 54886.2,
+        "checksum": 572013
+      }
+    ]
+  },
+  "python_vector_harness": {
+    "source": "tools/v2_benchmark.py",
+    "envs": 64,
+    "transitions_per_repeat": 65536,
+    "repeats": 3,
+    "includes": [
+      "native batched C stepping",
+      "legal masks",
+      "NumPy observation encoding",
+      "uniform legal action sampling",
+      "episode autoreset"
+    ],
+    "excludes": [
+      "initial world generation",
+      "policy inference",
+      "PPO optimization",
+      "rendering"
+    ],
+    "runs": [
+      {
+        "workers": 1,
+        "seconds": [
+          1.480585207988,
+          1.342732207966,
+          1.314346999978
+        ],
+        "median_sps": 48807.945
+      },
+      {
+        "workers": 4,
+        "seconds": [
+          0.515673332964,
+          0.513621459017,
+          0.517448334023
+        ],
+        "median_sps": 127088.208
+      }
+    ]
+  },
+  "caveats": [
+    "Observed desktop microbenchmarks, not dedicated-machine ceilings; the vector probe overlapped a short random-policy evaluation.",
+    "Environment dynamics, masks, cooldowns and reset distributions differ between versions; net performance is not isolated feature overhead.",
+    "Rollout throughput is not training throughput. PPO wall times include validation and initialization.",
+    "v2 cache storage is per Env; cached v1 prototype uses a different implementation.",
+    "Rounded core seconds and SPS retained from measured tool outputs."
+  ],
+  "craftax_calibration": {
+    "upstream_commit": "7ce36fa05b84a2c9e758012f1e6da402e1e3a891",
+    "environment": "Craftax-Classic-Symbolic-v1",
+    "seed": 101,
+    "transitions": 1048576,
+    "wall_seconds_synchronized": 327.79123604198685,
+    "updates": 256,
+    "final_training_mean_achievements": 5.633333206176758,
+    "final_training_return": 4.733333110809326,
+    "final_training_length": 158.93333435058594,
+    "heldout_evaluation": false,
+    "optimistic_resets": false,
+    "device": "CPU",
+    "interpretation": "Single-seed pipeline calibration, not paper replication or direct task comparison. Includes cold setup/compilation and active desktop contention. Upstream early timer did not await asynchronous logging; synchronized wrapper time is authoritative."
+  }
+}

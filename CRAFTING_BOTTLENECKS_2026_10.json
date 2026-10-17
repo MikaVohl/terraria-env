@@ -1,0 +1,743 @@
+{
+  "date": "2026-10-11",
+  "study": "/Users/mikavohl/Projects/terraria-lite/experiments/footprints-v45-20261011.UpxFLW",
+  "diagnostic_cases": {
+    "current": {
+      "environment_version": 4,
+      "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/credit-v4-20261011.naYwbC/selected/model.pt",
+      "checkpoint_sha256": "947504206f73e40150bb6a048163de7a38350ece853b1da0441edf07e0fc555c",
+      "probe_sha256": "27447f369c6edce56522d7514fda3d672de98e13e6f7f64787b74606bbd9dda9",
+      "diagnostic_source_sha256": "6a414fe5340d4ccace5dd46117d145c1ff158b0ccc6ef7dec20524e1029399db",
+      "seed_range": [
+        8000001,
+        8000128
+      ],
+      "sample_seed": 54321,
+      "episodes": 128,
+      "mean_achievements": 18.9140625,
+      "gate_names": [
+        "wood>=4",
+        "stone>=20",
+        "torches>=3",
+        "workbench_near"
+      ],
+      "gate_code": "bit set means prerequisite satisfied; 15 means all four",
+      "gate_steps": [
+        19764,
+        7749,
+        164551,
+        1594,
+        8625,
+        3347,
+        142780,
+        5065,
+        3673,
+        195,
+        2460,
+        7,
+        3984,
+        1208,
+        3303,
+        0
+      ],
+      "gate_steps_after_stone_sufficient": [
+        0,
+        0,
+        164551,
+        1594,
+        0,
+        0,
+        142780,
+        5065,
+        0,
+        0,
+        2460,
+        7,
+        0,
+        0,
+        3303,
+        0
+      ],
+      "counters": {
+        "observed_actions": 368305,
+        "furnace_chosen": 0,
+        "wood_acquired": 4290,
+        "wood_crossed_below_furnace_threshold": 402,
+        "bench_owned_steps": 38031,
+        "bench_selected_steps": 958,
+        "bench_owned_with_space_steps": 38031,
+        "bench_placements": 526,
+        "bench_removals": 387,
+        "left_bench_range": 695,
+        "bench_exists_but_far_steps": 310672
+      },
+      "gate_steps_before_first_furnace": [
+        19764,
+        7749,
+        164551,
+        1594,
+        8625,
+        3347,
+        142780,
+        5065,
+        3673,
+        195,
+        2460,
+        7,
+        3984,
+        1208,
+        3303,
+        0
+      ],
+      "gate_steps_before_first_furnace_stone_sufficient": [
+        0,
+        0,
+        164551,
+        1594,
+        0,
+        0,
+        142780,
+        5065,
+        0,
+        0,
+        2460,
+        7,
+        0,
+        0,
+        3303,
+        0
+      ],
+      "wood_consumed_before_first_furnace": {
+        "craft workbench": 1420,
+        "craft wooden sword": 1050,
+        "craft torch": 322,
+        "craft platforms": 1261,
+        "place up-right": 20,
+        "place down-right": 14,
+        "place foot-left": 17,
+        "place up-left": 28,
+        "place head-right": 19,
+        "place above right column": 21,
+        "place up": 25,
+        "place middle-left": 17,
+        "place foot-right": 16,
+        "place head-left": 12,
+        "place middle-right": 10,
+        "place down-left": 18,
+        "place down": 12,
+        "place below right column": 7
+      },
+      "opportunity_episodes": 0,
+      "wood_consumed_by_action": {
+        "craft workbench": 1420,
+        "craft wooden sword": 1050,
+        "craft torch": 322,
+        "craft platforms": 1261,
+        "place up-right": 20,
+        "place down-right": 14,
+        "place foot-left": 17,
+        "place up-left": 28,
+        "place head-right": 19,
+        "place above right column": 21,
+        "place up": 25,
+        "place middle-left": 17,
+        "place foot-right": 16,
+        "place head-left": 12,
+        "place middle-right": 10,
+        "place down-left": 18,
+        "place down": 12,
+        "place below right column": 7
+      },
+      "wall_seconds": 9.22877695900388,
+      "note": "Read-only white-box observer for attribution only; no hidden information enters policy, reward or masks. Counts are pre-action; events post-action. No reserved test worlds used.",
+      "before_first_furnace_stone_sufficient_summary": {
+        "steps": 319760,
+        "wood_missing_fraction": 0.9791531148361271,
+        "station_missing_fraction": 0.9819552164123092,
+        "both_missing_fraction": 0.9611302226670002,
+        "torch_missing_fraction": 0.5273079809857393
+      }
+    },
+    "strong": {
+      "environment_version": 4,
+      "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/learning-v4-20261010.GWpaf4/selected/model.pt",
+      "checkpoint_sha256": "5f72b4dd7cb580ca4b5e81b352a613e68f234bab947aede01eae12c480174433",
+      "probe_sha256": "27447f369c6edce56522d7514fda3d672de98e13e6f7f64787b74606bbd9dda9",
+      "diagnostic_source_sha256": "6a414fe5340d4ccace5dd46117d145c1ff158b0ccc6ef7dec20524e1029399db",
+      "seed_range": [
+        8000001,
+        8000128
+      ],
+      "sample_seed": 54321,
+      "episodes": 128,
+      "mean_achievements": 21.265625,
+      "gate_names": [
+        "wood>=4",
+        "stone>=20",
+        "torches>=3",
+        "workbench_near"
+      ],
+      "gate_code": "bit set means prerequisite satisfied; 15 means all four",
+      "gate_steps": [
+        16101,
+        9532,
+        40964,
+        12866,
+        73616,
+        21347,
+        128746,
+        50894,
+        1798,
+        559,
+        3028,
+        342,
+        10162,
+        2376,
+        10212,
+        181
+      ],
+      "gate_steps_after_stone_sufficient": [
+        0,
+        0,
+        40964,
+        12866,
+        0,
+        0,
+        128746,
+        50894,
+        0,
+        0,
+        3028,
+        342,
+        0,
+        0,
+        10212,
+        181
+      ],
+      "counters": {
+        "observed_actions": 382724,
+        "furnace_chosen": 181,
+        "wood_acquired": 7473,
+        "wood_crossed_below_furnace_threshold": 725,
+        "bench_owned_steps": 47722,
+        "bench_selected_steps": 9172,
+        "bench_owned_with_space_steps": 47722,
+        "bench_placements": 2169,
+        "bench_exists_but_far_steps": 337123,
+        "left_bench_range": 3905,
+        "furnace_legal_steps": 181,
+        "furnace_probability_sum": 180.51631861925125,
+        "bench_removals": 1814
+      },
+      "gate_steps_before_first_furnace": [
+        4787,
+        7753,
+        19299,
+        9404,
+        12336,
+        10693,
+        61703,
+        43165,
+        443,
+        253,
+        246,
+        92,
+        2683,
+        910,
+        4358,
+        108
+      ],
+      "gate_steps_before_first_furnace_stone_sufficient": [
+        0,
+        0,
+        19299,
+        9404,
+        0,
+        0,
+        61703,
+        43165,
+        0,
+        0,
+        246,
+        92,
+        0,
+        0,
+        4358,
+        108
+      ],
+      "wood_consumed_before_first_furnace": {
+        "craft workbench": 3280,
+        "craft platforms": 385,
+        "craft furnace": 432,
+        "place up-left": 115,
+        "craft wooden sword": 959,
+        "place head-right": 54,
+        "place below right column": 75,
+        "place middle-right": 47,
+        "place foot-right": 23,
+        "place down": 34,
+        "place middle-left": 34,
+        "place down-left": 6,
+        "place foot-left": 13,
+        "place head-left": 31,
+        "craft torch": 25,
+        "place up-right": 27,
+        "place up": 34,
+        "place down-right": 28,
+        "place above right column": 4
+      },
+      "opportunity_episodes": 108,
+      "wood_consumed_by_action": {
+        "craft workbench": 3580,
+        "craft platforms": 480,
+        "craft furnace": 724,
+        "place head-left": 221,
+        "place up-left": 129,
+        "craft wooden sword": 1099,
+        "place head-right": 86,
+        "place below right column": 135,
+        "place middle-right": 119,
+        "place foot-right": 84,
+        "place down": 86,
+        "place middle-left": 236,
+        "place down-left": 84,
+        "place foot-left": 74,
+        "craft torch": 67,
+        "place up-right": 39,
+        "place up": 43,
+        "place above right column": 9,
+        "place down-right": 95
+      },
+      "wall_seconds": 6.4477620419929735,
+      "note": "Read-only white-box observer for attribution only; no hidden information enters policy, reward or masks. Counts are pre-action; events post-action. No reserved test worlds used.",
+      "before_first_furnace_stone_sufficient_summary": {
+        "steps": 138375,
+        "wood_missing_fraction": 0.6186522131887986,
+        "station_missing_fraction": 0.9652827461607949,
+        "both_missing_fraction": 0.5853803071364047,
+        "torch_missing_fraction": 0.20987172538392052
+      }
+    }
+  },
+  "isolated_simulator_measurements": {
+    "date": "2026-10-11",
+    "hardware": "Apple M5 Pro, 48 GiB, macOS",
+    "context": "No concurrent RL jobs requested; active desktop, not a dedicated machine; alternate measurement order; five pairs by default, three repeats inside each probe. Changed task trajectories and legal-action workloads, not an exact optimization comparison or end-to-end neural training benchmark.",
+    "status_before": null,
+    "status_after": null,
+    "measurements": [
+      {
+        "pair": 0,
+        "order": [
+          "v4",
+          "v5"
+        ],
+        "measurements": {
+          "v4": {
+            "core": {
+              "environment_version": 4,
+              "env_bytes": 38712,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.234072,
+                0.209258,
+                0.202709
+              ],
+              "median_sps": 1252731.1,
+              "checksum": 756285
+            },
+            "batch": {
+              "environment_version": 4,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.2710468749864958,
+                0.2691789999953471,
+                0.27092229103436694
+              ],
+              "median_sps": 967598.4910623195
+            }
+          },
+          "v5": {
+            "core": {
+              "environment_version": 5,
+              "env_bytes": 51000,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.223534,
+                0.202657,
+                0.205774
+              ],
+              "median_sps": 1273941.3,
+              "checksum": 760494
+            },
+            "batch": {
+              "environment_version": 5,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.27065895800478756,
+                0.273374457960017,
+                0.2703102920204401
+              ],
+              "median_sps": 968539.8995564117
+            }
+          }
+        },
+        "v5_over_v4_sps": {
+          "core": 1.0169311674309036,
+          "batch": 1.000972932991099
+        }
+      },
+      {
+        "pair": 1,
+        "order": [
+          "v5",
+          "v4"
+        ],
+        "measurements": {
+          "v5": {
+            "core": {
+              "environment_version": 5,
+              "env_bytes": 51000,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.201779,
+                0.199452,
+                0.200094
+              ],
+              "median_sps": 1310104.3,
+              "checksum": 760494
+            },
+            "batch": {
+              "environment_version": 5,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.2710137920221314,
+                0.2712277499958873,
+                0.27107666700612754
+              ],
+              "median_sps": 967047.4515391411
+            }
+          },
+          "v4": {
+            "core": {
+              "environment_version": 4,
+              "env_bytes": 38712,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.201878,
+                0.207476,
+                0.201859
+              ],
+              "median_sps": 1298526.8,
+              "checksum": 756285
+            },
+            "batch": {
+              "environment_version": 4,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.27063549996819347,
+                0.2729876660159789,
+                0.27266329200938344
+              ],
+              "median_sps": 961420.2119696353
+            }
+          }
+        },
+        "v5_over_v4_sps": {
+          "core": 1.008915872972356,
+          "batch": 1.0058530489576223
+        }
+      },
+      {
+        "pair": 2,
+        "order": [
+          "v4",
+          "v5"
+        ],
+        "measurements": {
+          "v4": {
+            "core": {
+              "environment_version": 4,
+              "env_bytes": 38712,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.203541,
+                0.204423,
+                0.204998
+              ],
+              "median_sps": 1282360.6,
+              "checksum": 756285
+            },
+            "batch": {
+              "environment_version": 4,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.27510166697902605,
+                0.279607540986035,
+                0.274270833004266
+              ],
+              "median_sps": 952898.6242747342
+            }
+          },
+          "v5": {
+            "core": {
+              "environment_version": 5,
+              "env_bytes": 51000,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.218197,
+                0.213012,
+                0.221613
+              ],
+              "median_sps": 1201409.7,
+              "checksum": 760494
+            },
+            "batch": {
+              "environment_version": 5,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.2854852920281701,
+                0.28075862501282245,
+                0.2710087079904042
+              ],
+              "median_sps": 933698.8311152603
+            }
+          }
+        },
+        "v5_over_v4_sps": {
+          "core": 0.9368735283975504,
+          "batch": 0.9798511691901254
+        }
+      },
+      {
+        "pair": 3,
+        "order": [
+          "v5",
+          "v4"
+        ],
+        "measurements": {
+          "v5": {
+            "core": {
+              "environment_version": 5,
+              "env_bytes": 51000,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.202095,
+                0.201169,
+                0.201547
+              ],
+              "median_sps": 1300659.4,
+              "checksum": 760494
+            },
+            "batch": {
+              "environment_version": 5,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.27457037498243153,
+                0.28073308401508257,
+                0.27297662501223385
+              ],
+              "median_sps": 954742.4772857354
+            }
+          },
+          "v4": {
+            "core": {
+              "environment_version": 4,
+              "env_bytes": 38712,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.204086,
+                0.202912,
+                0.202773
+              ],
+              "median_sps": 1291909.8,
+              "checksum": 756285
+            },
+            "batch": {
+              "environment_version": 4,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.27137870801379904,
+                0.26871533296070993,
+                0.2783765000058338
+              ],
+              "median_sps": 965971.1401775504
+            }
+          }
+        },
+        "v5_over_v4_sps": {
+          "core": 1.0067726090474736,
+          "batch": 0.9883757780902739
+        }
+      },
+      {
+        "pair": 4,
+        "order": [
+          "v4",
+          "v5"
+        ],
+        "measurements": {
+          "v4": {
+            "core": {
+              "environment_version": 4,
+              "env_bytes": 38712,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.210858,
+                0.211995,
+                0.208447
+              ],
+              "median_sps": 1243225.3,
+              "checksum": 756285
+            },
+            "batch": {
+              "environment_version": 4,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.27801587496651337,
+                0.273604583053384,
+                0.27239204104989767
+              ],
+              "median_sps": 958112.6056972962
+            }
+          },
+          "v5": {
+            "core": {
+              "environment_version": 5,
+              "env_bytes": 51000,
+              "envs": 64,
+              "transitions_per_repeat": 262144,
+              "seconds": [
+                0.20504,
+                0.20425,
+                0.20284
+              ],
+              "median_sps": 1283446.8,
+              "checksum": 760494
+            },
+            "batch": {
+              "environment_version": 5,
+              "transitions": 262144,
+              "envs": 64,
+              "workers": 4,
+              "seconds": [
+                0.2740385420038365,
+                0.28088066598866135,
+                0.2790455420035869
+              ],
+              "median_sps": 939430.8832808029
+            }
+          }
+        },
+        "v5_over_v4_sps": {
+          "core": 1.0323525430185503,
+          "batch": 0.980501537809434
+        }
+      }
+    ],
+    "summary": {
+      "core": {
+        "v4_median_sps": 1282360.6,
+        "v5_median_sps": 1283446.8,
+        "paired_ratio_median": 1.008915872972356,
+        "paired_ratio_min": 0.9368735283975504,
+        "paired_ratio_max": 1.0323525430185503
+      },
+      "batch": {
+        "v4_median_sps": 961420.2119696353,
+        "v5_median_sps": 954742.4772857354,
+        "paired_ratio_median": 0.9883757780902739,
+        "paired_ratio_min": 0.9798511691901254,
+        "paired_ratio_max": 1.0058530489576223
+      }
+    },
+    "gate": {
+      "max_native_batch_median_sps_loss": 0.1,
+      "passes": true,
+      "note": "Simulator-cost gate only, not end-to-end PPO. Fresh v5 RL is required before claiming learning performance is preserved."
+    },
+    "source_sha256": {
+      "v4": {
+        "include/env.h": "0da1853338aebd2537af3ccabb51a3a15bb74baff289b9da9cd9ff70aa2d9705",
+        "include/tiles.h": "59de6530eba136b277dca393e983b87744272b5a851e1e2661d286c1e16a3220",
+        "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+        "src/sim.c": "1ecbe3e12f631d87c975c20593de181ce2a5fd9ccb960fafbe1ce5c4a9d12188",
+        "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+        "src/px_render.h": "5b0220d2acaba5727023d8bef8ae69ed99df919ebad33b6dad4cab288ca91300",
+        "src/px_main.c": "155f69dcb130826630be65c4317e895c56c916a8f953532a9d37fade4bb0ac6b",
+        "src/capi.c": "8df222ff524e472ca8ad3adef6eb7da16d4e1b23e5426b12d97287acb7e30c4f",
+        "src/render.c": "aa9a3153b6fe39bfc44a6bc200028e6475bed6d8998e876b42216b66813a9b7d",
+        "src/px_render.c": "06befc8f985a702c4c2dfdb7abaa13d3b7c281f788b9c6e7b67be178be46b2ed",
+        "src/frontend.h": "7b9c13ec1c6877d400f0a94051bb38ae19c3dbe2745e3bbe6058e8dfdb7ecbf1",
+        "src/main.c": "e763a6e85df07d4d4abc4e9a59b3811ac0c661b32eceb3c59c0917a62a59a511",
+        "src/light.c": "67e7a09fc9696d7a91cf96f0a6a371456ba08ae9f91a6609fa1318c5a942fd3c",
+        "src/worldgen.c": "7220009d25a718e3139d626d17887a0aa25db66bcd5c01e0d8b8dc1018d0500a",
+        "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+        "src/keymap.h": "18176d2ee49bd2fbc461807a966b0690b20880589067df295d83cfa7e62781f9"
+      },
+      "v5": {
+        "include/env.h": "70325cebeaeaaa5a8bee78046a3994750074861e051f48bb84912698164967fe",
+        "include/tiles.h": "6c61e7547363d97a9e3e42746584794448d2b6a15e0c9443866636c6af8eb08d",
+        "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+        "src/sim.c": "8180904a4023903ba35418bf75875bebe6306cd9dac2824a526cb70613b054b4",
+        "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+        "src/px_render.h": "5b0220d2acaba5727023d8bef8ae69ed99df919ebad33b6dad4cab288ca91300",
+        "src/px_main.c": "b1f7e43d0aeae06bf96e49d783770f8823836d9e0b297470bbf96e498cc0531d",
+        "src/capi.c": "8df222ff524e472ca8ad3adef6eb7da16d4e1b23e5426b12d97287acb7e30c4f",
+        "src/render.c": "aa9a3153b6fe39bfc44a6bc200028e6475bed6d8998e876b42216b66813a9b7d",
+        "src/px_render.c": "c34499d83094baa2da3881dc719138fc5c691ce586a80b187b89e3aac1906e77",
+        "src/frontend.h": "7b9c13ec1c6877d400f0a94051bb38ae19c3dbe2745e3bbe6058e8dfdb7ecbf1",
+        "src/main.c": "e763a6e85df07d4d4abc4e9a59b3811ac0c661b32eceb3c59c0917a62a59a511",
+        "src/light.c": "208a7e2a86a3bd43f22bc1fc6f011f9b109824e4865b099529fe0a33f1f598cb",
+        "src/worldgen.c": "dddd633c3954c7f4d058a3c7a96e597123fa9f203dc88a09fc8b11809a76a151",
+        "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+        "src/keymap.h": "18176d2ee49bd2fbc461807a966b0690b20880589067df295d83cfa7e62781f9"
+      }
+    },
+    "harness_sha256": {
+      "core_benchmark.c": "bd0b9b9236939369edc4eaf9df53bb8c76750c67a093577d7b1ef85ee9562b19",
+      "v2_benchmark.py": "6501f79e61226290696a332a600eff9effc58656c0a7cb01492d61d562e1e1d1",
+      "measure_object_scale.py": "f8a17b5047c1bdc3bd540b5e8780c469c918d856ee4a730e91d892c82908e4f6"
+    }
+  },
+  "verification": {
+    "v4_and_v5_all_16_joint_prerequisite_combinations_match_actual_masks": true,
+    "v5_station_component_edge_test": true,
+    "observer_does_not_mutate_state": true,
+    "test_consumption_and_interrupted_claim_guards": true,
+    "reserved_tests_not_used_for_diagnostics": true
+  },
+  "regression_source_sha256": {
+    "crafting_probe.c": "644573d64d918e0d3f1a769ac303aa83eb36410ce7535266c0e0b91796fba3b0",
+    "crafting_probe_selftest.c": "692caf3a767fbded994203092aadd55e59b417c635dba76a986d22a8792afd24",
+    "crafting_diagnostics.py": "6a414fe5340d4ccace5dd46117d145c1ff158b0ccc6ef7dec20524e1029399db",
+    "footprint_study_selftest.py": "190924d9bae3451c0bb7c77fe8277dad0f76415d63c3aa07ed18df0652cd29a7"
+  }
+}

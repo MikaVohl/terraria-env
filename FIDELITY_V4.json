@@ -1,0 +1,4827 @@
+{
+  "date": "2026-10-10",
+  "environment_version": 4,
+  "rules": {
+    "environment_version": 4,
+    "player_geometry": {
+      "width_tiles": 2,
+      "height_tiles": 3,
+      "anchor": "left feet cell"
+    },
+    "core_rules": {
+      "trees": "pass-through and non-opaque; axe felling; chop before mining supporting ground",
+      "furniture": "non-solid; benches/anvils support from above",
+      "base_jump_height_tiles": 6,
+      "safe_fall_tiles": 25,
+      "fall_damage_per_excess_tile": 10,
+      "life_crystal_health_cap": 400
+    },
+    "starting_equipment": [
+      {
+        "name": "Copper Pickaxe",
+        "terraria_id": 3509
+      },
+      {
+        "name": "Copper Axe",
+        "terraria_id": 3506
+      },
+      {
+        "name": "Copper Shortsword",
+        "terraria_id": 3507
+      }
+    ],
+    "harvesting": "Cutting a tree removes the connected trunk above the cut; one wood per removed trunk cell. Directional mining automatically uses the axe for trees.",
+    "actions": [
+      "noop",
+      "left",
+      "right",
+      "jump",
+      "mine up-left",
+      "mine up",
+      "mine up-right",
+      "mine head-left",
+      "mine head-right",
+      "mine foot-left",
+      "mine foot-right",
+      "mine down-left",
+      "mine down",
+      "mine down-right",
+      "mine above right column",
+      "mine middle-left",
+      "mine middle-right",
+      "mine below right column",
+      "mine body head-left",
+      "mine body head-right",
+      "mine body middle-left",
+      "mine body middle-right",
+      "mine body foot-left",
+      "mine body foot-right",
+      "place up-left",
+      "place up",
+      "place up-right",
+      "place head-left",
+      "place head-right",
+      "place foot-left",
+      "place foot-right",
+      "place down-left",
+      "place down",
+      "place down-right",
+      "place above right column",
+      "place middle-left",
+      "place middle-right",
+      "place below right column",
+      "place body head-left",
+      "place body head-right",
+      "place body middle-left",
+      "place body middle-right",
+      "place body foot-left",
+      "place body foot-right",
+      "select next",
+      "craft workbench",
+      "craft furnace",
+      "craft torch",
+      "craft campfire",
+      "craft platforms",
+      "smelt copper",
+      "smelt iron",
+      "smelt silver",
+      "smelt gold",
+      "craft anvil",
+      "craft iron pickaxe",
+      "craft gold pickaxe",
+      "craft wooden sword",
+      "craft copper sword",
+      "craft iron sword",
+      "craft silver sword",
+      "craft gold sword",
+      "craft wood breastplate",
+      "craft iron chainmail",
+      "attack",
+      "open chest",
+      "drink healing potion",
+      "eat mushroom",
+      "use life crystal",
+      "cycle weapon",
+      "climb up",
+      "climb down",
+      "drop through platform"
+    ],
+    "achievements": [
+      "collect wood",
+      "collect stone",
+      "place block",
+      "craft workbench",
+      "craft furnace",
+      "craft anvil",
+      "place torch",
+      "place platform",
+      "collect copper",
+      "collect iron",
+      "collect silver",
+      "collect gold",
+      "smelt copper",
+      "smelt iron",
+      "smelt silver",
+      "smelt gold",
+      "defeat Blue Slime",
+      "defeat Cave Bat",
+      "open chest",
+      "craft wooden sword",
+      "craft metal sword",
+      "craft wood breastplate",
+      "craft iron chainmail",
+      "heal with food or potion",
+      "use life crystal",
+      "double jump",
+      "descend deep",
+      "return to surface",
+      "explore 30 columns",
+      "climb rope",
+      "craft iron pickaxe",
+      "craft gold pickaxe"
+    ],
+    "recipes": [
+      {
+        "name": "workbench",
+        "ingredients": {
+          "wood": 10
+        },
+        "station": "air",
+        "action": 45
+      },
+      {
+        "name": "furnace",
+        "ingredients": {
+          "stone": 20,
+          "wood": 4,
+          "torch": 3
+        },
+        "station": "workbench",
+        "action": 46
+      },
+      {
+        "name": "torch x3",
+        "ingredients": {
+          "wood": 1,
+          "gel": 1
+        },
+        "station": "air",
+        "action": 47
+      },
+      {
+        "name": "campfire",
+        "ingredients": {
+          "wood": 10,
+          "torch": 5
+        },
+        "station": "air",
+        "action": 48
+      },
+      {
+        "name": "platform x2",
+        "ingredients": {
+          "wood": 1
+        },
+        "station": "air",
+        "action": 49
+      },
+      {
+        "name": "copper bar",
+        "ingredients": {
+          "copper ore": 3
+        },
+        "station": "furnace",
+        "action": 50
+      },
+      {
+        "name": "iron bar",
+        "ingredients": {
+          "iron ore": 3
+        },
+        "station": "furnace",
+        "action": 51
+      },
+      {
+        "name": "silver bar",
+        "ingredients": {
+          "silver ore": 4
+        },
+        "station": "furnace",
+        "action": 52
+      },
+      {
+        "name": "gold bar",
+        "ingredients": {
+          "gold ore": 4
+        },
+        "station": "furnace",
+        "action": 53
+      },
+      {
+        "name": "anvil",
+        "ingredients": {
+          "iron bar": 5
+        },
+        "station": "workbench",
+        "action": 54
+      },
+      {
+        "name": "iron pickaxe",
+        "ingredients": {
+          "iron bar": 10,
+          "wood": 3
+        },
+        "station": "anvil",
+        "action": 55
+      },
+      {
+        "name": "gold pickaxe",
+        "ingredients": {
+          "gold bar": 10,
+          "wood": 4
+        },
+        "station": "anvil",
+        "action": 56
+      },
+      {
+        "name": "wooden sword",
+        "ingredients": {
+          "wood": 7
+        },
+        "station": "workbench",
+        "action": 57
+      },
+      {
+        "name": "copper sword",
+        "ingredients": {
+          "copper bar": 6
+        },
+        "station": "anvil",
+        "action": 58
+      },
+      {
+        "name": "iron sword",
+        "ingredients": {
+          "iron bar": 8
+        },
+        "station": "anvil",
+        "action": 59
+      },
+      {
+        "name": "silver sword",
+        "ingredients": {
+          "silver bar": 7
+        },
+        "station": "anvil",
+        "action": 60
+      },
+      {
+        "name": "gold sword",
+        "ingredients": {
+          "gold bar": 8
+        },
+        "station": "anvil",
+        "action": 61
+      },
+      {
+        "name": "wood breastplate",
+        "ingredients": {
+          "wood": 30
+        },
+        "station": "workbench",
+        "action": 62
+      },
+      {
+        "name": "iron chainmail",
+        "ingredients": {
+          "iron bar": 25
+        },
+        "station": "anvil",
+        "action": 63
+      }
+    ],
+    "items": [
+      {
+        "name": "wood",
+        "terraria_id": 9
+      },
+      {
+        "name": "stone",
+        "terraria_id": 3
+      },
+      {
+        "name": "dirt",
+        "terraria_id": 2
+      },
+      {
+        "name": "copper ore",
+        "terraria_id": 12
+      },
+      {
+        "name": "iron ore",
+        "terraria_id": 11
+      },
+      {
+        "name": "gold ore",
+        "terraria_id": 13
+      },
+      {
+        "name": "copper bar",
+        "terraria_id": 20
+      },
+      {
+        "name": "iron bar",
+        "terraria_id": 22
+      },
+      {
+        "name": "gold bar",
+        "terraria_id": 19
+      },
+      {
+        "name": "torch",
+        "terraria_id": 8
+      },
+      {
+        "name": "campfire",
+        "terraria_id": 966
+      },
+      {
+        "name": "workbench",
+        "terraria_id": 36
+      },
+      {
+        "name": "furnace",
+        "terraria_id": 33
+      },
+      {
+        "name": "anvil",
+        "terraria_id": 35
+      },
+      {
+        "name": "silver ore",
+        "terraria_id": 14
+      },
+      {
+        "name": "silver bar",
+        "terraria_id": 21
+      },
+      {
+        "name": "gel",
+        "terraria_id": 23
+      },
+      {
+        "name": "wood platform",
+        "terraria_id": 94
+      },
+      {
+        "name": "rope",
+        "terraria_id": 965
+      },
+      {
+        "name": "mushroom",
+        "terraria_id": 5
+      },
+      {
+        "name": "lesser healing potion",
+        "terraria_id": 28
+      },
+      {
+        "name": "life crystal",
+        "terraria_id": 29
+      },
+      {
+        "name": "Cloud in a Bottle",
+        "terraria_id": 53
+      },
+      {
+        "name": "copper shortsword",
+        "terraria_id": 3507
+      },
+      {
+        "name": "wooden sword",
+        "terraria_id": 24
+      },
+      {
+        "name": "copper broadsword",
+        "terraria_id": 3508
+      },
+      {
+        "name": "iron broadsword",
+        "terraria_id": 4
+      },
+      {
+        "name": "gold broadsword",
+        "terraria_id": 3520
+      },
+      {
+        "name": "silver broadsword",
+        "terraria_id": 3514
+      },
+      {
+        "name": "wood breastplate",
+        "terraria_id": 728
+      },
+      {
+        "name": "iron chainmail",
+        "terraria_id": 81
+      }
+    ]
+  },
+  "completed_training_transitions": 25165824,
+  "protocol_context": "Two architectures, three matched training seeds, 4M each; six-thread CPU trials with at most three concurrent jobs. Validation selects checkpoints; reserved test is used once.",
+  "aggregates": {
+    "mlp": {
+      "final_seed_means": [
+        10.0,
+        10.2265625,
+        10.2890625
+      ],
+      "final_mean": 10.171875,
+      "model_parameters": 1817162,
+      "sample_std_between_training_seeds": 0.15209314323384207,
+      "mean_death_rate": 0.0859375,
+      "mean_wall_seconds_including_validation": 288.16351152799325,
+      "mean_collection_seconds": 73.31524195052528,
+      "mean_optimisation_seconds": 191.6011947140505,
+      "mean_achievement_hit_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.0,
+        "place block": 1.0,
+        "craft workbench": 0.9973958333333334,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 1.0,
+        "place platform": 0.9973958333333334,
+        "collect copper": 0.0,
+        "collect iron": 0.0,
+        "collect silver": 0.0,
+        "collect gold": 0.0,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.9947916666666666,
+        "defeat Cave Bat": 0.0,
+        "open chest": 1.0,
+        "craft wooden sword": 0.18229166666666666,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 1.0,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.0,
+        "return to surface": 0.0,
+        "explore 30 columns": 1.0,
+        "climb rope": 1.0,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      }
+    },
+    "separate": {
+      "final_seed_means": [
+        10.8359375,
+        10.125,
+        9.9921875
+      ],
+      "final_mean": 10.317708333333334,
+      "model_parameters": 3596362,
+      "sample_std_between_training_seeds": 0.4536858956669067,
+      "mean_death_rate": 0.015625,
+      "mean_wall_seconds_including_validation": 436.29976176399697,
+      "mean_collection_seconds": 105.52042404542833,
+      "mean_optimisation_seconds": 310.0788722327755,
+      "mean_achievement_hit_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.0,
+        "place block": 0.9973958333333334,
+        "craft workbench": 1.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 0.9973958333333334,
+        "place platform": 0.9869791666666666,
+        "collect copper": 0.0,
+        "collect iron": 0.0,
+        "collect silver": 0.0,
+        "collect gold": 0.0,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.9348958333333334,
+        "defeat Cave Bat": 0.0,
+        "open chest": 0.9947916666666666,
+        "craft wooden sword": 0.4114583333333333,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 1.0,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.0,
+        "return to surface": 0.0,
+        "explore 30 columns": 1.0,
+        "climb rope": 0.9947916666666666,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      }
+    }
+  },
+  "paired_separate_minus_mlp": {
+    "seed_differences": [
+      0.8359375,
+      -0.1015625,
+      -0.296875
+    ],
+    "mean": 0.14583333333333334,
+    "sample_std": 0.6055737476163273,
+    "note": "Three seeds are exploratory evidence, not a precise architecture ranking."
+  },
+  "benchmarks": {
+    "hardware": "Apple M5 Pro, 48 GiB, macOS",
+    "context": "No training jobs active; active desktop; three repeats, same harness/seed protocol. Cross-version workload differences are not exact optimization speedups.",
+    "measurements": [
+      {
+        "root": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v3",
+        "core": {
+          "environment_version": 3,
+          "env_bytes": 38712,
+          "envs": 64,
+          "transitions_per_repeat": 262144,
+          "seconds": [
+            0.238573,
+            0.216817,
+            0.217433
+          ],
+          "median_sps": 1205631.2,
+          "checksum": 774105
+        },
+        "batch": {
+          "environment_version": 3,
+          "transitions": 262144,
+          "envs": 64,
+          "workers": 4,
+          "seconds": [
+            0.24795162500231527,
+            0.2477247909992002,
+            0.25043066701618955
+          ],
+          "median_sps": 1057238.4835048055
+        },
+        "core_source_sha256": {
+          "src/sim.c": "82e0de52e959636e0e4d83e1b715e5d70f47bd768c44df85009d697a20edd60b",
+          "src/obs.c": "61a06769c4a1f1421b87a9247d7c465e680664f5abdf1a09c367633181313fe0",
+          "src/px_main.c": "128730da01e5725eed0025ae1a6eb7e27132aa07f776d0c7b493d83d50fab810",
+          "src/capi.c": "58285a7adf2afa0ffb86c49c105494abf916b58ed46bd5c4a44a6771444374f4",
+          "src/render.c": "f5536f12450942463c352c6d6669eac733c7eb052bed73cc9260e99cf2d91c8f",
+          "src/px_render.c": "ce7bf5b0ab2d2af40e4a1447ee5083e6979e40cf49052ed603736783fe65f7dd",
+          "src/main.c": "f850e783f0b76610e320c326a6146821cfb0a425a5d25a20443f2b30841f597a",
+          "src/light.c": "8718ec56fdec19884512762df83c47bc42e5ac9d2950de9ad4b4a94722a0dde5",
+          "src/worldgen.c": "e8b4833161859467640bacfeb1c199bb8ea2bdb2332ac737a52d9c3a8f0ec28a",
+          "include/env.h": "9831a7501c0ece8b29e20e1a14b44cc3383be04df5ee00fdbead085c4c226973",
+          "include/tiles.h": "0d6fc3ca9ca27837b9770ef0edec3b97a817e80666935dce6cfb372e5c631b98",
+          "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+          "python/terraria_lite/libterraria.dylib": "e46ef559f93a32b91dd2a227cf6d3a40653478093ed7e21af598e3561eeaa35a"
+        }
+      },
+      {
+        "root": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-uncached",
+        "core": {
+          "environment_version": 4,
+          "env_bytes": 38712,
+          "envs": 64,
+          "transitions_per_repeat": 262144,
+          "seconds": [
+            0.303831,
+            0.281105,
+            0.281535
+          ],
+          "median_sps": 931124.0,
+          "checksum": 756285
+        },
+        "batch": {
+          "environment_version": 4,
+          "transitions": 262144,
+          "envs": 64,
+          "workers": 4,
+          "seconds": [
+            0.2873591670067981,
+            0.28556979197310284,
+            0.28635487498831935
+          ],
+          "median_sps": 915451.5005574571
+        },
+        "core_source_sha256": {
+          "src/sim.c": "b350b9dd5efb9ee12c495ead5a18a01a99a582d9ee6cdb08da6c3ce03bf41c88",
+          "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+          "src/px_main.c": "2bff392bc37bc3e92e34bfbc93f170cff2c142d9b6b35d0ad6180aac4f4a08b4",
+          "src/capi.c": "58285a7adf2afa0ffb86c49c105494abf916b58ed46bd5c4a44a6771444374f4",
+          "src/render.c": "9d2ed8c0f28af60ce776402cc55744fc1a89e1579bd740fa571ffc2fef2a684c",
+          "src/px_render.c": "f6ca83c0d6eceede95df31b9b7a4d5f0334221a04559d06104a0f92ab7a0fbd8",
+          "src/main.c": "d3ee440a36824a56deebfc070b04c891d737794142b591ebdb6cd1151c148229",
+          "src/light.c": "67e7a09fc9696d7a91cf96f0a6a371456ba08ae9f91a6609fa1318c5a942fd3c",
+          "src/worldgen.c": "7220009d25a718e3139d626d17887a0aa25db66bcd5c01e0d8b8dc1018d0500a",
+          "include/env.h": "0da1853338aebd2537af3ccabb51a3a15bb74baff289b9da9cd9ff70aa2d9705",
+          "include/tiles.h": "59de6530eba136b277dca393e983b87744272b5a851e1e2661d286c1e16a3220",
+          "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+          "python/terraria_lite/libterraria.dylib": "69bc2a405ad839e94dcbb568c7158c125aa60ba65b4b9a66bbf9adec540e0576"
+        }
+      },
+      {
+        "root": "/Users/mikavohl/Projects/terraria-lite",
+        "core": {
+          "environment_version": 4,
+          "env_bytes": 38712,
+          "envs": 64,
+          "transitions_per_repeat": 262144,
+          "seconds": [
+            0.226025,
+            0.203815,
+            0.204401
+          ],
+          "median_sps": 1282498.6,
+          "checksum": 756285
+        },
+        "batch": {
+          "environment_version": 4,
+          "transitions": 262144,
+          "envs": 64,
+          "workers": 4,
+          "seconds": [
+            0.2697997920040507,
+            0.26587862498126924,
+            0.2667613330122549
+          ],
+          "median_sps": 982691.1458264351
+        },
+        "core_source_sha256": {
+          "src/sim.c": "1ecbe3e12f631d87c975c20593de181ce2a5fd9ccb960fafbe1ce5c4a9d12188",
+          "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+          "src/px_main.c": "155f69dcb130826630be65c4317e895c56c916a8f953532a9d37fade4bb0ac6b",
+          "src/capi.c": "e728d9ca9bb96fcd92db2753e9cafc3c53f0d56fd9a94c7efa32226bec8adc7a",
+          "src/render.c": "aa9a3153b6fe39bfc44a6bc200028e6475bed6d8998e876b42216b66813a9b7d",
+          "src/px_render.c": "518fa0ebd570b1151f2966e4b163ccd51d28a714c1363fcf4ac34d24c0208732",
+          "src/main.c": "e763a6e85df07d4d4abc4e9a59b3811ac0c661b32eceb3c59c0917a62a59a511",
+          "src/light.c": "67e7a09fc9696d7a91cf96f0a6a371456ba08ae9f91a6609fa1318c5a942fd3c",
+          "src/worldgen.c": "7220009d25a718e3139d626d17887a0aa25db66bcd5c01e0d8b8dc1018d0500a",
+          "include/env.h": "0da1853338aebd2537af3ccabb51a3a15bb74baff289b9da9cd9ff70aa2d9705",
+          "include/tiles.h": "59de6530eba136b277dca393e983b87744272b5a851e1e2661d286c1e16a3220",
+          "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+          "python/terraria_lite/libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        }
+      }
+    ]
+  },
+  "same_v4_station_cache_speedup": {
+    "core": 1.377366065099815,
+    "native_batch": 1.0734497078523908
+  },
+  "v4_vs_v3_workload_ratio": {
+    "core": 1.0637569764286128,
+    "native_batch": 0.92948862641545,
+    "note": "Different geometry/actions/trajectories; not a same-task optimization comparison."
+  },
+  "verification": {
+    "mechanics_seed_invariants": 100,
+    "arbitrary_light_edits_exact": 24000,
+    "scalar_native_exact_transitions": 64000,
+    "workers": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "raw_flat_encoding_exact": true,
+    "station_cache_identical_rollout_transitions": 27913,
+    "station_cache_identical_rollout_sha256": "9d4d1b34c8ecdc1fbbb7275829b34c6a0ce69f57e5b231fe50e27bb6a8ad2539",
+    "asan_ubsan": "mechanics, fidelity and light suites passed",
+    "pixel": "72 original assets audited; tree before/after, three armor variants and UI hit targets visually inspected",
+    "api": "Gym v4, 73 actions, 2961 observations, geometry/rules queries and v3 checkpoint rejection passed"
+  },
+  "local_assembly_constants": {
+    "player_hitbox_pixels": [
+      20,
+      42
+    ],
+    "tileSolid[5]": 0,
+    "tileSolidTop[16]": 1,
+    "tileSolidTop[18]": 1,
+    "tileSolidTop[19]": 1,
+    "tileSolid[30]": 1,
+    "tileBlockLight[30]": 1,
+    "source": "Read from installed Terraria.exe with tools/terraria_fidelity_audit.py; assembly SHA256 is in asset_audit."
+  },
+  "runs": [
+    {
+      "name": "v4-mlp-101",
+      "protocol": {
+        "config": {
+          "total_steps": 4194304,
+          "num_envs": 64,
+          "rollout": 128,
+          "epochs": 4,
+          "minibatches": 4,
+          "lr": 0.0003,
+          "anneal_lr": true,
+          "gamma": 0.999,
+          "gae_lambda": 0.95,
+          "clip_coef": 0.2,
+          "clip_vloss": true,
+          "ent_coef": 0.01,
+          "vf_coef": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "progress_coef": 0.0,
+          "progress_anneal": false,
+          "seed": 101,
+          "device": "cpu",
+          "quiet": true,
+          "save": "",
+          "init": "",
+          "architecture": "mlp",
+          "curiosity_coef": 0.0,
+          "curiosity_anneal": true,
+          "curiosity_balanced": false
+        },
+        "actual_steps": 4194304,
+        "environment_version": 4,
+        "torch_threads": 6,
+        "validation_seeds": [
+          2000001,
+          2000128
+        ],
+        "reserved_test_seeds": [
+          4000001,
+          4000128
+        ],
+        "sampler_seed": 54321,
+        "reward": "achievements +1; death -1",
+        "demonstrations": false,
+        "prerequisite_shaping": false,
+        "training_novelty": null,
+        "implementation_sha256": {
+          "v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+          "random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+          "ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+          "v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+          "ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+          "recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+          "batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+          "ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+          "__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+          "rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+          "checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+          "baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+          "spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+          "watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+          "deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+          "token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+          "ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+          "curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+          "separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+          "libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        },
+        "package": "/Users/mikavohl/Projects/terraria-lite/python/terraria_lite",
+        "torch": "2.13.0"
+      },
+      "training": {
+        "agent": "ppo",
+        "gamma": 0.999,
+        "seed": 101,
+        "ent_coef": 0.01,
+        "progress_coef": 0.0,
+        "progress_anneal": false,
+        "lr": 0.0003,
+        "envs": 64,
+        "steps": 4194304,
+        "architecture": "mlp",
+        "curiosity_coef": 0.0,
+        "requested_steps": 4194304,
+        "collection_seconds": 73.61477423540782,
+        "optimisation_seconds": 191.3426205100841,
+        "sps": 14574,
+        "n_ep": 1556,
+        "window": 200,
+        "ach": 9.94,
+        "ret": 9.88,
+        "len": 2948.14,
+        "died": 0.06,
+        "hits": {
+          "collect wood": 200,
+          "place block": 200,
+          "craft workbench": 200,
+          "place torch": 199,
+          "place platform": 198,
+          "defeat Blue Slime": 200,
+          "open chest": 199,
+          "craft wooden sword": 1,
+          "heal with food or potion": 200,
+          "explore 30 columns": 200,
+          "climb rope": 199
+        },
+        "wall_seconds_including_validation": 288.1250263749971
+      },
+      "validation_curve": [
+        {
+          "steps": 1048576,
+          "elapsed_seconds": 71.9594702500035,
+          "profile": {
+            "collection_seconds": 17.965536739269737,
+            "optimisation_seconds": 48.1416102941148,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.3294411897659302
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.7109375,
+            "std_achievements": 0.6014610304032589,
+            "median_achievements": 10.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 11,
+            "mean_return": 9.6484375,
+            "mean_length": 2950.2265625,
+            "death_rate": 0.0625,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 120,
+              "place torch": 128,
+              "place platform": 126,
+              "defeat Blue Slime": 110,
+              "open chest": 123,
+              "craft wooden sword": 1,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 123
+            }
+          }
+        },
+        {
+          "steps": 2097152,
+          "elapsed_seconds": 143.06236495799385,
+          "profile": {
+            "collection_seconds": 36.11755282437662,
+            "optimisation_seconds": 95.12710850912845,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.7518901824951172
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.0078125,
+            "std_achievements": 0.08804240366863003,
+            "median_achievements": 10.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 11,
+            "mean_return": 9.984375,
+            "mean_length": 2979.828125,
+            "death_rate": 0.0234375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "craft wooden sword": 1,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 3145728,
+          "elapsed_seconds": 215.97209987498354,
+          "profile": {
+            "collection_seconds": 54.64189511339646,
+            "optimisation_seconds": 143.6224809710111,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.44175386428833
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.9921875,
+            "std_achievements": 0.15289363899047598,
+            "median_achievements": 10.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 11,
+            "mean_return": 9.8984375,
+            "mean_length": 2918.9140625,
+            "death_rate": 0.09375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 126,
+              "open chest": 128,
+              "craft wooden sword": 1,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 4194304,
+          "elapsed_seconds": 288.1221438329958,
+          "profile": {
+            "collection_seconds": 73.61477423540782,
+            "optimisation_seconds": 191.3426205100841,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.6534868478775024
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.0,
+            "std_achievements": 0.0,
+            "median_achievements": 10.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 10,
+            "mean_return": 9.8515625,
+            "mean_length": 2860.7578125,
+            "death_rate": 0.1484375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v4-mlp-202",
+      "protocol": {
+        "config": {
+          "total_steps": 4194304,
+          "num_envs": 64,
+          "rollout": 128,
+          "epochs": 4,
+          "minibatches": 4,
+          "lr": 0.0003,
+          "anneal_lr": true,
+          "gamma": 0.999,
+          "gae_lambda": 0.95,
+          "clip_coef": 0.2,
+          "clip_vloss": true,
+          "ent_coef": 0.01,
+          "vf_coef": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "progress_coef": 0.0,
+          "progress_anneal": false,
+          "seed": 202,
+          "device": "cpu",
+          "quiet": true,
+          "save": "",
+          "init": "",
+          "architecture": "mlp",
+          "curiosity_coef": 0.0,
+          "curiosity_anneal": true,
+          "curiosity_balanced": false
+        },
+        "actual_steps": 4194304,
+        "environment_version": 4,
+        "torch_threads": 6,
+        "validation_seeds": [
+          2000001,
+          2000128
+        ],
+        "reserved_test_seeds": [
+          4000001,
+          4000128
+        ],
+        "sampler_seed": 54321,
+        "reward": "achievements +1; death -1",
+        "demonstrations": false,
+        "prerequisite_shaping": false,
+        "training_novelty": null,
+        "implementation_sha256": {
+          "v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+          "random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+          "ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+          "v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+          "ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+          "recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+          "batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+          "ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+          "__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+          "rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+          "checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+          "baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+          "spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+          "watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+          "deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+          "token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+          "ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+          "curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+          "separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+          "libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        },
+        "package": "/Users/mikavohl/Projects/terraria-lite/python/terraria_lite",
+        "torch": "2.13.0"
+      },
+      "training": {
+        "agent": "ppo",
+        "gamma": 0.999,
+        "seed": 202,
+        "ent_coef": 0.01,
+        "progress_coef": 0.0,
+        "progress_anneal": false,
+        "lr": 0.0003,
+        "envs": 64,
+        "steps": 4194304,
+        "architecture": "mlp",
+        "curiosity_coef": 0.0,
+        "requested_steps": 4194304,
+        "collection_seconds": 73.76573099353118,
+        "optimisation_seconds": 190.70937696602778,
+        "sps": 14604,
+        "n_ep": 1539,
+        "window": 200,
+        "ach": 10.34,
+        "ret": 10.26,
+        "len": 2918.0,
+        "died": 0.08,
+        "hits": {
+          "collect wood": 200,
+          "place block": 200,
+          "craft workbench": 200,
+          "place torch": 200,
+          "place platform": 198,
+          "defeat Blue Slime": 198,
+          "open chest": 200,
+          "craft wooden sword": 63,
+          "heal with food or potion": 200,
+          "explore 30 columns": 200,
+          "climb rope": 200
+        },
+        "wall_seconds_including_validation": 287.5943879999977
+      },
+      "validation_curve": [
+        {
+          "steps": 1048576,
+          "elapsed_seconds": 72.36752925001201,
+          "profile": {
+            "collection_seconds": 18.295217871986097,
+            "optimisation_seconds": 48.02427600006922,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.9836366176605225
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.96875,
+            "std_achievements": 0.32923917977664807,
+            "median_achievements": 10.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 11,
+            "mean_return": 9.9453125,
+            "mean_length": 2954.8984375,
+            "death_rate": 0.0234375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 123,
+              "place torch": 128,
+              "place platform": 126,
+              "defeat Blue Slime": 126,
+              "open chest": 128,
+              "craft wooden sword": 5,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 2097152,
+          "elapsed_seconds": 142.90603816701332,
+          "profile": {
+            "collection_seconds": 36.416347409802256,
+            "optimisation_seconds": 94.37253045893158,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.6387883424758911
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.0390625,
+            "std_achievements": 0.26227203643116437,
+            "median_achievements": 10.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 11,
+            "mean_return": 10.015625,
+            "mean_length": 2990.703125,
+            "death_rate": 0.0234375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 127,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 127,
+              "open chest": 128,
+              "craft wooden sword": 7,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 3145728,
+          "elapsed_seconds": 215.401647916995,
+          "profile": {
+            "collection_seconds": 54.92735770565923,
+            "optimisation_seconds": 142.5758117560472,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.7915208339691162
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.234375,
+            "std_achievements": 0.744609534840241,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.09375,
+            "mean_length": 2871.234375,
+            "death_rate": 0.140625,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 127,
+              "place torch": 127,
+              "place platform": 127,
+              "defeat Blue Slime": 128,
+              "open chest": 126,
+              "craft wooden sword": 39,
+              "heal with food or potion": 127,
+              "explore 30 columns": 127,
+              "climb rope": 126
+            }
+          }
+        },
+        {
+          "steps": 4194304,
+          "elapsed_seconds": 287.5916188750125,
+          "profile": {
+            "collection_seconds": 73.76573099353118,
+            "optimisation_seconds": 190.70937696602778,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.076033115386963
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.2265625,
+            "std_achievements": 0.4368717587504942,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.2109375,
+            "mean_length": 2990.6171875,
+            "death_rate": 0.015625,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 126,
+              "open chest": 128,
+              "craft wooden sword": 31,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v4-mlp-303",
+      "protocol": {
+        "config": {
+          "total_steps": 4194304,
+          "num_envs": 64,
+          "rollout": 128,
+          "epochs": 4,
+          "minibatches": 4,
+          "lr": 0.0003,
+          "anneal_lr": true,
+          "gamma": 0.999,
+          "gae_lambda": 0.95,
+          "clip_coef": 0.2,
+          "clip_vloss": true,
+          "ent_coef": 0.01,
+          "vf_coef": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "progress_coef": 0.0,
+          "progress_anneal": false,
+          "seed": 303,
+          "device": "cpu",
+          "quiet": true,
+          "save": "",
+          "init": "",
+          "architecture": "mlp",
+          "curiosity_coef": 0.0,
+          "curiosity_anneal": true,
+          "curiosity_balanced": false
+        },
+        "actual_steps": 4194304,
+        "environment_version": 4,
+        "torch_threads": 6,
+        "validation_seeds": [
+          2000001,
+          2000128
+        ],
+        "reserved_test_seeds": [
+          4000001,
+          4000128
+        ],
+        "sampler_seed": 54321,
+        "reward": "achievements +1; death -1",
+        "demonstrations": false,
+        "prerequisite_shaping": false,
+        "training_novelty": null,
+        "implementation_sha256": {
+          "v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+          "random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+          "ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+          "v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+          "ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+          "recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+          "batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+          "ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+          "__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+          "rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+          "checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+          "baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+          "spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+          "watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+          "deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+          "token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+          "ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+          "curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+          "separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+          "libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        },
+        "package": "/Users/mikavohl/Projects/terraria-lite/python/terraria_lite",
+        "torch": "2.13.0"
+      },
+      "training": {
+        "agent": "ppo",
+        "gamma": 0.999,
+        "seed": 303,
+        "ent_coef": 0.01,
+        "progress_coef": 0.0,
+        "progress_anneal": false,
+        "lr": 0.0003,
+        "envs": 64,
+        "steps": 4194304,
+        "architecture": "mlp",
+        "curiosity_coef": 0.0,
+        "requested_steps": 4194304,
+        "collection_seconds": 72.56522062263684,
+        "optimisation_seconds": 192.75158666603966,
+        "sps": 14545,
+        "n_ep": 1607,
+        "window": 200,
+        "ach": 10.32,
+        "ret": 10.08,
+        "len": 2683.88,
+        "died": 0.24,
+        "hits": {
+          "collect wood": 200,
+          "place block": 200,
+          "craft workbench": 191,
+          "place torch": 200,
+          "place platform": 199,
+          "defeat Blue Slime": 199,
+          "open chest": 200,
+          "craft wooden sword": 48,
+          "heal with food or potion": 200,
+          "explore 30 columns": 200,
+          "climb rope": 200
+        },
+        "wall_seconds_including_validation": 288.77112020898494
+      },
+      "validation_curve": [
+        {
+          "steps": 1048576,
+          "elapsed_seconds": 74.37677208398236,
+          "profile": {
+            "collection_seconds": 18.616910671349615,
+            "optimisation_seconds": 49.53042837308021,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.8447632789611816
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.015625,
+            "std_achievements": 0.8099418864184023,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 9.765625,
+            "mean_length": 2621.4921875,
+            "death_rate": 0.25,
+            "hits": {
+              "collect wood": 128,
+              "collect stone": 1,
+              "place block": 128,
+              "craft workbench": 123,
+              "place torch": 127,
+              "place platform": 124,
+              "defeat Blue Slime": 127,
+              "open chest": 117,
+              "craft wooden sword": 34,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 117
+            }
+          }
+        },
+        {
+          "steps": 2097152,
+          "elapsed_seconds": 146.66245133397751,
+          "profile": {
+            "collection_seconds": 37.0133648335177,
+            "optimisation_seconds": 97.49916275407304,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.8661525249481201
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.4375,
+            "std_achievements": 0.5266343608235224,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.421875,
+            "mean_length": 2970.9453125,
+            "death_rate": 0.015625,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 127,
+              "place torch": 128,
+              "place platform": 127,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "craft wooden sword": 58,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 3145728,
+          "elapsed_seconds": 218.8553954169911,
+          "profile": {
+            "collection_seconds": 54.969503704603994,
+            "optimisation_seconds": 146.03794487402774,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.7180752754211426
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.1328125,
+            "std_achievements": 0.4900748308613186,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 9.546875,
+            "mean_length": 2412.2578125,
+            "death_rate": 0.5859375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 122,
+              "place torch": 128,
+              "place platform": 126,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "craft wooden sword": 25,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 4194304,
+          "elapsed_seconds": 288.76855354200234,
+          "profile": {
+            "collection_seconds": 72.56522062263684,
+            "optimisation_seconds": 192.75158666603966,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.8200265169143677
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.2890625,
+            "std_achievements": 0.48657514434437565,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.1953125,
+            "mean_length": 2881.6796875,
+            "death_rate": 0.09375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 127,
+              "place torch": 128,
+              "place platform": 127,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "craft wooden sword": 39,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v4-separate-101",
+      "protocol": {
+        "config": {
+          "total_steps": 4194304,
+          "num_envs": 64,
+          "rollout": 128,
+          "epochs": 4,
+          "minibatches": 4,
+          "lr": 0.0003,
+          "anneal_lr": true,
+          "gamma": 0.999,
+          "gae_lambda": 0.95,
+          "clip_coef": 0.2,
+          "clip_vloss": true,
+          "ent_coef": 0.01,
+          "vf_coef": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "progress_coef": 0.0,
+          "progress_anneal": false,
+          "seed": 101,
+          "device": "cpu",
+          "quiet": true,
+          "save": "",
+          "init": "",
+          "architecture": "separate",
+          "curiosity_coef": 0.0,
+          "curiosity_anneal": true,
+          "curiosity_balanced": false
+        },
+        "actual_steps": 4194304,
+        "environment_version": 4,
+        "torch_threads": 6,
+        "validation_seeds": [
+          2000001,
+          2000128
+        ],
+        "reserved_test_seeds": [
+          4000001,
+          4000128
+        ],
+        "sampler_seed": 54321,
+        "reward": "achievements +1; death -1",
+        "demonstrations": false,
+        "prerequisite_shaping": false,
+        "training_novelty": null,
+        "implementation_sha256": {
+          "v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+          "random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+          "ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+          "v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+          "ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+          "recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+          "batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+          "ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+          "__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+          "rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+          "checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+          "baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+          "spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+          "watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+          "deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+          "token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+          "ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+          "curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+          "separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+          "libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        },
+        "package": "/Users/mikavohl/Projects/terraria-lite/python/terraria_lite",
+        "torch": "2.13.0"
+      },
+      "training": {
+        "agent": "ppo",
+        "gamma": 0.999,
+        "seed": 101,
+        "ent_coef": 0.01,
+        "progress_coef": 0.0,
+        "progress_anneal": false,
+        "lr": 0.0003,
+        "envs": 64,
+        "steps": 4194304,
+        "architecture": "separate",
+        "curiosity_coef": 0.0,
+        "requested_steps": 4194304,
+        "collection_seconds": 114.9051310539071,
+        "optimisation_seconds": 328.8643501237675,
+        "sps": 8975,
+        "n_ep": 1695,
+        "window": 200,
+        "ach": 10.74,
+        "ret": 10.7,
+        "len": 2919.24,
+        "died": 0.04,
+        "hits": {
+          "collect wood": 200,
+          "place block": 200,
+          "craft workbench": 200,
+          "place torch": 200,
+          "place platform": 200,
+          "defeat Blue Slime": 199,
+          "open chest": 200,
+          "craft wooden sword": 133,
+          "heal with food or potion": 200,
+          "explore 30 columns": 200,
+          "climb rope": 200
+        },
+        "wall_seconds_including_validation": 467.77443254197715
+      },
+      "validation_curve": [
+        {
+          "steps": 1048576,
+          "elapsed_seconds": 120.82635191699956,
+          "profile": {
+            "collection_seconds": 29.741024083050434,
+            "optimisation_seconds": 84.92597303775256,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.0371766090393066
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.2421875,
+            "std_achievements": 0.5265764093118396,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.1328125,
+            "mean_length": 2831.515625,
+            "death_rate": 0.109375,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 127,
+              "place platform": 128,
+              "defeat Blue Slime": 128,
+              "open chest": 126,
+              "craft wooden sword": 36,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 126
+            }
+          }
+        },
+        {
+          "steps": 2097152,
+          "elapsed_seconds": 241.4341115829884,
+          "profile": {
+            "collection_seconds": 60.125156630936544,
+            "optimisation_seconds": 169.21166907664156,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.8498071432113647
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.375,
+            "std_achievements": 0.4841229182759271,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.3671875,
+            "mean_length": 2987.0703125,
+            "death_rate": 0.0078125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "craft wooden sword": 48,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 3145728,
+          "elapsed_seconds": 345.71836058297777,
+          "profile": {
+            "collection_seconds": 84.25229850606411,
+            "optimisation_seconds": 243.19268349872436,
+            "novelty_error": 0.0,
+            "policy_entropy": 1.7670457363128662
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.7109375,
+            "std_achievements": 0.45332700238762524,
+            "median_achievements": 11.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.6796875,
+            "mean_length": 2936.5859375,
+            "death_rate": 0.03125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 128,
+              "open chest": 128,
+              "craft wooden sword": 91,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 4194304,
+          "elapsed_seconds": 467.77149299997836,
+          "profile": {
+            "collection_seconds": 114.9051310539071,
+            "optimisation_seconds": 328.8643501237675,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.2266907691955566
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.8359375,
+            "std_achievements": 0.3703322779528541,
+            "median_achievements": 11.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.8046875,
+            "mean_length": 2966.390625,
+            "death_rate": 0.03125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 128,
+              "defeat Blue Slime": 126,
+              "open chest": 128,
+              "craft wooden sword": 109,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v4-separate-202",
+      "protocol": {
+        "config": {
+          "total_steps": 4194304,
+          "num_envs": 64,
+          "rollout": 128,
+          "epochs": 4,
+          "minibatches": 4,
+          "lr": 0.0003,
+          "anneal_lr": true,
+          "gamma": 0.999,
+          "gae_lambda": 0.95,
+          "clip_coef": 0.2,
+          "clip_vloss": true,
+          "ent_coef": 0.01,
+          "vf_coef": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "progress_coef": 0.0,
+          "progress_anneal": false,
+          "seed": 202,
+          "device": "cpu",
+          "quiet": true,
+          "save": "",
+          "init": "",
+          "architecture": "separate",
+          "curiosity_coef": 0.0,
+          "curiosity_anneal": true,
+          "curiosity_balanced": false
+        },
+        "actual_steps": 4194304,
+        "environment_version": 4,
+        "torch_threads": 6,
+        "validation_seeds": [
+          2000001,
+          2000128
+        ],
+        "reserved_test_seeds": [
+          4000001,
+          4000128
+        ],
+        "sampler_seed": 54321,
+        "reward": "achievements +1; death -1",
+        "demonstrations": false,
+        "prerequisite_shaping": false,
+        "training_novelty": null,
+        "implementation_sha256": {
+          "v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+          "random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+          "ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+          "v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+          "ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+          "recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+          "batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+          "ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+          "__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+          "rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+          "checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+          "baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+          "spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+          "watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+          "deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+          "token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+          "ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+          "curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+          "separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+          "libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        },
+        "package": "/Users/mikavohl/Projects/terraria-lite/python/terraria_lite",
+        "torch": "2.13.0"
+      },
+      "training": {
+        "agent": "ppo",
+        "gamma": 0.999,
+        "seed": 202,
+        "ent_coef": 0.01,
+        "progress_coef": 0.0,
+        "progress_anneal": false,
+        "lr": 0.0003,
+        "envs": 64,
+        "steps": 4194304,
+        "architecture": "separate",
+        "curiosity_coef": 0.0,
+        "requested_steps": 4194304,
+        "collection_seconds": 110.73234666927601,
+        "optimisation_seconds": 321.10981311660726,
+        "sps": 9258,
+        "n_ep": 1556,
+        "window": 200,
+        "ach": 10.14,
+        "ret": 10.14,
+        "len": 3000.0,
+        "died": 0.0,
+        "hits": {
+          "collect wood": 200,
+          "place block": 200,
+          "craft workbench": 200,
+          "place torch": 200,
+          "place platform": 182,
+          "defeat Blue Slime": 195,
+          "open chest": 200,
+          "craft wooden sword": 66,
+          "heal with food or potion": 200,
+          "explore 30 columns": 200,
+          "climb rope": 200
+        },
+        "wall_seconds_including_validation": 453.4595834169886
+      },
+      "validation_curve": [
+        {
+          "steps": 1048576,
+          "elapsed_seconds": 122.99423837498762,
+          "profile": {
+            "collection_seconds": 30.52904029606725,
+            "optimisation_seconds": 86.29131512492313,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.0775158405303955
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.4609375,
+            "std_achievements": 0.748982056589976,
+            "median_achievements": 9.0,
+            "p90_achievements": 10.0,
+            "max_achievements": 11,
+            "mean_return": 9.4140625,
+            "mean_length": 2886.375,
+            "death_rate": 0.046875,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 97,
+              "place torch": 128,
+              "place platform": 117,
+              "defeat Blue Slime": 88,
+              "open chest": 128,
+              "craft wooden sword": 13,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 2097152,
+          "elapsed_seconds": 242.9047062919999,
+          "profile": {
+            "collection_seconds": 60.5373149230727,
+            "optimisation_seconds": 170.52758837278816,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.1434998512268066
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.03125,
+            "std_achievements": 0.46666201634587745,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.03125,
+            "mean_length": 3000.0,
+            "death_rate": 0.0,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 122,
+              "defeat Blue Slime": 119,
+              "open chest": 128,
+              "craft wooden sword": 20,
+              "heal with food or potion": 127,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 3145728,
+          "elapsed_seconds": 352.3814360839897,
+          "profile": {
+            "collection_seconds": 85.07483946433058,
+            "optimisation_seconds": 250.48654203669867,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.110142707824707
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.9375,
+            "std_achievements": 0.6091746465505602,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 9.9296875,
+            "mean_length": 2981.0703125,
+            "death_rate": 0.0078125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 120,
+              "place torch": 128,
+              "place platform": 121,
+              "defeat Blue Slime": 115,
+              "open chest": 128,
+              "craft wooden sword": 20,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        },
+        {
+          "steps": 4194304,
+          "elapsed_seconds": 453.4569765420165,
+          "profile": {
+            "collection_seconds": 110.73234666927601,
+            "optimisation_seconds": 321.10981311660726,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.323352098464966
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.125,
+            "std_achievements": 0.414578098794425,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.1171875,
+            "mean_length": 2980.2578125,
+            "death_rate": 0.0078125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 125,
+              "defeat Blue Slime": 124,
+              "open chest": 128,
+              "craft wooden sword": 23,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 128
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "v4-separate-303",
+      "protocol": {
+        "config": {
+          "total_steps": 4194304,
+          "num_envs": 64,
+          "rollout": 128,
+          "epochs": 4,
+          "minibatches": 4,
+          "lr": 0.0003,
+          "anneal_lr": true,
+          "gamma": 0.999,
+          "gae_lambda": 0.95,
+          "clip_coef": 0.2,
+          "clip_vloss": true,
+          "ent_coef": 0.01,
+          "vf_coef": 0.5,
+          "max_grad_norm": 0.5,
+          "target_kl": 0.03,
+          "progress_coef": 0.0,
+          "progress_anneal": false,
+          "seed": 303,
+          "device": "cpu",
+          "quiet": true,
+          "save": "",
+          "init": "",
+          "architecture": "separate",
+          "curiosity_coef": 0.0,
+          "curiosity_anneal": true,
+          "curiosity_balanced": false
+        },
+        "actual_steps": 4194304,
+        "environment_version": 4,
+        "torch_threads": 6,
+        "validation_seeds": [
+          2000001,
+          2000128
+        ],
+        "reserved_test_seeds": [
+          4000001,
+          4000128
+        ],
+        "sampler_seed": 54321,
+        "reward": "achievements +1; death -1",
+        "demonstrations": false,
+        "prerequisite_shaping": false,
+        "training_novelty": null,
+        "implementation_sha256": {
+          "v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+          "random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+          "ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+          "v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+          "ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+          "recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+          "batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+          "ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+          "__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+          "rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+          "checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+          "baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+          "spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+          "watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+          "deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+          "token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+          "ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+          "curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+          "separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+          "libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+        },
+        "package": "/Users/mikavohl/Projects/terraria-lite/python/terraria_lite",
+        "torch": "2.13.0"
+      },
+      "training": {
+        "agent": "ppo",
+        "gamma": 0.999,
+        "seed": 303,
+        "ent_coef": 0.01,
+        "progress_coef": 0.0,
+        "progress_anneal": false,
+        "lr": 0.0003,
+        "envs": 64,
+        "steps": 4194304,
+        "architecture": "separate",
+        "curiosity_coef": 0.0,
+        "requested_steps": 4194304,
+        "collection_seconds": 90.92379441310186,
+        "optimisation_seconds": 280.2624534579518,
+        "sps": 10832,
+        "n_ep": 1543,
+        "window": 200,
+        "ach": 10.04,
+        "ret": 10.02,
+        "len": 2948.2,
+        "died": 0.02,
+        "hits": {
+          "collect wood": 200,
+          "place block": 199,
+          "craft workbench": 198,
+          "place torch": 197,
+          "place platform": 193,
+          "defeat Blue Slime": 173,
+          "open chest": 196,
+          "craft wooden sword": 69,
+          "heal with food or potion": 197,
+          "explore 30 columns": 200,
+          "climb rope": 196
+        },
+        "wall_seconds_including_validation": 387.6652693330252
+      },
+      "validation_curve": [
+        {
+          "steps": 1048576,
+          "elapsed_seconds": 122.05489816601039,
+          "profile": {
+            "collection_seconds": 29.845567543961806,
+            "optimisation_seconds": 86.16319420689251,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.1014795303344727
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.828125,
+            "std_achievements": 0.9691279504662942,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 9.8203125,
+            "mean_length": 2985.5078125,
+            "death_rate": 0.0078125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 123,
+              "place torch": 124,
+              "place platform": 118,
+              "defeat Blue Slime": 103,
+              "open chest": 120,
+              "craft wooden sword": 40,
+              "heal with food or potion": 126,
+              "explore 30 columns": 128,
+              "climb rope": 120
+            }
+          }
+        },
+        {
+          "steps": 2097152,
+          "elapsed_seconds": 224.6626803750114,
+          "profile": {
+            "collection_seconds": 53.945701381075196,
+            "optimisation_seconds": 159.78778945689555,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.0581250190734863
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.0,
+            "std_achievements": 0.5994789404140899,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 9.96875,
+            "mean_length": 2939.03125,
+            "death_rate": 0.03125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 128,
+              "craft workbench": 128,
+              "place torch": 128,
+              "place platform": 118,
+              "defeat Blue Slime": 110,
+              "open chest": 127,
+              "craft wooden sword": 31,
+              "heal with food or potion": 127,
+              "explore 30 columns": 128,
+              "climb rope": 127
+            }
+          }
+        },
+        {
+          "steps": 3145728,
+          "elapsed_seconds": 316.4746409160143,
+          "profile": {
+            "collection_seconds": 76.18421816904447,
+            "optimisation_seconds": 226.5885020349233,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.1055288314819336
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 10.1171875,
+            "std_achievements": 0.7564420598061361,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 10.1171875,
+            "mean_length": 3000.0,
+            "death_rate": 0.0,
+            "hits": {
+              "collect wood": 128,
+              "place block": 127,
+              "craft workbench": 128,
+              "place torch": 127,
+              "place platform": 114,
+              "defeat Blue Slime": 105,
+              "open chest": 127,
+              "craft wooden sword": 56,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 127
+            }
+          }
+        },
+        {
+          "steps": 4194304,
+          "elapsed_seconds": 387.66283508302877,
+          "profile": {
+            "collection_seconds": 90.92379441310186,
+            "optimisation_seconds": 280.2624534579518,
+            "novelty_error": 0.0,
+            "policy_entropy": 2.2139134407043457
+          },
+          "evaluation": {
+            "episodes": 128,
+            "mean_achievements": 9.9921875,
+            "std_achievements": 0.6554589726624772,
+            "median_achievements": 10.0,
+            "p90_achievements": 11.0,
+            "max_achievements": 11,
+            "mean_return": 9.984375,
+            "mean_length": 2978.828125,
+            "death_rate": 0.0078125,
+            "hits": {
+              "collect wood": 128,
+              "place block": 127,
+              "craft workbench": 128,
+              "place torch": 127,
+              "place platform": 126,
+              "defeat Blue Slime": 109,
+              "open chest": 126,
+              "craft wooden sword": 26,
+              "heal with food or potion": 128,
+              "explore 30 columns": 128,
+              "climb rope": 126
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "validation_uniform_legal": {
+    "episodes": 128,
+    "mean_achievements": 4.84375,
+    "std_achievements": 1.5229366163764007,
+    "median_achievements": 5.0,
+    "p90_achievements": 6.0,
+    "max_achievements": 12,
+    "mean_return": 3.921875,
+    "mean_length": 642.4765625,
+    "death_rate": 0.921875,
+    "hits": {
+      "collect wood": 117,
+      "collect stone": 17,
+      "place block": 128,
+      "place torch": 30,
+      "place platform": 112,
+      "collect copper": 5,
+      "collect silver": 1,
+      "defeat Blue Slime": 94,
+      "defeat Cave Bat": 4,
+      "open chest": 3,
+      "heal with food or potion": 100,
+      "use life crystal": 2,
+      "double jump": 3,
+      "descend deep": 1,
+      "climb rope": 3
+    }
+  },
+  "excluded_provisional_runs": {
+    "reason": "Pre-release v4 half-defense rounding was corrected before final trials; no reserved test used.",
+    "completed_runs": [
+      "v4-mlp-101",
+      "v4-mlp-202",
+      "v4-separate-101"
+    ],
+    "completed_transitions": 12582912,
+    "interrupted_runs": [
+      "v4-mlp-303",
+      "v4-separate-202"
+    ],
+    "snapshot": "provisional/v4; never load these checkpoints into the final v4 rules"
+  },
+  "selection": {
+    "environment_version": 4,
+    "criterion": "highest validation mean; ties: lower death rate, fewer steps, run name",
+    "validation_seeds": [
+      2000001,
+      2000128
+    ],
+    "test_seeds": [
+      4000001,
+      4000128
+    ],
+    "sampler_seed": 54321,
+    "selection": {
+      "run": "v4-separate-101",
+      "steps": 4194304,
+      "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-101/step-4194304.pt",
+      "checkpoint_sha256": "954b566514a2588d2501264403d59662c581b4b1d19e6e6a8f19310314441d24",
+      "protocol_sha256": "828efebf51149dc762090f1b6f7bd7a005e4e09965bc0084b98e62690a42bee7",
+      "mean_achievements": 10.8359375,
+      "death_rate": 0.03125
+    },
+    "candidates": [
+      {
+        "run": "v4-separate-101",
+        "steps": 4194304,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-101/step-4194304.pt",
+        "checkpoint_sha256": "954b566514a2588d2501264403d59662c581b4b1d19e6e6a8f19310314441d24",
+        "protocol_sha256": "828efebf51149dc762090f1b6f7bd7a005e4e09965bc0084b98e62690a42bee7",
+        "mean_achievements": 10.8359375,
+        "death_rate": 0.03125
+      },
+      {
+        "run": "v4-separate-101",
+        "steps": 3145728,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-101/step-3145728.pt",
+        "checkpoint_sha256": "3a07c3dce4da95be474ba5b30a5520cf8545b3296d935c47e2ccf52aa5b25f79",
+        "protocol_sha256": "828efebf51149dc762090f1b6f7bd7a005e4e09965bc0084b98e62690a42bee7",
+        "mean_achievements": 10.7109375,
+        "death_rate": 0.03125
+      },
+      {
+        "run": "v4-mlp-303",
+        "steps": 2097152,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-303/step-2097152.pt",
+        "checkpoint_sha256": "b56d10bb404d98f3af759967d35cf0cb781f5c12e4b5f3e5641b3010578f2ba8",
+        "protocol_sha256": "31acf7797c347a7ab7a499363e12642ecba3f061a1fbc37162987ac61a2f15d6",
+        "mean_achievements": 10.4375,
+        "death_rate": 0.015625
+      },
+      {
+        "run": "v4-separate-101",
+        "steps": 2097152,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-101/step-2097152.pt",
+        "checkpoint_sha256": "1a637588d99d8aab229c53db8009f81499f1dc02ac0059ce1225726cee1b3615",
+        "protocol_sha256": "828efebf51149dc762090f1b6f7bd7a005e4e09965bc0084b98e62690a42bee7",
+        "mean_achievements": 10.375,
+        "death_rate": 0.0078125
+      },
+      {
+        "run": "v4-mlp-303",
+        "steps": 4194304,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-303/step-4194304.pt",
+        "checkpoint_sha256": "d9a715825646fc12619cbd059795f1bbc2a771b7f2607670e14006812b00ff3e",
+        "protocol_sha256": "31acf7797c347a7ab7a499363e12642ecba3f061a1fbc37162987ac61a2f15d6",
+        "mean_achievements": 10.2890625,
+        "death_rate": 0.09375
+      },
+      {
+        "run": "v4-separate-101",
+        "steps": 1048576,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-101/step-1048576.pt",
+        "checkpoint_sha256": "c013a0d6c44aaf4411b8c7d2d19c3090a0a81dec123ef9ba41b257a74c8f8c8f",
+        "protocol_sha256": "828efebf51149dc762090f1b6f7bd7a005e4e09965bc0084b98e62690a42bee7",
+        "mean_achievements": 10.2421875,
+        "death_rate": 0.109375
+      },
+      {
+        "run": "v4-mlp-202",
+        "steps": 3145728,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-202/step-3145728.pt",
+        "checkpoint_sha256": "da6bc8f9ff9d844c96f3f7e3528903d2fd0465d49c10990bd61339b35b6beb91",
+        "protocol_sha256": "d3872d5784e8c2e3afe60f2c9844f7f2296f15bdb41cf863214803f65c435935",
+        "mean_achievements": 10.234375,
+        "death_rate": 0.140625
+      },
+      {
+        "run": "v4-mlp-202",
+        "steps": 4194304,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-202/step-4194304.pt",
+        "checkpoint_sha256": "30e9403ddd2eadb16fb1c0f58806a1eac44d7c66a4b70b95a6dc122c76ff4516",
+        "protocol_sha256": "d3872d5784e8c2e3afe60f2c9844f7f2296f15bdb41cf863214803f65c435935",
+        "mean_achievements": 10.2265625,
+        "death_rate": 0.015625
+      },
+      {
+        "run": "v4-mlp-303",
+        "steps": 3145728,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-303/step-3145728.pt",
+        "checkpoint_sha256": "c08851b807135f161c351790082c78eace5d1928c3e5bd67cae09e9f3364b4dc",
+        "protocol_sha256": "31acf7797c347a7ab7a499363e12642ecba3f061a1fbc37162987ac61a2f15d6",
+        "mean_achievements": 10.1328125,
+        "death_rate": 0.5859375
+      },
+      {
+        "run": "v4-separate-202",
+        "steps": 4194304,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-202/step-4194304.pt",
+        "checkpoint_sha256": "233422978feda2dcfb9cd708e3830efa056a842a2ae6ef16aad9389f3a7cdd17",
+        "protocol_sha256": "35e174433ce5e6d6f7f2be29e6ae23a3da1ff4b5c130c2aaf5d95ceb421eff92",
+        "mean_achievements": 10.125,
+        "death_rate": 0.0078125
+      },
+      {
+        "run": "v4-separate-303",
+        "steps": 3145728,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-303/step-3145728.pt",
+        "checkpoint_sha256": "3bd80018b66db4679ba36f23ff303288afad9523008ada09ca2ed141a5b5c65c",
+        "protocol_sha256": "852fe8f5420835888937bdc189db955afa9b8a104724c42036dcfc780dc612df",
+        "mean_achievements": 10.1171875,
+        "death_rate": 0.0
+      },
+      {
+        "run": "v4-mlp-202",
+        "steps": 2097152,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-202/step-2097152.pt",
+        "checkpoint_sha256": "e48cbde74b26e6185f47320f514b02f9e00bcc7391ed2018af72483562935969",
+        "protocol_sha256": "d3872d5784e8c2e3afe60f2c9844f7f2296f15bdb41cf863214803f65c435935",
+        "mean_achievements": 10.0390625,
+        "death_rate": 0.0234375
+      },
+      {
+        "run": "v4-separate-202",
+        "steps": 2097152,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-202/step-2097152.pt",
+        "checkpoint_sha256": "261e0d439ac0b8115d13d5b91c0e723b9dc6001481e92fe7d07afd029721f7e9",
+        "protocol_sha256": "35e174433ce5e6d6f7f2be29e6ae23a3da1ff4b5c130c2aaf5d95ceb421eff92",
+        "mean_achievements": 10.03125,
+        "death_rate": 0.0
+      },
+      {
+        "run": "v4-mlp-303",
+        "steps": 1048576,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-303/step-1048576.pt",
+        "checkpoint_sha256": "f38c340109a7f0e302e1bfea08d76042d5c2c6cbc4cf2e1dd3d66d550e52f005",
+        "protocol_sha256": "31acf7797c347a7ab7a499363e12642ecba3f061a1fbc37162987ac61a2f15d6",
+        "mean_achievements": 10.015625,
+        "death_rate": 0.25
+      },
+      {
+        "run": "v4-mlp-101",
+        "steps": 2097152,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-101/step-2097152.pt",
+        "checkpoint_sha256": "1d37bbc45fa4e391cfb969200098eee67a7ed97b3df0fcdd191afc5e1e84c465",
+        "protocol_sha256": "23287889cf43ae551cf6310816812ce65b8947acdd364cd35db5636b04f48b8b",
+        "mean_achievements": 10.0078125,
+        "death_rate": 0.0234375
+      },
+      {
+        "run": "v4-separate-303",
+        "steps": 2097152,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-303/step-2097152.pt",
+        "checkpoint_sha256": "0ddb904792207e9e54457bb9f607f3a0dc96f66564934958570a41f71c7a6f05",
+        "protocol_sha256": "852fe8f5420835888937bdc189db955afa9b8a104724c42036dcfc780dc612df",
+        "mean_achievements": 10.0,
+        "death_rate": 0.03125
+      },
+      {
+        "run": "v4-mlp-101",
+        "steps": 4194304,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-101/step-4194304.pt",
+        "checkpoint_sha256": "a982a9bf7b60d2b244d988c403239898d39a7eca670d976c4314663f2a73738e",
+        "protocol_sha256": "23287889cf43ae551cf6310816812ce65b8947acdd364cd35db5636b04f48b8b",
+        "mean_achievements": 10.0,
+        "death_rate": 0.1484375
+      },
+      {
+        "run": "v4-separate-303",
+        "steps": 4194304,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-303/step-4194304.pt",
+        "checkpoint_sha256": "a44d6c0518cdfe879bab4f76320869e317ac7c0556c559b9315dafc3161a697d",
+        "protocol_sha256": "852fe8f5420835888937bdc189db955afa9b8a104724c42036dcfc780dc612df",
+        "mean_achievements": 9.9921875,
+        "death_rate": 0.0078125
+      },
+      {
+        "run": "v4-mlp-101",
+        "steps": 3145728,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-101/step-3145728.pt",
+        "checkpoint_sha256": "63679450233436123304e3e71b47929b249b60910605e5ea574cd73a256153e7",
+        "protocol_sha256": "23287889cf43ae551cf6310816812ce65b8947acdd364cd35db5636b04f48b8b",
+        "mean_achievements": 9.9921875,
+        "death_rate": 0.09375
+      },
+      {
+        "run": "v4-mlp-202",
+        "steps": 1048576,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-202/step-1048576.pt",
+        "checkpoint_sha256": "68ac99410cc2647868d0d2df837ef52288770b1b00c55343bda213e1ed2c7fa3",
+        "protocol_sha256": "d3872d5784e8c2e3afe60f2c9844f7f2296f15bdb41cf863214803f65c435935",
+        "mean_achievements": 9.96875,
+        "death_rate": 0.0234375
+      },
+      {
+        "run": "v4-separate-202",
+        "steps": 3145728,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-202/step-3145728.pt",
+        "checkpoint_sha256": "dc79671f44a60b4adb3a4a876b7a2277d0bed0573bdebfcb7c6eb6c041de405b",
+        "protocol_sha256": "35e174433ce5e6d6f7f2be29e6ae23a3da1ff4b5c130c2aaf5d95ceb421eff92",
+        "mean_achievements": 9.9375,
+        "death_rate": 0.0078125
+      },
+      {
+        "run": "v4-separate-303",
+        "steps": 1048576,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-303/step-1048576.pt",
+        "checkpoint_sha256": "9d921215b975104dee0211604f759c112326c88fe08d80aab6f2898d4966acf1",
+        "protocol_sha256": "852fe8f5420835888937bdc189db955afa9b8a104724c42036dcfc780dc612df",
+        "mean_achievements": 9.828125,
+        "death_rate": 0.0078125
+      },
+      {
+        "run": "v4-mlp-101",
+        "steps": 1048576,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-mlp-101/step-1048576.pt",
+        "checkpoint_sha256": "65bc644eae5854a4891c628c398cf243a491a9c04595a20c137dc04ac588a93a",
+        "protocol_sha256": "23287889cf43ae551cf6310816812ce65b8947acdd364cd35db5636b04f48b8b",
+        "mean_achievements": 9.7109375,
+        "death_rate": 0.0625
+      },
+      {
+        "run": "v4-separate-202",
+        "steps": 1048576,
+        "checkpoint": "/Users/mikavohl/Projects/terraria-lite/experiments/fidelity-v4-20261010.5spuaF/v4-separate-202/step-1048576.pt",
+        "checkpoint_sha256": "5eedd87ba7caa6c81c9e4661345a36a4c89e02ffa9bce524bc560d35454ca0e5",
+        "protocol_sha256": "35e174433ce5e6d6f7f2be29e6ae23a3da1ff4b5c130c2aaf5d95ceb421eff92",
+        "mean_achievements": 9.4609375,
+        "death_rate": 0.046875
+      }
+    ],
+    "evaluation_source_sha256": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+    "note": "Selection frozen before test. The reserved split is now consumed; do not tune against its results."
+  },
+  "reserved_test": {
+    "episodes": 128,
+    "mean_achievements": 10.828125,
+    "std_achievements": 0.37727176461405115,
+    "median_achievements": 11.0,
+    "p90_achievements": 11.0,
+    "max_achievements": 11,
+    "mean_return": 10.8203125,
+    "mean_length": 2994.6328125,
+    "death_rate": 0.0078125,
+    "hits": {
+      "collect wood": 128,
+      "place block": 128,
+      "craft workbench": 128,
+      "place torch": 128,
+      "place platform": 128,
+      "defeat Blue Slime": 125,
+      "open chest": 128,
+      "craft wooden sword": 109,
+      "heal with food or potion": 128,
+      "explore 30 columns": 128,
+      "climb rope": 128
+    }
+  },
+  "diagnostic_controls": {
+    "mlp101-diagnostics.json": {
+      "episodes": 128,
+      "inventory_peak": {
+        "wood": {
+          "mean": 11.9375,
+          "median": 12.0,
+          "max": 15
+        },
+        "stone": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "dirt": {
+          "mean": 9.375,
+          "median": 9.0,
+          "max": 26
+        },
+        "copper ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gold ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "copper bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gold bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "torch": {
+          "mean": 14.09375,
+          "median": 12.0,
+          "max": 37
+        },
+        "campfire": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "workbench": {
+          "mean": 2.2109375,
+          "median": 2.0,
+          "max": 4
+        },
+        "furnace": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "anvil": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "silver ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "silver bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gel": {
+          "mean": 5.53125,
+          "median": 4.0,
+          "max": 18
+        },
+        "wood platform": {
+          "mean": 10.6171875,
+          "median": 10.0,
+          "max": 26
+        },
+        "rope": {
+          "mean": 29.7890625,
+          "median": 29.0,
+          "max": 40
+        },
+        "mushroom": {
+          "mean": 6.1953125,
+          "median": 6.0,
+          "max": 11
+        },
+        "lesser healing potion": {
+          "mean": 3.0703125,
+          "median": 3.0,
+          "max": 4
+        },
+        "life crystal": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "Cloud in a Bottle": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "copper shortsword": {
+          "mean": 1.0,
+          "median": 1.0,
+          "max": 1
+        },
+        "wooden sword": {
+          "mean": 1.1328125,
+          "median": 1.0,
+          "max": 2
+        },
+        "copper broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gold broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "silver broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "wood breastplate": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron chainmail": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        }
+      },
+      "actions": {
+        "noop": {
+          "legal_steps": 366177,
+          "chosen": 36948,
+          "mean_probability_when_legal": 0.10068372363090432,
+          "episodes_with_opportunity": 128
+        },
+        "left": {
+          "legal_steps": 165480,
+          "chosen": 43094,
+          "mean_probability_when_legal": 0.26052707993366203,
+          "episodes_with_opportunity": 128
+        },
+        "right": {
+          "legal_steps": 349506,
+          "chosen": 35174,
+          "mean_probability_when_legal": 0.10025975340933344,
+          "episodes_with_opportunity": 128
+        },
+        "jump": {
+          "legal_steps": 196633,
+          "chosen": 15978,
+          "mean_probability_when_legal": 0.08177339894420078,
+          "episodes_with_opportunity": 128
+        },
+        "mine up-left": {
+          "legal_steps": 2127,
+          "chosen": 607,
+          "mean_probability_when_legal": 0.2849783429795897,
+          "episodes_with_opportunity": 128
+        },
+        "mine up": {
+          "legal_steps": 11535,
+          "chosen": 3012,
+          "mean_probability_when_legal": 0.2696182286601846,
+          "episodes_with_opportunity": 128
+        },
+        "mine up-right": {
+          "legal_steps": 32619,
+          "chosen": 6586,
+          "mean_probability_when_legal": 0.2014185275134805,
+          "episodes_with_opportunity": 128
+        },
+        "mine head-left": {
+          "legal_steps": 9231,
+          "chosen": 276,
+          "mean_probability_when_legal": 0.031258316380514004,
+          "episodes_with_opportunity": 128
+        },
+        "mine head-right": {
+          "legal_steps": 50293,
+          "chosen": 2404,
+          "mean_probability_when_legal": 0.04822829827897065,
+          "episodes_with_opportunity": 128
+        },
+        "mine foot-left": {
+          "legal_steps": 17795,
+          "chosen": 2339,
+          "mean_probability_when_legal": 0.12751037867789156,
+          "episodes_with_opportunity": 128
+        },
+        "mine foot-right": {
+          "legal_steps": 73477,
+          "chosen": 5428,
+          "mean_probability_when_legal": 0.07153298523155421,
+          "episodes_with_opportunity": 128
+        },
+        "mine down-left": {
+          "legal_steps": 37600,
+          "chosen": 713,
+          "mean_probability_when_legal": 0.018218975395717433,
+          "episodes_with_opportunity": 128
+        },
+        "mine down": {
+          "legal_steps": 76985,
+          "chosen": 1141,
+          "mean_probability_when_legal": 0.01420435254253318,
+          "episodes_with_opportunity": 128
+        },
+        "mine down-right": {
+          "legal_steps": 83761,
+          "chosen": 3128,
+          "mean_probability_when_legal": 0.0367360155684228,
+          "episodes_with_opportunity": 128
+        },
+        "mine above right column": {
+          "legal_steps": 17104,
+          "chosen": 4390,
+          "mean_probability_when_legal": 0.25600210178071453,
+          "episodes_with_opportunity": 128
+        },
+        "mine middle-left": {
+          "legal_steps": 9879,
+          "chosen": 1231,
+          "mean_probability_when_legal": 0.1264019291411026,
+          "episodes_with_opportunity": 128
+        },
+        "mine middle-right": {
+          "legal_steps": 60929,
+          "chosen": 730,
+          "mean_probability_when_legal": 0.011455533598397122,
+          "episodes_with_opportunity": 128
+        },
+        "mine below right column": {
+          "legal_steps": 110090,
+          "chosen": 645,
+          "mean_probability_when_legal": 0.0060231856180085344,
+          "episodes_with_opportunity": 128
+        },
+        "mine body head-left": {
+          "legal_steps": 20227,
+          "chosen": 4596,
+          "mean_probability_when_legal": 0.22870042975086288,
+          "episodes_with_opportunity": 128
+        },
+        "mine body head-right": {
+          "legal_steps": 27125,
+          "chosen": 717,
+          "mean_probability_when_legal": 0.026115151079284395,
+          "episodes_with_opportunity": 128
+        },
+        "mine body middle-left": {
+          "legal_steps": 24488,
+          "chosen": 4056,
+          "mean_probability_when_legal": 0.16677566387150466,
+          "episodes_with_opportunity": 128
+        },
+        "mine body middle-right": {
+          "legal_steps": 39994,
+          "chosen": 1256,
+          "mean_probability_when_legal": 0.032312096830346325,
+          "episodes_with_opportunity": 128
+        },
+        "mine body foot-left": {
+          "legal_steps": 27569,
+          "chosen": 1737,
+          "mean_probability_when_legal": 0.0631504498142302,
+          "episodes_with_opportunity": 128
+        },
+        "mine body foot-right": {
+          "legal_steps": 36833,
+          "chosen": 8462,
+          "mean_probability_when_legal": 0.2298473863825267,
+          "episodes_with_opportunity": 128
+        },
+        "place up-left": {
+          "legal_steps": 51155,
+          "chosen": 138,
+          "mean_probability_when_legal": 0.0023408584752982902,
+          "episodes_with_opportunity": 128
+        },
+        "place up": {
+          "legal_steps": 93514,
+          "chosen": 1612,
+          "mean_probability_when_legal": 0.01746986199249852,
+          "episodes_with_opportunity": 128
+        },
+        "place up-right": {
+          "legal_steps": 73251,
+          "chosen": 5503,
+          "mean_probability_when_legal": 0.07561854758155633,
+          "episodes_with_opportunity": 128
+        },
+        "place head-left": {
+          "legal_steps": 43596,
+          "chosen": 843,
+          "mean_probability_when_legal": 0.019286246391569214,
+          "episodes_with_opportunity": 128
+        },
+        "place head-right": {
+          "legal_steps": 55651,
+          "chosen": 5725,
+          "mean_probability_when_legal": 0.10188306614142358,
+          "episodes_with_opportunity": 128
+        },
+        "place foot-left": {
+          "legal_steps": 43723,
+          "chosen": 481,
+          "mean_probability_when_legal": 0.010875722335002138,
+          "episodes_with_opportunity": 128
+        },
+        "place foot-right": {
+          "legal_steps": 48900,
+          "chosen": 7860,
+          "mean_probability_when_legal": 0.16321895269528963,
+          "episodes_with_opportunity": 128
+        },
+        "place down-left": {
+          "legal_steps": 38574,
+          "chosen": 745,
+          "mean_probability_when_legal": 0.019446801693404965,
+          "episodes_with_opportunity": 128
+        },
+        "place down": {
+          "legal_steps": 57444,
+          "chosen": 1691,
+          "mean_probability_when_legal": 0.030346330447315564,
+          "episodes_with_opportunity": 128
+        },
+        "place down-right": {
+          "legal_steps": 56281,
+          "chosen": 692,
+          "mean_probability_when_legal": 0.012417796527085665,
+          "episodes_with_opportunity": 128
+        },
+        "place above right column": {
+          "legal_steps": 89089,
+          "chosen": 2072,
+          "mean_probability_when_legal": 0.02329408062986635,
+          "episodes_with_opportunity": 128
+        },
+        "place middle-left": {
+          "legal_steps": 44535,
+          "chosen": 515,
+          "mean_probability_when_legal": 0.011424820754174433,
+          "episodes_with_opportunity": 128
+        },
+        "place middle-right": {
+          "legal_steps": 50135,
+          "chosen": 4440,
+          "mean_probability_when_legal": 0.08799225636442577,
+          "episodes_with_opportunity": 128
+        },
+        "place below right column": {
+          "legal_steps": 39103,
+          "chosen": 5691,
+          "mean_probability_when_legal": 0.14434493043092764,
+          "episodes_with_opportunity": 128
+        },
+        "place body head-left": {
+          "legal_steps": 68022,
+          "chosen": 7240,
+          "mean_probability_when_legal": 0.10509592811136019,
+          "episodes_with_opportunity": 128
+        },
+        "place body head-right": {
+          "legal_steps": 61660,
+          "chosen": 1234,
+          "mean_probability_when_legal": 0.02018988314836707,
+          "episodes_with_opportunity": 128
+        },
+        "place body middle-left": {
+          "legal_steps": 63543,
+          "chosen": 4282,
+          "mean_probability_when_legal": 0.06823189413057186,
+          "episodes_with_opportunity": 128
+        },
+        "place body middle-right": {
+          "legal_steps": 49735,
+          "chosen": 5703,
+          "mean_probability_when_legal": 0.1128653515260741,
+          "episodes_with_opportunity": 128
+        },
+        "place body foot-left": {
+          "legal_steps": 61687,
+          "chosen": 1750,
+          "mean_probability_when_legal": 0.028523873633356255,
+          "episodes_with_opportunity": 128
+        },
+        "place body foot-right": {
+          "legal_steps": 59945,
+          "chosen": 4127,
+          "mean_probability_when_legal": 0.06904915614169041,
+          "episodes_with_opportunity": 128
+        },
+        "select next": {
+          "legal_steps": 161605,
+          "chosen": 13230,
+          "mean_probability_when_legal": 0.08199477807313232,
+          "episodes_with_opportunity": 128
+        },
+        "craft workbench": {
+          "legal_steps": 344,
+          "chosen": 290,
+          "mean_probability_when_legal": 0.8479995385481066,
+          "episodes_with_opportunity": 128
+        },
+        "craft furnace": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft torch": {
+          "legal_steps": 8073,
+          "chosen": 1095,
+          "mean_probability_when_legal": 0.13447344679973433,
+          "episodes_with_opportunity": 128
+        },
+        "craft campfire": {
+          "legal_steps": 81,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0035277992452213284,
+          "episodes_with_opportunity": 56
+        },
+        "craft platforms": {
+          "legal_steps": 48196,
+          "chosen": 2030,
+          "mean_probability_when_legal": 0.04160920455973179,
+          "episodes_with_opportunity": 128
+        },
+        "smelt copper": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "smelt iron": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "smelt silver": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "smelt gold": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft anvil": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft iron pickaxe": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft gold pickaxe": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft wooden sword": {
+          "legal_steps": 52,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.005404294479656248,
+          "episodes_with_opportunity": 4
+        },
+        "craft copper sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft iron sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft silver sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft gold sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft wood breastplate": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft iron chainmail": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "attack": {
+          "legal_steps": 270077,
+          "chosen": 48069,
+          "mean_probability_when_legal": 0.1787400351718178,
+          "episodes_with_opportunity": 128
+        },
+        "open chest": {
+          "legal_steps": 1506,
+          "chosen": 145,
+          "mean_probability_when_legal": 0.09895300296616556,
+          "episodes_with_opportunity": 128
+        },
+        "drink healing potion": {
+          "legal_steps": 2569,
+          "chosen": 435,
+          "mean_probability_when_legal": 0.17335826544987082,
+          "episodes_with_opportunity": 128
+        },
+        "eat mushroom": {
+          "legal_steps": 6788,
+          "chosen": 1908,
+          "mean_probability_when_legal": 0.2873051371850114,
+          "episodes_with_opportunity": 128
+        },
+        "use life crystal": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "cycle weapon": {
+          "legal_steps": 352369,
+          "chosen": 43410,
+          "mean_probability_when_legal": 0.12329121058783925,
+          "episodes_with_opportunity": 128
+        },
+        "climb up": {
+          "legal_steps": 37415,
+          "chosen": 741,
+          "mean_probability_when_legal": 0.02004890902190415,
+          "episodes_with_opportunity": 128
+        },
+        "climb down": {
+          "legal_steps": 16689,
+          "chosen": 3337,
+          "mean_probability_when_legal": 0.19602262238363397,
+          "episodes_with_opportunity": 128
+        },
+        "drop through platform": {
+          "legal_steps": 62472,
+          "chosen": 4495,
+          "mean_probability_when_legal": 0.07263434891738989,
+          "episodes_with_opportunity": 128
+        }
+      }
+    },
+    "separate101-diagnostics.json": {
+      "episodes": 128,
+      "inventory_peak": {
+        "wood": {
+          "mean": 19.7421875,
+          "median": 19.0,
+          "max": 44
+        },
+        "stone": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "dirt": {
+          "mean": 12.1328125,
+          "median": 11.5,
+          "max": 30
+        },
+        "copper ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gold ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "copper bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gold bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "torch": {
+          "mean": 13.78125,
+          "median": 12.0,
+          "max": 32
+        },
+        "campfire": {
+          "mean": 0.078125,
+          "median": 0.0,
+          "max": 1
+        },
+        "workbench": {
+          "mean": 1.328125,
+          "median": 1.0,
+          "max": 3
+        },
+        "furnace": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "anvil": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "silver ore": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "silver bar": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gel": {
+          "mean": 3.7421875,
+          "median": 2.0,
+          "max": 19
+        },
+        "wood platform": {
+          "mean": 6.4453125,
+          "median": 6.0,
+          "max": 20
+        },
+        "rope": {
+          "mean": 38.0703125,
+          "median": 36.0,
+          "max": 72
+        },
+        "mushroom": {
+          "mean": 5.78125,
+          "median": 6.0,
+          "max": 12
+        },
+        "lesser healing potion": {
+          "mean": 3.1875,
+          "median": 3.0,
+          "max": 4
+        },
+        "life crystal": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "Cloud in a Bottle": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "copper shortsword": {
+          "mean": 1.0,
+          "median": 1.0,
+          "max": 1
+        },
+        "wooden sword": {
+          "mean": 3.0234375,
+          "median": 3.0,
+          "max": 7
+        },
+        "copper broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "gold broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "silver broadsword": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "wood breastplate": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        },
+        "iron chainmail": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0
+        }
+      },
+      "actions": {
+        "noop": {
+          "legal_steps": 379698,
+          "chosen": 37115,
+          "mean_probability_when_legal": 0.09854081027343858,
+          "episodes_with_opportunity": 128
+        },
+        "left": {
+          "legal_steps": 219534,
+          "chosen": 31668,
+          "mean_probability_when_legal": 0.14394413674712989,
+          "episodes_with_opportunity": 128
+        },
+        "right": {
+          "legal_steps": 339294,
+          "chosen": 23362,
+          "mean_probability_when_legal": 0.06833774187842735,
+          "episodes_with_opportunity": 128
+        },
+        "jump": {
+          "legal_steps": 142325,
+          "chosen": 4978,
+          "mean_probability_when_legal": 0.03431557852237626,
+          "episodes_with_opportunity": 128
+        },
+        "mine up-left": {
+          "legal_steps": 22526,
+          "chosen": 1519,
+          "mean_probability_when_legal": 0.06662251261939715,
+          "episodes_with_opportunity": 128
+        },
+        "mine up": {
+          "legal_steps": 23323,
+          "chosen": 2815,
+          "mean_probability_when_legal": 0.12093381095495741,
+          "episodes_with_opportunity": 128
+        },
+        "mine up-right": {
+          "legal_steps": 59082,
+          "chosen": 5571,
+          "mean_probability_when_legal": 0.09418965888626173,
+          "episodes_with_opportunity": 128
+        },
+        "mine head-left": {
+          "legal_steps": 27195,
+          "chosen": 3035,
+          "mean_probability_when_legal": 0.11162391141029393,
+          "episodes_with_opportunity": 128
+        },
+        "mine head-right": {
+          "legal_steps": 72823,
+          "chosen": 5315,
+          "mean_probability_when_legal": 0.07289547656667161,
+          "episodes_with_opportunity": 128
+        },
+        "mine foot-left": {
+          "legal_steps": 53877,
+          "chosen": 3962,
+          "mean_probability_when_legal": 0.07272020886571065,
+          "episodes_with_opportunity": 128
+        },
+        "mine foot-right": {
+          "legal_steps": 88174,
+          "chosen": 6789,
+          "mean_probability_when_legal": 0.07706802134597562,
+          "episodes_with_opportunity": 128
+        },
+        "mine down-left": {
+          "legal_steps": 65318,
+          "chosen": 3826,
+          "mean_probability_when_legal": 0.057980067759054815,
+          "episodes_with_opportunity": 128
+        },
+        "mine down": {
+          "legal_steps": 109727,
+          "chosen": 3299,
+          "mean_probability_when_legal": 0.029348431054795683,
+          "episodes_with_opportunity": 128
+        },
+        "mine down-right": {
+          "legal_steps": 113023,
+          "chosen": 8766,
+          "mean_probability_when_legal": 0.07717434491760655,
+          "episodes_with_opportunity": 128
+        },
+        "mine above right column": {
+          "legal_steps": 39364,
+          "chosen": 3149,
+          "mean_probability_when_legal": 0.07986436417413953,
+          "episodes_with_opportunity": 128
+        },
+        "mine middle-left": {
+          "legal_steps": 41073,
+          "chosen": 3222,
+          "mean_probability_when_legal": 0.07850041883774998,
+          "episodes_with_opportunity": 128
+        },
+        "mine middle-right": {
+          "legal_steps": 96668,
+          "chosen": 3845,
+          "mean_probability_when_legal": 0.03974312827724517,
+          "episodes_with_opportunity": 128
+        },
+        "mine below right column": {
+          "legal_steps": 119045,
+          "chosen": 4642,
+          "mean_probability_when_legal": 0.03792868067399218,
+          "episodes_with_opportunity": 128
+        },
+        "mine body head-left": {
+          "legal_steps": 32688,
+          "chosen": 1595,
+          "mean_probability_when_legal": 0.05002111418398079,
+          "episodes_with_opportunity": 128
+        },
+        "mine body head-right": {
+          "legal_steps": 38661,
+          "chosen": 1799,
+          "mean_probability_when_legal": 0.04750499217682115,
+          "episodes_with_opportunity": 128
+        },
+        "mine body middle-left": {
+          "legal_steps": 49773,
+          "chosen": 2564,
+          "mean_probability_when_legal": 0.05222999480391063,
+          "episodes_with_opportunity": 128
+        },
+        "mine body middle-right": {
+          "legal_steps": 59520,
+          "chosen": 1708,
+          "mean_probability_when_legal": 0.027889679821191247,
+          "episodes_with_opportunity": 128
+        },
+        "mine body foot-left": {
+          "legal_steps": 82568,
+          "chosen": 6255,
+          "mean_probability_when_legal": 0.07570071434799687,
+          "episodes_with_opportunity": 128
+        },
+        "mine body foot-right": {
+          "legal_steps": 98888,
+          "chosen": 3620,
+          "mean_probability_when_legal": 0.038465895733267315,
+          "episodes_with_opportunity": 128
+        },
+        "place up-left": {
+          "legal_steps": 124831,
+          "chosen": 2843,
+          "mean_probability_when_legal": 0.023632971503384826,
+          "episodes_with_opportunity": 128
+        },
+        "place up": {
+          "legal_steps": 192110,
+          "chosen": 1627,
+          "mean_probability_when_legal": 0.00825587824687111,
+          "episodes_with_opportunity": 128
+        },
+        "place up-right": {
+          "legal_steps": 153504,
+          "chosen": 8244,
+          "mean_probability_when_legal": 0.05404382758772474,
+          "episodes_with_opportunity": 128
+        },
+        "place head-left": {
+          "legal_steps": 129041,
+          "chosen": 2788,
+          "mean_probability_when_legal": 0.020680833618716303,
+          "episodes_with_opportunity": 128
+        },
+        "place head-right": {
+          "legal_steps": 164106,
+          "chosen": 5173,
+          "mean_probability_when_legal": 0.031344184677880436,
+          "episodes_with_opportunity": 128
+        },
+        "place foot-left": {
+          "legal_steps": 95890,
+          "chosen": 5083,
+          "mean_probability_when_legal": 0.05322277205926772,
+          "episodes_with_opportunity": 128
+        },
+        "place foot-right": {
+          "legal_steps": 143956,
+          "chosen": 4601,
+          "mean_probability_when_legal": 0.031325385483549656,
+          "episodes_with_opportunity": 128
+        },
+        "place down-left": {
+          "legal_steps": 92169,
+          "chosen": 2196,
+          "mean_probability_when_legal": 0.023234744688571483,
+          "episodes_with_opportunity": 128
+        },
+        "place down": {
+          "legal_steps": 120460,
+          "chosen": 2481,
+          "mean_probability_when_legal": 0.02085437509968155,
+          "episodes_with_opportunity": 128
+        },
+        "place down-right": {
+          "legal_steps": 126306,
+          "chosen": 9734,
+          "mean_probability_when_legal": 0.07782244284629619,
+          "episodes_with_opportunity": 128
+        },
+        "place above right column": {
+          "legal_steps": 172375,
+          "chosen": 4782,
+          "mean_probability_when_legal": 0.028116171369330447,
+          "episodes_with_opportunity": 128
+        },
+        "place middle-left": {
+          "legal_steps": 111654,
+          "chosen": 4431,
+          "mean_probability_when_legal": 0.03918738511793044,
+          "episodes_with_opportunity": 128
+        },
+        "place middle-right": {
+          "legal_steps": 135453,
+          "chosen": 5264,
+          "mean_probability_when_legal": 0.0390167016626991,
+          "episodes_with_opportunity": 128
+        },
+        "place below right column": {
+          "legal_steps": 109400,
+          "chosen": 3948,
+          "mean_probability_when_legal": 0.03605056349254793,
+          "episodes_with_opportunity": 128
+        },
+        "place body head-left": {
+          "legal_steps": 138704,
+          "chosen": 1802,
+          "mean_probability_when_legal": 0.01290914101363927,
+          "episodes_with_opportunity": 128
+        },
+        "place body head-right": {
+          "legal_steps": 134729,
+          "chosen": 1179,
+          "mean_probability_when_legal": 0.008457488672285926,
+          "episodes_with_opportunity": 128
+        },
+        "place body middle-left": {
+          "legal_steps": 122713,
+          "chosen": 4083,
+          "mean_probability_when_legal": 0.033145275945485955,
+          "episodes_with_opportunity": 128
+        },
+        "place body middle-right": {
+          "legal_steps": 113807,
+          "chosen": 3882,
+          "mean_probability_when_legal": 0.034176663970313576,
+          "episodes_with_opportunity": 128
+        },
+        "place body foot-left": {
+          "legal_steps": 95786,
+          "chosen": 4766,
+          "mean_probability_when_legal": 0.04989833317683692,
+          "episodes_with_opportunity": 128
+        },
+        "place body foot-right": {
+          "legal_steps": 84503,
+          "chosen": 4494,
+          "mean_probability_when_legal": 0.05317355963537568,
+          "episodes_with_opportunity": 128
+        },
+        "select next": {
+          "legal_steps": 336318,
+          "chosen": 29128,
+          "mean_probability_when_legal": 0.08627033096681519,
+          "episodes_with_opportunity": 128
+        },
+        "craft workbench": {
+          "legal_steps": 42401,
+          "chosen": 312,
+          "mean_probability_when_legal": 0.007653824143180369,
+          "episodes_with_opportunity": 128
+        },
+        "craft furnace": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft torch": {
+          "legal_steps": 34604,
+          "chosen": 377,
+          "mean_probability_when_legal": 0.011034338559326815,
+          "episodes_with_opportunity": 126
+        },
+        "craft campfire": {
+          "legal_steps": 18858,
+          "chosen": 10,
+          "mean_probability_when_legal": 0.0004423421759845017,
+          "episodes_with_opportunity": 122
+        },
+        "craft platforms": {
+          "legal_steps": 170325,
+          "chosen": 917,
+          "mean_probability_when_legal": 0.005182694992118604,
+          "episodes_with_opportunity": 128
+        },
+        "smelt copper": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "smelt iron": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "smelt silver": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "smelt gold": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft anvil": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft iron pickaxe": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft gold pickaxe": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft wooden sword": {
+          "legal_steps": 256,
+          "chosen": 209,
+          "mean_probability_when_legal": 0.7901386978904341,
+          "episodes_with_opportunity": 109
+        },
+        "craft copper sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft iron sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft silver sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft gold sword": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft wood breastplate": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "craft iron chainmail": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "attack": {
+          "legal_steps": 336692,
+          "chosen": 21514,
+          "mean_probability_when_legal": 0.06387491294027173,
+          "episodes_with_opportunity": 128
+        },
+        "open chest": {
+          "legal_steps": 471,
+          "chosen": 178,
+          "mean_probability_when_legal": 0.3714999012612688,
+          "episodes_with_opportunity": 128
+        },
+        "drink healing potion": {
+          "legal_steps": 714,
+          "chosen": 539,
+          "mean_probability_when_legal": 0.7534142548415564,
+          "episodes_with_opportunity": 128
+        },
+        "eat mushroom": {
+          "legal_steps": 282835,
+          "chosen": 755,
+          "mean_probability_when_legal": 0.0027387574177352267,
+          "episodes_with_opportunity": 128
+        },
+        "use life crystal": {
+          "legal_steps": 0,
+          "chosen": 0,
+          "mean_probability_when_legal": 0.0,
+          "episodes_with_opportunity": 0
+        },
+        "cycle weapon": {
+          "legal_steps": 370042,
+          "chosen": 42340,
+          "mean_probability_when_legal": 0.11467022919032384,
+          "episodes_with_opportunity": 128
+        },
+        "climb up": {
+          "legal_steps": 174200,
+          "chosen": 22610,
+          "mean_probability_when_legal": 0.13121534336657167,
+          "episodes_with_opportunity": 128
+        },
+        "climb down": {
+          "legal_steps": 187608,
+          "chosen": 1332,
+          "mean_probability_when_legal": 0.006853452535566211,
+          "episodes_with_opportunity": 128
+        },
+        "drop through platform": {
+          "legal_steps": 43692,
+          "chosen": 1657,
+          "mean_probability_when_legal": 0.03871568430137277,
+          "episodes_with_opportunity": 128
+        }
+      }
+    }
+  },
+  "diagnostics": {
+    "episodes": 128,
+    "inventory_peak": {
+      "wood": {
+        "mean": 19.7421875,
+        "median": 19.0,
+        "max": 44
+      },
+      "stone": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "dirt": {
+        "mean": 12.1328125,
+        "median": 11.5,
+        "max": 30
+      },
+      "copper ore": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "iron ore": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "gold ore": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "copper bar": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "iron bar": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "gold bar": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "torch": {
+        "mean": 13.78125,
+        "median": 12.0,
+        "max": 32
+      },
+      "campfire": {
+        "mean": 0.078125,
+        "median": 0.0,
+        "max": 1
+      },
+      "workbench": {
+        "mean": 1.328125,
+        "median": 1.0,
+        "max": 3
+      },
+      "furnace": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "anvil": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "silver ore": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "silver bar": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "gel": {
+        "mean": 3.7421875,
+        "median": 2.0,
+        "max": 19
+      },
+      "wood platform": {
+        "mean": 6.4453125,
+        "median": 6.0,
+        "max": 20
+      },
+      "rope": {
+        "mean": 38.0703125,
+        "median": 36.0,
+        "max": 72
+      },
+      "mushroom": {
+        "mean": 5.78125,
+        "median": 6.0,
+        "max": 12
+      },
+      "lesser healing potion": {
+        "mean": 3.1875,
+        "median": 3.0,
+        "max": 4
+      },
+      "life crystal": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "Cloud in a Bottle": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "copper shortsword": {
+        "mean": 1.0,
+        "median": 1.0,
+        "max": 1
+      },
+      "wooden sword": {
+        "mean": 3.0234375,
+        "median": 3.0,
+        "max": 7
+      },
+      "copper broadsword": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "iron broadsword": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "gold broadsword": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "silver broadsword": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "wood breastplate": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      },
+      "iron chainmail": {
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0
+      }
+    },
+    "actions": {
+      "noop": {
+        "legal_steps": 379698,
+        "chosen": 37115,
+        "mean_probability_when_legal": 0.09854081027343858,
+        "episodes_with_opportunity": 128
+      },
+      "left": {
+        "legal_steps": 219534,
+        "chosen": 31668,
+        "mean_probability_when_legal": 0.14394413674712989,
+        "episodes_with_opportunity": 128
+      },
+      "right": {
+        "legal_steps": 339294,
+        "chosen": 23362,
+        "mean_probability_when_legal": 0.06833774187842735,
+        "episodes_with_opportunity": 128
+      },
+      "jump": {
+        "legal_steps": 142325,
+        "chosen": 4978,
+        "mean_probability_when_legal": 0.03431557852237626,
+        "episodes_with_opportunity": 128
+      },
+      "mine up-left": {
+        "legal_steps": 22526,
+        "chosen": 1519,
+        "mean_probability_when_legal": 0.06662251261939715,
+        "episodes_with_opportunity": 128
+      },
+      "mine up": {
+        "legal_steps": 23323,
+        "chosen": 2815,
+        "mean_probability_when_legal": 0.12093381095495741,
+        "episodes_with_opportunity": 128
+      },
+      "mine up-right": {
+        "legal_steps": 59082,
+        "chosen": 5571,
+        "mean_probability_when_legal": 0.09418965888626173,
+        "episodes_with_opportunity": 128
+      },
+      "mine head-left": {
+        "legal_steps": 27195,
+        "chosen": 3035,
+        "mean_probability_when_legal": 0.11162391141029393,
+        "episodes_with_opportunity": 128
+      },
+      "mine head-right": {
+        "legal_steps": 72823,
+        "chosen": 5315,
+        "mean_probability_when_legal": 0.07289547656667161,
+        "episodes_with_opportunity": 128
+      },
+      "mine foot-left": {
+        "legal_steps": 53877,
+        "chosen": 3962,
+        "mean_probability_when_legal": 0.07272020886571065,
+        "episodes_with_opportunity": 128
+      },
+      "mine foot-right": {
+        "legal_steps": 88174,
+        "chosen": 6789,
+        "mean_probability_when_legal": 0.07706802134597562,
+        "episodes_with_opportunity": 128
+      },
+      "mine down-left": {
+        "legal_steps": 65318,
+        "chosen": 3826,
+        "mean_probability_when_legal": 0.057980067759054815,
+        "episodes_with_opportunity": 128
+      },
+      "mine down": {
+        "legal_steps": 109727,
+        "chosen": 3299,
+        "mean_probability_when_legal": 0.029348431054795683,
+        "episodes_with_opportunity": 128
+      },
+      "mine down-right": {
+        "legal_steps": 113023,
+        "chosen": 8766,
+        "mean_probability_when_legal": 0.07717434491760655,
+        "episodes_with_opportunity": 128
+      },
+      "mine above right column": {
+        "legal_steps": 39364,
+        "chosen": 3149,
+        "mean_probability_when_legal": 0.07986436417413953,
+        "episodes_with_opportunity": 128
+      },
+      "mine middle-left": {
+        "legal_steps": 41073,
+        "chosen": 3222,
+        "mean_probability_when_legal": 0.07850041883774998,
+        "episodes_with_opportunity": 128
+      },
+      "mine middle-right": {
+        "legal_steps": 96668,
+        "chosen": 3845,
+        "mean_probability_when_legal": 0.03974312827724517,
+        "episodes_with_opportunity": 128
+      },
+      "mine below right column": {
+        "legal_steps": 119045,
+        "chosen": 4642,
+        "mean_probability_when_legal": 0.03792868067399218,
+        "episodes_with_opportunity": 128
+      },
+      "mine body head-left": {
+        "legal_steps": 32688,
+        "chosen": 1595,
+        "mean_probability_when_legal": 0.05002111418398079,
+        "episodes_with_opportunity": 128
+      },
+      "mine body head-right": {
+        "legal_steps": 38661,
+        "chosen": 1799,
+        "mean_probability_when_legal": 0.04750499217682115,
+        "episodes_with_opportunity": 128
+      },
+      "mine body middle-left": {
+        "legal_steps": 49773,
+        "chosen": 2564,
+        "mean_probability_when_legal": 0.05222999480391063,
+        "episodes_with_opportunity": 128
+      },
+      "mine body middle-right": {
+        "legal_steps": 59520,
+        "chosen": 1708,
+        "mean_probability_when_legal": 0.027889679821191247,
+        "episodes_with_opportunity": 128
+      },
+      "mine body foot-left": {
+        "legal_steps": 82568,
+        "chosen": 6255,
+        "mean_probability_when_legal": 0.07570071434799687,
+        "episodes_with_opportunity": 128
+      },
+      "mine body foot-right": {
+        "legal_steps": 98888,
+        "chosen": 3620,
+        "mean_probability_when_legal": 0.038465895733267315,
+        "episodes_with_opportunity": 128
+      },
+      "place up-left": {
+        "legal_steps": 124831,
+        "chosen": 2843,
+        "mean_probability_when_legal": 0.023632971503384826,
+        "episodes_with_opportunity": 128
+      },
+      "place up": {
+        "legal_steps": 192110,
+        "chosen": 1627,
+        "mean_probability_when_legal": 0.00825587824687111,
+        "episodes_with_opportunity": 128
+      },
+      "place up-right": {
+        "legal_steps": 153504,
+        "chosen": 8244,
+        "mean_probability_when_legal": 0.05404382758772474,
+        "episodes_with_opportunity": 128
+      },
+      "place head-left": {
+        "legal_steps": 129041,
+        "chosen": 2788,
+        "mean_probability_when_legal": 0.020680833618716303,
+        "episodes_with_opportunity": 128
+      },
+      "place head-right": {
+        "legal_steps": 164106,
+        "chosen": 5173,
+        "mean_probability_when_legal": 0.031344184677880436,
+        "episodes_with_opportunity": 128
+      },
+      "place foot-left": {
+        "legal_steps": 95890,
+        "chosen": 5083,
+        "mean_probability_when_legal": 0.05322277205926772,
+        "episodes_with_opportunity": 128
+      },
+      "place foot-right": {
+        "legal_steps": 143956,
+        "chosen": 4601,
+        "mean_probability_when_legal": 0.031325385483549656,
+        "episodes_with_opportunity": 128
+      },
+      "place down-left": {
+        "legal_steps": 92169,
+        "chosen": 2196,
+        "mean_probability_when_legal": 0.023234744688571483,
+        "episodes_with_opportunity": 128
+      },
+      "place down": {
+        "legal_steps": 120460,
+        "chosen": 2481,
+        "mean_probability_when_legal": 0.02085437509968155,
+        "episodes_with_opportunity": 128
+      },
+      "place down-right": {
+        "legal_steps": 126306,
+        "chosen": 9734,
+        "mean_probability_when_legal": 0.07782244284629619,
+        "episodes_with_opportunity": 128
+      },
+      "place above right column": {
+        "legal_steps": 172375,
+        "chosen": 4782,
+        "mean_probability_when_legal": 0.028116171369330447,
+        "episodes_with_opportunity": 128
+      },
+      "place middle-left": {
+        "legal_steps": 111654,
+        "chosen": 4431,
+        "mean_probability_when_legal": 0.03918738511793044,
+        "episodes_with_opportunity": 128
+      },
+      "place middle-right": {
+        "legal_steps": 135453,
+        "chosen": 5264,
+        "mean_probability_when_legal": 0.0390167016626991,
+        "episodes_with_opportunity": 128
+      },
+      "place below right column": {
+        "legal_steps": 109400,
+        "chosen": 3948,
+        "mean_probability_when_legal": 0.03605056349254793,
+        "episodes_with_opportunity": 128
+      },
+      "place body head-left": {
+        "legal_steps": 138704,
+        "chosen": 1802,
+        "mean_probability_when_legal": 0.01290914101363927,
+        "episodes_with_opportunity": 128
+      },
+      "place body head-right": {
+        "legal_steps": 134729,
+        "chosen": 1179,
+        "mean_probability_when_legal": 0.008457488672285926,
+        "episodes_with_opportunity": 128
+      },
+      "place body middle-left": {
+        "legal_steps": 122713,
+        "chosen": 4083,
+        "mean_probability_when_legal": 0.033145275945485955,
+        "episodes_with_opportunity": 128
+      },
+      "place body middle-right": {
+        "legal_steps": 113807,
+        "chosen": 3882,
+        "mean_probability_when_legal": 0.034176663970313576,
+        "episodes_with_opportunity": 128
+      },
+      "place body foot-left": {
+        "legal_steps": 95786,
+        "chosen": 4766,
+        "mean_probability_when_legal": 0.04989833317683692,
+        "episodes_with_opportunity": 128
+      },
+      "place body foot-right": {
+        "legal_steps": 84503,
+        "chosen": 4494,
+        "mean_probability_when_legal": 0.05317355963537568,
+        "episodes_with_opportunity": 128
+      },
+      "select next": {
+        "legal_steps": 336318,
+        "chosen": 29128,
+        "mean_probability_when_legal": 0.08627033096681519,
+        "episodes_with_opportunity": 128
+      },
+      "craft workbench": {
+        "legal_steps": 42401,
+        "chosen": 312,
+        "mean_probability_when_legal": 0.007653824143180369,
+        "episodes_with_opportunity": 128
+      },
+      "craft furnace": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft torch": {
+        "legal_steps": 34604,
+        "chosen": 377,
+        "mean_probability_when_legal": 0.011034338559326815,
+        "episodes_with_opportunity": 126
+      },
+      "craft campfire": {
+        "legal_steps": 18858,
+        "chosen": 10,
+        "mean_probability_when_legal": 0.0004423421759845017,
+        "episodes_with_opportunity": 122
+      },
+      "craft platforms": {
+        "legal_steps": 170325,
+        "chosen": 917,
+        "mean_probability_when_legal": 0.005182694992118604,
+        "episodes_with_opportunity": 128
+      },
+      "smelt copper": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "smelt iron": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "smelt silver": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "smelt gold": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft anvil": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft iron pickaxe": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft gold pickaxe": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft wooden sword": {
+        "legal_steps": 256,
+        "chosen": 209,
+        "mean_probability_when_legal": 0.7901386978904341,
+        "episodes_with_opportunity": 109
+      },
+      "craft copper sword": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft iron sword": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft silver sword": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft gold sword": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft wood breastplate": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "craft iron chainmail": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "attack": {
+        "legal_steps": 336692,
+        "chosen": 21514,
+        "mean_probability_when_legal": 0.06387491294027173,
+        "episodes_with_opportunity": 128
+      },
+      "open chest": {
+        "legal_steps": 471,
+        "chosen": 178,
+        "mean_probability_when_legal": 0.3714999012612688,
+        "episodes_with_opportunity": 128
+      },
+      "drink healing potion": {
+        "legal_steps": 714,
+        "chosen": 539,
+        "mean_probability_when_legal": 0.7534142548415564,
+        "episodes_with_opportunity": 128
+      },
+      "eat mushroom": {
+        "legal_steps": 282835,
+        "chosen": 755,
+        "mean_probability_when_legal": 0.0027387574177352267,
+        "episodes_with_opportunity": 128
+      },
+      "use life crystal": {
+        "legal_steps": 0,
+        "chosen": 0,
+        "mean_probability_when_legal": 0.0,
+        "episodes_with_opportunity": 0
+      },
+      "cycle weapon": {
+        "legal_steps": 370042,
+        "chosen": 42340,
+        "mean_probability_when_legal": 0.11467022919032384,
+        "episodes_with_opportunity": 128
+      },
+      "climb up": {
+        "legal_steps": 174200,
+        "chosen": 22610,
+        "mean_probability_when_legal": 0.13121534336657167,
+        "episodes_with_opportunity": 128
+      },
+      "climb down": {
+        "legal_steps": 187608,
+        "chosen": 1332,
+        "mean_probability_when_legal": 0.006853452535566211,
+        "episodes_with_opportunity": 128
+      },
+      "drop through platform": {
+        "legal_steps": 43692,
+        "chosen": 1657,
+        "mean_probability_when_legal": 0.03871568430137277,
+        "episodes_with_opportunity": 128
+      }
+    }
+  },
+  "asset_audit": {
+    "environment_version": 4,
+    "textures": "/Users/mikavohl/Library/Application Support/Steam/steamapps/common/Terraria/ExtractedTextures",
+    "renderer_sha256": "06befc8f985a702c4c2dfdb7abaa13d3b7c281f788b9c6e7b67be178be46b2ed",
+    "assets": [
+      {
+        "name": "Armor/Armor_2",
+        "width": 360,
+        "height": 224,
+        "sha256": "dd0b339c9e45d8b98aab957e5864b3a71aa95c7ff16caa5337279df0683b5158"
+      },
+      {
+        "name": "Armor/Armor_32",
+        "width": 360,
+        "height": 224,
+        "sha256": "94324fabe57e18555967e87b090628c099e4e11dba3218eacf6c1e5d1d2cbbf5"
+      },
+      {
+        "name": "Item_1",
+        "width": 32,
+        "height": 32,
+        "sha256": "b32a960dd8e88fb64cf2ad6e92cf0c630171702033d27cf4a3f1671f0b32ba68"
+      },
+      {
+        "name": "Item_11",
+        "width": 16,
+        "height": 16,
+        "sha256": "626b3c8bb8f338a4eb4700708889697089cad800f1e5b28b2d1997a5568ccc6c"
+      },
+      {
+        "name": "Item_12",
+        "width": 16,
+        "height": 16,
+        "sha256": "bec7e801621f37cb8225d0c6cb9cb798c8acd2a50c8634adf5b2d60b5b9ce94f"
+      },
+      {
+        "name": "Item_13",
+        "width": 16,
+        "height": 16,
+        "sha256": "eec24d8da127072149e8a8814dc63227b4be0d2c44cb745d0eb648bc23c923a1"
+      },
+      {
+        "name": "Item_14",
+        "width": 16,
+        "height": 16,
+        "sha256": "b7f1cc27b2b4d7bb228cfbd2037b1ca1a961454c8ff77c3bda1231f1fac751bf"
+      },
+      {
+        "name": "Item_19",
+        "width": 30,
+        "height": 24,
+        "sha256": "af1fc4f38a2c22306c4427b3e7c1a6f8864332041d498db411b4693cc5844be8"
+      },
+      {
+        "name": "Item_2",
+        "width": 16,
+        "height": 16,
+        "sha256": "da676b283ee9d66ae20c02361c7b349a79e59b7509c08a7a83a581523775d64b"
+      },
+      {
+        "name": "Item_20",
+        "width": 30,
+        "height": 24,
+        "sha256": "04ca8c4c1ddbf3161302cc626c2cf47d3c14966f3e1306697b8f632b26cd024f"
+      },
+      {
+        "name": "Item_21",
+        "width": 30,
+        "height": 24,
+        "sha256": "db482ae4539ae996d61b46f67c6c9206059ee9fed32f76eec109bb2fa14b23e8"
+      },
+      {
+        "name": "Item_22",
+        "width": 30,
+        "height": 24,
+        "sha256": "e0fa37b428819c168f86796097e51e7d1b6497c0538639963d58a265ac528856"
+      },
+      {
+        "name": "Item_23",
+        "width": 16,
+        "height": 14,
+        "sha256": "908ce88a01a3efb03d4c2deac7e571e8dda7ca58b9cd9065faf0bd545a2f85e2"
+      },
+      {
+        "name": "Item_24",
+        "width": 32,
+        "height": 32,
+        "sha256": "2fd869928e69462a4a139826ebf18610d32e31c1074284be79a5b1a62197fe8e"
+      },
+      {
+        "name": "Item_28",
+        "width": 20,
+        "height": 26,
+        "sha256": "c287ad4f9f92386de1070465124cab2b0b8e5b35533ff343a25edd73dcb03632"
+      },
+      {
+        "name": "Item_29",
+        "width": 22,
+        "height": 22,
+        "sha256": "11df21be11df1eaa209cb52bcaad8f2fec419a15c50755073a89930b13155ae4"
+      },
+      {
+        "name": "Item_3",
+        "width": 16,
+        "height": 16,
+        "sha256": "aae54cb4f5ee92b86d1e893c49fa6cb1ff9465bbc9bf696f246439571cf135f9"
+      },
+      {
+        "name": "Item_33",
+        "width": 30,
+        "height": 26,
+        "sha256": "9ce955a74018f0cf7aec3b91c6accae77b4c6490f2418877c1ca41dd7efef13e"
+      },
+      {
+        "name": "Item_35",
+        "width": 32,
+        "height": 16,
+        "sha256": "cfe6943ebcc33362f76c6728dc78deaf157d835c163591be790fe32c550ec611"
+      },
+      {
+        "name": "Item_3506",
+        "width": 32,
+        "height": 28,
+        "sha256": "80d3f56e7333922cca275bf98d87ddade5411a8a98ec92df100e0f3eff6d6285"
+      },
+      {
+        "name": "Item_3507",
+        "width": 32,
+        "height": 32,
+        "sha256": "72c859cacbd526b1194bf82a2056bea913682ab80c3a59f58c98513956d89c1a"
+      },
+      {
+        "name": "Item_3508",
+        "width": 36,
+        "height": 36,
+        "sha256": "ab134a6a0b2d9b0f1556580aae941441b24d980346cfd1f739b65759af0febf2"
+      },
+      {
+        "name": "Item_3509",
+        "width": 32,
+        "height": 32,
+        "sha256": "46ca7721024b4c5b9290e98fa4dcb4a4154a5188a795e385cc8912054fd12cbb"
+      },
+      {
+        "name": "Item_3514",
+        "width": 38,
+        "height": 38,
+        "sha256": "37e10a38b745949a1d15eca3979e62ffb732ee115c96b4a13706f70df4d86290"
+      },
+      {
+        "name": "Item_3520",
+        "width": 40,
+        "height": 40,
+        "sha256": "92ec8bc464cdf922ab6caa660682ff097e2891cc05a290d24f23d13ca1768cf6"
+      },
+      {
+        "name": "Item_3521",
+        "width": 32,
+        "height": 32,
+        "sha256": "1bd0a009daaed9af0b4e15b8e7ddf07d9ff10fdb459b42f626ae45d4862177b0"
+      },
+      {
+        "name": "Item_36",
+        "width": 32,
+        "height": 18,
+        "sha256": "f01882cc3a85b31a9be61ea8f1c23780c0c476699175eb636b68af679f968ac3"
+      },
+      {
+        "name": "Item_4",
+        "width": 36,
+        "height": 36,
+        "sha256": "30dc1ce2dc6ab8934f5270b86fab83418cdbfc6fc72e13fda8189a82976190d8"
+      },
+      {
+        "name": "Item_5",
+        "width": 22,
+        "height": 24,
+        "sha256": "5c90393d03803df8f24328c34f5f8e32995f27a0a7ee478d61d47a398ab10ce9"
+      },
+      {
+        "name": "Item_53",
+        "width": 20,
+        "height": 26,
+        "sha256": "bf642f775c686d3b148920099cb450b401d95b730f23863602543822fecf3726"
+      },
+      {
+        "name": "Item_728",
+        "width": 30,
+        "height": 20,
+        "sha256": "2e9960cce5f6daf0a317e889833c52c5a87dd07ee981c55d1a08a5ee84fcee23"
+      },
+      {
+        "name": "Item_8",
+        "width": 14,
+        "height": 16,
+        "sha256": "1032dab85f5ad1c6f2c4d04869fd5826583dccf6f9bd6e281f2f7e7ea0c463e1"
+      },
+      {
+        "name": "Item_81",
+        "width": 30,
+        "height": 20,
+        "sha256": "15b39632252b5b16e07cd043c1f654981622b1843d9af1b8668d361f3cf1cc00"
+      },
+      {
+        "name": "Item_9",
+        "width": 24,
+        "height": 22,
+        "sha256": "c1bbde057ee69b8c7ad21661c58a18e2259c3a4fc669d933733d38b440a7cc1a"
+      },
+      {
+        "name": "Item_94",
+        "width": 24,
+        "height": 14,
+        "sha256": "fe510ea03e66bc5d437602afcf3d9157f72338b5e93d906add8ec61515db4ab5"
+      },
+      {
+        "name": "Item_965",
+        "width": 10,
+        "height": 32,
+        "sha256": "e0bfa1d14a8c9cd5c8aa0fc2a11fa54ea70b80a4fd3ea8f82e6eb1b4fd6238be"
+      },
+      {
+        "name": "Item_966",
+        "width": 30,
+        "height": 18,
+        "sha256": "940f27d8c92d07c950b36bcb2ccf34ae3ea62c5c754cb8843f2add37ae831be0"
+      },
+      {
+        "name": "NPC_1",
+        "width": 32,
+        "height": 52,
+        "sha256": "3a75bb201f5803d09cd6ac2e4d60f3fcc598f125b2c44e1e60eac2c348dd18b1"
+      },
+      {
+        "name": "NPC_49",
+        "width": 44,
+        "height": 160,
+        "sha256": "9b29ba507f489bfb78052f33f397cc26cd082c3d1e01eccb580ba0420bad8094"
+      },
+      {
+        "name": "Player_0_0",
+        "width": 40,
+        "height": 1118,
+        "sha256": "39b71677bd2b4bcf34c5f02dc21bcc0dd42e2fe47949acadaa543b16099aeebb"
+      },
+      {
+        "name": "Player_0_1",
+        "width": 40,
+        "height": 1118,
+        "sha256": "8d2dfbfc970aee77cea7691577e1d0e6989e0f7d3110da8588beb51b033f1060"
+      },
+      {
+        "name": "Player_0_10",
+        "width": 40,
+        "height": 1120,
+        "sha256": "d441c1c5c2b7caa955ff53f7c4b0f14f27b1906d89cc09e12b6962e2423885b9"
+      },
+      {
+        "name": "Player_0_11",
+        "width": 40,
+        "height": 1120,
+        "sha256": "ae2c116c21d80756b0e76b4f2810606623df5ac6aad4f98c23998c05ed74eddd"
+      },
+      {
+        "name": "Player_0_12",
+        "width": 40,
+        "height": 1120,
+        "sha256": "97e747a6fa65743dd3585d2194eddfdc501d6f7505a22d474c99c86d7d4adce2"
+      },
+      {
+        "name": "Player_0_2",
+        "width": 40,
+        "height": 1118,
+        "sha256": "3517f139d5067e79ffbb3e5061f00f12e0010a37f9a9fa9c0353eadb5461a628"
+      },
+      {
+        "name": "Player_0_3",
+        "width": 360,
+        "height": 224,
+        "sha256": "71e81c1125bff8de449668f5b9752a3713b4a4b533e94849d5c77f0ced556a1d"
+      },
+      {
+        "name": "Player_0_4",
+        "width": 360,
+        "height": 224,
+        "sha256": "3cd8570591d1a4d0f4a48d3cc1cbb41eb7517efd8e0a56e8eb781f98e1991088"
+      },
+      {
+        "name": "Player_0_5",
+        "width": 360,
+        "height": 224,
+        "sha256": "f9b2e0a18f81f04cc8a6f539e58fbb0a484dbcdf61a3f7d3aaa8a4d38a109e12"
+      },
+      {
+        "name": "Player_0_6",
+        "width": 360,
+        "height": 224,
+        "sha256": "ebfd0c7875ec5a0a9372575e2c881fd20854ccbf0e6a6f60cbec6b59f5f03b4e"
+      },
+      {
+        "name": "Player_0_7",
+        "width": 360,
+        "height": 224,
+        "sha256": "3e51bf4d81137108423bf12b98a7f4b507a2d010f917bd5d72d3aa2ccbc868d5"
+      },
+      {
+        "name": "Player_0_8",
+        "width": 360,
+        "height": 224,
+        "sha256": "a9d3ace0373507782a01004294327614503bd81533fb8f2a3715fb8ed6cc333a"
+      },
+      {
+        "name": "Player_Hair_1",
+        "width": 40,
+        "height": 784,
+        "sha256": "96069f797c52b0e24b0ece7416a196a09685434f4ba70a6a1d3b24bd6a466743"
+      },
+      {
+        "name": "Tiles_0",
+        "width": 288,
+        "height": 270,
+        "sha256": "8e2fa5c01e47b273fc3f6d69c9371d3885ffac9d80dd43af04e8a1c15c3404b4"
+      },
+      {
+        "name": "Tiles_1",
+        "width": 288,
+        "height": 270,
+        "sha256": "1ca768f5f79d3b0b646e8816955fcdf79f38ca3ed552cb08b76813138e2333e8"
+      },
+      {
+        "name": "Tiles_12",
+        "width": 36,
+        "height": 396,
+        "sha256": "cf64a42c8a81d8f49c45b5c5ddaca7be99e41825baf7ba9719908a1a888e0451"
+      },
+      {
+        "name": "Tiles_16",
+        "width": 72,
+        "height": 20,
+        "sha256": "e6caf56d9c3da2bd9622bd1edf888ed617f6ed0f6e34d96705aaeebe105dc5a3"
+      },
+      {
+        "name": "Tiles_17",
+        "width": 54,
+        "height": 456,
+        "sha256": "05f3ee5bcfd55d9aa3aa09c265b9d7de0992ef241f13ae45ae087ddc3f729b60"
+      },
+      {
+        "name": "Tiles_18",
+        "width": 2048,
+        "height": 40,
+        "sha256": "3bcd8e27a7dd615ca64891135119d1ecda6cf346843f492e4eec024f27513425"
+      },
+      {
+        "name": "Tiles_19",
+        "width": 486,
+        "height": 1260,
+        "sha256": "1ab2018e8d681985bbfe2d6c30eadfc8546ddc5a39b85bcbfe295bfab128d79e"
+      },
+      {
+        "name": "Tiles_2",
+        "width": 288,
+        "height": 1980,
+        "sha256": "83018044acb5d50cdc6c896cead20aad281a77c67648d74cfea4478f3796a670"
+      },
+      {
+        "name": "Tiles_21",
+        "width": 2000,
+        "height": 114,
+        "sha256": "78a4addc1a3cf3678b998aea9e45d21e8ed8762b4e2c831004dd8be538c21c85"
+      },
+      {
+        "name": "Tiles_213",
+        "width": 234,
+        "height": 90,
+        "sha256": "b56358b8fe98fefb941133672d8c9bcbd4ee99bd8c172dbfa8896257e962a4bf"
+      },
+      {
+        "name": "Tiles_215",
+        "width": 864,
+        "height": 324,
+        "sha256": "b71f235793c08805c5dfa21668b0aa813707700f617e2c4fa3fa9df5e8e4f6e4"
+      },
+      {
+        "name": "Tiles_25",
+        "width": 288,
+        "height": 270,
+        "sha256": "88d24de730a7b038a927fa303ae1b9ae7bd2b9546688672e3cb3b7de61e1fbbb"
+      },
+      {
+        "name": "Tiles_30",
+        "width": 288,
+        "height": 270,
+        "sha256": "2e980ef402e95117438e64b58830e65af7db27962e1516e9d0bbe8b3ddeadc6a"
+      },
+      {
+        "name": "Tiles_4",
+        "width": 132,
+        "height": 528,
+        "sha256": "6d2c6ec95a800e7847eada0cfba1db1ae61b730d201a5782024bcaf85c0cc3a2"
+      },
+      {
+        "name": "Tiles_5",
+        "width": 1408,
+        "height": 264,
+        "sha256": "bd9650613ed957edc22984c0f83f77ec506d6b92f08aebeadf9fba8b72158992"
+      },
+      {
+        "name": "Tiles_6",
+        "width": 288,
+        "height": 270,
+        "sha256": "c46d947daec500182f1e8de46b06ffb40d83d5ef83259551a2a8d0467ac50995"
+      },
+      {
+        "name": "Tiles_7",
+        "width": 288,
+        "height": 270,
+        "sha256": "65b6798c7cad5c713373226d19dc4089dcbd5360ec8215240cedb7959350aefb"
+      },
+      {
+        "name": "Tiles_8",
+        "width": 288,
+        "height": 270,
+        "sha256": "4dd835b360320e9b87545177226e38192211841515e6598c80a27bb62dfc0bd8"
+      },
+      {
+        "name": "Tiles_9",
+        "width": 288,
+        "height": 270,
+        "sha256": "819b315365d386f42c0c05804f0e1fa6911e753de71846e5da422af45f0c9fa8"
+      },
+      {
+        "name": "Tree_Tops_0",
+        "width": 246,
+        "height": 82,
+        "sha256": "69d53859f052ce89d55f769eaad95615f8a2b47dfe0ed4ddbac2c5bb572e06fa"
+      }
+    ],
+    "original_assembly_sha256": "d52c7ea7e4e312d8937fd20d1f2609f0d6bd26daddf5bfab2d106ca9077103e0",
+    "blue_slime_verified_local_il": {
+      "SetDefaults_alpha": 175,
+      "SetDefaults_color_rgba": [
+        0,
+        80,
+        255,
+        100
+      ],
+      "GetAlpha_daylight_rgba": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "GetColor_overlay_rgba": [
+        0,
+        80,
+        255,
+        100
+      ]
+    },
+    "note": "Hashes audit originals, not pixel equivalence of the simplified SDL renderer. IL constants were manually inspected; this script does not re-decompile them."
+  },
+  "replay": {
+    "tape_sha256": "b99403845259a41733e6040565bbe438815e163b69c76ee2dde6d96262a38dca",
+    "seed": 9,
+    "action_count": 3000,
+    "python_sdl_final_state_exact": true,
+    "state": {
+      "environment_version": 4,
+      "steps": 3000,
+      "health": 100,
+      "achievement_mask": 814547149,
+      "episode_return": 11.0
+    }
+  },
+  "final_implementation_sha256": {
+    "src/sim.c": "1ecbe3e12f631d87c975c20593de181ce2a5fd9ccb960fafbe1ce5c4a9d12188",
+    "src/obs.c": "f09414ef7bce582db01aa05438436d50049baf16a5e52febfc1b914f362a448b",
+    "src/px_main.c": "155f69dcb130826630be65c4317e895c56c916a8f953532a9d37fade4bb0ac6b",
+    "src/capi.c": "e728d9ca9bb96fcd92db2753e9cafc3c53f0d56fd9a94c7efa32226bec8adc7a",
+    "src/render.c": "aa9a3153b6fe39bfc44a6bc200028e6475bed6d8998e876b42216b66813a9b7d",
+    "src/px_render.c": "06befc8f985a702c4c2dfdb7abaa13d3b7c281f788b9c6e7b67be178be46b2ed",
+    "src/main.c": "e763a6e85df07d4d4abc4e9a59b3811ac0c661b32eceb3c59c0917a62a59a511",
+    "src/light.c": "67e7a09fc9696d7a91cf96f0a6a371456ba08ae9f91a6609fa1318c5a942fd3c",
+    "src/worldgen.c": "7220009d25a718e3139d626d17887a0aa25db66bcd5c01e0d8b8dc1018d0500a",
+    "src/px_render.h": "5b0220d2acaba5727023d8bef8ae69ed99df919ebad33b6dad4cab288ca91300",
+    "src/frontend.h": "7b9c13ec1c6877d400f0a94051bb38ae19c3dbe2745e3bbe6058e8dfdb7ecbf1",
+    "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+    "src/keymap.h": "18176d2ee49bd2fbc461807a966b0690b20880589067df295d83cfa7e62781f9",
+    "include/env.h": "0da1853338aebd2537af3ccabb51a3a15bb74baff289b9da9cd9ff70aa2d9705",
+    "include/tiles.h": "59de6530eba136b277dca393e983b87744272b5a851e1e2661d286c1e16a3220",
+    "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+    "python/terraria_lite/v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+    "python/terraria_lite/random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+    "python/terraria_lite/ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+    "python/terraria_lite/v2_checks.py": "5dd361b862ad13e797f3692b23f4c128cc1bbaae09a86a7e4618f4ae6f043148",
+    "python/terraria_lite/ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+    "python/terraria_lite/recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+    "python/terraria_lite/batch.py": "3a7edcb270173979155b2fbfedada11276de6c7ae8188e88f37d3d5fc09d964b",
+    "python/terraria_lite/ppo_eval.py": "2f3f9965c405fa7b9ed1f52ae0ace0abe5c667363a7d05682ef2d326168b4463",
+    "python/terraria_lite/__init__.py": "d332466ce9b921fba13ca2e2fc31ac47d3e8a59a628265e6030692173015cea7",
+    "python/terraria_lite/rules.py": "572b044b72df1fb39256553c0b0a978461c9febc7c241ff8b376234660efd506",
+    "python/terraria_lite/checkpoints.py": "3959b04d49a36234506428a6bb92692094ca04a66e5c1bd36899e1b49347c6cf",
+    "python/terraria_lite/baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+    "python/terraria_lite/spatial_agent.py": "e97feca8746dda137b5791960433453f697e0853d3b56a9c31931b58d5f292eb",
+    "python/terraria_lite/watch.py": "4483ae7ea53c4afe17788e08703183d00dcd1b61ac34ad3a62c587815867eb33",
+    "python/terraria_lite/deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+    "python/terraria_lite/token_agent.py": "d3ac0378d128ccd6d5aaa498b72b1ba8baaf447b29eef5fe2ca31dc2f0dd2da6",
+    "python/terraria_lite/ppo_agent.py": "7e35426c8d982720ab15e960a0fa691a12faf1d9a9e8bc42cdafda3dba40e5ab",
+    "python/terraria_lite/curiosity.py": "a2ff17af095b4a476cae215e8c9e5658bbc6b3caefbabdf8642ff153f98cc750",
+    "python/terraria_lite/separate_agent.py": "acca66d93f849cf1d7259cfac573750c8346eb6e47c23b02927fcbf87fd8a715",
+    "python/terraria_lite/libterraria.dylib": "534b3791c097d4a073a7051cb27fa120a494e6ac2ecfb510c0a9c945060ee90b"
+  }
+}

@@ -1,0 +1,537 @@
+{
+  "environment_version": 2,
+  "platform": "macOS-26.4-arm64-arm-64bit",
+  "torch": "2.13.0",
+  "numpy": "2.5.2",
+  "primary_metric": "mean distinct achievements",
+  "validation_seeds": [
+    2000001,
+    2000128
+  ],
+  "sampler_seed": 54321,
+  "test_set": "3,000,001..3,000,128 reserved and unused",
+  "selection": "final fixed-budget checkpoints, not best validation checkpoints",
+  "schema": {
+    "actions": 53,
+    "items": 31,
+    "achievements": 32,
+    "obs_size": 2961
+  },
+  "runs": [
+    {
+      "kind": "mlp",
+      "seed": 101,
+      "steps": 1048576,
+      "mean_achievements": 12.359375,
+      "death_rate": 0.21875,
+      "max_achievements": 15,
+      "mean_length": 2665.421875,
+      "wall_seconds_including_validation": 64.05404675001046,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.9921875,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 1.0,
+        "place platform": 0.9609375,
+        "collect copper": 0.5703125,
+        "collect iron": 0.53125,
+        "collect silver": 0.234375,
+        "collect gold": 0.2734375,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.4921875,
+        "defeat Cave Bat": 0.4609375,
+        "open chest": 1.0,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.890625,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.96875,
+        "return to surface": 0.0,
+        "explore 30 columns": 1.0,
+        "climb rope": 0.984375,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      },
+      "curve": [
+        {
+          "steps": 262144,
+          "mean_achievements": 11.9296875,
+          "death_rate": 0.265625
+        },
+        {
+          "steps": 524288,
+          "mean_achievements": 12.359375,
+          "death_rate": 0.2109375
+        },
+        {
+          "steps": 786432,
+          "mean_achievements": 12.5234375,
+          "death_rate": 0.15625
+        },
+        {
+          "steps": 1048576,
+          "mean_achievements": 12.359375,
+          "death_rate": 0.21875
+        }
+      ]
+    },
+    {
+      "kind": "mlp",
+      "seed": 202,
+      "steps": 1048576,
+      "mean_achievements": 12.4921875,
+      "death_rate": 0.3828125,
+      "max_achievements": 16,
+      "mean_length": 2163.0,
+      "wall_seconds_including_validation": 63.03036920801969,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.953125,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 1.0,
+        "place platform": 1.0,
+        "collect copper": 0.6171875,
+        "collect iron": 0.53125,
+        "collect silver": 0.34375,
+        "collect gold": 0.2109375,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.953125,
+        "defeat Cave Bat": 0.1640625,
+        "open chest": 0.9453125,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.984375,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.875,
+        "return to surface": 0.0,
+        "explore 30 columns": 0.9921875,
+        "climb rope": 0.921875,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      },
+      "curve": [
+        {
+          "steps": 262144,
+          "mean_achievements": 11.4453125,
+          "death_rate": 0.3125
+        },
+        {
+          "steps": 524288,
+          "mean_achievements": 11.78125,
+          "death_rate": 0.3359375
+        },
+        {
+          "steps": 786432,
+          "mean_achievements": 12.671875,
+          "death_rate": 0.3359375
+        },
+        {
+          "steps": 1048576,
+          "mean_achievements": 12.4921875,
+          "death_rate": 0.3828125
+        }
+      ]
+    },
+    {
+      "kind": "mlp",
+      "seed": 303,
+      "steps": 1048576,
+      "mean_achievements": 12.5546875,
+      "death_rate": 0.359375,
+      "max_achievements": 16,
+      "mean_length": 2356.2578125,
+      "wall_seconds_including_validation": 62.607415042002685,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 1.0,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 1.0,
+        "place platform": 1.0,
+        "collect copper": 0.5703125,
+        "collect iron": 0.5234375,
+        "collect silver": 0.140625,
+        "collect gold": 0.203125,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.90625,
+        "defeat Cave Bat": 0.3203125,
+        "open chest": 1.0,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.984375,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.953125,
+        "return to surface": 0.0,
+        "explore 30 columns": 1.0,
+        "climb rope": 0.953125,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      },
+      "curve": [
+        {
+          "steps": 262144,
+          "mean_achievements": 11.484375,
+          "death_rate": 0.2421875
+        },
+        {
+          "steps": 524288,
+          "mean_achievements": 12.7109375,
+          "death_rate": 0.2421875
+        },
+        {
+          "steps": 786432,
+          "mean_achievements": 12.375,
+          "death_rate": 0.3125
+        },
+        {
+          "steps": 1048576,
+          "mean_achievements": 12.5546875,
+          "death_rate": 0.359375
+        }
+      ]
+    },
+    {
+      "kind": "lstm",
+      "seed": 101,
+      "steps": 1048576,
+      "mean_achievements": 12.1796875,
+      "death_rate": 0.375,
+      "max_achievements": 16,
+      "mean_length": 2389.2421875,
+      "wall_seconds_including_validation": 124.99151570897084,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.96875,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 0.9765625,
+        "place platform": 0.9921875,
+        "collect copper": 0.5546875,
+        "collect iron": 0.3671875,
+        "collect silver": 0.1171875,
+        "collect gold": 0.1484375,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.7890625,
+        "defeat Cave Bat": 0.4296875,
+        "open chest": 0.9765625,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.953125,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.8828125,
+        "return to surface": 0.1171875,
+        "explore 30 columns": 0.9921875,
+        "climb rope": 0.9140625,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      },
+      "curve": [
+        {
+          "steps": 262144,
+          "mean_achievements": 11.8125,
+          "death_rate": 0.421875
+        },
+        {
+          "steps": 524288,
+          "mean_achievements": 12.9453125,
+          "death_rate": 0.6015625
+        },
+        {
+          "steps": 786432,
+          "mean_achievements": 12.5,
+          "death_rate": 0.515625
+        },
+        {
+          "steps": 1048576,
+          "mean_achievements": 12.1796875,
+          "death_rate": 0.375
+        }
+      ]
+    },
+    {
+      "kind": "lstm",
+      "seed": 202,
+      "steps": 1048576,
+      "mean_achievements": 12.8515625,
+      "death_rate": 0.3203125,
+      "max_achievements": 16,
+      "mean_length": 2565.671875,
+      "wall_seconds_including_validation": 152.70507754199207,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.984375,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 0.984375,
+        "place platform": 1.0,
+        "collect copper": 0.546875,
+        "collect iron": 0.578125,
+        "collect silver": 0.25,
+        "collect gold": 0.25,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.7109375,
+        "defeat Cave Bat": 0.6171875,
+        "open chest": 0.9765625,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.953125,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.9609375,
+        "return to surface": 0.078125,
+        "explore 30 columns": 0.9921875,
+        "climb rope": 0.96875,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      },
+      "curve": [
+        {
+          "steps": 262144,
+          "mean_achievements": 10.8984375,
+          "death_rate": 0.3125
+        },
+        {
+          "steps": 524288,
+          "mean_achievements": 12.5078125,
+          "death_rate": 0.4375
+        },
+        {
+          "steps": 786432,
+          "mean_achievements": 12.59375,
+          "death_rate": 0.265625
+        },
+        {
+          "steps": 1048576,
+          "mean_achievements": 12.8515625,
+          "death_rate": 0.3203125
+        }
+      ]
+    },
+    {
+      "kind": "lstm",
+      "seed": 303,
+      "steps": 1048576,
+      "mean_achievements": 13.265625,
+      "death_rate": 0.3125,
+      "max_achievements": 16,
+      "mean_length": 2555.9921875,
+      "wall_seconds_including_validation": 132.45594720798545,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.9921875,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 1.0,
+        "place platform": 1.0,
+        "collect copper": 0.703125,
+        "collect iron": 0.5859375,
+        "collect silver": 0.3125,
+        "collect gold": 0.2734375,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.9609375,
+        "defeat Cave Bat": 0.515625,
+        "open chest": 0.984375,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.9765625,
+        "use life crystal": 0.015625,
+        "double jump": 0.0,
+        "descend deep": 0.96875,
+        "return to surface": 0.0,
+        "explore 30 columns": 1.0,
+        "climb rope": 0.9765625,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      },
+      "curve": [
+        {
+          "steps": 262144,
+          "mean_achievements": 8.1796875,
+          "death_rate": 0.4296875
+        },
+        {
+          "steps": 524288,
+          "mean_achievements": 8.703125,
+          "death_rate": 0.3515625
+        },
+        {
+          "steps": 786432,
+          "mean_achievements": 13.09375,
+          "death_rate": 0.34375
+        },
+        {
+          "steps": 1048576,
+          "mean_achievements": 13.265625,
+          "death_rate": 0.3125
+        }
+      ]
+    }
+  ],
+  "aggregate": {
+    "mlp": {
+      "mean_achievements": 12.46875,
+      "std_across_training_seeds": 0.09974332292815394,
+      "mean_death_rate": 0.3203125,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.9817708333333334,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 1.0,
+        "place platform": 0.9869791666666666,
+        "collect copper": 0.5859375,
+        "collect iron": 0.5286458333333334,
+        "collect silver": 0.23958333333333334,
+        "collect gold": 0.22916666666666666,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.7838541666666666,
+        "defeat Cave Bat": 0.3151041666666667,
+        "open chest": 0.9817708333333334,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.953125,
+        "use life crystal": 0.0,
+        "double jump": 0.0,
+        "descend deep": 0.9322916666666666,
+        "return to surface": 0.0,
+        "explore 30 columns": 0.9973958333333334,
+        "climb rope": 0.953125,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      }
+    },
+    "lstm": {
+      "mean_achievements": 12.765625,
+      "std_across_training_seeds": 0.548045622102987,
+      "mean_death_rate": 0.3359375,
+      "achievement_rates": {
+        "collect wood": 1.0,
+        "collect stone": 0.9817708333333334,
+        "place block": 1.0,
+        "craft workbench": 0.0,
+        "craft furnace": 0.0,
+        "craft anvil": 0.0,
+        "place torch": 0.9869791666666666,
+        "place platform": 0.9973958333333334,
+        "collect copper": 0.6015625,
+        "collect iron": 0.5104166666666666,
+        "collect silver": 0.2265625,
+        "collect gold": 0.22395833333333334,
+        "smelt copper": 0.0,
+        "smelt iron": 0.0,
+        "smelt silver": 0.0,
+        "smelt gold": 0.0,
+        "defeat Blue Slime": 0.8203125,
+        "defeat Cave Bat": 0.5208333333333334,
+        "open chest": 0.9791666666666666,
+        "craft wooden sword": 0.0,
+        "craft metal sword": 0.0,
+        "craft wood breastplate": 0.0,
+        "craft iron chainmail": 0.0,
+        "heal with food or potion": 0.9609375,
+        "use life crystal": 0.005208333333333333,
+        "double jump": 0.0,
+        "descend deep": 0.9375,
+        "return to surface": 0.06510416666666667,
+        "explore 30 columns": 0.9947916666666666,
+        "climb rope": 0.953125,
+        "craft iron pickaxe": 0.0,
+        "craft gold pickaxe": 0.0
+      }
+    }
+  },
+  "uniform_legal": {
+    "mean_achievements": 5.2265625,
+    "death_rate": 0.9609375,
+    "max_achievements": 15
+  },
+  "post_run_source_sha256": {
+    "include/env.h": "a9595ad2d97171d100a4a9e70b3003a0676073e2a2e00dc44a313afc105f15e7",
+    "include/tiles.h": "7b7c8d92c81ecefc927e694f2f9ff105a17bdd6799c87469515b8495b5638a15",
+    "include/rng.h": "48a3ed30a72c4609c138ebb6c18296b1c38746495d8cf609926297e4a3638338",
+    "src/sim.c": "92912d2d3b5509a05c7e89b6e5842dbf8b76a7326d5051bf1ef411a51c244d52",
+    "src/obs.c": "61a06769c4a1f1421b87a9247d7c465e680664f5abdf1a09c367633181313fe0",
+    "src/px_main.c": "128730da01e5725eed0025ae1a6eb7e27132aa07f776d0c7b493d83d50fab810",
+    "src/capi.c": "08fac12ff9d04b8d9cb779d64eb6cf35e4aa66055a1f4acbe47fd595ac9b50ea",
+    "src/render.c": "e2caf598d653039be0a79bea7c03c136a521ac97ad4ee8f318a9db1133e15b44",
+    "src/px_render.c": "479c486aeac33f921820a37152ec2a1eeb9047d7602057338c8bcc082aff0890",
+    "src/main.c": "f850e783f0b76610e320c326a6146821cfb0a425a5d25a20443f2b30841f597a",
+    "src/light.c": "535b9fce891dc27bff704a2eafc34b16be504cb1ec7017bb80bfe06a0fc01798",
+    "src/worldgen.c": "e8b4833161859467640bacfeb1c199bb8ea2bdb2332ac737a52d9c3a8f0ec28a",
+    "src/px_render.h": "5b0220d2acaba5727023d8bef8ae69ed99df919ebad33b6dad4cab288ca91300",
+    "src/frontend.h": "7b9c13ec1c6877d400f0a94051bb38ae19c3dbe2745e3bbe6058e8dfdb7ecbf1",
+    "src/render.h": "876f657b841cd97804f3e73871ea3cfb4ec5686160bd1dcc15407c1eb4a7d18a",
+    "src/keymap.h": "b39a3d6d8c34aacd67dfc575dbc9c55ba07460f0712d0aa123872b902c1f31d8",
+    "python/terraria_lite/v2_study.py": "0c79c611bdb8301dcd32e92a8524f9dce04b770ecdc15f9236f4ebfa521ff70a",
+    "python/terraria_lite/random_agent.py": "8ef406b9c9c27922d6c206633c85a88e731c62113a8d92d37f3c2bfc9c18d4a9",
+    "python/terraria_lite/ppo_bc.py": "4accc3f5b4495df2d310c28cf31dfe1895b7dc44514c3250b5c8c877a7fa7f62",
+    "python/terraria_lite/v2_checks.py": "e2f37335447152998122bec9d831f14a2fd7f628a4e261675ba08e005d71c034",
+    "python/terraria_lite/ppo_selftest.py": "57dcd671c8848e8612cd53cf604f054f1c0c4e62ae564ecb4b8691b547a49638",
+    "python/terraria_lite/recurrent_ppo_agent.py": "e72c139128507e2a7aceb265bf58fce21b22d5ca4a8b19e78ac2713a9b5f1f89",
+    "python/terraria_lite/batch.py": "d3a65bd90f60d1d24362796ade5fa86f42e3b99c22ebe326ac1c914eead3526f",
+    "python/terraria_lite/ppo_eval.py": "56a8d68321dd7e8ab640dcfea743f35df4dd2065548fd3cd2b9cf5f1f4689db8",
+    "python/terraria_lite/__init__.py": "82101dc71949fb2ec9a370d3fcaa4a276a7648e7d839daa649613d4c1616f9c5",
+    "python/terraria_lite/rules.py": "d93b2b299d119ee3086e47c86e19a4275039fed63854fbd345a1a8bcfe0c9c5f",
+    "python/terraria_lite/checkpoints.py": "046f89bd858d7f2f6fa5354b092f5dd8707ae881e9425fb2cd7644af5d445758",
+    "python/terraria_lite/baseline_study.py": "423bfd148de08126fb72aa86bdb7fb212f0fd023076aeede5fd73ac77f021976",
+    "python/terraria_lite/watch.py": "73d1b91bc52f768e0c632f601d6c82f247b1672a3818b03c247e4ac598e908f4",
+    "python/terraria_lite/deep_Q_agent.py": "7f228856324c182c4413b6a04b54983643d8ee4b68fcfa484e61a4b69f92f2e6",
+    "python/terraria_lite/ppo_agent.py": "2d79586f68f6ebed6e1ecd59abbde60dd0d2e7fa20553e302d18a839e9207095",
+    "Makefile": "3e5bf1bd25d183dca1018a1a6b9fbaf9ae6ac6def93493cf546dd9dede3b4590"
+  }
+}

@@ -1,204 +1,217 @@
-# Mini Terraria Env
+# Terraria Lite
 
-A small deterministic Terraria, in C. Built as an RL benchmark in the style of
-[Craftax](https://craftaxenv.github.io/), with a terminal frontend and a pixel
-frontend for humans.
+A small deterministic Terraria-inspired simulator in C, with terminal and SDL
+frontends and a versioned RL interface. **v4 corrects core Terraria geometry** while
+keeping the simulation bounded and CPU-parallel.
 
-https://github.com/user-attachments/assets/9f5713bb-6110-4d8c-bf0d-33dc41aea3de
+The current milestone has Blue Slimes, Cave Bats, chests, swords, torso armor,
+rope, platforms, Cloud in a Bottle, healing, Life Crystals, campfires, and four
+ordinary ores. It uses original Terraria art from your local installation.
+The mechanics remain intentionally simplified.
 
-## Build
+See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the latest
+completed **503.3M-transition / 30-run** paired v4/v5 learning study, and
+[CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md) for the earlier completed
+356.5M-transition, five-seed deadline/credit/memory/exploration study and
+[CREDIT_V4_2026_10.json](CREDIT_V4_2026_10.json) for its numeric evidence.
+The earlier 247.5M-transition causal/learning study remains in
+[LEARNING_V4_2026_10.md](LEARNING_V4_2026_10.md) and
+[LEARNING_V4_2026_10.json](LEARNING_V4_2026_10.json).
+[FIDELITY_V4.md](FIDELITY_V4.md) documents current
+mechanics, regression gates and the earlier 4M comparisons; numeric evidence is in
+[FIDELITY_V4.json](FIDELITY_V4.json). [ITERATION_2026_10.md](ITERATION_2026_10.md)
+and [ITERATION_2026_10.json](ITERATION_2026_10.json) preserve historical v3 results.
+[V2.md](V2.md) documents the underlying game contract/recipes/controls and
+historical evidence; its results are intentionally not relabeled as v3.
+
+The five-seed study completed **356,515,840 main transitions across 55 runs**,
+plus 294,912 calibration transitions, under [CREDIT_V4_PROTOCOL.md](CREDIT_V4_PROTOCOL.md).
+PPO uses zero future value at the inherent action deadline; the correction had
+positive but noisy paired effects. Generic recurrent memory made 4M mining
+more reliable, but at 16M its mean was **17.95/32** versus **17.79/32** for the
+finite-target control, at about **1.41× measured wall/run**. The selected memory
+policy scored **18.83/32** on its one-shot test, with **no furnace in 128 worlds**.
+RND and longer-credit variants did not solve crafting. No architecture or
+checkpoint default was promoted; the earlier 20.79/32 policy is preserved.
+
+A separate playable [v5 object-scale preview](OBJECT_SCALE_V5.md) corrects chest,
+Life Crystal, furnace, campfire, bench and anvil footprints using original art.
+Its simulator cost gate passes; the completed paired learning study finds mixed
+package-dependent effects and inconclusive five-seed non-inferiority.
+The main checkout and completed PPO studies remain v4.
+
+The original [v4/v5 cohort](FOOTPRINT_LEARNING_PROTOCOL.md) was stopped at the user's
+revised 7 p.m. reporting deadline. The [audited partial report](FOOTPRINT_LEARNING_PARTIAL_2026_10.md)
+covers **15 full runs / 251.7M transitions** plus preserved partial checkpoints.
+Plain PPO averaged **15.85/32 on v4 versus 21.56 on v5** over three paired seeds;
+furnaces rose 42/384→248/384. Spatial/recurrent packages declined over two pairs.
+This is not the completed planned 503M/30-run five-seed study. No-concurrent-RL
+timing confirmed a paired batch ratio of 0.9884. Those interrupted attempts and
+the partial report remain preserved; tests were unused at that historical stop.
+On 2026-10-12 the user authorized [completing the remaining trials](FOOTPRINT_LEARNING_COMPLETION.md).
+A separate frozen completion cohort retained the 15 verified full runs, restarted the
+three interrupted trials from scratch, and trained the twelve untouched trials:
+**251.7M additional main transitions**. It is now **complete and audited**:
+[full report](FOOTPRINT_LEARNING_2026_10.md), [audit](FOOTPRINT_LEARNING_2026_10.audit.json).
+Final five-seed MLP means are **13.79→17.32/32**, furnace coverage **6.6%→38.8%**;
+targets **17.68→17.07**, memory **17.76→17.05**. All three predeclared learning
+non-inferiority gates are inconclusive, not proven success/failure. The frozen
+paired memory selection scored **18.46/32 on v4 versus 17.02 on v5** on the
+one-shot reserved test. Worlds 11,000,001–11,000,128 are consumed once per
+version; exact checkpoint/Python/SDL replays passed. All workers are stopped,
+the follow-up is paused, and v4/default policies remain unchanged.
+[All 30 final-policy crafting diagnostics](FOOTPRINT_CRAFTING_2026_10.md) show
+v5 targets/memory almost never craft benches and never reach furnace
+prerequisites; successful MLP seeds demonstrate workshop learning is possible.
+[Joint crafting diagnostics](CRAFTING_BOTTLENECKS_2026_10.md) now identify
+simultaneous wood/station shortages rather than insufficient stone; the
+[design direction](DESIGN_DIRECTION_2026_10.md) prioritizes a fair, learnable
+core and permits simplifying costly or unhelpful fidelity details.
+
+## Build and verify
+
+**Next-step work (2026-10-12):** separate [v6/v7 previews and pilots](CORE_NEXT_2026_10.md)
+fix independent pickaxe ownership/ore supply and test one-action direct inventory
+selection. Mechanics/original-art checks pass; the 25.2M two-seed PPO/replay pilot
+is complete, as is the separate 16.8M spatial-target control (**41.9M total**). Initial
+PPO means 10.11→10.48/32 remain surface-bound; replay mean 5.47 is not an
+improvement. Targets mine reliably but make no benches on either preview
+(15.28→15.27/32). A larger-batch MPS/CPU-evaluation calibration offers a
+promising throughput path, not yet validated learning quality. The provider-neutral
+offline LLM protocol is tested without API spending. No jobs remain running.
+Main v4/default models and all completed studies remain unchanged.
 
 ```sh
-make              # terraria-lite (terminal) + selftest
-make terraria-px  # pixel frontend, needs SDL2 (brew install sdl2)
-make check        # invariants + scripted expert over 20 seeds
+make -j4 all lib
+make terraria-px                    # SDL2 required; brew install sdl2
+make check                         # deterministic mechanics + exact light oracle
+make check-pixel                    # original textures + UI fixtures; local Terraria required
+uv sync --extra rl
+uv run python -m terraria_lite.ppo_selftest
 ```
 
-## Play — pixel frontend
+## Play
 
 ```sh
 ./terraria-px --seed 9
+./terraria-lite --seed 9           # terminal, no SDL or textures needed
 ```
 
-Mouse drives everything. **Left click mines, right click places** — aim is
-forgiving, whichever of the ten cells around you is *nearest* the cursor gets
-picked, so you never have to land on it exactly. Click a recipe in the side
-panel to craft it, or an inventory slot to select it. `a`/`d` walk, `w` or space
-jumps, `e` cycles the placeable, `r` new world.
+The pixel frontend needs a Terraria installation with an `ExtractedTextures`
+folder. The default local Steam location is detected; `--textures DIR` selects
+another folder. No Terraria textures are copied into this repository or
+redistributed. `--scale N` selects integer zoom, reduced automatically to fit
+the display.
 
-**A Terraria install is required.** The pixel frontend loads its tile art, item
-icons and player sprite from it at runtime — nothing is copied into this repo
-and nothing is shipped. The default Steam location is found automatically;
-`--textures DIR` points at an `ExtractedTextures` folder elsewhere. The terminal
-frontend needs none of this.
+Left click mines, right click places; click recipes to craft and inventory slots
+to select placeables. Keyboard controls:
 
-`--scale N` sets the pixel zoom (default 2; 3 needs a large display).
+| Keys | Action |
+| --- | --- |
+| a / d, w or space | Walk / jump |
+| f, t | Attack / cycle owned swords |
+| z | Open nearby chest |
+| c / v / b | Lesser Healing Potion / Mushroom / Life Crystal |
+| j / l / ; | Climb rope up / down / drop through platform |
+| e, r, q | Cycle placeable / new world / quit |
+| F2 (pixel), backtick (terminal) | Pause human play |
 
-## Play — terminal
-
-```sh
-./terraria-lite --seed 9
-```
-
-The world ticks on a clock, so falls and jumps play out on their own. Standing
-still costs nothing.
-
-```
---seed N       world seed (default 1)
---steps N      episode step limit (default 3000)
---tick-ms N    frame length in ms (default 80)
---lockstep     one tick per keypress instead of on a clock
-```
-
-## Terminal controls
-
-```
-a d   walk            w  jump         s  wait
-e     cycle placeable r  new world    q  quit
-```
-
-You are **two tiles tall**. Ten cells surround your body, and every one can be
-mined or built into — **lower case mines, shift places**:
-
-```
-        dx=-1   dx=0   dx=+1
-  dy=-2   y/Y    u/U    i/I     above the head
-  dy=-1   h/H   [head]  k/K
-  dy= 0   n/N   [feet]  m/M
-  dy=+1   ,/<    ./>    //?     below the feet
-```
-
-Three that matter:
-
-- `.` mine straight down — a controlled descent, no fall damage.
-- `<` or `?` place into a down-diagonal — bridges a chasm without losing altitude.
-- `>` place under your own feet — pillars upward.
-
-Crafting is `1`-`9`, `0`, `-`. The station must be within 3 tiles.
-
-```
-1 workbench   anywhere     7 iron bar    furnace
-2 furnace     workbench    8 anvil       workbench
-3 stone pick  workbench    9 iron pick   anvil
-4 copper bar  furnace      0 gold bar    furnace
-5 copper pick workbench    - lantern     anvil
-6 torch x5    workbench
-```
-
-## The game
-
-Tools gate ores, darkness gates depth. Chop wood, build a bench, work down
-through stone → copper → iron → gold, and light your way as you go. 24
-achievements; the reward is one point each.
-
-```
-wood ──▶ workbench ──▶ furnace ──▶ stone pick ──▶ copper ──▶ copper pick
-                                                     └──▶ torch
-copper pick ──▶ iron ──▶ iron bar ──▶ anvil ──▶ iron pick ──▶ gold ──▶ lantern
-```
+The world advances while you stand still. Pause to stop the clock.
+`./terraria-lite --help` lists all 20 mining/placement targets and 19 recipe shortcuts.
+`--lockstep` makes terminal play one action per keypress.
 
 ## RL
 
-```sh
-uv sync --extra rl                       # venv + numpy, gymnasium, torch
-make lib                                 # libterraria into the package
-uv run python -m terraria_lite.random_agent
-```
-
 ```python
-import terraria_lite                     # also registers TerrariaLite-v0
+import terraria_lite
 from terraria_lite import TerrariaLite, SPEC
 
 env = TerrariaLite()
-obs, info = env.reset(seed=9)            # obs: flat float32, shape (1836,)
-obs, reward, terminated, truncated, info = env.step(action)   # action: 0..35
+obs, info = env.reset(seed=9)
+mask = env.action_mask()
+obs, reward, terminated, truncated, info = env.step(0)
+env.close()
 ```
 
-Or through Gymnasium — **import `terraria_lite` first**, that's what registers it:
+Gymnasium registration is `TerrariaLite-v4`: `Discrete(73)` actions and a
+`float32` observation of length **2961**. The observation includes an 11×9 local
+terrain/light window, visible entities, inventory, equipment, cooldowns, and
+achievement history. Darkness conceals terrain and mobs. Default horizon:
+3000 actions; 32 distinct achievements. Reward: +1 per newly earned achievement,
+−1 on death, no progress or health shaping.
 
-```python
-import terraria_lite
-import gymnasium as gym
-env = gym.make("TerrariaLite-v0")        # Box(1836) obs, Discrete(36) action
-```
-
-The binding itself needs only numpy; `gymnasium` and `torch` come from the
-`rl` extra. `uv sync` on its own gives you the environment without them.
-
-The observation is an 11×9 window centred on your feet, plus a 54-value status
-vector. **Unlit cells read as "unknown", not as their tile** — darkness is real
-for the agent, which is what makes torches worth crafting. In daylight ~79 of
-99 cells are visible; 40 tiles down with no torch, 20 are.
-
-Both agents are **action-masked**: about 70% of the 36 actions are inert in any
-given state (crafting without materials, mining air), so `env.action_mask()`
-returns the ones that would change something. `noop` is always legal, so the
-mask is never empty.
+Masks encode physical/epistemic legality, not strategy. Empty-air attacks and
+full-health healing remain legal; dark-cell attempts do not disclose ore.
+Pick upgrades improve speed, not access to ordinary ores.
+Cutting a tree harvests its connected trunk above the cut, using the starter
+Copper Axe; placed wood still mines one block at a time.
+The avatar occupies a 2×3 grid envelope. Trees and furniture are pass-through;
+workbenches/anvils have one-way tops. Six-tile jumping, 25-tile safe falls and
+400-HP Life Crystal capacity replace the earlier arbitrary constants.
 
 ```sh
-uv run python -m terraria_lite.ppo_agent --steps 600000   # ~40s -> ppo_terraria.pt
-uv run python -m terraria_lite.deep_Q_agent 300           # -> dqn_terraria.pt
+uv run python -m terraria_lite.ppo_agent --steps 4194304 --seed 101 --save ppo_v4.pt
+uv run python -m terraria_lite.ppo_eval ppo_v4.pt --episodes 128
+uv run python -m terraria_lite.watch --policy ppo_v4.pt --best-of 8 --play
+uv run python -m terraria_lite.rules       # player knowledge from the simulator tables
 ```
 
-Masked-random scores **4.2 / 24** and never crafts a workbench; that's the
-number to beat. The original unshaped PPO reaches ~5.5 and stalls at
-`craft furnace`.
+The earlier unchanged-v4 study completed **247,463,936 transitions across 28
+independent runs**, including matched fresh 16M/32M trials. Its validation-selected
+plain PPO checkpoint (16M, seed 101) scored **20.79/32** on 128 untouched test
+worlds: stone 128/128, furnace 100/128, deaths 2/128. Shared spatial target scoring
+with longer GAE traces and higher entropy was more reliable at learning mining:
+two-seed final means **18.39/32 at 16M** and **19.14/32 at 32M**, versus baseline
+**15.87** and **10.82**. Two seeds are exploratory; the best individual policy is
+not proof of a reliable algorithm. More compute alone did not guarantee progress.
 
-An extended 22.8M-step experiment found a substantially stronger training
-recipe: capped prerequisite-progress feedback, linearly annealed away so the
-late policy optimises the original reward. A four-million-step from-scratch run
-scores **10.75 / 24** on 256 fixed unseen seeds, with 2.3% deaths; it crafts a
-furnace in 94% of worlds and smelts copper in 32%. The next wall is the copper
-pickaxe. Full protocol, ablations, recurrent controls, and the separate
-scripted-expert warm-start results are in [PPO_EXPERIMENTS.md](PPO_EXPERIMENTS.md).
+The selected checkpoint and exactly verified seed-9 replay are locally preserved
+under `experiments/learning-v4-20261010.GWpaf4/selected/model.pt` and
+`experiments/learning-v4-20261010.GWpaf4/selected-seed9.tape`. No model default or
+default checkpoint was replaced. Validation seeds 6,000,001–6,000,128 and the
+now-consumed test seeds 7,000,001–7,000,128 are recorded in the report. Future
+studies must reserve a new test range rather than reuse the tooling's default.
+
+The newer five-seed study's selected checkpoint and exactly verified 20/32
+seed-9 replay are under `experiments/credit-v4-20261011.naYwbC/selected/model.pt`
+and `experiments/credit-v4-20261011.naYwbC/selected-seed9.tape`. Its validation
+worlds were 8,000,001–8,000,128; test worlds **9,000,001–9,000,128 are consumed**.
+The completion audit verified all 55 summaries, frozen sources and 75 eligible
+checkpoint hashes without rerunning the test. See
+[CREDIT_V4_2026_10.audit.json](CREDIT_V4_2026_10.audit.json).
+
+Earlier v4 4M means of **10.17/32** (plain) and **10.32/32** (separate actor/critic)
+were surface-bound; these are historical comparisons, not the current best.
+v3's **18.55/32** plain PPO and **19.94/32** selected test score describe a different
+task. Spatial/recurrent encoders and training-only RND remain experimental;
+RND is disabled by default. Current baselines use legal masks, no expert cloning
+and no prerequisite shaping. Crafting remains weak, and ore supply/tool ownership
+need separately versioned design fixes before claiming saturation. Historical
+achievement counts belong to different tasks, not a shared leaderboard.
+
+## Preserve and replay v1
+
+Old checkpoints and tapes are intentionally rejected by v4. Preserve the exact
+historical environment, Python package, and binaries with:
 
 ```sh
-uv run python -m terraria_lite.ppo_agent --steps 4000000 --seed 71 \
-  --progress-coef 0.5 --progress-anneal --save ppo_terraria.pt
-uv run python -m terraria_lite.ppo_eval ppo_terraria.pt --episodes 256
+sh tools/freeze_v1.sh
+PYTHONPATH=experiments/v1-frozen/python .venv/bin/python -m terraria_lite.ppo_eval OLD_POLICY.pt
 ```
 
-Compare an agent against the **matched** random control, not a stale one:
-masking lifts the floor by itself, so an agent's raw gain overstates what it
-learned. Against its own control, DQN went from *losing* to random (−0.02
-achievements) to beating it (+0.77), while PPO's margin barely moved
-(+1.37 → +1.29) — most of PPO's headline gain was the floor rising underneath
-it.
-
-### Watch a policy play
-
-```sh
-uv run python -m terraria_lite.watch --policy ppo_terraria.pt --best-of 8 --play
-```
-
-This plays episodes, writes the best one to a *tape* — the seed plus the action
-taken on every tick — and replays it in the pixel frontend:
-
-```sh
-./terraria-px --watch rollout.tape --tick-ms 40
-#   space  pause      . step one tick      r restart      q quit
-```
-
-torch and SDL never share a process. The engine is deterministic, so replaying
-a tape reproduces the episode exactly rather than approximating it — which is
-what lets `libterraria` stay free of an SDL dependency the trainer would
-otherwise pay for, and lets the replay reuse the frontend's interpolation and
-camera easing unchanged. A tape is a small text file, so a good run is worth
-keeping. The checkpoint kind (PPO or DQN) is sniffed from its keys.
+The script archives commit `0f9170bd0571e872c1e8fea666a4a2f06cdc3ad8` without
+modifying your current checkout. Historical experiment documents and legacy
+expert/shaping scripts describe v1, not the current baseline. The local iteration
+directory also preserves original and optimized v2 for historical evaluation.
+The latest local study preserves v3 at
+`experiments/fidelity-v4-20261010.5spuaF/v3`: use that Python package and SDL
+binary to evaluate/replay v3, rather than the current v4 executables.
 
 ## Layout
 
-```
-include/   frozen contract: tiles.h (taxonomy), env.h (state, actions, obs)
-src/       worldgen.c light.c sim.c obs.c   the core: no globals, no malloc
-           capi.c                           flat C ABI for the binding
-           keymap.h frontend.h              shared by both frontends
-           render.c main.c                  terminal frontend
-           px_render.c px_main.c            SDL pixel frontend, --watch replay
-python/    terraria_lite/__init__.py        ctypes binding + Gymnasium env
-           terraria_lite/random_agent.py    baseline / binding smoke test
-           terraria_lite/deep_Q_agent.py    DQN: n-step, masked, replay buffer
-           terraria_lite/ppo_agent.py       PPO: vectorised, masked
-           terraria_lite/watch.py           record a rollout tape and play it
-tools/     selftest.c                       invariants + scripted expert
-```
+- `include/env.h`, `tiles.h`: versioned state, actions, items, recipes, achievements.
+- `src/sim.c`, `worldgen.c`, `light.c`, `obs.c`: allocation-free transition core.
+- `src/capi.c`: scalar and native parallel C APIs.
+- `src/render.c`, `main.c`: terminal UI; `px_render.c`, `px_main.c`: original-art SDL UI.
+- `python/terraria_lite/`: binding, native batching, PPO/LSTM, evaluation and replay.
+- `tools/selftest_v2.c`, `px_smoke.c`: mechanics and UI fixtures, never training demonstrations.
