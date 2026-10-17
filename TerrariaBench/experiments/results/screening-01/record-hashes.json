@@ -43,5 +43,25 @@
     "manifest.json": "cc891e484b0b8f39e15aee6ecc63b1bf217d8599522d586eefe95a8dbbc93793",
     "result.json": "2b4ae45150ef568bb873fa38e080e780755d6c0cbb311cca59dd41cfbabdcd8b",
     "audit.json": "4d4e1df4cf1179954a9edf18f5925cca9e89e2efc720a166de681a2c61098885"
+  },
+  "N01-gemini-normalized-fresh": {
+    "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
+    "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",
+    "audit.json": "ea95321373bc763f24bc5c9ea220dac332db642aa38c167cb3242724cc924a51"
+  },
+  "N02-gemini-normalized-slime": {
+    "manifest.json": "e06f368ba3642e4ac313bee2e5ed14b76d4b9da78a8f1b5b81e333724b43038a",
+    "result.json": "1331a4e27a544557f58e62e9d168fd45d57879d838fdef034f376fd010e423a7",
+    "audit.json": "320b791b0e3a28a28c33ec5e35f42f304df4d597a5a8537a2b4f21b39cf5234e"
+  },
+  "N03-haiku-normalized-fresh": {
+    "manifest.json": "b5bf0d768ff54e107c30ed352c84b12d16f631fc9ee60d5a974fefeab8056253",
+    "result.json": "aed33a97c6a77d05938b9167547b798254db4b67878aa13b5f9de64ea2c3d0df",
+    "audit.json": "77734dfcb04e940d49c6fae91839322d0f576c712b6890311c033d9cc8115ead"
+  },
+  "N04-deepseek-normalized-fresh": {
+    "manifest.json": "0b1e3cd78346c41b41e8ea1058dfeaa8bd1bea37493f0649c5efad2ce6502aed",
+    "result.json": "76a31da37f174e1f5ed7eb0582b4dc340812adbea10cbd9385ef9da35a562640",
+    "audit.json": "4feab56f8f1075c2342282d976d69495a583610c78ea6eae4b6f4136ed69fd1a"
   }
 }

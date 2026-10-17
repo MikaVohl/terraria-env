@@ -54,6 +54,12 @@ Neither prepared task constitutes fresh-world campaign progress.
 - The initial operator combat calibration recorded a player hit (6 damage) but
   did not finish a kill. It validates input/hit reporting, not the full kill
   detector. Interpret zero player damage separately from a missing kill flag.
+- Inspection of N02 found that the first screenshot can precede the armed
+  slime's first rendered frame: signaling the mod is asynchronous. Later frames
+  contain the target, but the initial combat observation is not standardized.
+  Paused mode also adds an 80 ms observation window. These development combat
+  attempts therefore cannot establish a clean clock/coordinate effect. A future
+  prepared-task protocol needs an explicit scenario-ready/render barrier.
 - The tests below do not evaluate native OpenCode/Claude Code/Codex scaffolds,
   learned motor controllers, unfamiliar worlds, bosses or full campaign success.
 

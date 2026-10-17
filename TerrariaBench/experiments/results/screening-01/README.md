@@ -22,6 +22,22 @@ is distinct from combat success, and the operator calibration has established
 only hit reporting so far. See `../../interpretation.md` for limitations and the
 adaptive selection log. Hostiles remain enabled except the named ablation.
 
+The four coordinate follow-ups are now complete and pass artifact checks:
+
+| Attempt | Maximum wood | Workbench | Damage received | Target damage |
+|---|---:|---|---:|---:|
+| Gemini normalized, fresh | 89 | No | 82 | n/a |
+| Gemini normalized, slime | 0 | No | 54 | 0 |
+| Haiku normalized, fresh | 45 | No | 55 | n/a |
+| DeepSeek normalized, fresh | 0 | No | 35 | n/a |
+
+Gemini's three static probe targets were approximately 14–16 pixels from the
+manually annotated box centers as literal pixels, versus 1–2 pixels after
+0..1000 scaling. Those box centers are development annotations, not exact ground
+truth; the end-to-end coordinate contrast still needs the declared repeats.
+No earlier action was reinterpreted. Combat's initial-render issue is documented
+in the interpretation rules.
+
 Regenerate after synchronizing completed worker artifacts:
 
 ```sh
