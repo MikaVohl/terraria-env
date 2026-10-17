@@ -111,6 +111,23 @@ controller-generated trajectories or goal-aware masks. If exploration changes,
 evaluate generic episodic/predictive mechanisms with a separate extrinsic-only
 control; the tested RND configuration's failure is not a theorem about novelty.
 
+## October 17 LLM harness addendum
+
+The [benchmark research](LLM_BENCHMARK_RESEARCH_2026_10.md) motivates a shared
+native score/action contract but separately labeled interfaces and inference
+budgets. The [development harness](LLM_EVALUATION.md) exposes only local
+symbolic RL information plus public rules/recipes; no code execution, strategy
+controller, hidden map or model-based judge. Primitive and bounded open-loop
+tracks are distinct. Report world-level reliability, costs and errors, not
+best-of demonstrations. Private administration and human-relative action scores
+remain future work, not implied by replay verification.
+
+The [Sol smoke](LLM_SMOKE_2026_10_17.md) is plumbing evidence only. The user
+prefers **Luna high** for further low-cost development; a bounded
+[three-world batch](LLM_LUNA_2026_10_17.md) follows, with no automatic continued
+spend. These API calls supersede the historical October12 no-spend status below,
+not any frozen PPO restrictions or main game/policy defaults.
+
 ## Performance and acceptance policy
 
 Measure complete mask/step/observe/reset workloads with and without active

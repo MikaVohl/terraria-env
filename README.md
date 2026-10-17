@@ -16,6 +16,14 @@ equal/difficulty-weighted reward × .999/1.0 discount factorial, five paired
 training seeds. Evaluation stays unweighted; reserved tests stay unused.
 This is an active study, not evidence of improvement or a v7/default promotion.
 
+**October 17 LLM harness:** [usage and replay](LLM_EVALUATION.md),
+[ARC/FLE/Craftax and broader benchmark research](LLM_BENCHMARK_RESEARCH_2026_10.md).
+The authorized [Sol smoke](LLM_SMOKE_2026_10_17.md) scored9/32 in256 actions
+for $0.282 reported cost, with exact native replay. Future development uses
+**Luna high**: a [three-world batch](LLM_LUNA_2026_10_17.md) is launched under
+a shared $2 guard. These are public development checks, not leaderboard scores
+or comparable-budget PPO results. No default game/policy changes.
+
 See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the latest
 completed **503.3M-transition / 30-run** paired v4/v5 learning study, and
 [CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md) for the earlier completed
@@ -85,7 +93,8 @@ PPO means 10.11→10.48/32 remain surface-bound; replay mean 5.47 is not an
 improvement. Targets mine reliably but make no benches on either preview
 (15.28→15.27/32). A larger-batch MPS/CPU-evaluation calibration offers a
 promising throughput path, not yet validated learning quality. The provider-neutral
-offline LLM protocol is tested without API spending. No jobs remain running.
+offline LLM protocol was tested without API spending at that October12 milestone;
+no jobs remained running then. The October17 studies above supersede that status.
 Main v4/default models and all completed studies remain unchanged.
 
 ```sh

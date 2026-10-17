@@ -10,6 +10,22 @@ Next: audit all25 final runs and paired factorial effects, inspect crafting
 diagnostics, then decide whether incentives or discounting warrant adoption.
 Do not treat unfinished curves or checkpoints as independent seeds.
 
+## LLM harness — October 17, 2026
+
+[Research/design review](LLM_BENCHMARK_RESEARCH_2026_10.md) and
+[harness guide](LLM_EVALUATION.md) are implemented: native scoring, local
+symbolic observations/public rules, explicit primitive/open-loop tracks,
+budget/failure accounting, immutable claims and exact replay. Offline mocked
+provider checks pass on v4/v7. The [initial Sol smoke](LLM_SMOKE_2026_10_17.md)
+completed9/32 in256 actions for $0.282 actual reported cost.
+
+The user switched future calls to **Luna high**. A bounded
+[three-world development batch](LLM_LUNA_2026_10_17.md) is launched with a shared
+$2 guard. Finish/audit that batch, report actual stop reasons/costs and crafting
+progression, then stop API work. No unbounded sweep, private-test consumption,
+automatic promotion or additional paid runs. Next decisions need multiworld
+controls and an explicit budget, not a one-world leaderboard claim.
+
 ## Historical plan and completed evidence
 
 Historical v1 plan. The combat/exploration contract is in [V2.md](V2.md);

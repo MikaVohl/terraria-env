@@ -62,7 +62,17 @@ def main():
             try: run(api,root,base/'forbidden')
             except ValueError: pass
             else: raise AssertionError('Paid run without opt-in accepted')
-            assert not (base/'forbidden').exists()
+        assert not (base/'forbidden').exists()
+        for name, override, expected in (
+            ('cost', {'max_cost_usd_total': 1e-9}, 'cost_budget'),
+            ('tokens', {'max_total_tokens_per_episode': 1}, 'token_budget'),
+            ('context', {'max_context_bytes': 1}, 'context_budget')):
+            def forbidden(*args): raise AssertionError('Budget guard permitted an HTTP call')
+            cfg = {**api, **override}
+            guarded = run(cfg, root, base/name, allow_api=True,
+                          provider=OpenRouter(cfg,key='unit-test-only',transport=forbidden))
+            assert guarded['episodes'][0]['status'] == expected
+            assert guarded['episodes'][0]['calls'] == guarded['episodes'][0]['steps'] == 0
         output = base/'mock-provider'
         adapter = OpenRouter(api, key='unit-test-only', transport=transport)
         report = run(api,root,output,allow_api=True,provider=adapter)
@@ -81,6 +91,21 @@ def main():
         assert not failed["complete"] and failed["charge_uncertain"] and failed["episodes"][0]["calls"]==1
         assert failed["recorded_episodes"]==1 and failed["scoreable_episodes"]==0
         assert score([],1)["mean_achievements"] is None
+        def truncated(payload,key,timeout):
+            raw = transport(payload,key,timeout)
+            raw['choices'][0]['finish_reason'] = 'length'
+            return raw
+        limited = {**api,'max_calls':2}
+        stopped = run(limited,root,base/'length',allow_api=True,
+                      provider=OpenRouter(limited,key='unit-test-only',transport=truncated))
+        assert stopped['episodes'][0]['status']=='call_budget'
+        assert stopped['episodes'][0]['steps']==stopped['episodes'][0]['invalid_requests']==2
+        assert verify(base/'length',root)['verified_episodes']==1
+        def substituted(payload,key,timeout):
+            raw=transport(payload,key,timeout);raw['model']='another/model';return raw
+        try: OpenRouter(api,key='unit-test-only',transport=substituted).call({},1)
+        except ProviderError: pass
+        else: raise AssertionError('Silent model substitution accepted')
         # A modified journal cannot silently pass replay verification.
         journal.write_text(journal.read_text().replace('"seed":31000001','"seed":31000009',1))
         try: verify(output,root)
