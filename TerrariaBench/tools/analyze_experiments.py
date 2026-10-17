@@ -88,6 +88,9 @@ def analyze(root):
         inv=m['inventory_stack_maxima'];milestones=sc['milestones']
         traces=[json.loads(s) for s in (path.parent/'tool-results.jsonl').read_text().splitlines()] if (path.parent/'tool-results.jsonl').exists() else []
         tool_counts=Counter(t['name'] for t in traces)
+        errors=Counter(t['result']['error'] for t in traces if 'error' in t.get('result',{}))
+        receipts=[json.loads(s) for s in (path.parent/'inputs.jsonl').read_text().splitlines()] if (path.parent/'inputs.jsonl').exists() else []
+        holds=[r['action'].get('ms',100) for r in receipts]
         replies=[json.loads(p.read_text()) for p in path.parent.glob('response-*.json')]
         row={'run':path.parent.name,'model':result['model'],'scenario':config['scenario'],'clock':config['clock'],'scaffold':config['scaffold'],
              'history':config['history'],'goal':config['goal'],'guide':config['guide'],'pve':config['pve'],'inventory_access':config['inventory'],
@@ -97,10 +100,15 @@ def analyze(root):
              'usd':result['accounting']['reported_usd'],'uncertain_usd':result['accounting']['uncertain_reserved_usd'],
              'wood_max':inv.get('Wood',0),'workbench':'workbench_1' in milestones,'torch_max':inv.get('Torch',0),'furnace':'furnace_1' in milestones,
              'families':';'.join(m['progress_families']),'deaths':m['deaths'],'damage_received':m['damage_received'],
+             'minimum_hp':m['minimum_hp'],'hits_received':m['hits_received'],
+             'hostile_observed_heartbeats':m['hostile_observed_heartbeats'],
              'target_killed':m['target_killed'],'target_player_damage':m['player_damage_to_target'],
              'max_hostiles':m['max_hostile_npcs'],'sim_seconds':round(m['game_updates_during_agent']/60,2),
              'wall_seconds':round(result['agent_wall_seconds'],2),'inference_seconds':round(result['inference_seconds'],2),
+             'paused_seconds':round(result['paused_seconds'],2),'input_hold_seconds':round(m['input_hold_seconds'],2),
+             'max_input_hold_ms':max(holds,default=0),'holds_above_2000ms':sum(h>2000 for h in holds),
              'tool_counts':json.dumps(dict(tool_counts),sort_keys=True),
+             'error_counts':json.dumps(dict(errors),sort_keys=True),
              'max_prompt_tokens':max((r['usage']['prompt_tokens'] for r in replies),default=0),
              'length_truncations':sum(r['choices'][0].get('finish_reason')=='length' for r in replies),
              'stop':result['stop_reason'],'audit':status}

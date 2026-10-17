@@ -64,6 +64,21 @@
     "result.json": "fd3edceb9a815176393ffa04a39e9d81cc5827659fb6717931d3157fba363d0d",
     "audit.json": "2558f50bf8ee3640bf0f141f36122bc4ca9d3f53ed1704eef0b1d85e9408fbb3"
   },
+  "14-haiku-longhold-fresh": {
+    "manifest.json": "aa249fb169abd27513cc29349d321098675ca739dab0ead642ea75937a10d344",
+    "result.json": "a75b236c121ef92ac4fe8c468ac583d4139d49e22e586586c4008cef32991492",
+    "audit.json": "bd12f27ce783cf5e32faebe35f2ff676096247b76a322bb72616b98a5b95516b"
+  },
+  "15-haiku-motor-fresh": {
+    "manifest.json": "53315a321d324cef9515c4fd0b9ecbe3a2ff12757dea32d8028fa17d52d8d5b8",
+    "result.json": "420031c1c6432b47ddb8c5836c3578be90a32c4979839d0ca038159f7052fca0",
+    "audit.json": "82d15f664271a39ca5a66f465969d4b09d3e82c2b8cceddf25e105bf6c7cafd0"
+  },
+  "16-deepseek-json-fresh": {
+    "manifest.json": "83ee2f94688b3b340993b10b4c471484a9fba798b0c92ca638dfeb986cb7fac6",
+    "result.json": "4de90b57ca2c4d5c1d41a5905bfd303c966eaa75775c8604c04d377aede24b57",
+    "audit.json": "c3a7877ccf94b7470141e471fddca14c4d2c19fbb892957457dd90131ec5e1be"
+  },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",
