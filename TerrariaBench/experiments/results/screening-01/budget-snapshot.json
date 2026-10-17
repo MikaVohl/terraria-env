@@ -1,9 +1,9 @@
 {
   "limit_usd": "2.90",
-  "spent_usd": "0.698390696",
+  "spent_usd": "0.799794921",
   "pending": {
     "01-haiku-tools-fresh": "0.0430080",
-    "17-haiku-checkpoints-fresh": "0.0430080"
+    "19-gemini-guided-fresh": "0.070963200"
   },
   "prior_session_reported_usd": "0.086400375"
 }

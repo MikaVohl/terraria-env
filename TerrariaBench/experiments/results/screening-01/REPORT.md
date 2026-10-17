@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **20 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **22 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$0.784791**; unresolved reservations: **$0.086016**. Combined accounted exposure: **$0.870807** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$0.886195**; unresolved reservations: **$0.113971**. Combined accounted exposure: **$1.000166** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -33,6 +33,8 @@ Repeats have not completed yet.
 | [14-haiku-longhold-fresh](14-haiku-longhold-fresh/result.json) | 24 | yes | 0 / no | n/a | 6 / 0 | 15 / 15 | $0.02485 | pass |
 | [15-haiku-motor-fresh](15-haiku-motor-fresh/result.json) | 0 | no | 0 / no | n/a | 6 / 0 | 13 / 13 | $0.02119 | pass |
 | [16-deepseek-json-fresh](16-deepseek-json-fresh/result.json) | 0 | no | 0 / no | n/a | 61 / 0 | 15 / 15 | $0.00367 | pass |
+| [17-haiku-checkpoints-fresh](17-haiku-checkpoints-fresh/result.json) | 12 | no | 0 / no | n/a | 39 / 0 | 14 / 14 | $0.02240 | pass |
+| [18-haiku-peaceful-fresh](18-haiku-peaceful-fresh/result.json) | 35 | yes | 0 / no | n/a | 0 / 0 | 16 / 16 | $0.02906 | pass |
 | [N01-gemini-normalized-fresh](N01-gemini-normalized-fresh/result.json) | 89 | no | 0 / no | n/a | 82 / 0 | 16 / 9 | $0.06766 | pass |
 | [N03-haiku-normalized-fresh](N03-haiku-normalized-fresh/result.json) | 45 | no | 0 / no | n/a | 55 / 0 | 14 / 14 | $0.02343 | pass |
 | [N04-deepseek-normalized-fresh](N04-deepseek-normalized-fresh/result.json) | 0 | no | 0 / no | n/a | 35 / 0 | 16 / 9 | $0.00492 | pass |

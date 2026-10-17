@@ -79,6 +79,16 @@
     "result.json": "4de90b57ca2c4d5c1d41a5905bfd303c966eaa75775c8604c04d377aede24b57",
     "audit.json": "c3a7877ccf94b7470141e471fddca14c4d2c19fbb892957457dd90131ec5e1be"
   },
+  "17-haiku-checkpoints-fresh": {
+    "manifest.json": "c764a0337f7e441047089ffb808863032e1fcd2f19da2afe2e4748117ef992c1",
+    "result.json": "a08a392b53ca418d3933650486f59d767722118ed207713ae374e2f740f85e48",
+    "audit.json": "d23857838cf07d9e5d119eac9ee140d85211f67ffd33d74cc696ffce710ce136"
+  },
+  "18-haiku-peaceful-fresh": {
+    "manifest.json": "2070c2317db710a5f53303e96b7d766ec0177fda0269d063542a0f828206483a",
+    "result.json": "b269531f9d8506267c20905f61be2c2d9e8a14fc0d9254bad0c716d54d8fa72e",
+    "audit.json": "54ae6038e4bff4ff21aa1c317682e28a353359cfbd8e7e73274837d047b2148b"
+  },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",
