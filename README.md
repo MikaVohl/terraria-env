@@ -20,9 +20,13 @@ This is an active study, not evidence of improvement or a v7/default promotion.
 [ARC/FLE/Craftax and broader benchmark research](LLM_BENCHMARK_RESEARCH_2026_10.md).
 The authorized [Sol smoke](LLM_SMOKE_2026_10_17.md) scored9/32 in256 actions
 for $0.282 reported cost, with exact native replay. Future development uses
-**Luna high**: a [three-world batch](LLM_LUNA_2026_10_17.md) is launched under
-a shared $2 guard. These are public development checks, not leaderboard scores
-or comparable-budget PPO results. No default game/policy changes.
+**Luna high**: the [three-world batch](LLM_LUNA_2026_10_17.md) is complete and
+replay-audited for **$0.896 actual reported cost**. Scores20/19 end in death;
+both reach a furnace and copper smelting. The shared conservative $2 guard
+stops world3 at129 actions/5 achievements: not three full-budget episodes or
+a fair fixed-budget mean. All Python/SDL replays match. Luna follow-up paused;
+no more paid calls. PPO continues independently. These are public development
+checks, not leaderboard scores or matched-budget PPO results. Defaults unchanged.
 
 See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the latest
 completed **503.3M-transition / 30-run** paired v4/v5 learning study, and

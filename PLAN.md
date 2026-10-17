@@ -20,11 +20,15 @@ provider checks pass on v4/v7. The [initial Sol smoke](LLM_SMOKE_2026_10_17.md)
 completed9/32 in256 actions for $0.282 actual reported cost.
 
 The user switched future calls to **Luna high**. A bounded
-[three-world development batch](LLM_LUNA_2026_10_17.md) is launched with a shared
-$2 guard. Finish/audit that batch, report actual stop reasons/costs and crafting
-progression, then stop API work. No unbounded sweep, private-test consumption,
-automatic promotion or additional paid runs. Next decisions need multiworld
-controls and an explicit budget, not a one-world leaderboard claim.
+[three-world development batch](LLM_LUNA_2026_10_17.md) is **completed and audited**
+under its shared $2 guard: $0.89574603 actual cost, scores20/19 before deaths,
+both with furnace/copper smelting; third world cost-censored at129 actions/5.
+All445 response model IDs/high request settings and three Python/SDL replays
+verified. There is no balanced three-world full-budget score. API work stopped;
+Luna-only follow-up paused, separate PPO study unchanged. No unbounded sweep,
+private-test consumption, promotion or additional paid runs. Any future paid
+comparison needs equal per-world budgets, explicit observation cadence and
+predeclared controls; no such follow-on is launched here.
 
 ## Historical plan and completed evidence
 
