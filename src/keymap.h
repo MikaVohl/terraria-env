@@ -18,16 +18,14 @@
 
 #include "env.h"
 
-/* The mine keys sit on the keyboard the way the ten reach targets sit around
-   the body: yui above the head, hk beside it, nm beside the feet, ,./ below --
-   three rows of three with the body punched out of the middle column. Place is
-   the same key with shift held, so the two halves of an action never need
-   separate muscle memory. Both are in REACH_* order. */
-#define KB_MINE  "yuihknm,./"
-#define KB_PLACE "YUIHKNM<>?"
+/* The first ten shortcuts retain the old spatial layout. Extra symbols and
+   uppercase letters cover the complete 4x5 perimeter/body reach grid.
+   Both tables are in REACH_* order. */
+#define KB_MINE  "yuihknm,./!@#$%^&*()"
+#define KB_PLACE "YUIHKNM<>?ABCDEFGJLO"
 
-/* Eleven recipes outgrew the digit row, so 0 and - continue it. */
-#define KB_CRAFT "1234567890-"
+/* Nineteen recipes; the side panel labels the extended keyboard bindings. */
+#define KB_CRAFT "1234567890-=op[]gx\\"
 
 #define KB_LEFT   'a'
 #define KB_RIGHT  'd'
@@ -63,8 +61,30 @@ static inline int kb_action(int k)
     case KB_JUMP:   return ACT_JUMP;
     case KB_WAIT:   return ACT_NOOP;
     case KB_SELECT: return ACT_SELECT_NEXT;
+    case 'f': return ACT_ATTACK;
+    case 'z': return ACT_INTERACT;
+    case 'c': return ACT_HEAL_POTION;
+    case 'v': return ACT_EAT_MUSHROOM;
+    case 'b': return ACT_USE_CRYSTAL;
+    case 't': return ACT_EQUIP_NEXT;
+    case 'j': return ACT_CLIMB_UP;
+    case 'l': return ACT_CLIMB_DOWN;
+    case ';': return ACT_DROP;
     default:        return -1;
     }
+}
+
+/* SDL supplies unshifted ASCII plus a modifier; terminal input is already
+   shifted. Normalize before checking held movement/attack keys, since A/D/F
+   are placement bindings whereas a/d/f are held controls. */
+static inline int kb_shifted_action(int k)
+{
+    if (k >= 'a' && k <= 'z') k += 'A' - 'a';
+    else {
+        int i = kb_slot("1234567890,./", k);
+        if (i >= 0) k = "!@#$%^&*()<>?"[i];
+    }
+    return kb_action(k);
 }
 
 /* Action -> the key that produces it, or 0 if it has no binding. The scripted
@@ -85,6 +105,15 @@ static inline char kb_key(int a)
     case ACT_JUMP:        return KB_JUMP;
     case ACT_NOOP:        return KB_WAIT;
     case ACT_SELECT_NEXT: return KB_SELECT;
+    case ACT_ATTACK: return 'f';
+    case ACT_INTERACT: return 'z';
+    case ACT_HEAL_POTION: return 'c';
+    case ACT_EAT_MUSHROOM: return 'v';
+    case ACT_USE_CRYSTAL: return 'b';
+    case ACT_EQUIP_NEXT: return 't';
+    case ACT_CLIMB_UP: return 'j';
+    case ACT_CLIMB_DOWN: return 'l';
+    case ACT_DROP: return ';';
     default:              return 0;
     }
 }

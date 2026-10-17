@@ -67,7 +67,7 @@ static int q_pop(Queue *q)
 
 /* Held state, refreshed from SDL events rather than polled per tick. */
 typedef struct {
-    bool left, right, jump;
+    bool left, right, jump, attack;
     bool lmb, rmb;
     int  mx, my;          /* window pixels */
 } Input;
@@ -108,7 +108,7 @@ static bool tape_load(Tape *t, const char *path, const char *prog)
 {
     char  buf[256];
     FILE *f = fopen(path, "r");
-    int   line = 0, got = 0;
+    int   line = 0, got = 0, version = 1;
 
     if (!f) return tape_fail(prog, path, 0, strerror(errno));
 
@@ -135,7 +135,8 @@ static bool tape_load(Tape *t, const char *path, const char *prog)
             continue;
         }
 
-        if (!strncmp(s, "seed ", 5))            t->seed = strtoull(s + 5, NULL, 10);
+        if (!strncmp(s,"environment ",12)) version=(int)strtol(s+12,NULL,10);
+        else if (!strncmp(s, "seed ", 5))            t->seed = strtoull(s + 5, NULL, 10);
         else if (!strncmp(s, "max_steps ", 10)) t->max_steps = (int)strtol(s + 10, NULL, 10);
         else if (!strncmp(s, "label ", 6)) {
             size_t k = strcspn(s + 6, "\r\n");
@@ -154,6 +155,8 @@ static bool tape_load(Tape *t, const char *path, const char *prog)
         }
     }
     fclose(f);
+
+    if(version!=ENV_VERSION) return tape_fail(prog,path,0,"tape belongs to a different environment version");
 
     if (!t->act)     return tape_fail(prog, path, 0, "no 'actions N' header");
     if (got != t->n) return tape_fail(prog, path, 0, "fewer actions than declared");
@@ -183,22 +186,30 @@ static void usage(FILE *out, const char *prog)
         "                  input. The tape carries its own seed and step\n"
         "                  limit, so --seed and --steps are ignored. Write one\n"
         "                  with: uv run python -m terraria_lite.watch\n"
+        "  --verify        with --watch, verify the replay headlessly and exit\n"
+        "  --screenshot P  save the first frame as BMP and exit (UI testing)\n"
         "  --help          this message\n"
         "\n"
         "The simulation still takes exactly one step per tick. The window\n"
         "renders at 60 fps and interpolates the player and camera between\n"
-        "ticks, and a tick where nothing is queued and the world is at rest is\n"
-        "skipped outright so standing still costs no steps.\n"
+        "ticks. Enemies, regeneration and cooldowns advance even while idle;\n"
+        "F2 pauses the clock, and losing window focus pauses human play.\n"
         "\n"
         "controls\n"
         "  a d / arrows  walk        w or space  jump      e  cycle placeable\n"
         "  left click    mine the cell under the cursor\n"
         "  right click   place there\n"
         "  wheel         cycle placeable\n"
+        "  f             attack (hold to repeat)   z open adjacent chest\n"
+        "  c/v           potion/mushroom          b use life crystal\n"
+        "  t             cycle weapons            j/l climb rope\n"
+        "  ;             drop through platform    F2 pause/resume\n"
         "  y u i         mine up-left / up / up-right      (hold shift to place)\n"
         "  h   k         mine head-left / head-right\n"
         "  n   m         mine foot-left / foot-right\n"
-        "  , . /         mine down-left / down / down-right\n",
+        "  , . /         mine down-left / down / down-right\n"
+        "  !@#$%%^&*()    extra mine targets; ABCDEFGJLO extra place targets\n"
+        "                complete coordinates: ./terraria-lite --help\n",
         prog, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS, MAX_SCALE, DEFAULT_SCALE);
     for (i = 0; i < RECIPE_COUNT; i++)
         fprintf(out, "  %c             craft %s\n", KB_CRAFT[i], RECIPES[i].name);
@@ -216,10 +227,8 @@ static void usage(FILE *out, const char *prog)
 
 /* ---- Input mapping ------------------------------------------------------ */
 
-/* SDL keycodes equal their ASCII character for every printable key, so the
-   shared tables in keymap.h work verbatim. The pixel frontend reads shift as
-   a modifier rather than as a shifted character, so it only needs the mine
-   row: place is the same slot with KMOD_SHIFT held. */
+/* SDL supplies unshifted ASCII; kb_shifted_action handles modifiers before
+   held controls. These tables cover the unshifted reach/recipe shortcuts. */
 static int key_reach(SDL_Keycode k)  { return kb_slot(KB_MINE,  (int)k); }
 static int key_recipe(SDL_Keycode k) { return kb_slot(KB_CRAFT, (int)k); }
 
@@ -238,11 +247,12 @@ static int key_recipe(SDL_Keycode k) { return kb_slot(KB_CRAFT, (int)k); }
    from the key queue, which is never filtered. */
 static int continuous_action(const Env *e, const PxView *v, const Input *in)
 {
+    if(in->attack && !e->attack_cd) return ACT_ATTACK;
     if (v->hover_reach >= 0) {
         if (in->lmb && v->can_mine)  return ACT_MINE_FIRST + v->hover_reach;
         if (in->rmb && v->can_place) return ACT_PLACE_FIRST + v->hover_reach;
     }
-    if (in->jump && at_rest(e)) return ACT_JUMP;
+    if (in->jump && player_grounded(e)) return ACT_JUMP;
     if (in->left != in->right)  return in->left ? ACT_LEFT : ACT_RIGHT;
     return -1;
 }
@@ -281,7 +291,7 @@ static int select_presses(const Env *e, int want)
    player as it moves.
 
    The target is the reach cell whose centre is *nearest* the cursor rather than
-   the one under it: ten 16 px squares scattered around the player are a fiddly
+   the one under it: twenty 16 px squares around/inside the player are a fiddly
    thing to hit exactly, and every point in the viewport has an unambiguous
    nearest one. Distances are compared squared, in art pixels, so this is a
    handful of integer multiplies and no sqrtf. */
@@ -297,6 +307,7 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
     v->hover_recipe = px_recipe_at(ax, ay);
     v->hover_ach    = px_ach_at(ax, ay);
     v->hover_slot   = px_hotbar_at(ax, ay);
+    v->hover_item   = px_item_at(ax,ay);
 
     /* Snapping only applies inside the world viewport. Over the sidebar or the
        HUD there is no aim at all -- otherwise crossing the window to click a
@@ -307,7 +318,7 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
         int tx = e->px + REACH_DX[i], ty = e->py + REACH_DY[i], cx, cy;
         long dx, dy, d2;
 
-        /* At the world edge some of the ten cells do not exist. */
+        /* At the world edge some reach cells do not exist. */
         if (!in_bounds(tx, ty)) continue;
         px_cell_centre(v, tx, ty, &cx, &cy);
         dx = ax - cx;
@@ -323,7 +334,7 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
 
     {
         Tile t = tile_at(e, v->hover_x, v->hover_y);
-        v->can_mine  = t != TILE_AIR && tile_tier(t) != TIER_NEVER &&
+        v->can_mine  = !e->mine_cd && t != TILE_AIR && tile_tier(t) != TIER_NEVER &&
                        e->tool_tier >= tile_tier(t);
         v->can_place = t == TILE_AIR && e->inv[PLACEABLES[e->selected].item] > 0;
     }
@@ -357,8 +368,8 @@ static void snap_camera(PxView *v, const Env *e)
 
     v->feet_x = (float)e->px;
     v->feet_y = (float)e->py;
-    v->cam_x  = v->feet_x + 0.5f - PX_VIEW_TW / 2.0f;
-    v->cam_y  = v->feet_y - 0.5f - PX_VIEW_TH / 2.0f;
+    v->cam_x  = v->feet_x + PLAYER_W/2.0f - PX_VIEW_TW / 2.0f;
+    v->cam_y  = v->feet_y + 1-PLAYER_H/2.0f - PX_VIEW_TH / 2.0f;
     if (v->cam_x < 0.0f) v->cam_x = 0.0f;
     if (v->cam_y < 0.0f) v->cam_y = 0.0f;
     if (v->cam_x > mx) v->cam_x = mx;
@@ -370,8 +381,9 @@ int main(int argc, char **argv)
     const char *prog = argc > 0 && argv[0] ? argv[0] : "terraria-px";
     const char *tex_dir = NULL;
     const char *tape_path = NULL;
+    const char *screenshot = NULL;
     Tape tape;
-    bool watching = false, paused = false;
+    bool watching = false, paused = false, verify = false;
     int  step_once = 0;
     unsigned long long seed = 1;
     unsigned long long steps = DEFAULT_MAX_STEPS;
@@ -396,6 +408,8 @@ int main(int argc, char **argv)
         unsigned long long *slot = NULL;
 
         if (!strcmp(a, "--help") || !strcmp(a, "-h")) { usage(stdout, prog); return 0; }
+        if(!strcmp(a,"--verify")) { verify=true; continue; }
+        if(!strcmp(a,"--screenshot") && i+1<argc) { screenshot=argv[++i]; continue; }
         if (!strcmp(a, "--textures")) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "%s: '%s' needs a value\n", prog, a);
@@ -465,6 +479,13 @@ int main(int argc, char **argv)
     cfg.max_steps = (int)steps;
     env_init(e, cfg);
     env_reset(e, (uint64_t)seed);
+    if(verify) {
+        if(!watching) { fprintf(stderr,"--verify requires --watch TAPE\n"); free(e); return 2; }
+        for(int n=0;n<tape.n;n++) env_step(e,tape.act[n]);
+        printf("{\"environment_version\":%d,\"steps\":%d,\"health\":%d,\"achievement_mask\":%u,\"episode_return\":%.1f}\n",
+            ENV_VERSION,e->steps,e->health,e->achievements,(double)e->ep_return);
+        free(e); free(tape.act); return 0;
+    }
 
     SDL_SetMainReady();
     ui = px_init((int)scale, tex_dir);
@@ -474,7 +495,7 @@ int main(int argc, char **argv)
     memset(&in, 0, sizeof in);
     memset(&toast, 0, sizeof toast);
     memset(&view, 0, sizeof view);
-    view.hover_recipe = view.hover_ach = view.hover_reach = view.hover_slot = -1;
+    view.hover_recipe = view.hover_ach = view.hover_reach = view.hover_slot = view.hover_item = -1;
     snap_camera(&view, e);
     prev_px = e->px;
     prev_py = e->py;
@@ -493,6 +514,12 @@ int main(int argc, char **argv)
             switch (ev.type) {
             case SDL_QUIT:
                 running = false;
+                break;
+            case SDL_WINDOWEVENT:
+                if(ev.window.event==SDL_WINDOWEVENT_FOCUS_LOST && !watching) {
+                    paused=true; memset(&in,0,sizeof in); memset(&q,0,sizeof q);
+                    px_set_title(ui,"terraria-lite v4 -- PAUSED (F2 to resume)");
+                }
                 break;
 
             case SDL_MOUSEMOTION:
@@ -564,7 +591,26 @@ int main(int argc, char **argv)
                     break;
                 }
 
+                /* Shifted reach actions take priority over held a/d/f and
+                   one-shot e. Consume repeats and releases as well. */
+                if (ev.key.keysym.mod & KMOD_SHIFT) {
+                    int action = kb_shifted_action((int)k2);
+                    if (action >= ACT_MINE_FIRST && action < ACT_PLACE_FIRST + REACH_COUNT) {
+                        if (!down) {
+                            if (k2 == SDLK_a) in.left = false;
+                            if (k2 == SDLK_d) in.right = false;
+                            if (k2 == SDLK_f) in.attack = false;
+                        }
+                        if (down && !ev.key.repeat) q_push(&q, action);
+                        continue;
+                    }
+                }
                 switch (k2) {
+                case SDLK_f: in.attack=down; continue;
+                case SDLK_F2:
+                    if(down && !ev.key.repeat) { paused=!paused;
+                        px_set_title(ui,paused?"terraria-lite v4 -- PAUSED (F2 to resume)":"terraria-lite v4"); }
+                    continue;
                 case SDLK_a: case SDLK_LEFT:  in.left  = down; continue;
                 case SDLK_d: case SDLK_RIGHT: in.right = down; continue;
                 case SDLK_w: case SDLK_UP: case SDLK_SPACE: in.jump = down; continue;
@@ -594,6 +640,7 @@ int main(int argc, char **argv)
                 }
                 r = key_recipe(k2);
                 if (r >= 0) q_push(&q, RECIPE_FIRST_ACTION + r);
+                else { int a=kb_action((int)k2); if(a>=0) q_push(&q,a); }
                 break;
             }
 
@@ -630,6 +677,7 @@ int main(int argc, char **argv)
 
         while (!over && now >= next_tick) {
             int act;
+            if(paused && step_once==0) { next_tick=now+tick; break; }
 
             if (watching) {
                 /* Re-arm the deadline before bailing, or unpausing would cash
@@ -676,8 +724,8 @@ int main(int argc, char **argv)
 
         /* The camera chases rather than tracks: an exponential ease is what
            keeps a one-tile-per-tick teleport from reading as a jolt. */
-        tgt_x = view.feet_x + 0.5f - PX_VIEW_TW / 2.0f;
-        tgt_y = view.feet_y - 0.5f - PX_VIEW_TH / 2.0f;
+        tgt_x = view.feet_x + PLAYER_W/2.0f - PX_VIEW_TW / 2.0f;
+        tgt_y = view.feet_y + 1-PLAYER_H/2.0f - PX_VIEW_TH / 2.0f;
         if (tgt_x < 0.0f) tgt_x = 0.0f;
         if (tgt_y < 0.0f) tgt_y = 0.0f;
         if (tgt_x > (float)(WORLD_W - PX_VIEW_TW)) tgt_x = (float)(WORLD_W - PX_VIEW_TW);
@@ -721,6 +769,7 @@ int main(int argc, char **argv)
         }
 
         px_draw(ui, e, &view);
+        if(screenshot) { bool ok=px_screenshot(ui,screenshot); px_shutdown(ui); free(e); free(tape.act); return ok?0:1; }
 
         /* Deadline-based rather than "sleep the remainder": SDL_Delay rounds
            up, so a per-frame remainder drifts to about 52 fps. Pinning frame

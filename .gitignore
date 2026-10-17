@@ -4,6 +4,9 @@
 /terraria-lite
 /selftest
 /terraria-px
+/px-selftest
+/light-selftest
+/fidelity-selftest
 python/terraria_lite/libterraria.*
 
 # uv manages this; uv.lock is committed, .venv is not.

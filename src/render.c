@@ -33,7 +33,7 @@ static volatile sig_atomic_t g_resized = 0;
 
 #define VIEW_W_MAX 72
 #define VIEW_H_MAX 30
-#define HUD_ROWS   15
+#define HUD_ROWS   20
 #define ACH_COL    10   /* achievement grid starts here */
 #define ACH_CELL   7    /* ...with fixed-width cells, so the three rows line up */
 #define INV_TAIL   10   /* cols held back on the last inv line for "+N more" */
@@ -75,6 +75,13 @@ static const Ramp TILE_RAMP[TILE_COUNT] = {
     /* FURNACE   */ {{237, 238,  95, 131, 138, 174}, {233, 234,  52,  88,  95, 131}},
     /* ANVIL     */ {{236, 238, 240, 103, 110, 153}, {232, 233, 234, 236,  60, 103}},
     /* BEDROCK   */ {{234, 235, 236, 238, 240, 242}, {232, 232, 233, 234, 235, 236}},
+    {{236,239,245,250,252,255},{233,234,235,236,60,103}},
+    {{52,88,94,130,137,179},{232,233,52,88,94,130}},
+    {{52,88,94,130,137,179},{233,233,234,234,235,67}},
+    {{58,94,130,166,172,208},{233,234,234,58,94,130}},
+    {{58,94,130,166,172,208},{233,234,234,58,94,130}},
+    {{124,160,196,203,210,217},{233,234,234,58,94,130}},
+    {{124,160,196,203,210,217},{233,233,234,234,235,67}},
 };
 
 #define COLOR_UNSEEN 232  /* below DARK_THRESHOLD: a flat, honest void */
@@ -107,32 +114,31 @@ static const char *const LOG_SHADE[RENDER_LOG_LINES] = {
 #define G_DOT   "\xc2\xb7"      /* U+00B7 */
 
 static const char *const TOOL_NAME[4] = {
-    "hand", "stone pickaxe", "copper pickaxe", "iron pickaxe",
+    "hand", "copper pickaxe", "iron pickaxe", "gold pickaxe",
 };
 
-/* The body is two cells tall, so it needs two glyphs that read as one figure
-   and collide with no tile: 'O' is the lantern and 'A' the anvil, both of
-   which a player stands right next to. '@' is the head everyone already
-   expects; 'n' under it is two legs and a torso, light enough that the eye
-   still lands on the head. */
+/* The 2x3 body uses @ for the head, | for torso and n for feet, avoiding
+   furniture glyphs such as A (anvil). */
 #define GLYPH_HEAD '@'
 #define GLYPH_FEET 'n'
 
-/* Alternating key / description pairs for the bottom legend. Ten reach
+/* Alternating key / description pairs for the bottom legend. Twenty reach
    directions will not fit on one line, so the legend names the mine keys in
    layout order and leaves the target table to --help. */
 static const char *const LEGEND[] = {
-    "wad", " move ", KB_MINE, " mine ", "shift", "+place ",
-    "e", " cycle ", "1..0-", " craft ", "r", " reset ", "q", " quit",
+    "wad", " move ", KB_MINE, " mine ", "--help", " place keys ",
+    "f", " attack ", "z", " loot ", "c/v", " heal ", "b", " life ",
+    "j/l", " climb ", ";", " drop ", "t", " weapon ", "`", " pause ", "r", " reset ", "q", " quit",
 };
 
 /* Short forms so all twenty-four achievements fit three rows of ACH_CELL.
    Same order as ACH_NAME; '+' prefixes the place-it half of a craft/place
    pair, and a bare metal name is its bar. */
 static const char *const ACH_TAG[ACH_COUNT] = {
-    "wood",   "dirt",   "stone",  "place",  "bench",  "+bench", "spick",  "furn",
-    "+furn",  "copper", "cbar",   "torch",  "+torch", "cpick",  "iron",   "ibar",
-    "anvil",  "+anvil", "ipick",  "gold",   "gbar",   "lantrn", "+lantn", "deep",
+    "wood","stone","place","bench","furn","anvil","torch","plat",
+    "copper","iron","silver","gold","cbar","ibar","sbar","gbar",
+    "slime","bat","chest","wsword","metal","warmor","iarmor","heal",
+    "life","2jump","deep","return","travel","rope","ipick","gpick",
 };
 
 static const int CUBE_LEVEL[6] = { 0, 95, 135, 175, 215, 255 };
@@ -318,6 +324,8 @@ static void draw_map(Buf *b, const Env *e, int *row, int vw, int vh)
         for (sx = 0; sx < vw; sx++) {
             int wx = cam_x + sx;
             int player = is_body(e, wx, wy);
+            int mob=0;
+            for(int k=0;k<MAX_MOBS;k++) if(e->mobs[k].kind && e->mobs[k].x==wx && e->mobs[k].y==wy) mob=e->mobs[k].kind;
             int l = e->light[wy][wx];
             const Ramp *r;
             Tile t;
@@ -340,10 +348,13 @@ static void draw_map(Buf *b, const Env *e, int *row, int vw, int vh)
                 cf = -1;
                 bcolor(b, &cf, &cb,
                        color_luma(bg) > 128 ? COLOR_INK_ON : COLOR_INK, bg);
-                bc(b, wy == e->py ? GLYPH_FEET : GLYPH_HEAD);
+                bc(b, wy == e->py ? GLYPH_FEET : wy==e->py-PLAYER_H+1?GLYPH_HEAD:'|');
                 bs(b, "\033[0m");
                 cf = -1;
                 cb = -1;
+            } else if(mob) {
+                bcolor(b,&cf,&cb,mob==MOB_BLUE_SLIME?39:51,bg);
+                bc(b,mob==MOB_BLUE_SLIME?'S':'B');
             } else if (t == TILE_AIR) {
                 bcolor(b, &cf, &cb, -1, bg);
                 bc(b, ' ');
@@ -380,13 +391,13 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
     /* health, tool tier, held stack */
     lstart(&L, b, row, w);
     lesc(&L, C_LABEL); ltext(&L, "hp ");
-    for (i = 0; i < MAX_HEALTH; i++) {
-        lesc(&L, i < e->health ? (e->health <= 3 ? C_HP_LOW : C_HP) : C_OFF);
+    for (i = 0; i < 10; i++) {
+        lesc(&L, i*e->max_health/10 < e->health ? (e->health <= 30 ? C_HP_LOW : C_HP) : C_OFF);
         lglyph(&L, G_HEART, 1);
     }
-    lesc(&L, C_TEXT);  lfmt(&L, " %d/%d", e->health, MAX_HEALTH);
+    lesc(&L, C_TEXT);  lfmt(&L, " %d/%d", e->health, e->max_health);
     lesc(&L, C_LABEL); ltext(&L, "  tool ");
-    lesc(&L, C_TEXT);  ltext(&L, TOOL_NAME[tier]);
+    lesc(&L, C_TEXT);  ltext(&L, e->mining_tree && e->mine_cd?"copper axe":TOOL_NAME[tier]);
     lesc(&L, C_LABEL); ltext(&L, "  hold ");
     lesc(&L, C_OFF);   ltext(&L, "[");
     lcolor(&L, TILE_RAMP[held_tile].fg[RAMP_STEPS - 1]);
@@ -404,6 +415,9 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
     lesc(&L, C_TEXT);  lfmt(&L, "%d/%d", e->steps, e->max_steps);
     lesc(&L, C_LABEL); ltext(&L, "  return ");
     lesc(&L, C_TEXT);  lfmt(&L, "%.2f", (double)e->ep_return);
+    lstart(&L,b,row,wide);
+    lesc(&L,C_TEXT); lfmt(&L,"weapon %s (%d dmg)  armor %d  attack cd %d  heal cd %d",
+        ITEM_NAME[WEAPON_ITEM[e->weapon]],WEAPON_DAMAGE[e->weapon],ARMOR_DEFENSE[e->armor],e->attack_cd,e->heal_cd);
 
     /* Inventory is the one genuinely unbounded row, so it gets the whole
        window rather than the map width -- and, with fourteen item kinds, a
@@ -443,13 +457,11 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
     /* Craft menu, straight out of the recipe table. Eleven recipes overrun
        any sane window, so it wraps once for the same reason inv does. */
     {
-        int wrapped = 0;
         lstart(&L, b, row, wide);
         for (i = 0; i < RECIPE_COUNT; i++) {
             char t[40];
             int n = snprintf(t, sizeof t, "%c %s  ", KB_CRAFT[i], RECIPES[i].name);
-            if (L.col + n > wide && !wrapped) {
-                wrapped = 1;
+            if (L.col + n > wide) {
                 lstart(&L, b, row, wide);
             }
             lesc(&L, C_KEY);  lfmt(&L, "%c", KB_CRAFT[i]);
@@ -458,7 +470,7 @@ static void draw_hud(Buf *b, const Env *e, int *row, int w, int wide)
     }
 
     /* achievements: this is the score, so it gets a real grid */
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < (ACH_COUNT+7)/8; i++) {
         int j;
         lstart(&L, b, row, w);
         if (i == 0) {

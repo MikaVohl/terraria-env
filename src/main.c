@@ -76,29 +76,25 @@ static void usage(FILE *out, const char *prog)
         "action per tick. Real time only changes who supplies the clock: idle\n"
         "frames become no-ops, so falls and jumps play out on their own.\n"
         "\n"
-        "You are two tiles tall: the head is one row above the feet, and the\n"
-        "position the HUD calls depth is the feet. Ten cells surround the body\n"
-        "and every one of them can be mined or built into.\n"
+        "You are two tiles wide and three tall; depth is the feet row and x\n"
+        "is the left column. Reach covers the border and all six body cells.\n"
+        "Solid blocks cannot be placed inside your body; trees are pass-through.\n"
         "\n"
         "controls\n"
         "  a d   walk left / right     w  jump     s  wait\n"
         "  e     cycle the selected placeable\n"
+        "  f     attack  z open chest  c/v potion/mushroom  b use life crystal\n"
+        "  t     cycle weapons  j/l climb rope  ; drop platform  ` pause\n"
         "  r     new world (seed + 1)  q  quit\n"
         "\n"
-        "reach -- lower case mines the cell, shift places into it\n"
-        "\n"
-        "        dx=-1   dx=0   dx=+1\n"
-        "  dy=-2   y/Y    u/U    i/I     above the head\n"
-        "  dy=-1   h/H   [head]  k/K\n"
-        "  dy= 0   n/N   [feet]  m/M\n"
-        "  dy=+1   ,/<    ./>    //?     below the feet\n"
-        "\n"
-        "Mining straight down (.) is a controlled descent and costs no fall\n"
-        "damage. Placing into a down-diagonal (< or ?) bridges without losing\n"
-        "altitude, and placing under your own feet (>) pillars upward.\n"
-        "\n"
-        "crafting -- the station must be within %d tiles of your feet\n",
-        prog, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS, STATION_RANGE);
+        "reach -- 20 targets around/inside a 2-wide, 3-tall body\n"
+        "Original yui/hk/nm/,./ keys mine; shifted keys place.\n"
+        "Additional mine keys !@#$%%^&*() and place keys ABCDEFGJLO\n"
+        "cover remaining border/body cells. Full coordinate table below.\n"
+        "\n",
+        prog, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS);
+    for(i=0;i<REACH_COUNT;i++) fprintf(out,"  %c / %c  (%+d,%+d) %s\n",KB_MINE[i],KB_PLACE[i],REACH_DX[i],REACH_DY[i],REACH_NAME[i]);
+    fprintf(out,"\ncrafting -- the station must be within %d tiles of your body\n",STATION_RANGE);
     for (i = 0; i < RECIPE_COUNT; i++) {
         Tile st = RECIPES[i].station;
         fprintf(out, "  %c     %-12s %s\n", KB_CRAFT[i], RECIPES[i].name,
@@ -174,7 +170,7 @@ static void draw(const Env *e, const Log *lg)
 }
 
 /* Verdicts for keys that mean the same thing in either loop. */
-enum { K_ACTION = 0, K_QUIT, K_RESET, K_REPAINT };
+enum { K_ACTION = 0, K_QUIT, K_RESET, K_REPAINT, K_PAUSE };
 
 /* Classify a keypress and, when it is a game action, hand it back in *act
    (-1 if the key is unbound). */
@@ -183,6 +179,7 @@ static int classify(int key, int *act)
     *act = -1;
     if (key == KEY_EOF)    return K_QUIT;
     if (key == KEY_RESIZE) return K_REPAINT;
+    if (key == '`') return K_PAUSE;
 
     /* Place keys are the shifted letters, so they must be looked up before
        the fold below -- which exists only so a stray Q or R still quits or
@@ -227,6 +224,7 @@ static void play_realtime(Env *e, Log *lg, unsigned long long *seed, int tick_ms
 {
     Queue q;
     uint64_t next;
+    bool paused=false;
 
     memset(&q, 0, sizeof q);
     next = render_now_ms() + (uint64_t)tick_ms;
@@ -243,9 +241,10 @@ static void play_realtime(Env *e, Log *lg, unsigned long long *seed, int tick_ms
            four minutes of standing still into a truncation. Block instead.
            `next` is left alone, so the tick rate still caps how fast a held
            key can act. */
-        if (over || (q.n == 0 && at_rest(e))) {
+        if (over || paused || (q.n == 0 && at_rest(e))) {
             verdict = classify(render_getkey(), &act);
             if (verdict == K_QUIT)  return;
+            if(verdict==K_PAUSE) { paused=!paused; next=render_now_ms()+(uint64_t)tick_ms; }
             if (verdict == K_RESET) { new_world(e, lg, seed); memset(&q, 0, sizeof q); }
             else if (!over && act >= 0) q_push(&q, act);
             continue;
@@ -263,6 +262,7 @@ static void play_realtime(Env *e, Log *lg, unsigned long long *seed, int tick_ms
             verdict = classify(key, &act);
             if (verdict == K_QUIT)    return;
             if (verdict == K_REPAINT) break;
+            if(verdict==K_PAUSE) { paused=!paused; break; }
             if (verdict == K_RESET) {
                 new_world(e, lg, seed);
                 memset(&q, 0, sizeof q);
@@ -274,6 +274,7 @@ static void play_realtime(Env *e, Log *lg, unsigned long long *seed, int tick_ms
         /* Woken by a resize or a reset rather than by the clock: repaint only. */
         if (render_now_ms() < next) continue;
 
+        if(paused) { next=render_now_ms()+(uint64_t)tick_ms; continue; }
         apply(e, lg, q_pop(&q));
         next = render_now_ms() + (uint64_t)tick_ms;
     }

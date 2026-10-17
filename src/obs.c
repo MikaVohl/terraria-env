@@ -4,15 +4,16 @@
  *
  * Darkness is real. A cell lit below DARK_THRESHOLD is reported as
  * OBS_UNKNOWN, not as its tile. Without that the lighting system would be a
- * renderer effect, torches would be decorative, and the depth gate the whole
- * tech tree leans on would not exist for a policy.
+ * renderer effect and torches would not help the policy navigate underground.
  *
  * Achievements are in the observation because the reward depends on them.
  * award() fires once per achievement, so two states with identical worlds but
  * different unlock masks pay differently for the same action. Hide the mask
- * and the MDP stops being Markov for no reason.
+ * and even otherwise identical local observations have unnecessarily hidden
+ * reward history. The local view is still partially observable.
  */
 #include <string.h>
+#include <math.h>
 
 #include "env.h"
 
@@ -25,7 +26,7 @@ void env_obs(const Env *e, Obs *o)
 {
     int row, col, i;
 
-    /* Window centred on the feet, so the head is one row up and every reach
+    /* Window centred on the left feet cell, so the head is two rows up and every reach
        target lands well inside the frame. */
     const int x0 = e->px - VIEW_W / 2;
     const int y0 = e->py - VIEW_H / 2;
@@ -50,8 +51,17 @@ void env_obs(const Env *e, Obs *o)
 
     memset(o->status, 0, sizeof o->status);
 
-    o->status[OBS_HEALTH] = clamp01((float)e->health / (float)MAX_HEALTH);
-    o->status[OBS_TIER]   = clamp01((float)e->tool_tier / (float)TIER_IRON_PICK);
+    o->status[OBS_HEALTH] = clamp01((float)e->health / (float)e->max_health);
+    o->status[OBS_TIER]   = clamp01((float)e->tool_tier / (float)TIER_GOLD_PICK);
+    o->status[OBS_MAX_HEALTH]=(float)e->max_health/HEALTH_CAP;
+    o->status[OBS_WEAPON]=(float)e->weapon/(WEAPON_COUNT-1);
+    o->status[OBS_ARMOR]=(float)e->armor/2;
+    o->status[OBS_ATTACK_CD]=(float)e->attack_cd/3;
+    o->status[OBS_HEAL_CD]=(float)e->heal_cd/60;
+    o->status[OBS_HURT_CD]=(float)e->hurt_cd/8;
+    o->status[OBS_MINE_CD]=(float)e->mine_cd/3;
+    o->status[OBS_AIR_JUMP]=e->air_jump_used?1:0;
+    o->status[OBS_SAFE_TIME]=clamp01((float)e->safe_ticks/40);
     o->status[OBS_FACING] = e->facing > 0 ? 1.0f : 0.0f;
     o->status[OBS_JUMP]   = clamp01((float)e->jump_left / (float)JUMP_HEIGHT);
 
@@ -70,8 +80,20 @@ void env_obs(const Env *e, Obs *o)
         o->status[OBS_SEL_0 + e->selected] = 1.0f;
 
     for (i = 0; i < ITEM_COUNT; i++)
-        o->status[OBS_INV_0 + i] = clamp01((float)e->inv[i] / (float)OBS_INV_CLIP);
+        o->status[OBS_INV_0 + i] = sqrtf((float)e->inv[i]/OBS_INV_CLIP);
 
     for (i = 0; i < ACH_COUNT; i++)
         o->status[OBS_ACH_0 + i] = has_ach(e, i) ? 1.0f : 0.0f;
+    for(i=0;i<MAX_MOBS;i++) {
+        const Mob *m=&e->mobs[i];
+        int x=m->x-x0,y=m->y-y0;
+        if(!m->kind || x<0 || x>=VIEW_W || y<0 || y>=VIEW_H) continue;
+        int k=y*VIEW_W+x;
+        if(o->light[k]<DARK_THRESHOLD) continue;
+        float *s=&o->status[OBS_ENTITY_0+k*4];
+        s[m->kind-1]=1;
+        float hp=(float)m->hp/(m->kind==MOB_BLUE_SLIME?25:16);
+        if(hp>s[2]) s[2]=hp;
+        s[3]=(float)m->phase/7;
+    }
 }

@@ -14,11 +14,11 @@
 
 #define PX_TILE     16                        /* texture edge, art px */
 #define PX_VIEW_TW  30                        /* world viewport, tiles */
-#define PX_VIEW_TH  20
+#define PX_VIEW_TH  26
 #define PX_VIEW_W   (PX_VIEW_TW * PX_TILE)
 #define PX_VIEW_H   (PX_VIEW_TH * PX_TILE)
-#define PX_SIDE_W   192                       /* crafting / achievement column */
-#define PX_HUD_H    80                        /* status strip under the world */
+#define PX_SIDE_W   256                       /* crafting / achievement column */
+#define PX_HUD_H    112                       /* two inventory rows + equipment */
 #define PX_WIN_W    (PX_VIEW_W + PX_SIDE_W)
 #define PX_WIN_H    (PX_VIEW_H + PX_HUD_H)
 
@@ -40,6 +40,7 @@ typedef struct {
     int    hover_recipe;      /* recipe row under the cursor, or -1 */
     int    hover_ach;         /* achievement cell under the cursor, or -1 */
     int    hover_slot;        /* PLACEABLES index under the cursor, or -1 */
+    int    hover_item;        /* any item in either inventory row, or -1 */
 
     const char *toast;        /* transient banner, or NULL */
     float  toast_a;           /* 0..1 opacity for the banner */
@@ -54,6 +55,7 @@ typedef struct PxUi PxUi;
 PxUi *px_init(int scale, const char *tex_dir);
 void  px_shutdown(PxUi *ui);
 void  px_draw(PxUi *ui, const Env *e, const PxView *v);
+bool  px_screenshot(PxUi *ui, const char *path); /* BMP, for reproducible UI QA */
 
 /* Out-of-band status for the frame loop -- a replay's step counter, say --
    that does not belong in the drawn HUD. */
@@ -81,6 +83,7 @@ void px_cell_centre(const PxView *v, int tx, int ty, int *ax, int *ay);
 int  px_recipe_at(int ax, int ay);
 int  px_ach_at(int ax, int ay);
 int  px_hotbar_at(int ax, int ay);   /* -> PLACEABLES index, not an item index */
+int  px_item_at(int ax,int ay);
 
 /* True when the recipe's ingredients are in the pack and its station is in
    range. The frontend has to predict this to grey the panel out; sim.c remains

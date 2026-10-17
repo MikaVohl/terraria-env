@@ -33,6 +33,7 @@
 #endif
 
 #include "px_render.h"
+#include "keymap.h"
 
 /* ---- Layout ------------------------------------------------------------- *
  * Shared between the draw code and the hit tests so a click always lands on
@@ -42,11 +43,11 @@
 #define HY          PX_VIEW_H          /* top edge of the HUD strip */
 
 #define REC_Y0      18
-#define REC_PITCH   20
-#define REC_H       19
+#define REC_PITCH   19
+#define REC_H       18
 
 #define ACH_X0      (PX_VIEW_W + 10)
-#define ACH_Y0      260
+#define ACH_Y0      (REC_Y0 + RECIPE_COUNT * REC_PITCH + 22)
 #define ACH_PITCH   16
 #define ACH_CELL    13
 #define ACH_COLS    8
@@ -55,6 +56,7 @@
 #define INV_Y0      (HY + 29)
 #define INV_PITCH   22
 #define INV_SLOT    20
+#define INV_COLS    21
 
 /* ---- Palette ------------------------------------------------------------ *
  * 0xAARRGGBB throughout, which is also SDL_PIXELFORMAT_ARGB8888. */
@@ -97,7 +99,10 @@ struct PxUi {
     bool          item_owned[ITEM_COUNT];
     SDL_Texture  *font;
     SDL_Texture  *light;
-    SDL_Texture  *player;             /* 20 frames x 2 facings */
+    SDL_Texture  *player[3];          /* unequipped, wood, iron; original armor */
+    SDL_Texture  *mob[2];             /* unmodified original NPC sprite strips */
+    SDL_Texture  *pick[3];            /* copper, iron, gold: original item sprites */
+    SDL_Texture  *axe;                /* starter Copper Axe, original Item_3506 */
     int           real_tiles;         /* how many tiles came from real sheets */
     int           real_items;         /* ...and how many item icons */
     char          missing[32];        /* first sheet that failed to load */
@@ -414,15 +419,15 @@ static bool load_crops(PxUi *ui, Tile t, const char *dir, const char *name,
     return ok;
 }
 
-/* Terraria item ids for our 14 items, verified by eye against the sheets.
-   ITEM_LANTERN has no id here: the real lantern item sprite is a dark chain
-   lamp that reads as a black square at 16 px, so it borrows the tile art. */
-static const int ITEM_ID[ITEM_COUNT] = {
-    9, 3, 2, 12, 11, 13, 20, 22, 19, 8, -1, 36, 33, 35
-};
+static bool load_item_tile(PxUi *ui,Tile tile,const char *dir,int id) {
+    Sheet s; char name[32]; snprintf(name,sizeof name,"Item_%d",id);
+    if(!sheet_load(ui,&s,dir,name)) return false;
+    int crop[1][4]={{0,0,s.w,s.h}};
+    bool ok=load_fitted(ui,tile,&s,crop,1,true); sheet_free(&s); return ok;
+}
 
-/* Every icon but the lantern's is its own Item_N sheet, box-fitted into a
-   16x16 cell; the lantern borrows its tile art back in px_init. */
+/* Original Item_N sheets, with IDs shared with the simulator's item table;
+   nearest-sampled into 16x16 inventory cells, never substitute artwork. */
 static bool load_items(PxUi *ui, const char *dir)
 {
     static uint32_t buf[16 * 16];
@@ -432,8 +437,7 @@ static bool load_items(PxUi *ui, const char *dir)
 
     for (i = 0; i < ITEM_COUNT; i++) {
         int dw, dh, k;
-        if (ITEM_ID[i] < 0) continue;
-        snprintf(name, sizeof name, "Item_%d", ITEM_ID[i]);
+        snprintf(name, sizeof name, "Item_%d", ITEM_TERRARIA_ID[i]);
         if (!sheet_load(ui, &s, dir, name)) return false;
 
         for (k = 0; k < 16 * 16; k++) buf[k] = 0u;
@@ -443,8 +447,24 @@ static bool load_items(PxUi *ui, const char *dir)
         sheet_free(&s);
 
         ui->item[i] = mk_tex(ui->ren, buf, 16, 16);
+        if(!ui->item[i]) return false;
         ui->item_owned[i] = true;
         ui->real_items++;
+    }
+    return true;
+}
+
+static bool load_picks(PxUi *ui,const char *dir) {
+    static const int ids[4]={3509,1,3521,3506};
+    for(int i=0;i<4;i++) {
+        Sheet s; char name[32]; uint32_t buf[16*16]={0};
+        snprintf(name,sizeof name,"Item_%d",ids[i]);
+        if(!sheet_load(ui,&s,dir,name)) return false;
+        int dw=s.w>=s.h?16:s.w*16/s.h,dh=s.h>=s.w?16:s.h*16/s.w;
+        blit_box(&s,0,0,s.w,s.h,buf,16,(16-dw)/2,(16-dh)/2,dw,dh);
+        sheet_free(&s); SDL_Texture *texture=mk_tex(ui->ren,buf,16,16);
+        if(i<3) ui->pick[i]=texture; else ui->axe=texture;
+        if(!texture) return false;
     }
     return true;
 }
@@ -474,20 +494,18 @@ static bool load_items(PxUi *ui, const char *dir)
 
 #define PL_FW      40            /* source frame */
 #define PL_FH      56
-#define PL_CW      26            /* composited cell; see PL_OX / PL_OY */
-#define PL_CH      37
+#define PL_CW      40            /* original frame pixels, no downscaling */
+#define PL_CH      56
 #define PL_FRAMES  20
 #define PL_JUMP     5
 #define PL_WALK0    6
 #define PL_WALKN   14
 
-/* Where the cell goes relative to the 16x32 body box. Chosen so the drawn
-   pixels span exactly the box vertically -- feet on the feet cell's floor, no
-   float and no sink -- and so the frame's centre line is the box's. The ~3 px
-   of hair and shoulder that hang outside are decoration only: hit testing and
-   the reach overlay still key off the true 1x2 body. */
-#define PL_OX      (-5)
-#define PL_OY      (-4)
+/* Original 40x56 source frames centered on the coarse 32x48 collision box.
+   Terraria's 20x42 pixel hitbox rounds up to this 2x3 grid envelope; source
+   art is no longer shrunk to the old 1x2 body. */
+#define PL_OX      (-4)           /* centered on the 32px grid body */
+#define PL_OY      (-8)           /* align feet with the 48px body bottom */
 
 /* Terraria's default character, nudged by eye against the tinted masks. */
 #define PC_SKIN    0xFFFF7D5Au
@@ -579,7 +597,7 @@ static bool load_player(PxUi *ui, const char *dir)
 {
     static uint32_t atlas[2 * PL_CH][PL_FRAMES * PL_CW];
     uint32_t frm[PL_FW * PL_FH];
-    Sheet sh[PL_LAYERS];
+    Sheet sh[PL_LAYERS],armor[2];
     bool ok = true;
     int i, f, x, y;
 
@@ -587,11 +605,19 @@ static bool load_player(PxUi *ui, const char *dir)
        teardown below covers the whole array; sheet_fail keeps the first name. */
     for (i = 0; i < PL_LAYERS; i++)
         if (!sheet_load(ui, &sh[i], dir, PLAYER_LAYER[i].name)) ok = false;
+    if(!sheet_load(ui,&armor[0],dir,"Armor/Armor_32")) ok=false;
+    if(!sheet_load(ui,&armor[1],dir,"Armor/Armor_2")) ok=false;
 
     if (ok) {
+        for(int equipped=0;equipped<3;equipped++) {
         memset(atlas, 0, sizeof atlas);
         for (f = 0; f < PL_FRAMES; f++) {
             player_compose(frm, sh, f);
+            if(equipped) for(int col=0;col<=7;col+=7)
+                for(int y=0;y<PL_FH;y++) for(int x=0;x<PL_FW;x++) {
+                    uint32_t src=sheet_at(&armor[equipped-1],col*PL_FW+x,y);
+                    frm[y*PL_FW+x]=blend_over(frm[y*PL_FW+x],src);
+                }
             for (y = 0; y < PL_CH; y++)
                 for (x = 0; x < PL_CW; x++) {
                     /* Point sampling. A box filter over art this chunky only
@@ -603,46 +629,56 @@ static bool load_player(PxUi *ui, const char *dir)
                     if (x > 0) atlas[PL_CH + y][f * PL_CW + PL_CW - x] = c;
                 }
         }
-        ui->player = mk_tex(ui->ren, atlas[0], PL_FRAMES * PL_CW, 2 * PL_CH);
+        ui->player[equipped] = mk_tex(ui->ren, atlas[0], PL_FRAMES * PL_CW, 2 * PL_CH);
+        if(!ui->player[equipped]) ok=false;
+        }
     }
 
     for (i = 0; i < PL_LAYERS; i++) sheet_free(&sh[i]);
+    for(i=0;i<2;i++) sheet_free(&armor[i]);
     return ok;
 }
 
-/* Sub-rects, all measured off the real sheets rather than guessed:
-   the torch cell is 22 px wide with the sprite offset inside it, the little
-   round lamp on row 1 of Tiles_42 is the only self-contained one-tile lantern,
-   and the four leaf crops are opaque interior patches of a tree canopy. */
+/* Measured original-sheet crops: the torch cell is 22 px wide with the sprite
+   offset inside it; leaf crops are opaque interior patches of tree canopy. */
 static const int TORCH_SRC[1][4]  = {{3, 2, 16, 16}};
-static const int LAMP_SRC[1][4]   = {{0, 18, 16, 16}};
+/* Forest bark in Tiles_5, three original 20px trunk frames (22px pitch). */
+static const int TRUNK_SRC[3][4]  = {{0,0,20,20},{0,22,20,20},{0,44,20,20}};
+
 static const int LEAF_SRC[4][4]   = {{14, 22, 16, 16}, {30, 22, 16, 16},
                                      {46, 22, 16, 16}, {30, 38, 16, 16}};
 
-/* Short-circuits on the first sheet that will not load: with no fallback there
-   is nothing useful to say about the fourteen after it. */
+/* Short-circuits at the first missing original sheet: no substitute fallback. */
 static bool load_terraria(PxUi *ui, const char *dir)
 {
     return load_grid(ui, TILE_DIRT,       dir, "Tiles_0",  100) &&
            load_grid(ui, TILE_STONE,      dir, "Tiles_1",  100) &&
            load_grid(ui, TILE_GRASS,      dir, "Tiles_2",  100) &&
-           load_grid(ui, TILE_LOG,        dir, "Tiles_191", 100) &&
+           load_crops(ui,TILE_LOG,dir,"Tiles_5",TRUNK_SRC,3,false) &&
            load_grid(ui, TILE_WOOD,       dir, "Tiles_30", 100) &&
            load_grid(ui, TILE_COPPER_ORE, dir, "Tiles_7",  100) &&
            load_grid(ui, TILE_IRON_ORE,   dir, "Tiles_6",  100) &&
            load_grid(ui, TILE_GOLD_ORE,   dir, "Tiles_8",  100) &&
+           load_grid(ui, TILE_SILVER_ORE, dir, "Tiles_9", 100) &&
            /* Ebonstone at 45% is near-black with a purple cast: unmistakably a
               wall you are never getting through, which is bedrock's job. */
-           load_grid(ui, TILE_BEDROCK,    dir, "Tiles_25",  45) &&
+           load_grid(ui, TILE_BEDROCK,    dir, "Tiles_25", 100) &&
 
            load_crops (ui, TILE_LEAVES,    dir, "Tree_Tops_0", LEAF_SRC,  4, false) &&
            load_crops (ui, TILE_TORCH,     dir, "Tiles_4",     TORCH_SRC, 1, false) &&
-           load_crops (ui, TILE_LANTERN,   dir, "Tiles_42",    LAMP_SRC,  1, false) &&
+           load_object(ui,TILE_CAMPFIRE,dir,"Tiles_215",0,0,3,2) &&
+           load_object(ui,TILE_PLATFORM,dir,"Tiles_19",0,0,1,1) &&
+           load_object(ui,TILE_ROPE,dir,"Tiles_213",0,0,1,1) &&
+           load_object(ui,TILE_CHEST,dir,"Tiles_21",0,0,2,2) &&
+           load_object(ui,TILE_CHEST_OPEN,dir,"Tiles_21",0,76,2,2) &&
+           load_object(ui,TILE_LIFE_CRYSTAL,dir,"Tiles_12",0,0,2,2) &&
+           load_item_tile(ui,TILE_MUSHROOM,dir,5) &&
            load_object(ui, TILE_ANVIL,     dir, "Tiles_16", 0, 0, 2, 1) &&
            load_object(ui, TILE_WORKBENCH, dir, "Tiles_18", 0, 0, 2, 1) &&
            load_object(ui, TILE_FURNACE,   dir, "Tiles_17", 0, 0, 3, 2) &&
 
            load_items(ui, dir) &&
+           load_picks(ui,dir) &&
            load_player(ui, dir);
 }
 
@@ -829,6 +865,10 @@ PxUi *px_init(int scale, const char *tex_dir)
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return NULL;
     }
+    SDL_Rect usable;
+    if(SDL_GetDisplayUsableBounds(0,&usable)==0) {
+        while(scale>1 && (PX_WIN_W*scale>usable.w || PX_WIN_H*scale+32>usable.h)) scale--;
+    }
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");   /* crisp pixels by default */
 
     ui.win = SDL_CreateWindow("terraria-lite",
@@ -863,11 +903,13 @@ PxUi *px_init(int scale, const char *tex_dir)
         return NULL;
     }
 
-    /* ITEM_LANTERN is the one item Terraria has no usable icon sheet for, so it
-       shows its own tile art -- the same lamp, already cropped out of Tiles_42.
-       Borrowed, not owned: art[TILE_LANTERN] is what frees it, exactly once. */
-    ui.item[ITEM_LANTERN] = ui.art[TILE_LANTERN].tex;
-    ui.real_items++;
+    /* Original NPC strips; Blue Slime's color passes are applied when drawn. */
+    for(int k=0;k<2;k++) {
+        Sheet s;
+        if(!sheet_load(&ui,&s,dir,k?"NPC_49":"NPC_1")) { px_shutdown(&ui); return NULL; }
+        ui.mob[k]=mk_tex(ui.ren,s.px,s.w,s.h); sheet_free(&s);
+        if(!ui.mob[k]) { px_shutdown(&ui); return NULL; }
+    }
 
     ui.font = mk_font(ui.ren);
     if (!ui.font) {
@@ -914,7 +956,10 @@ void px_shutdown(PxUi *ui)
     if (ui->bg_stone) SDL_DestroyTexture(ui->bg_stone);
     if (ui->font)     SDL_DestroyTexture(ui->font);
     if (ui->light)    SDL_DestroyTexture(ui->light);
-    if (ui->player)   SDL_DestroyTexture(ui->player);
+    for(i=0;i<3;i++) if(ui->player[i]) SDL_DestroyTexture(ui->player[i]);
+    for(i=0;i<2;i++) if(ui->mob[i]) SDL_DestroyTexture(ui->mob[i]);
+    for(i=0;i<3;i++) if(ui->pick[i]) SDL_DestroyTexture(ui->pick[i]);
+    if(ui->axe) SDL_DestroyTexture(ui->axe);
     if (ui->ren)      SDL_DestroyRenderer(ui->ren);
     if (ui->win)      SDL_DestroyWindow(ui->win);
     SDL_Quit();
@@ -979,38 +1024,30 @@ int px_ach_at(int ax, int ay)
 /* The inventory strip is one slot per *item*, but selection cycles over
    PLACEABLES, so a hit has to be translated back. Items with nothing to place
    -- ores, bars, the pickaxes -- are not on that cycle and report -1. */
-int px_hotbar_at(int ax, int ay)
+int px_item_at(int ax,int ay)
 {
-    int gx = ax - INV_X0, gy = ay - INV_Y0, i, p;
+    int gx=ax-INV_X0,gy=ay-INV_Y0,i;
 
-    if (gx < 0 || gy < 0 || gy >= INV_SLOT) return -1;
-    i = gx / INV_PITCH;
+    if(gx<0 || gy<0 || gy>=2*INV_PITCH || gy%INV_PITCH>=INV_SLOT || gx/INV_PITCH>=INV_COLS) return -1;
+    i = gx/INV_PITCH + (gy/INV_PITCH)*INV_COLS;
     if (i >= ITEM_COUNT || gx % INV_PITCH >= INV_SLOT) return -1;
+    return i;
+}
 
-    for (p = 0; p < PLACEABLE_COUNT; p++)
+int px_hotbar_at(int ax, int ay) {
+    int i=px_item_at(ax,ay);
+    if(i<0) return -1;
+    for (int p = 0; p < PLACEABLE_COUNT; p++)
         if (PLACEABLES[p].item == (Item)i) return p;
     return -1;
 }
 
 /* ---- Crafting availability ---------------------------------------------- */
 
-static bool station_near(const Env *e, Tile st)
-{
-    int dx, dy;
-    if (st == TILE_AIR) return true;
-    for (dy = -STATION_RANGE; dy <= STATION_RANGE; dy++)
-        for (dx = -STATION_RANGE; dx <= STATION_RANGE; dx++)
-            if (tile_at(e, e->px + dx, e->py + dy) == st) return true;
-    return false;
-}
-
 bool px_recipe_ready(const Env *e, int r)
 {
-    const Recipe *rc = &RECIPES[r];
-    int i;
-    for (i = 0; i < rc->n_in; i++)
-        if (e->inv[rc->in_item[i]] < rc->in_qty[i]) return false;
-    return station_near(e, rc->station);
+    uint8_t mask[ACT_COUNT]; env_action_mask(e,mask);
+    return r>=0 && r<RECIPE_COUNT && mask[RECIPE_FIRST_ACTION+r];
 }
 
 /* ---- World -------------------------------------------------------------- */
@@ -1187,7 +1224,7 @@ static void draw_light(PxUi *ui, const Env *e, const PxView *v)
 
 /* ---- Player ------------------------------------------------------------- *
  * The composited Terraria avatar, built once by load_player. It overhangs the
- * 1x2 body box by a few pixels of hair and shoulder, which is decoration only:
+ * 2x3 grid body box by a few pixels of hair and shoulder, which is decoration only:
  * hit testing keys off the body cells alone. */
 
 /* Which of the twenty frames the pose calls for. The walk rate is by eye: the
@@ -1208,8 +1245,8 @@ static void draw_player(PxUi *ui, const Env *e, const PxView *v, int alpha)
     SDL_Rect src = {player_frame(v) * PL_CW, e->facing < 0 ? PL_CH : 0, PL_CW, PL_CH};
     SDL_Rect dst = {bx + PL_OX, by + PL_OY, PL_CW, PL_CH};
 
-    SDL_SetTextureAlphaMod(ui->player, (Uint8)alpha);
-    SDL_RenderCopy(ui->ren, ui->player, &src, &dst);
+    SDL_SetTextureAlphaMod(ui->player[e->armor], (Uint8)alpha);
+    SDL_RenderCopy(ui->ren, ui->player[e->armor], &src, &dst);
 }
 
 /* ---- Reach overlay ------------------------------------------------------ */
@@ -1288,7 +1325,7 @@ static void draw_heart(PxUi *ui, int x, int y, bool full)
 }
 
 static const char *const TIER_NAME[4] = {
-    "bare hands", "stone pickaxe", "copper pickaxe", "iron pickaxe"
+    "bare hands", "copper pickaxe", "iron pickaxe", "gold pickaxe"
 };
 
 static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
@@ -1299,62 +1336,83 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
     fill(ui, 0, HY, PX_VIEW_W, PX_HUD_H, UI_BG);
     fill(ui, 0, HY, PX_VIEW_W, 1, UI_LINE);
 
-    hearts = e->health < 0 ? 0 : e->health;
-    for (i = 0; i < MAX_HEALTH; i++) draw_heart(ui, 6 + i * 9, HY + 5, i < hearts);
+    hearts=(e->max_health+19)/20;
+    for(i=0;i<hearts&&i<20;i++) draw_heart(ui,6+(i%10)*9,HY+1+(i/10)*8,e->health>i*20);
 
-    text(ui, 6 + MAX_HEALTH * 9 + 10, HY + 5, UI_ACCENT,
-         TIER_NAME[e->tool_tier < 4 ? e->tool_tier : 3]);
+    bool chopping=e->mining_tree && e->mine_cd;
+    icon(ui,chopping?ui->axe:ui->pick[e->tool_tier-1],104,HY+2,16,255);
+    text(ui, 123, HY + 5, UI_ACCENT,
+         chopping?"Copper Axe":TIER_NAME[e->tool_tier < 4 ? e->tool_tier : 3]);
 
     snprintf(buf, sizeof buf, "depth %d   step %d/%d   return %+.1f",
              e->py, e->steps, e->max_steps, (double)e->ep_return);
     text_right(ui, PX_VIEW_W - 6, HY + 5, UI_DIM, buf);
 
-    text(ui, 6, HY + 17, e->msg[0] ? UI_TEXT : UI_FAINT, e->msg[0] ? e->msg : "-");
+    textf(ui,6,HY+17,UI_TEXT,"hp %d/%d  %s  def %d  attack %d  heal %d",
+          e->health,e->max_health,ITEM_NAME[WEAPON_ITEM[e->weapon]],
+          ARMOR_DEFENSE[e->armor],e->attack_cd,e->heal_cd);
+    text(ui,6,HY+98,e->msg[0]?UI_TEXT:UI_FAINT,e->msg[0]?e->msg:"-");
 
     /* Inventory: all 14 slots always, so the ladder you are climbing is
        visible as a row of things you do not have yet. Only the placeable ones
        are clickable, so only those light up under the cursor. */
     for (i = 0; i < ITEM_COUNT; i++) {
-        int x = INV_X0 + i * INV_PITCH;
+        int x=INV_X0+(i%INV_COLS)*INV_PITCH;
+        int iy=INV_Y0+(i/INV_COLS)*INV_PITCH;
         int have = e->inv[i];
         bool hot = v->hover_slot >= 0 && PLACEABLES[v->hover_slot].item == (Item)i;
-        fill(ui, x, INV_Y0, INV_SLOT, INV_SLOT, hot ? UI_BG3 : (have ? UI_BG2 : UI_BG));
-        frame(ui, x, INV_Y0, INV_SLOT, INV_SLOT,
+        fill(ui, x, iy, INV_SLOT, INV_SLOT, hot ? UI_BG3 : (have ? UI_BG2 : UI_BG));
+        frame(ui, x, iy, INV_SLOT, INV_SLOT,
               hot ? (have ? UI_ACCENT : UI_FAINT) : (have ? UI_LINE : 0xFF262330u));
-        icon(ui, ui->item[i], x + 2, INV_Y0 + 2, PX_TILE, have ? 255 : 44);
+        icon(ui, ui->item[i], x + 2, iy + 2, PX_TILE, have ? 255 : 44);
         if (have) {
             snprintf(buf, sizeof buf, "%d", have);
-            fill(ui, x + INV_SLOT - text_w(buf) - 2, INV_Y0 + INV_SLOT - 8,
+            fill(ui, x + INV_SLOT - text_w(buf) - 2, iy + INV_SLOT - 8,
                  text_w(buf) + 2, 8, 0xC0000000u);
-            text_right(ui, x + INV_SLOT - 1, INV_Y0 + INV_SLOT - 8, UI_TEXT, buf);
+            text_right(ui, x + INV_SLOT - 1, iy + INV_SLOT - 8, UI_TEXT, buf);
         }
     }
 
     {   /* Selected placeable, called out because E is easy to forget. */
-        int x = INV_X0 + ITEM_COUNT * INV_PITCH + 8;
+        int x=INV_X0+(ITEM_COUNT-INV_COLS)*INV_PITCH+8;
+        int iy=INV_Y0+INV_PITCH;
         Item it = PLACEABLES[e->selected].item;
         int have = e->inv[it];
-        fill(ui, x, INV_Y0, INV_SLOT, INV_SLOT, UI_BG3);
-        frame(ui, x, INV_Y0, INV_SLOT, INV_SLOT, UI_ACCENT);
-        tile_icon(ui, PLACEABLES[e->selected].tile, x + 2, INV_Y0 + 2, PX_TILE, have ? 255 : 60);
-        text(ui, x + 25, INV_Y0 + 2, have ? UI_TEXT : UI_FAINT, ITEM_NAME[it]);
-        textf(ui, x + 25, INV_Y0 + 12, have ? UI_ACCENT : UI_BAD, "x%d  [e]", have);
+        fill(ui, x, iy, INV_SLOT, INV_SLOT, UI_BG3);
+        frame(ui, x, iy, INV_SLOT, INV_SLOT, UI_ACCENT);
+        tile_icon(ui, PLACEABLES[e->selected].tile, x + 2, iy + 2, PX_TILE, have ? 255 : 60);
+        text(ui, x + 25, iy + 2, have ? UI_TEXT : UI_FAINT, ITEM_NAME[it]);
+        textf(ui, x + 25, iy + 12, have ? UI_ACCENT : UI_BAD, "x%d  [e]", have);
     }
 
     /* What a click would do right now, spelled out. The hotbar wins the line
        when the cursor is on it: the reach target is unreachable from there by
        construction, so there is nothing else this row could be reporting. */
-    if (v->hover_slot >= 0) {
+    if(v->hover_item>=0 && v->hover_slot<0) {
+        Item it=(Item)v->hover_item;
+        const char *hint="crafting material";
+        if(it==ITEM_LESSER_POTION) hint="[c] heal 50; shared cooldown 60";
+        else if(it==ITEM_MUSHROOM) hint="[v] heal 15; shared cooldown 60";
+        else if(it==ITEM_LIFE_CRYSTAL) hint="[b] +20 max life, up to 200";
+        else if(it==ITEM_CLOUD_BOTTLE) hint="[w] one extra airborne jump";
+        else if(it==ITEM_WOOD_ARMOR || it==ITEM_IRON_ARMOR) hint="crafting equips torso armor";
+        else for(int k=0;k<WEAPON_COUNT;k++) if(it==WEAPON_ITEM[k]) hint="[t] cycle owned weapons";
+        textf(ui,6,HY+76,UI_TEXT,"%s x%d: %s",ITEM_NAME[it],e->inv[it],hint);
+    } else if (v->hover_slot >= 0) {
         Item it = PLACEABLES[v->hover_slot].item;
         int have = e->inv[it];
         snprintf(buf, sizeof buf, "hotbar  %s  x%d  -  %s", ITEM_NAME[it], have,
                  have ? (v->hover_slot == e->selected ? "already selected"
                                                       : "lmb selects it")
                       : "empty stack, cannot be selected");
-        text(ui, 6, HY + 56, have ? UI_GOOD : UI_BAD, buf);
+        text(ui, 6, HY + 76, have ? UI_GOOD : UI_BAD, buf);
     } else if (v->hover_reach >= 0) {
         Tile t = tile_at(e, v->hover_x, v->hover_y);
-        if (t != TILE_AIR)
+        if(e->light[v->hover_y][v->hover_x]<DARK_THRESHOLD)
+            snprintf(buf,sizeof buf,"target %s: unlit, try mining or add light",REACH_NAME[v->hover_reach]);
+        else if(t==TILE_CHEST)
+            snprintf(buf,sizeof buf,"chest: [z] loot when adjacent and visible");
+        else if (t != TILE_AIR)
             snprintf(buf, sizeof buf, "target  %s  %s  -  %s", REACH_NAME[v->hover_reach],
                      TILE_INFO[t].name,
                      v->can_mine ? "lmb mines it"
@@ -1363,48 +1421,43 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
         else
             snprintf(buf, sizeof buf, "target  %s  empty  -  %s", REACH_NAME[v->hover_reach],
                      v->can_place ? "rmb places it" : "nothing to place");
-        text(ui, 6, HY + 56, (v->can_mine || v->can_place) ? UI_GOOD : UI_BAD, buf);
+        text(ui, 6, HY + 76, (v->can_mine || v->can_place) ? UI_GOOD : UI_BAD, buf);
     } else {
-        text(ui, 6, HY + 56, UI_FAINT, "target  -  point into the world to aim");
+        text(ui, 6, HY + 76, UI_FAINT, "target  -  point into the world to aim");
     }
 
-    text(ui, 6, HY + 68, UI_FAINT,
-         "a d walk   w jump   lmb mine   rmb place   e cycle   r new world   q quit");
+    text(ui, 6, HY + 87, UI_FAINT,
+         "f attack  z loot  c/v heal  b life  j/l rope  ; drop  t weapon  F2 pause");
 }
 
 /* ---- Sidebar ------------------------------------------------------------ */
 
-static const char RECIPE_KEY[RECIPE_COUNT] = {
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'
-};
+#define RECIPE_KEY KB_CRAFT
 
 static void recipe_inputs(const Recipe *rc, char *out, size_t n)
 {
-    if (rc->n_in == 2)
-        snprintf(out, n, "%d %s + %d %s", rc->in_qty[0], ITEM_NAME[rc->in_item[0]],
-                 rc->in_qty[1], ITEM_NAME[rc->in_item[1]]);
-    else
-        snprintf(out, n, "%d %s", rc->in_qty[0], ITEM_NAME[rc->in_item[0]]);
+    size_t used=0;
+    for(int i=0;i<rc->n_in;i++) {
+        int k=snprintf(out+used,n-used,"%s%d %s",i?" + ":"",rc->in_qty[i],ITEM_NAME[rc->in_item[i]]);
+        if(k<0 || (size_t)k>=n-used) break;
+        used+=(size_t)k;
+    }
 }
 
 static void draw_reach_key_grid(PxUi *ui, const PxView *v, int gx, int gy)
 {
-    static const char KEYCH[REACH_COUNT] = {'y','u','i','h','k','n','m',',','.','/'};
+    const char *KEYCH=KB_MINE;
     int col, row;
 
-    for (row = 0; row < 4; row++)
-        for (col = 0; col < 3; col++) {
+    for (row = 0; row < PLAYER_H+2; row++)
+        for (col = 0; col < PLAYER_W+2; col++) {
             int x = gx + col * 16, y = gy + row * 14;
-            int dx = col - 1, dy = row - 2;
+            int dx = col - 1, dy = row - PLAYER_H;
             int k;
-            if (dx == 0 && (dy == -1 || dy == 0)) {   /* the body's own cells */
-                fill(ui, x, y, 13, 12, UI_BG3);
-                fill(ui, x + 4, y + 2, 5, 8, UI_BODY);
-                continue;
-            }
             for (k = 0; k < REACH_COUNT; k++)
                 if (REACH_DX[k] == dx && REACH_DY[k] == dy) break;
-            fill(ui, x, y, 13, 12, v->hover_reach == k ? UI_ACCENT : UI_BG2);
+            bool body=dx>=0&&dx<PLAYER_W&&dy<=0&&dy>-PLAYER_H;
+            fill(ui, x, y, 13, 12, v->hover_reach == k ? UI_ACCENT : body?UI_BG3:UI_BG2);
             textf(ui, x + 4, y + 3, v->hover_reach == k ? UI_BG : UI_DIM, "%c", KEYCH[k]);
         }
 }
@@ -1466,20 +1519,16 @@ static void draw_sidebar(PxUi *ui, const Env *e, const PxView *v)
     /* Hovering names one; otherwise name the next one still locked, which is
        the closest thing this game has to a quest log. */
     if (v->hover_ach >= 0) {
-        text(ui, SX + 6, ACH_Y0 + 3 * ACH_PITCH + 2,
+        text(ui, SX + 6, ACH_Y0 + 4 * ACH_PITCH + 2,
              has_ach(e, v->hover_ach) ? UI_GOOD : UI_DIM, ACH_NAME[v->hover_ach]);
     } else {
         for (i = 0; i < ACH_COUNT && has_ach(e, i); i++) { }
         if (i < ACH_COUNT)
-            textf(ui, SX + 6, ACH_Y0 + 3 * ACH_PITCH + 2, UI_FAINT, "next: %s", ACH_NAME[i]);
+            textf(ui, SX + 6, ACH_Y0 + 4 * ACH_PITCH + 2, UI_FAINT, "next: %s", ACH_NAME[i]);
     }
 
-    fill(ui, SX + 6, 322, PX_SIDE_W - 12, 1, UI_LINE);
-    text(ui, SX + 6, 332, UI_DIM,   "REACH");
-    text(ui, SX + 6, 342, UI_DIM,   "KEYS");
-    text(ui, SX + 6, 358, UI_FAINT, "shift");
-    text(ui, SX + 6, 368, UI_FAINT, "=place");
-    draw_reach_key_grid(ui, v, SX + 74, 332);
+    text(ui,SX+6,PX_WIN_H-35,UI_DIM,"REACH: click / right-click");
+    draw_reach_key_grid(ui,v,SX+174,PX_WIN_H-74);
 }
 
 /* ---- Overlays ----------------------------------------------------------- */
@@ -1502,7 +1551,7 @@ static void draw_hurt_vignette(PxUi *ui, const Env *e, const PxView *v)
     float pulse;
     int i, peak;
 
-    if (e->health > 3 || e->health <= 0) return;
+    if (e->health > 30 || e->health <= 0) return;
     pulse = 0.5f + 0.5f * sinf((float)v->clock * 6.0f);
     peak = 10 + (int)(pulse * 34.0f);
     for (i = 0; i < 14; i++) {
@@ -1541,6 +1590,54 @@ static void draw_gameover(PxUi *ui, const Env *e)
 
 /* ---- Frame -------------------------------------------------------------- */
 
+static void draw_mobs(PxUi *ui,const Env *e,const PxView *v) {
+    for(int i=0;i<MAX_MOBS;i++) {
+        const Mob *m=&e->mobs[i];
+        if(!m->kind || !in_bounds(m->x,m->y) || e->light[m->y][m->x]<DARK_THRESHOLD) continue;
+        int k=m->kind-1,w=k?44:32,h=k?32:26,n=k?5:2;
+        SDL_Rect src={0,(m->phase*n/8)*h,w,h};
+        int cx=m->x*PX_TILE+8-cam_px(v->cam_x),by=(m->y+1)*PX_TILE-cam_px(v->cam_y);
+        SDL_Rect dst={cx-w/2,by-h,w,h};
+        SDL_RendererFlip flip=m->dir<0?SDL_FLIP_HORIZONTAL:SDL_FLIP_NONE;
+        if(k==0) {
+            /* Installed Terraria.exe NPC.SetDefaults(type=1): alpha=175,
+               color=(0,80,255,100). GetAlpha's daylight pass is (80,80,80,80);
+               GetColor's overlay is (0,80,255,100). Keep the original pixels. */
+            SDL_SetTextureColorMod(ui->mob[k],80,80,80);
+            SDL_SetTextureAlphaMod(ui->mob[k],80);
+            SDL_RenderCopyEx(ui->ren,ui->mob[k],&src,&dst,0,NULL,flip);
+            SDL_SetTextureColorMod(ui->mob[k],0,80,255);
+            SDL_SetTextureAlphaMod(ui->mob[k],100);
+        }
+        SDL_RenderCopyEx(ui->ren,ui->mob[k],&src,&dst,0,NULL,flip);
+        SDL_SetTextureColorMod(ui->mob[k],255,255,255);
+        SDL_SetTextureAlphaMod(ui->mob[k],255);
+        fill(ui,cx-8,by-h-3,16,2,UI_BG);
+        fill(ui,cx-8,by-h-3,16*m->hp/(k?16:25),2,UI_BAD);
+    }
+    /* Attach original held art symmetrically to the resized, interpolated body.
+       This is display only: simulation reach and timing never use it. */
+    int held_x=(int)lroundf(v->feet_x*PX_TILE)-cam_px(v->cam_x)
+        +PLAYER_W*PX_TILE/2+e->facing*12-10;
+    int held_y=(int)lroundf(v->feet_y*PX_TILE)-cam_px(v->cam_y)
+        +PX_TILE-PLAYER_H*PX_TILE/2-10;
+    if(e->attack_cd) icon(ui,ui->item[WEAPON_ITEM[e->weapon]],
+        held_x,held_y,20,255);
+    else if(e->mine_cd) icon(ui,e->mining_tree?ui->axe:ui->pick[e->tool_tier-1],
+        held_x,held_y,20,255);
+}
+
+bool px_screenshot(PxUi *ui,const char *path) {
+    int w,h; SDL_GetRendererOutputSize(ui->ren,&w,&h);
+    SDL_Surface *s=SDL_CreateRGBSurfaceWithFormat(0,w,h,32,SDL_PIXELFORMAT_ARGB8888);
+    if(!s) return false;
+    bool ok=SDL_RenderReadPixels(ui->ren,NULL,s->format->format,s->pixels,s->pitch)==0;
+    SDL_Surface *rgb=ok?SDL_ConvertSurfaceFormat(s,SDL_PIXELFORMAT_RGB24,0):NULL;
+    ok=rgb && SDL_SaveBMP(rgb,path)==0;
+    if(rgb) SDL_FreeSurface(rgb);
+    SDL_FreeSurface(s); return ok;
+}
+
 void px_draw(PxUi *ui, const Env *e, const PxView *v)
 {
     SDL_Rect view = {0, 0, PX_VIEW_W, PX_VIEW_H};
@@ -1551,6 +1648,7 @@ void px_draw(PxUi *ui, const Env *e, const PxView *v)
 
     SDL_RenderSetClipRect(ui->ren, &view);
     draw_world(ui, e, v);
+    draw_mobs(ui,e,v);
     draw_player(ui, e, v, 255);
     draw_light(ui, e, v);
     /* After the light pass so the dark never swallows you completely: the

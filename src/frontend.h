@@ -31,17 +31,12 @@ static inline int parse_u64(const char *s, unsigned long long *out)
     return 1;
 }
 
-/* True when an ACT_NOOP tick would change nothing but the step counter. The
-   player is the only thing in this world that moves on its own, so grounded
-   and not mid-jump is a genuine fixed point.
-
-   This is a game rule wearing frontend clothing, which is exactly why it is
-   shared: both frontends skip the tick when it holds, and 3000 no-ops at 80 ms
-   is four minutes of standing still into a truncation. If the two copies ever
-   disagreed, one frontend would silently spend a budget the other did not. */
+/* A living world has no idle fixed point: mobs, spawning, cooldowns and
+   regeneration advance even while the player stands still. Pause explicitly. */
 static inline bool at_rest(const Env *e)
 {
-    return e->jump_left == 0 && tile_solid(tile_at(e, e->px, e->py + 1));
+    (void)e;
+    return false; /* v2: enemies, recovery and cooldowns keep the world alive. */
 }
 
 /* Achievements unlocked by the step just taken. Both frontends announce these;

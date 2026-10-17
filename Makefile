@@ -41,7 +41,7 @@ all: $(BIN) $(SELFTEST)
 $(BIN): $(GAME_OBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-$(SELFTEST): $(CORE_OBJ) tools/selftest.o
+$(SELFTEST): $(CORE_OBJ) tools/selftest_v2.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 # Separate object suffix so the frontend's SDL and stb include paths never leak
@@ -62,8 +62,22 @@ $(PXBIN): $(CORE_OBJ) $(PX_OBJ)
 	$(CC) $^ -o $@ $(LDFLAGS) $(SDL_LIBS)
 endif
 
-check: $(SELFTEST)
+light-selftest: $(CORE_OBJ) tools/light_incremental_test.o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+fidelity-selftest: $(CORE_OBJ) tools/fidelity_test.o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+check: $(SELFTEST) light-selftest fidelity-selftest
 	./$(SELFTEST)
+	./light-selftest
+	./fidelity-selftest
+
+px-selftest: $(CORE_OBJ) src/px_render.px.o tools/px_smoke.o
+	$(CC) $^ -o $@ $(LDFLAGS) $(SDL_LIBS)
+
+check-pixel: px-selftest
+	SDL_VIDEODRIVER=dummy ./px-selftest
 
 # The shared library the Python binding loads. Built PIC and separate from the
 # executables' objects so -fPIC never leaks into them.
@@ -77,9 +91,9 @@ src/%.pic.o: src/%.c
 
 clean:
 	rm -f $(GAME_OBJ) $(PX_OBJ) $(LIB_OBJ) tools/selftest.o $(DEPS) \
-	      $(BIN) $(SELFTEST) $(PXBIN) $(LIB)
+	      $(BIN) $(SELFTEST) $(PXBIN) $(LIB) tools/selftest_v2.o tools/px_smoke.o px-selftest tools/light_incremental_test.o light-selftest tools/fidelity_test.o fidelity-selftest
 
-DEPS := $(GAME_OBJ:.o=.d) $(PX_OBJ:.o=.d) $(LIB_OBJ:.o=.d) tools/selftest.d
+DEPS := $(GAME_OBJ:.o=.d) $(PX_OBJ:.o=.d) $(LIB_OBJ:.o=.d) tools/selftest_v2.d tools/px_smoke.d tools/light_incremental_test.d tools/fidelity_test.d
 -include $(DEPS)
 
-.PHONY: all check clean lib
+.PHONY: all check clean lib check-pixel

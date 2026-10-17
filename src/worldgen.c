@@ -211,10 +211,14 @@ static void gen_ores(Env *e) {
         grow_vein(e, x, y, TILE_IRON_ORE, 0, WORLD_H - 1);
     }
 
-    /* Gold last, so its veins overwrite iron where the bands overlap: the
-       deepest rows should read as gold-bearing. Scarce by design — it is the
-       tier the iron pickaxe unlocks, so it must stay worth the descent, and it
-       is pinned inside its band so no gold is reachable before that gate. */
+    for(int i=0;i<30;i++) {
+        int x=rng_range(&e->rng,2,WORLD_W-3);
+        int y=weighted_row(e,52,top,false);
+        grow_vein(e,x,y,TILE_SILVER_ORE,0,WORLD_H-1);
+    }
+
+    /* Gold last, overwriting other ores where bands overlap. Its distribution
+       rewards deeper exploration, but the starter copper pick can mine it. */
     int gold = rng_range(&e->rng, 12, 20);
     for (int i = 0; i < gold; ++i) {
         int x = (int)rng_below(&e->rng, WORLD_W);
@@ -301,14 +305,16 @@ static void place_player(Env *e, const bool *trunk) {
     if (best == -1) best = mid;
 
     e->px = best;
-    e->py = clampi(e->surface[best] - 1, PLAYER_H - 1, WORLD_H - 1);
+    int support=e->surface[best];
+    for(int col=1;col<PLAYER_W;col++) if(e->surface[best+col]<support) support=e->surface[best+col];
+    e->py = clampi(support - 1, PLAYER_H - 1, WORLD_H - 1);
     e->facing = 1;
 
     /* Clear the whole body column — feet at py up through the head at
        py - PLAYER_H + 1 — even if a neighbouring tree dropped leaves into it. */
-    for (int y = e->py; y > e->py - PLAYER_H && y >= 0; --y)
-        if (e->tiles[y][e->px] != TILE_BEDROCK)
-            e->tiles[y][e->px] = TILE_AIR;
+    for(int col=0;col<PLAYER_W;col++) for (int y = e->py; y > e->py - PLAYER_H && y >= 0; --y)
+        if (tile_solid((Tile)e->tiles[y][e->px+col]) && e->tiles[y][e->px+col] != TILE_BEDROCK)
+            e->tiles[y][e->px+col] = TILE_AIR;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -322,4 +328,38 @@ void world_generate(Env *e) {
     gen_ores(e);
     gen_trees(e, trunk);
     place_player(e, trunk);
+    /* Two surface supply chests plus eight compact underground treasure
+       rooms. Each is spatially separated; contents vary, item universe doesn't. */
+    e->chest_count=MAX_CHESTS;
+    for(int i=0;i<MAX_CHESTS;i++) {
+        Chest *c=&e->chests[i];
+        c->x=i<2?(i?WORLD_W-12:11):8+(i-2)*15+rng_range(&e->rng,0,5);
+        c->y=i<2?e->surface[c->x]-1:rng_range(&e->rng,45,89);
+        if(i>=2) {
+            for(int y=c->y-3;y<=c->y;y++) for(int x=c->x-3;x<=c->x+3;x++) e->tiles[y][x]=TILE_AIR;
+            for(int x=c->x-3;x<=c->x+3;x++) e->tiles[c->y+1][x]=TILE_WOOD;
+            e->tiles[c->y][c->x+2]=TILE_LIFE_CRYSTAL;
+            e->mobs[i-2]=(Mob){c->x-2,c->y-2,16,i%8,0,1,MOB_CAVE_BAT};
+        } else {
+            e->tiles[c->y][c->x]=TILE_AIR;
+            e->tiles[c->y-1][c->x]=TILE_AIR;
+        }
+        e->tiles[c->y][c->x]=TILE_CHEST;
+        c->loot[ITEM_LESSER_POTION]=rng_range(&e->rng,2,4);
+        c->loot[ITEM_ROPE]=rng_range(&e->rng,20,40);
+        c->loot[ITEM_TORCH]=rng_range(&e->rng,6,12);
+        if(i>=2) c->loot[ITEM_CLOUD_BOTTLE]=1;
+        else c->loot[ITEM_WOOD_SWORD]=1;
+    }
+    /* Mushrooms are an early recovery source, not a synthetic healing token. */
+    for(int x=3;x<WORLD_W-3;x+=5) {
+        int y=e->surface[x]-1;
+        if(e->tiles[y][x]==TILE_AIR && x!=e->px) e->tiles[y][x]=TILE_MUSHROOM;
+    }
+    /* Nearby slimes are available immediately without spawning on the player. */
+    for(int i=0;i<2;i++) {
+        int x=e->px+(i?12:-12);
+        if(in_bounds(x,e->py) && !tile_solid(tile_at(e,x,e->surface[x]-1)))
+            e->mobs[i]=(Mob){x,e->surface[x]-1,25,i*4,0,1,MOB_BLUE_SLIME};
+    }
 }

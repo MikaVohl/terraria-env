@@ -4,7 +4,7 @@ Loads the C core through ctypes and exposes it with Gymnasium's signatures.
 Gymnasium itself is optional: the plain `TerrariaLite` class needs nothing but
 numpy, so the environment is runnable before you have decided on a trainer. If
 gymnasium is installed, `TerrariaLiteEnv` wraps it as a real `gymnasium.Env`
-and registers `TerrariaLite-v0`.
+and registers the current versioned `TerrariaLite-v4` environment.
 
 Build the library first:
 
@@ -57,9 +57,16 @@ _P_I32 = ctypes.POINTER(ctypes.c_int)
 for _name in ("tl_view_w", "tl_view_h", "tl_view_cells", "tl_tile_kinds",
               "tl_status_len", "tl_action_count", "tl_ach_count",
               "tl_item_count", "tl_unknown_tile", "tl_default_steps",
-              "tl_status_inv0", "tl_status_ach0", "tl_inv_clip"):
+              "tl_status_inv0", "tl_status_ach0", "tl_inv_clip",
+              "tl_env_version", "tl_status_entity0","tl_player_w","tl_player_h",
+              "tl_jump_height","tl_fall_safe","tl_fall_damage","tl_health_cap",
+              "tl_world_h","tl_status_depth","tl_reach_count","tl_mine_first","tl_place_first"):
     getattr(_lib, _name).restype = ctypes.c_int
     getattr(_lib, _name).argtypes = []
+
+for _name in ("tl_reach_dx","tl_reach_dy"):
+    getattr(_lib,_name).restype=ctypes.c_int
+    getattr(_lib,_name).argtypes=[ctypes.c_int]
 
 _lib.tl_action_name.restype = ctypes.c_char_p
 _lib.tl_action_name.argtypes = [ctypes.c_int]
@@ -76,6 +83,8 @@ _lib.tl_destroy.argtypes = [ctypes.c_void_p]
 _lib.tl_reset.restype = None
 _lib.tl_reset.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong,
                           _P_U8, _P_U8, _P_F32]
+_lib.tl_observe.restype = None
+_lib.tl_observe.argtypes = [ctypes.c_void_p,_P_U8,_P_U8,_P_F32]
 _lib.tl_step.restype = None
 _lib.tl_step.argtypes = [ctypes.c_void_p, ctypes.c_int,
                          _P_U8, _P_U8, _P_F32,
@@ -100,6 +109,15 @@ class _Spec:
     """Observation and action layout, read from the C library."""
 
     def __init__(self, lib):
+        self.version = lib.tl_env_version()
+        self.player_w=lib.tl_player_w();self.player_h=lib.tl_player_h()
+        self.jump_height=lib.tl_jump_height();self.fall_safe=lib.tl_fall_safe()
+        self.fall_damage=lib.tl_fall_damage();self.health_cap=lib.tl_health_cap()
+        self.world_h=lib.tl_world_h();self.status_depth=lib.tl_status_depth()
+        self.reach_count=lib.tl_reach_count()
+        self.mine_first=lib.tl_mine_first();self.place_first=lib.tl_place_first()
+        self.reach_offsets=[(lib.tl_reach_dx(i),lib.tl_reach_dy(i)) for i in range(self.reach_count)]
+        self.status_entity0 = lib.tl_status_entity0()
         self.view_w = lib.tl_view_w()
         self.view_h = lib.tl_view_h()
         self.cells = lib.tl_view_cells()
@@ -125,7 +143,7 @@ class _Spec:
                             for t in range(self.tile_kinds - 1)]
 
     def __repr__(self):
-        return (f"<terraria-lite {self.view_w}x{self.view_h} window, "
+        return (f"<terraria-lite v{self.version} {self.view_w}x{self.view_h} window, "
                 f"{self.tile_kinds} tile kinds, {self.status_len} status, "
                 f"obs={self.obs_size}, actions={self.n_actions}>")
 
@@ -227,12 +245,11 @@ class TerrariaLite:
                 bool(self._term.value), bool(self._trunc.value), self._info())
 
     def action_mask(self) -> np.ndarray:
-        """Bool array over actions: True where the action would change state.
+        """Physical/epistemic legality, not a recommendation of useful actions.
 
-        About two thirds of the action space is inert in any given state --
-        crafting without materials, placing without blocks, mining air -- and
-        an unmasked policy spends most of its samples discovering that. Never
-        all-False: `noop` is always available.
+        Attacking empty air and healing at full health remain legal. Mining
+        or placing into darkness permits attempts without disclosing tiles.
+        Never all-False: `noop` is always available.
         """
         _lib.tl_action_mask(self._h, self._p_mask)
         return self._mask.astype(bool)
@@ -245,14 +262,20 @@ class TerrariaLite:
 
     def view(self) -> np.ndarray:
         """The raw tile-id window, shaped (view_h, view_w). unknown_tile = unlit."""
+        _lib.tl_observe(self._h,self._p_tile,self._p_light,self._p_status)
         return self._tile.reshape(SPEC.view_h, SPEC.view_w).copy()
 
     def render_ascii(self) -> str:
         """The agent's actual view as text. Blank means unlit: not seen at all."""
         out = []
-        for row in self.view():
-            out.append("".join(" " if t == SPEC.unknown_tile else SPEC.tile_glyphs[t]
-                               for t in row))
+        for y,row in enumerate(self.view()):
+            chars=[]
+            for x,t in enumerate(row):
+                k=y*SPEC.view_w+x
+                mob=self._status[SPEC.status_entity0+k*4:SPEC.status_entity0+k*4+2]
+                chars.append("B" if mob[1] else "S" if mob[0] else
+                             " " if t==SPEC.unknown_tile else SPEC.tile_glyphs[t])
+            out.append("".join(chars))
         return "\n".join(out)
 
 
@@ -291,7 +314,7 @@ try:  # optional
         def close(self):
             self._env.close()
 
-    gym.register(id="TerrariaLite-v0",
+    gym.register(id=f"TerrariaLite-v{SPEC.version}",
                  entry_point="terraria_lite:TerrariaLiteEnv")
 
     __all__ += ["TerrariaLiteEnv"]
