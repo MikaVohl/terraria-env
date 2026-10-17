@@ -119,6 +119,21 @@
     "result.json": "723a98beb61184cc0475db44ec4a7c06c935c0a5c0ebe5d0c10f2817c389282c",
     "audit.json": "a89e1e834284e9367c4dd7ccc95459bad2b0cab5e38d000e26c52a907b718c46"
   },
+  "25-gemini-tools-slime": {
+    "manifest.json": "7c8ae9212794830b03be840613df502343865c5234475e072c94aac601bec832",
+    "result.json": "675bff081c437ee4d9c1eacf81dadaac7cc84eb353d08f5ec89e28abc72161f7",
+    "audit.json": "ebb7919d93b1045b0978cfbcf847826148c91bc40c084b7347013840288192bf"
+  },
+  "26-haiku-json-slime": {
+    "manifest.json": "cf40faaa55cb612478a008a256f0a02488ce38d045417c8517756e05528907c1",
+    "result.json": "f756de53c20036a3ff79d16425a9d33fe29873ffe82d48b5f0aa472c9d9e6547",
+    "audit.json": "64db79217358bf028913adc96168cb075304a8327c9dba14789d12d3d3907bc9"
+  },
+  "27-gemini-paused-slime": {
+    "manifest.json": "ae97069d96001f35270120064ae43aa4f879ac2b188484dc74b45d79a421ba5e",
+    "result.json": "d5edb184fdf0cd8ff7c3aaf2d3ff347734e4ea898e4a0994b4df821105142b44",
+    "audit.json": "acc93f50b2883aa0d70db9ffb7befc9365759414ce6f05bf315b68fa709c5f0e"
+  },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",

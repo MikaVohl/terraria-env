@@ -1,0 +1,30 @@
+{
+  "campaign": "runs/diagnostic-campaign-01",
+  "fixture": "runs/fixtures/diagnostic-v04",
+  "description": "Adaptive combat follow-up after case 27 hit the target for 4 damage before an SSL transport failure: a new complete paused attempt, then explicitly combined normalized coordinates and paused inference. Keep original partial run and uncertain reservation; no hidden retries. Execute after the fresh-world repeats. The combined follow-up has 32 calls/600 wall seconds to diagnose additional control opportunity; it does not isolate coordinate or clock effects.",
+  "jobs": [
+    {
+      "id": "C01-gemini-paused-slime",
+      "model": "google/gemini-3.8-flash",
+      "variant": "paused",
+      "scenario": "slime",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "C02-gemini-normalized-paused-slime",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "scenario": "slime",
+      "calls": 32,
+      "seconds": 600,
+      "sim_seconds": 120,
+      "usd": 0.45,
+      "reasoning": "medium",
+      "clock": "paused"
+    }
+  ]
+}

@@ -38,3 +38,18 @@ holds reached five seconds. This is an availability/adoption observation, not
 a direct evaluation of executing that macro; zero wood cannot establish that
 the macro itself was ineffective. The simpler long-hold attempt used eight
 commands above two seconds (maximum four seconds) and obtained a workbench.
+
+## 25-gemini-tools-slime: in-game menu stopped world exposure
+
+This externally real-time attempt ended in Settings → Cursor. The input journal
+shows Esc, a click near Settings at (900,975), then two menu clicks at (350,510)
+and (350,515). The final screenshot shows the Cursor settings panel, not combat.
+The attempt ran for 87.7 agent wall seconds but recorded 62 nominal simulation
+seconds. Heartbeats were one second apart before stopping in the menu; no
+external process pause was enabled. This supports attributing the shortened
+world exposure to the menu state rather than to the declared paused variant.
+
+Future protocols should explicitly decide whether agents may use in-game pause
+menus, and observe menu state. Here the action remains a legitimate recorded
+game input and the combat outcome remains unsuccessful. A real-time condition
+label describes the external scheduler, not a guarantee of continuous gameplay.

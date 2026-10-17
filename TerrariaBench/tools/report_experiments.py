@@ -53,7 +53,7 @@ def main():
                   'wood checkpoints are excluded from progress. Workbench/torch/furnace columns measure newly observed possession, '
                   'not independent proof of the crafting operation.','']
         elif scenario=='slime':
-            out+=['Guide removed; one blue slime is armed after window setup. The initial rendered frame may precede '
+            out+=['Guide removed; one designated blue slime is armed after window setup, while natural background mobs remain enabled. Only damage to that target is attributed. The initial rendered frame may precede '
                   'the spawn. Target death and attributed player damage are distinct; the original operator positive '
                   'control verified one hit, but not the kill detector. These attempts do not establish a clean clock effect.','']
         out+=['| Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / frames | Cost | Audit |',

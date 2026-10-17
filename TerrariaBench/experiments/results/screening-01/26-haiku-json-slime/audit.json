@@ -1,0 +1,14 @@
+{
+  "artifact_checks_passed": true,
+  "all_calls_accounted": true,
+  "responses": 16,
+  "commands": 71,
+  "images_verified": 16,
+  "source_files_verified": 22,
+  "exact_telemetry_export_match": true,
+  "inert_post_snapshot_heartbeats": 0,
+  "raw_telemetry_hashes": {
+    "telemetry/329e58728b3448c99e05b0c3554ea6f5.jsonl": "31025cbc3ae8d8839570af10ed6057fe51bcf06e083e2151352e320c7c0185d3"
+  },
+  "official_eligible": false
+}

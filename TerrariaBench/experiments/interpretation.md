@@ -5,6 +5,10 @@ Fresh-world scenarios preserve normal gameplay except the named PvE ablation.
 Prepared crafting supplies 50 wood, 50 stone and 5 gel before baseline/timer.
 Prepared combat removes the Guide and arms one blue slime after window setup.
 Neither prepared task constitutes fresh-world campaign progress.
+Natural background hostile spawns remain enabled in prepared combat; this is a
+designated-target task, not a guaranteed single-enemy arena. Only damage to that
+tracked target is attributed. Zero target damage does not prove zero damage to
+every other NPC.
 
 ## Contrasts
 
@@ -40,6 +44,9 @@ Neither prepared task constitutes fresh-world campaign progress.
   observer updates (60 updates/second). Whole-process stopping is verified, but
   update counts are observer measurements rather than an attested step API;
   observation, focus, input release and final cleanup advance simulation too.
+  Agents can also enter ordinary in-game menus that stop world updates (observed
+  in case 25). Real-time labels describe the external scheduler, not a guarantee
+  that the agent always remains in active gameplay.
 - Stock transport has no retry. Truncated calls retain conservative uncertain
   reservations in the campaign cap. Provider failures are separate from agent
   failures. A fresh repeated attempt is a new recorded sample, not a hidden retry.
@@ -99,3 +106,11 @@ Neither prepared task constitutes fresh-world campaign progress.
   and replaces the truncated baseline with clean attempts; it remains adaptive
   development on the same world, not held-out confirmation. Run after screening
   and stop at the existing shared budget cap. No hidden response retries.
+- Case 27 (Gemini paused combat) recorded 4 target damage before an SSL transport
+  failure on call 8. Keep it partial with an uncertain charge. Select two new,
+  separately named combat follow-ups after the repeat cohort: one complete
+  paused attempt, then paused plus normalized coordinates. The combined
+  condition is an adaptive interaction probe, not a one-factor contrast against
+  the original real-time pixel baseline. It also allows 32 calls/600 wall seconds
+  to diagnose additional control opportunity; all other screening cells retain
+  their declared limits. Existing setup limitations still apply.

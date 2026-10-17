@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **28 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **31 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$1.100954**; unresolved reservations: **$0.043008**. Combined accounted exposure: **$1.143962** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$1.220928**; unresolved reservations: **$0.138547**. Combined accounted exposure: **$1.359475** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -54,12 +54,15 @@ Starting 50 wood, 50 stone and 5 gel are inherited setup. Wood maxima include in
 
 ## Prepared combat
 
-Guide removed; one blue slime is armed after window setup. The initial rendered frame may precede the spawn. Target death and attributed player damage are distinct; the original operator positive control verified one hit, but not the kill detector. These attempts do not establish a clean clock effect.
+Guide removed; one designated blue slime is armed after window setup, while natural background mobs remain enabled. Only damage to that target is attributed. The initial rendered frame may precede the spawn. Target death and attributed player damage are distinct; the original operator positive control verified one hit, but not the kill detector. These attempts do not establish a clean clock effect.
 
 | Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / frames | Cost | Audit |
 |---|---:|---|---|---|---|---|---:|---|
 | [02-haiku-paused-slime](02-haiku-paused-slime/result.json) | 0 | no | 0 / no | 0 / no | 0 / 0 | 16 / 17 | $0.02552 | pass |
 | [24-haiku-tools-slime](24-haiku-tools-slime/result.json) | 0 | no | 0 / no | 0 / no | 132 / 1 | 16 / 17 | $0.02760 | pass |
+| [25-gemini-tools-slime](25-gemini-tools-slime/result.json) | 0 | no | 0 / no | 0 / no | 40 / 0 | 16 / 9 | $0.06012 | pass |
+| [26-haiku-json-slime](26-haiku-json-slime/result.json) | 0 | no | 0 / no | 0 / no | 80 / 0 | 16 / 17 | $0.02681 | pass |
+| [27-gemini-paused-slime](27-gemini-paused-slime/result.json) | 0 | no | 0 / no | 4 / no | 15 / 0 | 8 / 4 | $0.02849 | partial |
 | [N02-gemini-normalized-slime](N02-gemini-normalized-slime/result.json) | 0 | no | 0 / no | 0 / no | 54 / 0 | 16 / 9 | $0.07700 | pass |
 
 ## Interpretation boundaries
