@@ -30,6 +30,17 @@ private-test consumption, promotion or additional paid runs. Any future paid
 comparison needs equal per-world budgets, explicit observation cadence and
 predeclared controls; no such follow-on is launched here.
 
+**Later October17 authorization:** the user granted **$3 additional API budget**
+for broad harness experiments. A separate [eight-attempt paired scaffold study](LUNA_HARNESS_STUDY_2026_10_17.md)
+is now launched: full16/compact16/compact4/compact16_interrupt on two fresh
+worlds, $0.35 independent guards each ($2.80 total; no reallocation). The
+[predeclared protocol](LUNA_HARNESS_PROTOCOL_2026_10_17.md) fixes the new snapshot,
+common model/high reasoning, native game, progression and censoring metrics.
+This supersedes the prior batch's stop-spending instruction only for these
+attempts. Audit all8 outcomes/replays/costs and methodology tradeoffs, report
+without cherry-picking, then stop and pause the Luna follow-up. No follow-on
+sweep or change to the ongoing PPO study/game/default policies.
+
 ## Historical plan and completed evidence
 
 Historical v1 plan. The combat/exploration contract is in [V2.md](V2.md);
