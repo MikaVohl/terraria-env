@@ -1,0 +1,9 @@
+{
+  "status": "template_only_no_verified_provider_ids_or_prices",
+  "models": [
+    {"label": "OpenAI vision candidate", "provider": "openai", "model_id": null, "vision_verified": false, "price_verified_at": null},
+    {"label": "Anthropic vision candidate", "provider": "anthropic", "model_id": null, "vision_verified": false, "price_verified_at": null},
+    {"label": "Google vision candidate", "provider": "google", "model_id": null, "vision_verified": false, "price_verified_at": null},
+    {"label": "Open-weight vision candidate", "provider": "local_or_hosted", "model_id": null, "vision_verified": false, "price_verified_at": null}
+  ]
+}

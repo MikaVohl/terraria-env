@@ -1,0 +1,67 @@
+{
+  "profile_id": "reference-reconstructed-v1",
+  "purpose": "Baseline reconstructed from terrariabench.com before developing improvements",
+  "exact_reproduction": false,
+  "comparison_target": "published_20260507_api_sweep",
+  "task": "open_ended",
+  "endpoint": "wall_of_flesh",
+  "environment": {
+    "viewport": [1024, 1024],
+    "coordinates": "screenshot_pixels",
+    "ui_scale": 0.9,
+    "zoom": 1.0,
+    "language": "en-US",
+    "hostile_mobs_enabled": false,
+    "pve_enabled": false,
+    "pve_policy": "suppress_hostile_NPCs_and_hostile_projectiles_without_loot_or_defeat_credit",
+    "character": "fresh_classic_standard_starter_inventory_100HP_20MP",
+    "starter_prefixes": "plain_as_observed_in_reference_first_frames",
+    "world": "fresh_small_classic_corruption_normal_seed",
+    "development_seed": "32000001",
+    "exact_reference_seed_known": false,
+    "fixture_policy": "immutable_copy_per_attempt_no_agent_reset"
+  },
+  "agent": {
+    "harness": "reconstructed_shared_API_tool_loop",
+    "observation_tools": ["look", "checkpoints"],
+    "action_tool": "act",
+    "context": "full_conversation_until_explicit_resource_stop_no_silent_compaction",
+    "task_prompt": "prompts/reference_open_ended.txt",
+    "strategy_hints": false,
+    "external_tools": false,
+    "max_hold_ms": 2000,
+    "max_inputs_per_tool_call": 16
+  },
+  "scoring": {
+    "catalog": "public_reference_manifest_v1",
+    "complete_upstream_catalog_known": false,
+    "method": "distinct_action_backed_whitelisted_progress_checkpoints",
+    "include_diagnostics": false,
+    "reject_direct_tile_control": true,
+    "legacy_29_point_score": false
+  },
+  "evaluation": {
+    "reference_wall_seconds": 28800,
+    "reasoning_effort": "medium",
+    "start_with_mobs_off": true,
+    "calibration_is_not_an_8_hour_evaluation": true,
+    "promote_improvements_only_after_baseline_validation": true
+  },
+  "confirmed": [
+    "Published runs use API harness, while spec describes native CLI harnesses",
+    "1024x1024 screenshots with standard starter hotbar and checkpoint text",
+    "Hostile mobs and PvE disabled in published result metadata",
+    "Open-ended progression task, checkpoints readable by agent",
+    "Real pointer input required; direct tile-control runs invalid",
+    "28800 second reference budget and medium reasoning",
+    "Published wood milestone scores and public heatmap milestone identifiers"
+  ],
+  "inferred_or_unavailable": [
+    "Exact task/system prompt and full API implementation",
+    "World seed, size, evil, save files and generation settings",
+    "Game/mod build and complete checkpoint catalog/predicates",
+    "Meaning/implementation of disabled PvE beyond boolean metadata",
+    "Context retention/compaction, token limits, sampling and action-hold ceiling",
+    "Exact action attribution and game-clock semantics"
+  ]
+}

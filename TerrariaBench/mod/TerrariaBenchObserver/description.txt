@@ -1,0 +1,5 @@
+Single-player progression telemetry for an experimental AI benchmark.
+Telemetry is disabled unless TERRARIABENCH_TELEMETRY_DIR is set before launch.
+Default mode observes only. The explicit reconstructed-reference profile adds
+documented scenario policies for disabled PvE and plain starter item prefixes.
+This prototype cannot certify exact reference reproduction or official results.

@@ -1,0 +1,40 @@
+{
+  "campaign": "runs/diagnostic-campaign-01",
+  "fixture": "runs/fixtures/diagnostic-v04",
+  "description": "Exploratory one-factor screening; 01 was a separately recorded initial pilot. No repeats yet; all scenarios share one world.",
+  "jobs": [
+    {
+      "id": "02-haiku-paused-slime",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "paused",
+      "scenario": "slime",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "03-haiku-json-crafting",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "json",
+      "scenario": "crafting",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "04-gemini-tools-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "annotation": "Manual visual bounding boxes from inspected screenshots, exploratory 3-case probe; not a validated perception benchmark.",
+  "models": [
+    "anthropic/claude-haiku-5.5",
+    "google/gemini-3.8-flash",
+    "deepseek/deepseek-v4.1-flash-1017"
+  ],
+  "cases": [
+    {
+      "id": "tree",
+      "image": "runs/diagnostic-campaign-01/01-haiku-tools-fresh/frames/00002.png",
+      "target_description": "base of the closest tree trunk where it meets the ground",
+      "question": "a string naming the correct starter tool for chopping that tree",
+      "player_box": [
+        497,
+        485,
+        526,
+        535
+      ],
+      "target_box": [
+        512,
+        516,
+        537,
+        539
+      ],
+      "accepted_answers": [
+        "axe",
+        "copper axe"
+      ]
+    },
+    {
+      "id": "slime",
+      "image": "runs/diagnostic-campaign-01/02-haiku-paused-slime/frames/00010.png",
+      "target_description": "center of the blue slime",
+      "question": "the string yes or no: is the slime currently within reach of a stationary copper shortsword attack?",
+      "player_box": [
+        497,
+        485,
+        526,
+        535
+      ],
+      "target_box": [
+        355,
+        494,
+        395,
+        523
+      ],
+      "accepted_answers": [
+        "no"
+      ]
+    },
+    {
+      "id": "craft",
+      "image": "runs/diagnostic-campaign-01/03-haiku-json-crafting/frames/00009.png",
+      "target_description": "the currently selected crafting recipe button that would produce the item when clicked",
+      "question": "a string naming the currently selected crafting item",
+      "player_box": [
+        497,
+        485,
+        526,
+        535
+      ],
+      "target_box": [
+        22,
+        600,
+        60,
+        645
+      ],
+      "accepted_answers": [
+        "workbench",
+        "work bench"
+      ]
+    }
+  ]
+}

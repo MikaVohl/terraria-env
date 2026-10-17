@@ -1,0 +1,443 @@
+{
+  "captured_utc": "2026-10-17T21:22:40.617618+00:00",
+  "source": "https://terrariabench.com/",
+  "artifacts": [
+    {
+      "url": "https://terrariabench.com/charts/manifest.json",
+      "relative_path": "charts/manifest.json",
+      "status": 200,
+      "sha256": "3b3d384ca13af7126d088e2ec3228badb8686044e30a68661130777975b1f087",
+      "bytes": 5944
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_anthropic_claude-opus-4.7_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_anthropic_claude-opus-4.7_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "c7a9fab4fa92f608fd56fff1791355a73910f7bf99499c306ed064f6ceb7d447",
+      "bytes": 5075
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "bf262258f1e7b108bad4a3a3e55206938b1eeed8e7407fddb9e8c41885841b11",
+      "bytes": 5962
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3.1-flash-lite-preview_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3.1-flash-lite-preview_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "a5e9337433549da9ba586e9e2b368f67ad572fdf836d466288eebe68dc92f5ba",
+      "bytes": 5653
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3.1-pro-preview_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3.1-pro-preview_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "d7c1e3151e2a8676d684ec6527d136c6febbf8572a8bbe6a01babbb52aec3312",
+      "bytes": 5350
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_moonshotai_kimi-k2.6_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_moonshotai_kimi-k2.6_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "e95541015aeaef6baac0f82393c9bb0d331f15f27a0d177228c9dd7bfa057bf0",
+      "bytes": 5048
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_openai_gpt-5.5_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_openai_gpt-5.5_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "b7301cb655213809c372ad9eef1bb08c1f1375b15dd37487d8890432d9a9bbd7",
+      "bytes": 4686
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_qwen_qwen3.6-27b_03_open_ended_progress/result.json",
+      "relative_path": "runs/20260507_164917_1_api_qwen_qwen3.6-27b_03_open_ended_progress/result.json",
+      "status": 200,
+      "sha256": "463a036716dd611f441ad76ca18d6a59f9c5b48206c3a04d13a0220bd605d0f0",
+      "bytes": 5017
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/frames/frame_00001.png",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/frames/frame_00001.png",
+      "status": 200,
+      "sha256": "89d7ec13a7aa8499b48e9b4f700c8d9dec9e13162dd7cf1773875d8a4a73d28f",
+      "bytes": 358371,
+      "image_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/frames/manifest.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/frames/manifest.json",
+      "status": 200,
+      "sha256": "f80d2455f9dadadaeb2b0bdecb6571c9b823bca386156eca5e38e3f6e47ebf20",
+      "bytes": 518808
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/hyperparameters.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/hyperparameters.json",
+      "status": 404
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/setup.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/setup.json",
+      "status": 404
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/preflight.json",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/preflight.json",
+      "status": 404
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/transcript.jsonl",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/transcript.jsonl",
+      "status": 404
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/checkpoints.jsonl",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/checkpoints.jsonl",
+      "status": 404
+    },
+    {
+      "url": "https://terrariabench.com/runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/actions.jsonl",
+      "relative_path": "runs/20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress/actions.jsonl",
+      "status": 404
+    },
+    {
+      "url": "https://terrariabench.com/docs/SPEC.txt",
+      "relative_path": "docs/SPEC.txt",
+      "status": 200,
+      "sha256": "51ab8e9c899953aeb09bc1bdf5856263056d33d9e0ece3e95c4aceee6dc7be46",
+      "bytes": 4566
+    },
+    {
+      "url": "https://terrariabench.com/docs/README.txt",
+      "relative_path": "docs/README.txt",
+      "status": 200,
+      "sha256": "d4390f9cfade9d2182a10d4710ba72f0cb1735a8386394382d9a62b886094912",
+      "bytes": 1820
+    },
+    {
+      "url": "https://terrariabench.com/docs/harness-traces.txt",
+      "relative_path": "docs/harness-traces.txt",
+      "status": 200,
+      "sha256": "ebbcf4b960907dd7d9cb34ece440eca902202cd79e4afd91f5179a9baf1ba284",
+      "bytes": 3024
+    }
+  ],
+  "published_runs": [
+    {
+      "run_id": "20260507_164917_1_api_anthropic_claude-opus-4.7_03_open_ended_progress",
+      "model": "anthropic/claude-opus-4.7",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 0,
+      "direct_tile_control_used": false,
+      "stalled": true,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_pickaxe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 3.7333333333333334
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 10.366666666666667
+        },
+        {
+          "milestone": "inventory_opened",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 857.7333333333333
+        }
+      ]
+    },
+    {
+      "run_id": "20260507_164917_1_api_google_gemini-3-flash-preview_03_open_ended_progress",
+      "model": "google/gemini-3-flash-preview",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 4,
+      "direct_tile_control_used": false,
+      "stalled": true,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 2.15
+        },
+        {
+          "milestone": "wood_1",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 668.4
+        },
+        {
+          "milestone": "wood_10",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 669.3833333333333
+        },
+        {
+          "milestone": "held_pickaxe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 865.75
+        },
+        {
+          "milestone": "wood_25",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 1111.15
+        },
+        {
+          "milestone": "wood_100",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 2819.35
+        }
+      ]
+    },
+    {
+      "run_id": "20260507_164917_1_api_google_gemini-3.1-flash-lite-preview_03_open_ended_progress",
+      "model": "google/gemini-3.1-flash-lite-preview",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 3,
+      "direct_tile_control_used": false,
+      "stalled": false,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 1.9333333333333333
+        },
+        {
+          "milestone": "wood_1",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 99.48333333333333
+        },
+        {
+          "milestone": "wood_10",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 99.95
+        },
+        {
+          "milestone": "held_pickaxe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 2183.6833333333334
+        },
+        {
+          "milestone": "wood_25",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 2951.2
+        }
+      ]
+    },
+    {
+      "run_id": "20260507_164917_1_api_google_gemini-3.1-pro-preview_03_open_ended_progress",
+      "model": "google/gemini-3.1-pro-preview",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 3,
+      "direct_tile_control_used": false,
+      "stalled": true,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 2.7333333333333334
+        },
+        {
+          "milestone": "wood_1",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 835.3
+        },
+        {
+          "milestone": "wood_10",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 836.3833333333333
+        },
+        {
+          "milestone": "wood_25",
+          "category": "progress",
+          "agent_driven": true,
+          "elapsed_seconds": 1269.9833333333333
+        }
+      ]
+    },
+    {
+      "run_id": "20260507_164917_1_api_moonshotai_kimi-k2.6_03_open_ended_progress",
+      "model": "moonshotai/kimi-k2.6",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 0,
+      "direct_tile_control_used": false,
+      "stalled": true,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_pickaxe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 7.7
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 926.0833333333334
+        },
+        {
+          "milestone": "inventory_opened",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 1829.2333333333333
+        }
+      ]
+    },
+    {
+      "run_id": "20260507_164917_1_api_openai_gpt-5.5_03_open_ended_progress",
+      "model": "openai/gpt-5.5",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 0,
+      "direct_tile_control_used": false,
+      "stalled": true,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 3.3
+        },
+        {
+          "milestone": "held_pickaxe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 2897.616666666667
+        }
+      ]
+    },
+    {
+      "run_id": "20260507_164917_1_api_qwen_qwen3.6-27b_03_open_ended_progress",
+      "model": "qwen/qwen3.6-27b",
+      "harness": "api",
+      "budget_seconds": 28800,
+      "reasoning_effort": "medium",
+      "hyperparameters": {
+        "hostile_mobs_enabled": false,
+        "pve_enabled": false
+      },
+      "expected_agency_score": 0,
+      "direct_tile_control_used": false,
+      "stalled": false,
+      "scoring_checkpoints": [
+        {
+          "milestone": "held_weapon",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 0.0
+        },
+        {
+          "milestone": "held_pickaxe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 2.3666666666666667
+        },
+        {
+          "milestone": "held_axe",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 9.883333333333333
+        },
+        {
+          "milestone": "inventory_opened",
+          "category": "non_scoring",
+          "agent_driven": false,
+          "elapsed_seconds": 1025.3
+        }
+      ]
+    }
+  ]
+}

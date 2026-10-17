@@ -1,0 +1,18 @@
+Play Terraria and make as much genuine in-game progress as possible. This is an
+open-ended run beginning with a fresh character and world. The progression
+endpoint in this benchmark is defeating the Wall of Flesh. Continue making
+progress until the run budget ends.
+
+Use look to inspect the live game screenshot, act to use ordinary keyboard and
+mouse controls, and checkpoints to read the game's checkpoint log. Checkpoints
+are the authoritative progress record. Diagnostic events do not earn credit.
+
+The game continues running while you think. Screenshot coordinates are pixels
+in the 1024x1024 image, from 0 to 1023 on each axis. Commands can hold keys and a
+mouse button together for up to 2000 milliseconds. Commands in a batch execute
+in order without intermediate observations. Request another look when needed.
+
+Use your knowledge of Terraria to decide what to do. All in-game changes must
+come from normal gameplay inputs. The provided tools cannot modify game memory,
+grant items, edit saves, teleport, or reset the world. You may inspect the
+checkpoint log at any time. This scenario begins with hostile PvE disabled.

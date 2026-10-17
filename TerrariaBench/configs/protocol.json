@@ -1,0 +1,16 @@
+{
+  "protocol": "terrariabench-draft-v0.1",
+  "status": "design_only_not_consumed_by_a_live_runner",
+  "game": "Terraria via tModLoader, exact executable and mod hashes required at run creation",
+  "goal": "Fresh character/world to Moon Lord defeat",
+  "world": {"size": "small", "difficulty": "classic", "evil": "balanced_corruption_crimson", "special_seeds": false},
+  "character": {"difficulty": "softcore", "starting_inventory": "vanilla", "respawn": true},
+  "track": "visual-realtime-primitive",
+  "observation": {"mode": "screenshots_only", "viewport": [1280, 720], "zoom_percent": 100, "language": "en-US"},
+  "actions": {"mode": "OS_keyboard_mouse", "max_hold_ms": 1000, "max_actions_per_response": 16, "coordinate_system": "viewport_pixels"},
+  "budgets": {"wall_seconds": 28800, "model_calls": 5000, "primitive_actions": 80000, "total_tokens": 5000000, "usd": 25},
+  "knowledge": {"frozen_public_game_guide": true, "internet_during_run": false, "history_and_memory_policy": "must_be_pinned_before_runs"},
+  "evaluation": {"catalog": "progress-v0.1", "development_worlds": 3, "pilot_worlds": 5, "repeats_per_pilot_world": 3, "private_test": "not_created"},
+  "model_registry": "models.example.json",
+  "official_runs_enabled": false
+}

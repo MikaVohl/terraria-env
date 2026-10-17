@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+runs/
+reference/published/
+bin/
+obj/
+*.tmod
+*.wld
+*.plr
+.DS_Store
