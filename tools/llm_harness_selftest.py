@@ -16,10 +16,11 @@ def main():
     import numpy as np
     from terraria_lite import SPEC
     from terraria_lite.llm_protocol import Session, canonical
-    from terraria_lite.llm_bench import config, parse_response, run, verify, read_journal, score
+    from terraria_lite.llm_bench import config, parse_response, run, verify, read_journal, score, model_observation, prompt
     from terraria_lite.llm_providers import OpenRouter, ProviderError
     c = config({"max_steps": 8, "max_calls": 8, "max_actions_per_call": 2})
-    for raw in ({"max_calls": True}, {"seeds": [True]}, {"seeds": [19000001]}, {"seeds": [17000001]}, {"unexpected": 1}):
+    for raw in ({"max_calls": True}, {"seeds": [True]}, {"seeds": [19000001]}, {"seeds": [17000001]}, {"unexpected": 1},
+                {"observation_format":"oracle"}, {"batch_interrupt":"strategy"}):
         try: config(raw)
         except (ValueError, TypeError): pass
         else: raise AssertionError("Invalid config accepted")
@@ -35,6 +36,15 @@ def main():
             session.obs[offset] = np.sqrt(np.float32(count/999))
             assert session.packet()["inventory"][SPEC.item_names[0]] == count
         session.obs[:] = original
+        packet=session.packet(); compact=model_observation(packet,config({'observation_format':'compact'}))
+        assert 'status' not in compact and compact['selected_placeable_one_hot']==packet['status'][17:SPEC.status_inv0]
+        assert {k:v for k,v in compact.items() if k!='selected_placeable_one_hot'}=={k:v for k,v in packet.items() if k!='status'}
+        # Reconstruct the compact status prefix, including exact native inventory float32 encoding.
+        rebuilt=np.zeros(SPEC.status_entity0,dtype=np.float32)
+        rebuilt[:17]=list(compact['scalars'].values());rebuilt[17:SPEC.status_inv0]=compact['selected_placeable_one_hot']
+        for i,name in enumerate(SPEC.item_names):rebuilt[SPEC.status_inv0+i]=np.sqrt(np.float32(compact['inventory'][name]/999))
+        for i,name in enumerate(SPEC.achievement_names):rebuilt[SPEC.status_ach0+i]=name in compact['achievements']
+        np.testing.assert_array_equal(rebuilt,np.array(packet['status'],dtype=np.float32))
     finally: session.close()
     api = config({"provider":"openrouter", "model":"openai/gpt-6.1-sol", "max_steps":8, "max_calls":8,
                   "max_actions_per_call":2,"max_cost_usd_total":2,
@@ -101,6 +111,23 @@ def main():
         assert stopped['episodes'][0]['status']=='call_budget'
         assert stopped['episodes'][0]['steps']==stopped['episodes'][0]['invalid_requests']==2
         assert verify(base/'length',root)['verified_episodes']==1
+        # Illegal action is actually attempted (one paid tick), then remaining list discarded.
+        check=Session(31000001,8,root)
+        try: illegal=int(np.flatnonzero(check.env.action_mask()==0)[0])
+        finally:check.close()
+        def illegal_list(payload,key,timeout):
+            raw=transport(payload,key,timeout)
+            raw['choices'][0]['message']['content']=canonical({'actions':[illegal,0],'memory':''})
+            return raw
+        for policy,expected_steps in [('never',2),('illegal',1)]:
+            cfg={**api,'max_calls':1,'batch_interrupt':policy,'observation_format':'compact','history_turns':2}
+            out=base/('interrupt-'+policy)
+            result=run(cfg,root,out,allow_api=True,provider=OpenRouter(cfg,key='unit-test-only',transport=illegal_list))['episodes'][0]
+            assert result['steps']==expected_steps and result['illegal_attempts']==1
+            assert result['discarded_actions']==(policy=='illegal')
+            assert verify(out,root)['verified_episodes']==1
+            assert 'redundant flat status' in seen[-1]['messages'][0]['content']
+            assert 'status' not in json.loads(seen[-1]['messages'][-1]['content'])['observation']
         def substituted(payload,key,timeout):
             raw=transport(payload,key,timeout);raw['model']='another/model';return raw
         try: OpenRouter(api,key='unit-test-only',transport=substituted).call({},1)

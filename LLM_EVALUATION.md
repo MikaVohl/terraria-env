@@ -4,6 +4,11 @@ Initial implementation: October17, 2026. **Development harness, not a public
 leaderboard.** See [research/design review](LLM_BENCHMARK_RESEARCH_2026_10.md)
 and [first authorized live smoke](LLM_SMOKE_2026_10_17.md).
 
+The separately authorized [Luna harness comparison](LUNA_HARNESS_PROTOCOL_2026_10_17.md)
+uses v0.2 with optional compact observation packets and generic interruption
+after a paid illegal-action tick. These are explicit scaffold settings, not
+gameplay changes. Earlier v0.1 run snapshots/replays remain intact.
+
 The game, action budget and scorer are shared with RL. The agent sees only the
 symbolic local view/status/entities/legal mask plus public rules and recipes.
 No full-map oracle, strategic action mask, navigation controller or generated

@@ -14,7 +14,7 @@ from terraria_lite import SPEC
 from terraria_lite.llm_protocol import Session, canonical, digest, validate_seed
 from terraria_lite.llm_providers import OpenRouter, ProviderError
 
-HARNESS = "terraria-llm-dev-v0.1"
+HARNESS = "terraria-llm-dev-v0.2"
 DEFAULTS = {
     "provider": "random", "model": None, "reasoning_effort": "high",
     "seeds": [31000001], "replicates": 1, "random_seed": 12345,
@@ -24,6 +24,7 @@ DEFAULTS = {
     "request_timeout_seconds": 120, "history_turns": 8, "notes_max_chars": 2048,
     "max_cost_usd_total": 0.0, "input_usd_per_token_ceiling": None,
     "output_usd_per_token_ceiling": None, "pricing_source": None,
+    "observation_format": "full", "batch_interrupt": "never",
 }
 
 
@@ -33,6 +34,8 @@ def config(raw):
     c = {**DEFAULTS, **raw}
     if c["provider"] not in ("random", "noop", "openrouter"):
         raise ValueError("Unknown provider")
+    if c["observation_format"] not in ("full", "compact") or c["batch_interrupt"] not in ("never", "illegal"):
+        raise ValueError("Unknown observation or batch-interruption format")
     for key, maximum in {"replicates": 10, "max_steps": 3000, "max_calls": 3000,
                          "max_actions_per_call": 16, "max_output_tokens": 128000,
                          "max_total_tokens_per_episode": 100_000_000,
@@ -140,8 +143,20 @@ def prompt(session, c):
             f"Submit 1..{c['max_actions_per_call']} primitive actions per call. Each costs a tick; the world advances between them. "
             "There is no observation or conditional control inside a submitted list. An action list is not a macro, pathfinder or recipe executor. "
             "A malformed response costs one noop. Known illegal actions remain attempts. No reset, undo, external tools or code execution. "
-            "No time passes during inference. Memory is reset between episodes; only your own notes and the configured recent turns persist.\n"
+            "No time passes during inference. Memory is reset between episodes; only your own notes and the configured recent turns persist. "
+            + ("After an illegal attempt consumes its tick, the remaining list is discarded and you receive a new observation. " if c["batch_interrupt"] == "illegal" else "")
+            + ("Compact observations omit the redundant flat status array; named scalars, inventory, achievement names, selected_placeable_one_hot and entities preserve its information. " if c["observation_format"] == "compact" else "")
+            + "\n"
             + canonical(session.knowledge()))
+
+
+def model_observation(packet, c):
+    """Remove only redundant fields, never reveal additional world information."""
+    if c["observation_format"] == "full":
+        return packet
+    result = {k: v for k, v in packet.items() if k != "status"}
+    result["selected_placeable_one_hot"] = packet["status"][17:SPEC.status_inv0]
+    return result
 
 
 def score(records, planned):
@@ -181,6 +196,7 @@ def run(raw_config, environment_root, out, *, allow_api=False, key=None, credent
                 "private_holdout": False, "automatic_retries": False,
                 "cost_guard": "Pre-request conservative UTF8-byte token reservation + declared price ceilings. Provider-reported costs retained. Not a substitute for a provider account billing limit; unknown charges stop the run.",
                 "planned_episodes": len(c["seeds"])*c["replicates"]}
+    manifest["batch_policy"] = c["batch_interrupt"]
     (out / "manifest.json").write_text(canonical(manifest) + "\n")
     adapter = provider or (OpenRouter(c, key=key) if c["provider"] == "openrouter" else None)
     records, total_cost, total_reported_cost = [], 0.0, 0.0
@@ -196,7 +212,7 @@ def run(raw_config, environment_root, out, *, allow_api=False, key=None, credent
             session = Session(seed, c["max_steps"], environment_root)
             rng = random.Random(c["random_seed"] + seed + replicate*1_000_003)
             history, memory, actions, first = [], "", [], {}
-            calls = tokens = 0
+            calls = tokens = interrupted_batches = discarded_actions = 0
             episode_cost = 0.0
             begin, status = time.monotonic(), "running"
             error_type = error_message = None
@@ -209,7 +225,7 @@ def run(raw_config, environment_root, out, *, allow_api=False, key=None, credent
                         status = "wall_budget"; break
                     if calls >= c["max_calls"]:
                         status = "call_budget"; break
-                    user = canonical({"observation": session.packet(), "memory": memory,
+                    user = canonical({"observation": model_observation(session.packet(), c), "memory": memory,
                                       "remaining_primitive_actions": c["max_steps"]-session.info["steps"]})
                     messages = [{"role": "system", "content": system}, *history[-2*c["history_turns"]:], {"role": "user", "content": user}]
                     if len(canonical(messages).encode()) > c["max_context_bytes"]:
@@ -257,15 +273,26 @@ def run(raw_config, environment_root, out, *, allow_api=False, key=None, credent
                         chosen, new_memory, valid = [None], "", False
                     if valid:
                         memory = new_memory
+                    executed_batch = 0
                     for action in chosen:
                         if session.ended:
                             break
+                        illegal_before = session.illegal_attempts
                         result = session.act({"action": action})
+                        executed_batch += 1
                         actions.append(result["executed_action"])
                         for achievement in result["achievements"]:
                             first.setdefault(achievement, result["steps"])
                         journal.append("step", action=action, executed_action=result["executed_action"],
                                        reward=result["reward"], observation_sha256=digest(session.packet()))
+                        if c["batch_interrupt"] == "illegal" and session.illegal_attempts > illegal_before and not session.ended:
+                            interrupted_batches += 1
+                            discarded_actions += len(chosen) - executed_batch
+                            journal.append("batch_interrupted", reason="illegal_attempt_after_paid_tick",
+                                           discarded_actions=len(chosen)-executed_batch)
+                            break
+                    journal.append("batch_end", call=calls, submitted_actions=len(chosen), executed_actions=executed_batch,
+                                   native_info=session.info, accounted_cost_usd=episode_cost)
                     history += [{"role": "user", "content": user}, {"role": "assistant", "content": reply["text"]}]
                     history = history[-2*c["history_turns"]:]
                 if session.ended:
@@ -284,6 +311,7 @@ def run(raw_config, environment_root, out, *, allow_api=False, key=None, credent
                           "steps": session.info["steps"], "calls": calls, "tokens": tokens,
                           "first_achievement_steps": first, "native_info": session.info,
                           "invalid_requests": session.invalid_requests, "illegal_attempts": session.illegal_attempts,
+                          "interrupted_batches": interrupted_batches, "discarded_actions": discarded_actions,
                           "accounted_cost_usd": episode_cost, "elapsed_seconds": time.monotonic()-begin,
                           "final_observation_sha256": digest(packet)}
                 journal.append("final", record=record)
@@ -318,6 +346,9 @@ def verify(directory, environment_root):
         try:
             assert digest(session.packet()) == initial["observation_sha256"]
             for row in rows:
+                if row["event"] == "request_started":
+                    requested = json.loads(row["payload"]["messages"][-1]["content"])
+                    assert requested["observation"] == model_observation(session.packet(), manifest["config"])
                 if row["event"] == "step":
                     result = session.act({"action": row["action"]})
                     assert result["executed_action"] == row["executed_action"]
