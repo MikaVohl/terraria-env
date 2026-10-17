@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **37 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **42 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$1.480162**; unresolved reservations: **$0.184934**. Combined accounted exposure: **$1.665096** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$1.641049**; unresolved reservations: **$0.113971**. Combined accounted exposure: **$1.755020** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -12,11 +12,11 @@ The repeat plan was selected after initial screening signals. Each cell has thre
 
 | Model / condition | Accounted / recorded / planned | Held ≥25 wood | Workbench | Deaths (runs) | Wood maximum, median [range] | Median calls / frames | Reported cost |
 |---|---:|---:|---:|---:|---|---|---:|
-| claude-haiku-5.5 / json | 1/1/3 | 0/1 | 0/1 | 0/1 | 0 [0, 0] | 13 / 13 | $0.02195 |
-| claude-haiku-5.5 / paused | 1/1/3 | 1/1 | 1/1 | 0/1 | 45 [45, 45] | 16 / 17 | $0.03127 |
-| claude-haiku-5.5 / tools | 1/1/3 | 1/1 | 1/1 | 0/1 | 46 [46, 46] | 16 / 17 | $0.02742 |
-| gemini-3.8-flash / normalized | 1/1/3 | 1/1 | 0/1 | 1/1 | 94 [94, 94] | 16 / 9 | $0.06956 |
-| gemini-3.8-flash / tools | 1/1/3 | 1/1 | 0/1 | 0/1 | 41 [41, 41] | 16 / 9 | $0.06267 |
+| claude-haiku-5.5 / json | 2/2/3 | 0/2 | 0/2 | 0/2 | 0 [0, 0] | 13.5 / 13.5 | $0.04513 |
+| claude-haiku-5.5 / paused | 2/2/3 | 2/2 | 2/2 | 0/2 | 43 [41, 45] | 16 / 17 | $0.06048 |
+| claude-haiku-5.5 / tools | 2/2/3 | 2/2 | 2/2 | 0/2 | 64.5 [46, 83] | 15.5 / 16 | $0.05298 |
+| gemini-3.8-flash / normalized | 2/2/3 | 1/2 | 0/2 | 2/2 | 47 [0, 94] | 16 / 9 | $0.13858 |
+| gemini-3.8-flash / tools | 2/2/3 | 2/2 | 1/2 | 0/2 | 71.5 [41, 102] | 16 / 9 | $0.12256 |
 
 ## All fresh-world attempts
 
@@ -47,6 +47,11 @@ The repeat plan was selected after initial screening signals. Each cell has thre
 | [R1-haiku-json-fresh](R1-haiku-json-fresh/result.json) | 0 | no | 0 / no | n/a | 78 / 0 | 13 / 13 | $0.02195 | pass |
 | [R1-haiku-paused-fresh](R1-haiku-paused-fresh/result.json) | 45 | yes | 0 / no | n/a | 23 / 0 | 16 / 17 | $0.03127 | pass |
 | [R1-haiku-tools-fresh](R1-haiku-tools-fresh/result.json) | 46 | yes | 0 / no | n/a | 48 / 0 | 16 / 17 | $0.02742 | pass |
+| [R2-gemini-normalized-fresh](R2-gemini-normalized-fresh/result.json) | 0 | no | 0 / no | n/a | 120 / 1 | 16 / 9 | $0.06901 | pass |
+| [R2-gemini-tools-fresh](R2-gemini-tools-fresh/result.json) | 102 | yes | 0 / no | n/a | 7 / 0 | 16 / 9 | $0.05990 | pass |
+| [R2-haiku-json-fresh](R2-haiku-json-fresh/result.json) | 0 | no | 0 / no | n/a | 91 / 0 | 14 / 14 | $0.02318 | pass |
+| [R2-haiku-paused-fresh](R2-haiku-paused-fresh/result.json) | 41 | yes | 0 / no | n/a | 22 / 0 | 16 / 17 | $0.02921 | pass |
+| [R2-haiku-tools-fresh](R2-haiku-tools-fresh/result.json) | 83 | yes | 0 / no | n/a | 37 / 0 | 15 / 15 | $0.02556 | pass |
 
 ## Prepared crafting
 

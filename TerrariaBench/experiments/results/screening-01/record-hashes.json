@@ -183,5 +183,30 @@
     "manifest.json": "124ebeca13b51e391f1a6c4398ac40d15850c9ef0aa73f83201bb961142572a5",
     "result.json": "59b1e2a65f2851aa528350f1a9945f4d88f7c6278f9025ffc4424906f828ae12",
     "audit.json": "6cba75f8fd466a45f350a0c45e44df47a14348a462d5d9c14558877dbf928458"
+  },
+  "R2-gemini-normalized-fresh": {
+    "manifest.json": "53efd7ed5a0adcd0b684e8caefc35e76a767119a454b0a74f2ba0489e49903fe",
+    "result.json": "b8d5cef78fce8e74c6d0ea32c5443b3ad9f799d86e92035ec0921dab317bee19",
+    "audit.json": "5c05750d73776f0ca6016c8a9c86f2b9b297277020b19f82c48bc658d459f7ec"
+  },
+  "R2-gemini-tools-fresh": {
+    "manifest.json": "6b5af5f3f8813d19f77ae22ac6a1cfd5cc952e3a68bc6788d8cef6e6b41a0a29",
+    "result.json": "a9e98210d64faf14923819619549ce83dc60041462bb4462965872825beaf93c",
+    "audit.json": "6002232e709c2005d0d03755b501ac68eb392eaa636b22e4ca65e9ea5837e58b"
+  },
+  "R2-haiku-json-fresh": {
+    "manifest.json": "32ce3dfbac0b79353102bb874f8ddc76a9deff63d4b62a9162e52385e2a4c267",
+    "result.json": "beea6b6769992fae97466a86b46adf99c98f1d6c46d0c3c5cad1a398a6514080",
+    "audit.json": "313f745493a8b0bbe28a98ff41d7b97330eacee8795d01f18ace10f35c6448eb"
+  },
+  "R2-haiku-paused-fresh": {
+    "manifest.json": "81cface6fdba39a4de822a00b2f26fe36718e4ce066346191d5092a5a3464055",
+    "result.json": "97602a87d3a556ce4b245435ee4777097493e7534aa50b173f803da651b1c9ef",
+    "audit.json": "ffc2c607606b7f5291350d617f8b5e29a4a74ec4c6ff69e2af7323cde502ff5a"
+  },
+  "R2-haiku-tools-fresh": {
+    "manifest.json": "a6b4c9a07cc3b33f5740744537364d2ed6d7dfc5d4ab59e9c5abb0d11d046d27",
+    "result.json": "b9f08dd6af834520e7af65e1fc4da885c357f1912d410c4bf942b0331ec4e376",
+    "audit.json": "78b5810621e3201710418544b14fbc8cf84909d066437d5732038fb84c0fcb6a"
   }
 }

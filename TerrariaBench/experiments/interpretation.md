@@ -15,8 +15,11 @@ every other NPC.
 - tools vs paused: same interface/prompt goal; process is stopped outside action
   and observation windows in paused mode. This is not an exact fixed-tick API.
 - tools vs json: tool-driven look/act scheduling vs automatic screenshot after
-  every JSON action response. Observation frequency and output grammar both
-  change. Equal API-call limits do not imply equal control opportunities.
+  every JSON action response. Observation frequency, output grammar, required
+  notes, and action-contract presentation all change: native tools carry a JSON
+  schema, whereas JSON mode receives a textual description/example and object
+  validation. This is a package comparison, not an isolated grammar experiment.
+  Equal API-call limits do not imply equal control opportunities.
 - json vs notes: same automatic loop, compressed model-authored memory plus the
   last four action results instead of complete prior conversation/images.
 - tools vs specific: same interface, explicit wood/workbench objective.
