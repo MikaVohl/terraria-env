@@ -67,6 +67,7 @@ class Config:
     curiosity_anneal: bool = True
     curiosity_balanced: bool = False
     bootstrap_time_limit: bool = False  # legacy/control only for the inherent deadline
+    achievement_reward: str = "equal"  # optional fixed sparse weighting; evaluation unchanged
 
     @property
     def batch(self) -> int:
@@ -327,6 +328,8 @@ def train(cfg: Config, checkpoint_callback=None):
         raise ValueError("training requires positive dimensions and at least one batch")
     if cfg.minibatches < 1 or cfg.batch % cfg.minibatches:
         raise ValueError("rollout batch must be divisible by positive minibatches")
+    if cfg.achievement_reward not in ("equal", "difficulty"):
+        raise ValueError("Unknown achievement reward scheme")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
@@ -357,6 +360,10 @@ def train(cfg: Config, checkpoint_callback=None):
     novelty_b=torch.empty_like(obs_b) if curiosity is not None else None
 
     o0, m0 = envs.reset()
+    achievement_rewards = None
+    if cfg.achievement_reward != "equal":
+        from terraria_lite.achievement_rewards import AchievementRewards
+        achievement_rewards = AchievementRewards(o0, cfg.achievement_reward)
     shaper = ProgressShaper(N) if cfg.progress_coef else None
     if shaper is not None:
         shaper.reset(o0)
@@ -396,6 +403,8 @@ def train(cfg: Config, checkpoint_callback=None):
             act_b[t], logp_b[t], val_b[t] = a, logp, v
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
+            if achievement_rewards is not None:
+                r = achievement_rewards.step(r, obs, final, term | trunc)
             if novelty_b is not None:
                 novelty_b[t]=torch.as_tensor(obs,device=device)
                 ended=np.flatnonzero(term|trunc)
@@ -482,6 +491,8 @@ def train(cfg: Config, checkpoint_callback=None):
                     v_loss = 0.5 * ((newval - b_ret[mb]) ** 2).mean()
 
                 loss = pg - cfg.ent_coef * entropy.mean() + cfg.vf_coef * v_loss
+                if not torch.isfinite(loss):
+                    raise FloatingPointError("Non-finite PPO loss; preserve this run without retrying")
 
                 opt.zero_grad()
                 loss.backward()
@@ -525,6 +536,7 @@ def train(cfg: Config, checkpoint_callback=None):
         "progress_anneal": cfg.progress_anneal,
         "lr": cfg.lr, "envs": cfg.num_envs, "steps": step_count,
         "architecture": cfg.architecture,"curiosity_coef": cfg.curiosity_coef,
+        "achievement_reward": cfg.achievement_reward,
         "requested_steps": cfg.total_steps,
         "collection_seconds": collection_seconds,
         "optimisation_seconds": optimisation_seconds,

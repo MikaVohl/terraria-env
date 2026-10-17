@@ -29,6 +29,7 @@ def main():
     p.add_argument("--bootstrap-time-limit", action="store_true")
     p.add_argument("--persistent-curiosity", action="store_true")
     p.add_argument("--gamma", type=float, default=.999)
+    p.add_argument("--achievement-reward", choices=["equal", "difficulty"], default="equal")
     p.add_argument("--gae-lambda", type=float, default=.95)
     p.add_argument("--entropy", type=float, default=.01)
     p.add_argument("--lr", type=float, default=.0003)
@@ -47,6 +48,8 @@ def main():
     recurrent = a.architecture in ("lstm", "lstm_targets")
     config_class, train_function = Config, train
     if recurrent:
+        if a.achievement_reward != "equal":
+            raise ValueError("Weighted reward study currently supports feedforward PPO only")
         from terraria_lite.recurrent_ppo_agent import Config as RecurrentConfig, train as recurrent_train
         config_class, train_function = RecurrentConfig, recurrent_train
         if a.curiosity or a.balanced_curiosity or a.persistent_curiosity:
@@ -60,6 +63,7 @@ def main():
         kwargs.update(architecture=a.architecture,encoder=a.encoder,hidden=a.hidden)
     elif "architecture" in config_class.__dataclass_fields__:
         kwargs["architecture"] = a.architecture
+        kwargs["achievement_reward"] = a.achievement_reward
         kwargs["curiosity_coef"] = a.curiosity
         kwargs["curiosity_balanced"] = a.balanced_curiosity
         kwargs["curiosity_anneal"] = not a.persistent_curiosity
@@ -72,13 +76,14 @@ def main():
     a.out.mkdir(parents=True)
     package = Path(terraria_lite.__file__).parent
     sources = [*package.glob("*.py"), *package.glob("libterraria.*")]
+    from terraria_lite.achievement_rewards import reward_spec
     protocol = {"config": asdict(cfg), "actual_steps": actual,
                 "driver_sha256":hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 "evaluation_device":a.evaluation_device or a.device,
                 "environment_version": SPEC.version, "torch_threads": a.threads,
                 "validation_seeds": [a.validation_seed_start, a.validation_seed_start+a.validation_episodes-1],
                 "reserved_test_seeds": [a.test_seed_start,a.test_seed_start+127],
-                "sampler_seed": 54321, "reward": "achievements +1; death -1",
+                "sampler_seed": 54321, "reward": reward_spec(a.achievement_reward),
                 "training_objective": {"discount":cfg.gamma,
                     "deadline_future_value":"legacy bootstrap control" if cfg.bootstrap_time_limit else "zero (finite horizon)"},
                 "demonstrations": False, "prerequisite_shaping": False,
