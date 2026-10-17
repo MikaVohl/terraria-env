@@ -9,6 +9,13 @@ rope, platforms, Cloud in a Bottle, healing, Life Crystals, campfires, and four
 ordinary ores. It uses original Terraria art from your local installation.
 The mechanics remain intentionally simplified.
 
+**October 17 study launched:** [v7 progression and reward/discount protocol](V7_REWARD_PROTOCOL_2026_10_17.md)
+and [launch record](V7_REWARD_LAUNCH_2026_10_17.md). Twenty-five fresh16M spatial
+PPO trials (419.4M main transitions) compare a matched v4 control with v7's
+equal/difficulty-weighted reward × .999/1.0 discount factorial, five paired
+training seeds. Evaluation stays unweighted; reserved tests stay unused.
+This is an active study, not evidence of improvement or a v7/default promotion.
+
 See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the latest
 completed **503.3M-transition / 30-run** paired v4/v5 learning study, and
 [CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md) for the earlier completed

@@ -1,3 +1,17 @@
+## Active study — October 17, 2026
+
+The [v7 reward/discount protocol](V7_REWARD_PROTOCOL_2026_10_17.md) is launched:
+25 fresh16M runs, five paired seeds, 419,430,400 main transitions. Compare v4
+equal/.999 with v7 equal/difficulty × discount.999/1.0 using the same spatial
+target package and unweighted evaluation. Frozen snapshots, preflight evidence,
+PIDs and report locations are in the [launch record](V7_REWARD_LAUNCH_2026_10_17.md).
+No reserved evaluation, automatic promotion, extra algorithms or gameplay edits.
+Next: audit all25 final runs and paired factorial effects, inspect crafting
+diagnostics, then decide whether incentives or discounting warrant adoption.
+Do not treat unfinished curves or checkpoints as independent seeds.
+
+## Historical plan and completed evidence
+
 Historical v1 plan. The combat/exploration contract is in [V2.md](V2.md);
 the v3 iteration is in [ITERATION_2026_10.md](ITERATION_2026_10.md).
 Current v4 fidelity changes and remeasurements are in [FIDELITY_V4.md](FIDELITY_V4.md).
