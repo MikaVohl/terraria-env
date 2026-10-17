@@ -76,3 +76,9 @@ Neither prepared task constitutes fresh-world campaign progress.
   normalized attempts, and resumes it afterward. Source synchronization at that
   boundary adds the declared variant; default pixel behavior stays the same.
   Each attempt retains its actual source snapshot/hash, including earlier code.
+- After N01 collected wood, selected three new fresh attempts for each of five
+  cells: Haiku tools/JSON/paused and Gemini tools/normalized. Randomize order
+  within each of three blocks using seed 20261017. This checks early signals
+  and replaces the truncated baseline with clean attempts; it remains adaptive
+  development on the same world, not held-out confirmation. Run after screening
+  and stop at the existing shared budget cap. No hidden response retries.

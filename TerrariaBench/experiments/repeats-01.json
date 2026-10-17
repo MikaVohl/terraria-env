@@ -1,0 +1,173 @@
+{
+  "campaign": "runs/diagnostic-campaign-01",
+  "fixture": "runs/fixtures/diagnostic-v04",
+  "description": "Adaptive development repeats selected after cases 01..09 and N01: three fresh attempts per cell in shuffled blocks. Same development world; no held-out confirmation or model ranking.",
+  "order_seed": 20261017,
+  "jobs": [
+    {
+      "id": "R1-gemini-normalized-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R1-gemini-tools-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R1-haiku-json-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "json",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R1-haiku-tools-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R1-haiku-paused-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "paused",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R2-gemini-normalized-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R2-haiku-json-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "json",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R2-haiku-paused-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "paused",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R2-gemini-tools-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R2-haiku-tools-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R3-haiku-tools-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R3-haiku-paused-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "paused",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R3-gemini-tools-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R3-haiku-json-fresh",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "json",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "R3-gemini-normalized-fresh",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    }
+  ]
+}
