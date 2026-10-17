@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **22 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **25 completed game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$0.886195**; unresolved reservations: **$0.113971**. Combined accounted exposure: **$1.000166** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$0.978054**; unresolved reservations: **$0.113971**. Combined accounted exposure: **$1.092025** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -35,6 +35,7 @@ Repeats have not completed yet.
 | [16-deepseek-json-fresh](16-deepseek-json-fresh/result.json) | 0 | no | 0 / no | n/a | 61 / 0 | 15 / 15 | $0.00367 | pass |
 | [17-haiku-checkpoints-fresh](17-haiku-checkpoints-fresh/result.json) | 12 | no | 0 / no | n/a | 39 / 0 | 14 / 14 | $0.02240 | pass |
 | [18-haiku-peaceful-fresh](18-haiku-peaceful-fresh/result.json) | 35 | yes | 0 / no | n/a | 0 / 0 | 16 / 16 | $0.02906 | pass |
+| [19-gemini-guided-fresh](19-gemini-guided-fresh/result.json) | 2 | no | 0 / no | n/a | 0 / 0 | 15 / 8 | $0.08029 | pass |
 | [N01-gemini-normalized-fresh](N01-gemini-normalized-fresh/result.json) | 89 | no | 0 / no | n/a | 82 / 0 | 16 / 9 | $0.06766 | pass |
 | [N03-haiku-normalized-fresh](N03-haiku-normalized-fresh/result.json) | 45 | no | 0 / no | n/a | 55 / 0 | 14 / 14 | $0.02343 | pass |
 | [N04-deepseek-normalized-fresh](N04-deepseek-normalized-fresh/result.json) | 0 | no | 0 / no | n/a | 35 / 0 | 16 / 9 | $0.00492 | pass |
@@ -46,6 +47,8 @@ Starting 50 wood, 50 stone and 5 gel are inherited setup. Wood maxima include in
 | Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / frames | Cost | Audit |
 |---|---:|---|---|---|---|---|---:|---|
 | [03-haiku-json-crafting](03-haiku-json-crafting/result.json) | 50 | yes | 0 / no | n/a | 98 / 0 | 15 / 15 | $0.02780 | pass |
+| [20-haiku-tools-crafting](20-haiku-tools-crafting/result.json) | 50 | no | 0 / no | n/a | 104 / 1 | 16 / 17 | $0.03156 | pass |
+| [21-haiku-inventory-crafting](21-haiku-inventory-crafting/result.json) | 50 | yes | 0 / no | n/a | 14 / 0 | 16 / 8 | $0.02049 | pass |
 
 ## Prepared combat
 

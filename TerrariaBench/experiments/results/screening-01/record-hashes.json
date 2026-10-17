@@ -89,6 +89,21 @@
     "result.json": "b269531f9d8506267c20905f61be2c2d9e8a14fc0d9254bad0c716d54d8fa72e",
     "audit.json": "54ae6038e4bff4ff21aa1c317682e28a353359cfbd8e7e73274837d047b2148b"
   },
+  "19-gemini-guided-fresh": {
+    "manifest.json": "f8d262197cafc90521e10308a01a875f465d2acbfe32a21d7924054761c02b27",
+    "result.json": "da7604d76da17a21d2a27ffc8286ca4239af8d6c40c548ebdae53f0e82853efe",
+    "audit.json": "4f713c1e606921a813773b7ae7b2c017a2ef2fee40f1355f9f873267cc370542"
+  },
+  "20-haiku-tools-crafting": {
+    "manifest.json": "3f5684ed9f672b18b4344be30849d4a5a11c149f6dcba5d10405405b3d81728b",
+    "result.json": "7bcacf2747aa7af3922ddbf1bfb64ebf26ff18d9ac329f21f702ab964de28c20",
+    "audit.json": "b9c8667d5e956b8fc321763d80dbff5c944ec430f4a98d459b169a0697ace3af"
+  },
+  "21-haiku-inventory-crafting": {
+    "manifest.json": "4a3a95cd7e8911a3b55b5a8f652dc19000f03d134bda4f45f753335d43d8d9af",
+    "result.json": "8453f2938d0e06742cfc95bb55362da3bf71814913fc67fecd495dcb65808662",
+    "audit.json": "1478d700d084129bc5ee786735812ae99651c860e46a4743dec5e8adb612a2e0"
+  },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",
