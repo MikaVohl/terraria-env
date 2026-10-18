@@ -1,0 +1,21 @@
+{
+  "kind": "operator_calibration",
+  "model_run": false,
+  "description": "Stationary alternating shortsword clicks through real OS inputs; private telemetry only checks completion.",
+  "script_sha256": "c890d28e981769cff9da3dae705932add7dba127fde5376baf509ae4d7de22e7",
+  "fixture_hashes": {
+    "LastLaunchedMods.txt": "21d246ffa8e775d433bb1dc9ea475b549e09866d87766daa1bd621b7625ba3dd",
+    "config.json": "8d45a45a6dec85333ea3c4668252d34b6de1f6cee669a03266ffff33cd09d0cc",
+    "input profiles.json": "0008a93c60757e11bd916ee486e6e2432a80d9fb5c1a1829e7bac4696a3c7593",
+    "achievements.dat": "60e60d403e0d46cedda5cb24f44228420df8ce7e701e5e7b3b566d0349fbc5e8",
+    "favorites.json": "637c146ff16d49ce109238109d6ece4a972f47d70a4f881377525c64bb656685",
+    "fixture.json": "4a1b548f85c756288e937844ffa984cc8fcaf0fb6c9736df596df1dc810cd941",
+    "Mods/TerrariaBenchObserver.tmod": "96302bd2d3f666eebf4895d6ad78e5778ff79dfb86342f72a8b592b3d5621f8d",
+    "Mods/enabled.json": "b7803e1594803ef77f3cc5b08a0aa7ab8fc27f05c06c93b580b85cb6e0757921",
+    "Players/TBpilot.plr": "b2b58d5908980ce706f142f6961359733ed7f5656a14656c67d17bb7b7de4c2a",
+    "Players/TBpilot.tplr": "528a2b92e017877302fa2e36bb34254d18a2be973e4afd9746689c4118a49a85",
+    "Worlds/TBworld.wld": "0945e768c6d04c72ec789c7040b4d174368eb864ee0d16403ee4922ce8d4e9b2",
+    "Worlds/TBworld.twld": "1282a4e3d7fd088af405aff5ed91af2d250bcb4adb2642ee4ae822e5444837b5",
+    "Players/Backups/2026-10-17-TBpilot.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+  }
+}

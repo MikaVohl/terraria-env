@@ -1,0 +1,13 @@
+{
+  "kind": "operator_calibration",
+  "model_run": false,
+  "target_killed": true,
+  "player_damage": 28,
+  "commands": 153,
+  "all_inputs_operator_labeled": true,
+  "initial_target_life": 25,
+  "binary_validation_passed": true,
+  "damage_total_validated": true,
+  "validation_passed": true,
+  "api_cost_usd": "0"
+}

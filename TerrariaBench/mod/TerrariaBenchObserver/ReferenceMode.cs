@@ -21,21 +21,28 @@ public static class ReferenceMode
 
 public sealed class ReferenceNpcPolicy : GlobalNPC
 {
+    public override bool InstancePerEntity => true;
+    public bool DiagnosticTarget;
+
+    public override void OnSpawn(NPC npc, Terraria.DataStructures.IEntitySource source) => DiagnosticTarget = false;
+
     public override void OnHitByItem(NPC npc, Player player, Item item, NPC.HitInfo hit, int damageDone)
     {
-        if (!ExperimentSetup.TargetKilled && npc.type == NPCID.BlueSlime && npc.whoAmI == ExperimentSetup.TargetSlot && player.whoAmI == Main.myPlayer)
+        // OnKill can precede this callback for a lethal hit. The per-spawn tag
+        // includes that hit without attributing later reuse of the NPC slot.
+        if (DiagnosticTarget && player.whoAmI == Main.myPlayer)
             ExperimentSetup.PlayerDamage += damageDone;
     }
 
     public override void OnHitByProjectile(NPC npc, Projectile projectile, NPC.HitInfo hit, int damageDone)
     {
-        if (!ExperimentSetup.TargetKilled && npc.type == NPCID.BlueSlime && npc.whoAmI == ExperimentSetup.TargetSlot && projectile.owner == Main.myPlayer)
+        if (DiagnosticTarget && projectile.owner == Main.myPlayer)
             ExperimentSetup.PlayerDamage += damageDone;
     }
 
     public override void OnKill(NPC npc)
     {
-        if (!ExperimentSetup.TargetKilled && npc.type == NPCID.BlueSlime && npc.whoAmI == ExperimentSetup.TargetSlot) ExperimentSetup.TargetKilled = true;
+        if (DiagnosticTarget) ExperimentSetup.TargetKilled = true;
     }
 
     public override bool PreAI(NPC npc)
@@ -117,7 +124,7 @@ public sealed class ReferenceObserver : ModSystem
                 Emit("start", new Dictionary<string, object> {
                     ["baseline"] = seen.OrderBy(x => x).ToArray(), ["catalog"] = "public_reference_manifest_v1",
                     ["world_id"] = Main.worldID, ["hostile_mobs_enabled"] = !ReferenceMode.PveDisabled,
-                    ["pve_enabled"] = !ReferenceMode.PveDisabled, ["observer_version"] = "0.4",
+                    ["pve_enabled"] = !ReferenceMode.PveDisabled, ["observer_version"] = "0.5",
                     ["scenario"] = ExperimentSetup.Scenario,
                     ["trusted_setup"] = ExperimentSetup.Scenario != "fresh",
                     ["starter_prefixes_reset"] = resetPrefixes
@@ -252,8 +259,15 @@ public static class ExperimentSetup
     {
         string armFile = Environment.GetEnvironmentVariable("TERRARIABENCH_SCENARIO_ARM");
         if (Scenario == "slime" && TargetSlot < 0 && !string.IsNullOrEmpty(armFile) && File.Exists(armFile))
-            TargetSlot = NPC.NewNPC(new Terraria.DataStructures.EntitySource_Misc("TerrariaBench diagnostic scenario"),
+        {
+            int slot = NPC.NewNPC(new Terraria.DataStructures.EntitySource_Misc("TerrariaBench diagnostic scenario"),
                 (int)player.Center.X + 160, (int)player.Bottom.Y - 16, NPCID.BlueSlime);
+            if (slot >= 0 && slot < Main.maxNPCs)
+            {
+                TargetSlot = slot;
+                Main.npc[slot].GetGlobalNPC<ReferenceNpcPolicy>().DiagnosticTarget = true;
+            }
+        }
     }
     public static object TargetState()
     {

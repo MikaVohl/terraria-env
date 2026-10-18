@@ -1,0 +1,27 @@
+{
+  "observer_version": "0.4",
+  "initial_target_life": 25,
+  "binary_kill_path_validated": true,
+  "damage_total_validated": false,
+  "all_inputs_operator_labeled": true,
+  "raw_and_exported_events_match": true,
+  "model_run": false,
+  "raw_artifact_hashes": {
+    "evaluation-events.json": "befa709fb32bd52a3e56fbd0a13e2366f09d3405f86820c14fd5db0491e346bb",
+    "final.png": "85703056f40d7ea086d73d31140a04bc030729e767053f85fb9a6a3c880a0993",
+    "frame-020.png": "3491f35a809e6414b8f91305f1823fcf9506f2a9f4fb24cad57d435cc89cd6d6",
+    "frame-040.png": "555772502af02b2b0a3125bc22e202abe713525a9226cd26e5368657475e3113",
+    "frame-060.png": "96b127a6b5960bfd0e69c1465524dbc2950e616620c788c7e3622a978e8c9290",
+    "frame-080.png": "280aa4b04069436853efa23dea97029ded3be54696caaca9b983070b872a7e81",
+    "frame-100.png": "f947536498034a522e883621c570aa5fa03a0db3ca3d509c4fccccb05dc4f3e8",
+    "frame-120.png": "6f4f39175e100d66650f6738a8788c1418dd20b6823ceef51d91cd1193edc077",
+    "frame-140.png": "cea90cdb549b241aabe6ce10cdf77df89d3582338b3d5dc21a2b9e1acacd249e",
+    "initial.png": "b0bcc14f4ac4878cc3f9b7c2b79f4ae829f2211f02fc53ebd094643712ce03da",
+    "inputs.jsonl": "4912210746b2748840c9119d5783752ad5c27eb3f644117e3208fef59f137a3f",
+    "manifest.json": "ed8c7fb0077524ee1137dcb26cf7a60ceb32a62a944276639bfa68eadd7924fd",
+    "result.json": "bd7f9f622b1d7c6f81d13e2826e32931b6f2c7fbbdac088a8a5bdb093088ed56",
+    "scenario-armed": "9cd3e2ab68f148fa58b98c7dd931580919037f7701c02ca555e5ce8f5361517f",
+    "telemetry/53c990affd9d407c81dba2bbd7ed58ad.jsonl": "1d4f4845d85dd4298bf4d01e4b9a11c3fafb1551d03ebf767951880333ee656b",
+    "termination.json": "dcc76177f0890f6de0e04d7cc00633550638344912ab4aa1acbad3eeace26d79"
+  }
+}

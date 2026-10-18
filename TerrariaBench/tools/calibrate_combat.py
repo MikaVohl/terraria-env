@@ -65,12 +65,15 @@ def main():
         ev=events();targets=[e['target'] for e in ev if 'target' in e]
         killed=any(t['killed'] for t in targets)
         damage=max((t['player_damage'] for t in targets),default=0)
+        initial_life=next((t['life'] for t in targets if t['slot']>=0),0)
         receipts=[json.loads(s) for s in (root/'inputs.jsonl').read_text().splitlines()] if (root/'inputs.jsonl').exists() else []
         dump(root/'evaluation-events.json',ev)
         result={'kind':'operator_calibration','model_run':False,'target_killed':killed,
                 'player_damage':damage,'commands':len(receipts),
                 'all_inputs_operator_labeled':bool(receipts) and all(r['actor']=='operator_calibration' for r in receipts),
-                'validation_passed':killed and damage>0,'api_cost_usd':'0'}
+                'initial_target_life':initial_life,'binary_validation_passed':killed and damage>0,
+                'damage_total_validated':killed and damage>=initial_life>0,
+                'validation_passed':killed and damage>=initial_life>0,'api_cost_usd':'0'}
         dump(root/'result.json',result);print(json.dumps(result),flush=True)
 
 

@@ -1,0 +1,23 @@
+{
+  "observer_version": "0.5",
+  "initial_target_life": 25,
+  "binary_kill_path_validated": true,
+  "damage_total_validated": true,
+  "all_inputs_operator_labeled": true,
+  "raw_and_exported_events_match": true,
+  "model_run": false,
+  "raw_artifact_hashes": {
+    "evaluation-events.json": "56e922ffd87a933f22dcd33d4fbf583485d1c184cb3a778112e3e284c7556c25",
+    "final.png": "1d639ecfda447106ae0a8f6dbf8afda013153495d901f734862e8cdbfbe52d50",
+    "frame-020.png": "de284309dcace1d8da62cffbd1b8613ce6d98ae679957b48fdbf241c72af3098",
+    "frame-040.png": "807f78f58b9e7e972def71f9d0f40f19c9ef4c8371dd95e01b8fb755664816a7",
+    "frame-060.png": "e78359154b2ea41c1f27d66c4de5b47201ee3e7b82c9bf9017a185a43277c1c3",
+    "initial.png": "49f5c41873e36eb5617d46117f0f561e7af98506b480393c1a243800801c7fa2",
+    "inputs.jsonl": "9177a406160d0e54d0f389870945211e0e31864c72de83c47ea4a0c582cf05f4",
+    "manifest.json": "3a3188e50f5b85018efef106751efb9844754449b812df2eb87faa8b2bb44dea",
+    "result.json": "32e4fbce2ed22d1ef7a4b97f5f1dc8c5fc35d0a944a2a02cab89683b9e60ee77",
+    "scenario-armed": "0e69d91d054cd4cc18b8ef82aaab6ff547e61add7095b20c9a82874242ad3de7",
+    "telemetry/3262ddd7fb3043579d5193943b5536b6.jsonl": "cd607b4a6ce23b3ac3903484361778c83b75a5015b8195b0201bfbb688a9cb1b",
+    "termination.json": "2e87d7bee36cb7eadbc32ea5b35812849a51663f1688126c3fb56d6f4082e8b1"
+  }
+}

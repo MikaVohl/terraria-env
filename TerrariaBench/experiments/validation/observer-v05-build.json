@@ -1,0 +1,14 @@
+{
+  "observer_version": "0.5",
+  "package_sha256": "96302bd2d3f666eebf4895d6ad78e5778ff79dfb86342f72a8b592b3d5621f8d",
+  "source_hashes": {
+    "Observer.cs": "1f87ddddab9e06ffbd1c2f6c7b268669d9d86d0ec2d6e5a2a07e45cbc6ab8345",
+    "description.txt": "9930ab704a0428d0736dc4b75961baa89aa2cc5948acc3511a445de20d1aa4c5",
+    "ReferenceMode.cs": "5597863c830f8f8d2b885debd5cde6908e2359cdb8fb025e17a494dfdd207071",
+    "build.txt": "e21a041d377d070d30e02178fe183120bb64a18782e2bc0a862a045ba75631af",
+    "Localization/en-US_Mods.TerrariaBenchObserver.hjson": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  "fixture": "runs/fixtures/diagnostic-v05",
+  "compile_errors": 0,
+  "compile_warnings": 0
+}

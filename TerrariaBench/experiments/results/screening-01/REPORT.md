@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **47 recorded game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **49 recorded game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$1.838512**; unresolved reservations: **$0.184934**. Combined accounted exposure: **$2.023446** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$2.052949**; unresolved reservations: **$0.184934**. Combined accounted exposure: **$2.237883** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -82,6 +82,8 @@ Guide removed; one designated blue slime is armed after window setup, while natu
 | [26-haiku-json-slime](26-haiku-json-slime/result.json) | 0 | no | 0 / no | 0 / no | 80 / 0 | 16 / 16 / 17 | $0.02681 | pass |
 | [27-gemini-paused-slime](27-gemini-paused-slime/result.json) | 0 | no | 0 / no | 4 / no | 15 / 0 | 8 / 16 / 4 | $0.02849 | partial |
 | [28-deepseek-json-slime](28-deepseek-json-slime/result.json) | 0 | no | 0 / no | 0 / no | 35 / 0 | 11 / 16 / 11 | $0.00495 | pass |
+| [C01-gemini-paused-slime](C01-gemini-paused-slime/result.json) | 0 | no | 0 / no | 8 / no | 20 / 0 | 16 / 16 / 9 | $0.07457 | pass |
+| [C02-gemini-normalized-paused-slime](C02-gemini-normalized-paused-slime/result.json) | 0 | no | 0 / no | 21 / no | 57 / 0 | 32 / 32 / 17 | $0.13987 | pass |
 | [N02-gemini-normalized-slime](N02-gemini-normalized-slime/result.json) | 0 | no | 0 / no | 0 / no | 54 / 0 | 16 / 16 / 9 | $0.07700 | pass |
 
 ## Interpretation boundaries

@@ -76,6 +76,10 @@ every other NPC.
 - The initial operator combat calibration recorded a player hit (6 damage) but
   did not finish a kill. It validates input/hit reporting, not the full kill
   detector. Interpret zero player damage separately from a missing kill flag.
+  Post-campaign operator controls [02/03](validation/README.md) subsequently
+  validated the kill path and exposed/fixed fatal-hit omission in observer 0.5.
+  The first 49 paid attempts remain on 0.4; none killed the target, so that
+  omission does not affect their recorded target damage.
 - Inspection of N02 found that the first screenshot can precede the armed
   slime's first rendered frame: signaling the mod is asynchronous. Later frames
   contain the target, but the initial combat observation is not standardized.
@@ -129,3 +133,10 @@ every other NPC.
   the original real-time pixel baseline. It also allows 32 calls/600 wall seconds
   to diagnose additional control opportunity; all other screening cells retain
   their declared limits. Existing setup limitations still apply.
+- C02 stopped at 21 damage with the target alive at 4 HP. After validating
+  observer 0.5 independently, predeclare one fresh 64-call/600-wall-second
+  normalized+paused probe with a $0.60 local cap. Its maximum allocation plus
+  earlier charges and all unresolved reservations remains below $3. This is
+  another adaptive feasibility probe, not a success-rate estimate. Private
+  instrumentation changes version; keyboard/mouse and agent observations do
+  not gain new capabilities. No further extension is part of this campaign.

@@ -139,6 +139,16 @@
     "result.json": "a7b593510a9512b89fec808cb26ae3e90bb93de54cd67158e6efb26d089a4394",
     "audit.json": "acb813f752b9ce72f5fc6b19f697e50df9b1bf56b55b11d6dbfb43bc05eb3402"
   },
+  "C01-gemini-paused-slime": {
+    "manifest.json": "b7065b7deaa84eade9676e9df582aead2b5f3bec943af64f98b9e8e674f9ae41",
+    "result.json": "c3bd3e9757726c7be2f24bac417d9d826f3ac5715d61702b1b812440aee91199",
+    "audit.json": "c7dab1981f4f5f8e49ec99c0dabf481d56f162b9ff28bcdf2d6976844b10dece"
+  },
+  "C02-gemini-normalized-paused-slime": {
+    "manifest.json": "e42ec6797a791b0992e3ff987e47431ba4601374680c7f56bf8f688dba033e6b",
+    "result.json": "b8c8fb85c1e70c70b4fde7405b460497b2a92435970e78f27edce1e44d731652",
+    "audit.json": "82115887358740de1b38db6c10e18afbed8416d63721a7683f315fab05df111e"
+  },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",
