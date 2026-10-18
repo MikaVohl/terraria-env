@@ -1,5 +1,5 @@
 displayName = TerrariaBench Observer
 author = TerrariaBench project
-version = 0.5
+version = 0.6
 side = Client
 buildIgnore = *.csproj, bin/*, obj/*

@@ -66,3 +66,20 @@ class ExperimentTests(unittest.TestCase):
         live={'event':'heartbeat','game_updates':180,'target':{'slot':4,'active':True,'life':25}}
         self.assertIsNone(target_ready([{'event':'start'},before,dead]))
         self.assertEqual(target_ready([before,live])['game_updates'],180)
+
+    def test_catalog_offers_only_reachable_targets_and_walks_toward_them(self):
+        from terrariabench.hybrid import catalog
+        hotbar=[{'key':'1','name':'Copper Shortsword','stack':1,'axe':False,'pick':False,'melee':True},
+                {'key':'3','name':'Copper Axe','stack':1,'axe':True,'pick':False,'melee':False}]
+        base={'player':{'inventory_open':False},'hotbar':hotbar,'items':[],
+              'terrain':{'wall_left':0,'wall_right':3,'drop_left':0,'drop_right':0}}
+        far=catalog(base|{'trees':[{'sx':900,'sy':500,'dx':9,'dy':0,'in_reach':False}],
+                          'hostiles':[{'name':'Blue Slime','sx':100,'sy':500,'dx':-20,'dy':0,'life':25,'life_max':25,'on_screen':True}]})
+        self.assertNotIn('chop_tree',far);self.assertNotIn('attack',far)
+        self.assertEqual(far['approach_tree'][1],[{'keys':['d','space'],'ms':400}])  # wall ahead -> jump
+        self.assertEqual(far['approach_hostile'][1][0]['keys'],['a'])
+        near=catalog(base|{'trees':[{'sx':544,'sy':525,'dx':2,'dy':0,'in_reach':True}],
+                           'hostiles':[{'name':'Blue Slime','sx':560,'sy':510,'dx':3,'dy':0,'life':25,'life_max':25,'on_screen':True}]})
+        self.assertEqual(near['chop_tree'][1][-1],{'x':544,'y':525,'mouse':'left','ms':700})
+        self.assertEqual(near['attack'][1][0]['keys'],['1'])
+        self.assertEqual(near['retreat'][1][0]['keys'],['space','a'])

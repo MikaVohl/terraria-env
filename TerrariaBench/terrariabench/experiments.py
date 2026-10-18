@@ -181,6 +181,70 @@ def metrics(events,receipts,start_tick):
             'journal_closed':any(e.get('event')=='end' for e in events)}
 
 
+def snapshot_inputs(root,fixture):
+    """Copy the immutable fixture and harness source into a new run; return their hashes."""
+    shutil.copytree(fixture,root/'tml',ignore=shutil.ignore_patterns('Logs','*.log','*.bak'))
+    for folder in ('terrariabench','mod','configs','prompts'):
+        shutil.copytree(ROOT/folder,root/'source'/folder,ignore=shutil.ignore_patterns('__pycache__'))
+    return ({str(p.relative_to(root/'source')):digest(p) for p in (root/'source').rglob('*') if p.is_file()},
+            {str(p.relative_to(fixture)):digest(p) for p in fixture.rglob('*') if p.is_file()})
+
+
+def model_pricing(model):
+    """Worst-case per-token pricing across a model's documented overrides."""
+    pricing=copy.deepcopy(model['pricing'])
+    for override in pricing.get('overrides',[]):
+        for k in ('prompt','completion','internal_reasoning','image','request'):
+            if k in override:pricing[k]=str(max(Decimal(pricing.get(k,'0')),Decimal(override[k])))
+    return pricing
+
+
+def read_events(root):
+    paths=list((root/'telemetry').glob('*.jsonl'))
+    return [json.loads(s) for s in paths[0].read_text().splitlines()] if len(paths)==1 else []
+
+
+def start_game(root,config,max_hold_ms,extra_env=None):
+    """Launch the owned client, wait for telemetry, place the window and arm the scenario.
+
+    Returns (pid, GameControl, scenario_ready). The combat barrier guarantees the first
+    observation follows a heartbeat showing the live designated target."""
+    env={'TERRARIABENCH_PROFILE':'reference-reconstructed-v1','TERRARIABENCH_PVE':'enabled' if config['pve'] else 'disabled',
+         'TERRARIABENCH_REFERENCE_STARTER_PREFIXES':'plain','TERRARIABENCH_SCENARIO':config['scenario'],
+         'TERRARIABENCH_SCENARIO_ARM':str(root/'scenario-armed'),
+         'TERRARIABENCH_CHECKPOINT_CHAT':'enabled' if config.get('checkpoints') else 'disabled'}|(extra_env or {})
+    pid=launch(root/'tml',root/'client.log',root/'telemetry',skipselect=True,width=1024,height=1024,
+               config_updates={'UIScale':.9,'ResetDefaultUIScale':False,'Zoom':1.0},extra_env=env)
+    dump(root/'game.json',{'pid':pid})
+    deadline=time.monotonic()+100
+    while not read_events(root):
+        if time.monotonic()>deadline or not Path(f'/proc/{pid}').exists():raise RuntimeError('startup_timeout')
+        time.sleep(.5)
+    game=GameControl(pid,root/'inputs.jsonl',width=1024,height=1024,max_hold_ms=max_hold_ms);game.setup_window()
+    while not any(e['event']=='heartbeat' for e in read_events(root)):
+        if time.monotonic()>deadline:raise RuntimeError('heartbeat_timeout')
+        time.sleep(.1)
+    scenario_ready=None
+    armed=time.monotonic();(root/'scenario-armed').write_text(str(time.time()))
+    if config['scenario']=='slime':
+        # Barrier: never show the agent a first frame captured before the target exists.
+        while (ready:=target_ready(read_events(root))) is None:
+            if time.monotonic()-armed>5:raise RuntimeError('scenario_ready_timeout')
+            time.sleep(.05)
+        time.sleep(RENDER_SETTLE_SECONDS)
+        scenario_ready={'ready_heartbeat_game_updates':ready['game_updates'],'target':ready['target'],
+                        'arm_to_ready_wall_seconds':time.monotonic()-armed,'render_settle_seconds':RENDER_SETTLE_SECONDS}
+    return pid,game,scenario_ready
+
+
+def stop_game(root,pid,game):
+    if game:game.close()
+    # Finish a heartbeat before terminating; exclude this observation tail from claims of exact stepping.
+    if pid and Path(f'/proc/{pid}').exists():
+        time.sleep(1.05)
+        dump(root/'termination.json',stop_owned_game(pid,root/'tml'))
+
+
 def run(args):
     config=DEFAULT|VARIANTS[args.variant]
     config.update(scenario=args.scenario,reasoning=args.reasoning)
@@ -196,29 +260,20 @@ def run(args):
     if 'image' not in model['architecture']['input_modalities']:raise ValueError('vision model required')
     required={'max_tokens', 'tools' if config['scaffold']=='tools' else 'response_format'}
     if not required<=set(model['supported_parameters']):raise ValueError('unsupported request controls')
-    pricing=copy.deepcopy(model['pricing'])
-    for override in pricing.get('overrides',[]):
-        for k in ('prompt','completion','internal_reasoning','image','request'):
-            if k in override:pricing[k]=str(max(Decimal(pricing.get(k,'0')),Decimal(override[k])))
-    budget=Budget(args.usd,pricing,input_ceiling=65536,output_ceiling=4096)
+    budget=Budget(args.usd,model_pricing(model),input_ceiling=65536,output_ceiling=4096)
     key=hermes_key();root.mkdir(parents=True)
-    shutil.copytree(fixture,root/'tml',ignore=shutil.ignore_patterns('Logs','*.log','*.bak'))
-    for folder in ('terrariabench','mod','configs','prompts'):
-        shutil.copytree(ROOT/folder,root/'source'/folder,ignore=shutil.ignore_patterns('__pycache__'))
+    source_hashes,fixture_hashes=snapshot_inputs(root,fixture)
     task=prompt_for(config);tools=tools_for(config)
     manifest={'protocol':'diagnostic-v1','config':config,'task_prompt':task,'system_prompt':SYSTEM,
-              'tools':tools,'model':model,'reservation_pricing':pricing,
+              'tools':tools,'model':model,'reservation_pricing':model_pricing(model),
               'limits':{'calls':args.calls,'wall_seconds':args.seconds,'simulation_seconds':args.sim_seconds,'usd':args.usd},
-              'source_hashes':{str(p.relative_to(root/'source')):digest(p) for p in (root/'source').rglob('*') if p.is_file()},
-              'fixture_hashes':{str(p.relative_to(fixture)):digest(p) for p in fixture.rglob('*') if p.is_file()},
+              'source_hashes':source_hashes,'fixture_hashes':fixture_hashes,
               'retry_policy':RETRY_POLICY,'official_eligible':False,'started_unix':time.time()}
     dump(root/'manifest.json',manifest)
     history=[{'role':'system','content':SYSTEM},{'role':'user','content':task}]
     images={};frame_count=calls=invalid=retries=0;notes='';recent=[];latencies=[];start_tick=0
     pid=game=clock=None;stop='startup';started=time.monotonic();agent_started=None;scenario_ready=None
-    def events():
-        paths=list((root/'telemetry').glob('*.jsonl'))
-        return [json.loads(s) for s in paths[0].read_text().splitlines()] if len(paths)==1 else []
+    def events():return read_events(root)
     def observe():
         nonlocal frame_count
         clock.set(False)
@@ -250,31 +305,8 @@ def run(args):
             if config['clock']=='paused':time.sleep(.08)
             clock.set(True)
     try:
-        pid=launch(root/'tml',root/'client.log',root/'telemetry',skipselect=True,width=1024,height=1024,
-                   config_updates={'UIScale':.9,'ResetDefaultUIScale':False,'Zoom':1.0},
-                   extra_env={'TERRARIABENCH_PROFILE':'reference-reconstructed-v1','TERRARIABENCH_PVE':'enabled' if config['pve'] else 'disabled',
-                              'TERRARIABENCH_REFERENCE_STARTER_PREFIXES':'plain','TERRARIABENCH_SCENARIO':config['scenario'],
-                              'TERRARIABENCH_SCENARIO_ARM':str(root/'scenario-armed'),
-                              'TERRARIABENCH_CHECKPOINT_CHAT':'enabled' if config['checkpoints'] else 'disabled'})
-        dump(root/'game.json',{'pid':pid})
-        deadline=time.monotonic()+100
-        while not events():
-            if time.monotonic()>deadline or not Path(f'/proc/{pid}').exists():raise RuntimeError('startup_timeout')
-            time.sleep(.5)
-        game=GameControl(pid,root/'inputs.jsonl',width=1024,height=1024,max_hold_ms=config['hold_ms']);game.setup_window()
-        while not any(e['event']=='heartbeat' for e in events()):
-            if time.monotonic()>deadline:raise RuntimeError('heartbeat_timeout')
-            time.sleep(.1)
+        pid,game,scenario_ready=start_game(root,config,config['hold_ms'])
         clock=ProcessClock(pid,config['clock']=='paused',root/'clock.jsonl')
-        armed=time.monotonic();(root/'scenario-armed').write_text(str(time.time()))
-        if config['scenario']=='slime':
-            # Barrier: never show the agent a first frame captured before the target exists.
-            while (ready:=target_ready(events())) is None:
-                if time.monotonic()-armed>5:raise RuntimeError('scenario_ready_timeout')
-                time.sleep(.05)
-            time.sleep(RENDER_SETTLE_SECONDS)
-            scenario_ready={'ready_heartbeat_game_updates':ready['game_updates'],'target':ready['target'],
-                            'arm_to_ready_wall_seconds':time.monotonic()-armed,'render_settle_seconds':RENDER_SETTLE_SECONDS}
         history.append(observe());agent_started=time.monotonic()
         start_tick=max(e['game_updates'] for e in events());stop='call_limit'
         for step in range(args.calls):
@@ -364,11 +396,7 @@ def run(args):
         agent_seconds=time.monotonic()-agent_started if agent_started else 0
         frozen_seconds=clock.total() if clock else 0
         if clock:clock.set(False)
-        if game:game.close()
-        # Finish a heartbeat before terminating; exclude this observation tail from claims of exact stepping.
-        if pid and Path(f'/proc/{pid}').exists():
-            time.sleep(1.05)
-            dump(root/'termination.json',stop_owned_game(pid,root/'tml'))
+        stop_game(root,pid,game)
         ev=events();receipts=[json.loads(s) for s in (root/'inputs.jsonl').read_text().splitlines()] if (root/'inputs.jsonl').exists() else []
         dump(root/'evaluation-events.json',ev);dump(root/'accounting.json',budget.summary())
         result={'run':root.name,'config':config,'model':args.model,'stop_reason':stop,'calls':calls,'provider_retries':retries,

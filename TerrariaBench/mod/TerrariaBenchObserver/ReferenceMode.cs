@@ -79,13 +79,13 @@ public sealed class ReferenceObserver : ModSystem
     private HashSet<string> seen;
     private string runId;
     private long tick;
-    private bool disabled, wasDead, probeDone;
+    private bool disabled, wasDead, probeDone, stateDisabled;
 
     public override void OnWorldLoad()
     {
         tick = 0;
         disabled = false;
-        probeDone = false;
+        probeDone = stateDisabled = false;
         ReferenceMode.SuppressedNpcs = ReferenceMode.SuppressedProjectiles = 0;
         ExperimentSetup.Reset();
     }
@@ -124,7 +124,7 @@ public sealed class ReferenceObserver : ModSystem
                 Emit("start", new Dictionary<string, object> {
                     ["baseline"] = seen.OrderBy(x => x).ToArray(), ["catalog"] = "public_reference_manifest_v1",
                     ["world_id"] = Main.worldID, ["hostile_mobs_enabled"] = !ReferenceMode.PveDisabled,
-                    ["pve_enabled"] = !ReferenceMode.PveDisabled, ["observer_version"] = "0.5",
+                    ["pve_enabled"] = !ReferenceMode.PveDisabled, ["observer_version"] = "0.6",
                     ["scenario"] = ExperimentSetup.Scenario,
                     ["trusted_setup"] = ExperimentSetup.Scenario != "fresh",
                     ["starter_prefixes_reset"] = resetPrefixes
@@ -156,6 +156,12 @@ public sealed class ReferenceObserver : ModSystem
                         ["suppressed_npcs"] = ReferenceMode.SuppressedNpcs,
                         ["suppressed_projectiles"] = ReferenceMode.SuppressedProjectiles
                     });
+                if (tick % AgentState.Interval == 0 && !stateDisabled)
+                {
+                    // A state-writer fault must not end the scoring journal.
+                    try { AgentState.Write(p, tick); }
+                    catch (Exception error) { stateDisabled = true; Emit("agent_state_failed"); Mod.Logger.Error("Agent state output stopped.", error); }
+                }
                 // A plumbing-only test probe. Never enabled for model evaluations.
                 if (!probeDone && tick >= 120 &&
                     Environment.GetEnvironmentVariable("TERRARIABENCH_CALIBRATION_ONLY") == "1" &&

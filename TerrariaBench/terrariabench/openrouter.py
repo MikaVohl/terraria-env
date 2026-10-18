@@ -50,11 +50,11 @@ def hermes_key(path=None):
     raise RuntimeError("No literal OPENROUTER_API_KEY in Hermes .env; no secrets were logged")
 
 
-def request(path, *, key=None, payload=None, timeout=60):
+def request(path, *, key=None, payload=None, timeout=60, base=BASE):
     headers = {"Content-Type": "application/json", "X-OpenRouter-Title": "TerrariaBench development smoke"}
     if key:
         headers["Authorization"] = "Bearer " + key
-    req = urllib.request.Request(BASE + path, headers=headers,
+    req = urllib.request.Request(base + path, headers=headers,
                                  data=json.dumps(payload).encode() if payload is not None else None)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -77,6 +77,19 @@ def request(path, *, key=None, payload=None, timeout=60):
         code = result["error"].get("code") if isinstance(result["error"], dict) else None
         raise ProviderError(f"OpenRouter returned error {code}; charge uncertain",
                             retryable=code is None or code in RETRYABLE_HTTP)
+    return result
+
+
+# OpenRouter serves TypeSafe's System One API (text state only) on this alpha path.
+DECISIONS_BASE = "https://openrouter.ai/api/alpha"
+
+
+def decide(payload, *, key, timeout=20):
+    """One Jev decision request. Usage is normalized to the chat-completion shape Budget expects."""
+    result = request("/decisions", key=key, payload=payload, timeout=timeout, base=DECISIONS_BASE)
+    usage = result.get("usage") or {}
+    result["usage"] = {"prompt_tokens": usage.get("input_tokens"), "completion_tokens": usage.get("output_tokens"),
+                       "cost": usage.get("cost")}
     return result
 
 
