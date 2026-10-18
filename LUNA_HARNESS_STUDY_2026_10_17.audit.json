@@ -1,0 +1,554 @@
+{
+  "study_root": "/Users/mikavohl/Projects/terraria-lite/experiments/luna-harness-20261017.nhitzl0s",
+  "protocol_sha256": "e824e93a5886934be031950a7acd744e53b5a606707d50cb30b00da223d6f964",
+  "results_sha256": "51c2b9fc0ad0b2c799796cdae0549f76b625cceadaa9bd8ea0e84b429490fdcb",
+  "completed_attempts": 8,
+  "model": "openai/gpt-6-luna",
+  "reasoning_effort_requested": "high",
+  "model_and_high_request_matches": 1643,
+  "source_config_catalog_native_hashes_verified": true,
+  "all_python_request_transition_replays_verified": true,
+  "all_SDL_replays_verified": true,
+  "all_claims_unique_and_manifest_matched": true,
+  "guard_reservations_usage_and_tails_verified": true,
+  "no_automatic_retries_or_replacements": true,
+  "api_calls_during_audit": 0,
+  "original_runner_and_inhibitor_absent": true,
+  "PPO_reserved_or_validation_worlds_used": false,
+  "totals": {
+    "prompt_tokens": 11131276,
+    "completion_tokens": 1057978,
+    "total_tokens": 12189254,
+    "reasoning_tokens_in_completion": 943320,
+    "calls": 1643,
+    "steps": 7902,
+    "illegal_attempts": 2605,
+    "invalid_requests": 3,
+    "discarded_actions": 893,
+    "interrupted_batches": 185,
+    "provider_reported_cost_usd": 1.4591307949999996,
+    "accounted_cost_usd": 1.9203985
+  },
+  "finish_reasons": {
+    "stop": 1643
+  },
+  "providers": {
+    "OpenAI": 1643
+  },
+  "arms": {
+    "full16": {
+      "mean_score": 10.5,
+      "scores": [
+        9,
+        12
+      ],
+      "mean_steps": 1308,
+      "deaths": 2,
+      "bench_worlds": 2,
+      "furnace_worlds": 0,
+      "anvil_worlds": 0,
+      "actual_cost_usd": 0.40712982499999983,
+      "stops": [
+        "death",
+        "death"
+      ]
+    },
+    "compact16": {
+      "mean_score": 8.5,
+      "scores": [
+        10,
+        7
+      ],
+      "mean_steps": 916,
+      "deaths": 2,
+      "bench_worlds": 2,
+      "furnace_worlds": 0,
+      "anvil_worlds": 0,
+      "actual_cost_usd": 0.12138014999999999,
+      "stops": [
+        "death",
+        "death"
+      ]
+    },
+    "compact4": {
+      "mean_score": 12.5,
+      "scores": [
+        11,
+        14
+      ],
+      "mean_steps": 946,
+      "deaths": 1,
+      "bench_worlds": 2,
+      "furnace_worlds": 0,
+      "anvil_worlds": 0,
+      "actual_cost_usd": 0.43721251999999994,
+      "stops": [
+        "death",
+        "cost_budget"
+      ]
+    },
+    "compact16_interrupt": {
+      "mean_score": 14,
+      "scores": [
+        14,
+        14
+      ],
+      "mean_steps": 781,
+      "deaths": 0,
+      "bench_worlds": 2,
+      "furnace_worlds": 1,
+      "anvil_worlds": 0,
+      "actual_cost_usd": 0.4934082999999999,
+      "stops": [
+        "cost_budget",
+        "cost_budget"
+      ]
+    }
+  },
+  "arm_totals": {
+    "full16": {
+      "prompt_tokens": 3221551,
+      "completion_tokens": 142791,
+      "total_tokens": 3364342,
+      "reasoning_tokens_in_completion": 121885,
+      "calls": 210,
+      "steps": 2616,
+      "illegal_attempts": 898,
+      "invalid_requests": 0,
+      "discarded_actions": 0,
+      "interrupted_batches": 0,
+      "provider_reported_cost_usd": 0.40712982499999983,
+      "accounted_cost_usd": 0.4740893749999999
+    },
+    "compact16": {
+      "prompt_tokens": 847205,
+      "completion_tokens": 115828,
+      "total_tokens": 963033,
+      "reasoning_tokens_in_completion": 102131,
+      "calls": 154,
+      "steps": 1832,
+      "illegal_attempts": 847,
+      "invalid_requests": 0,
+      "discarded_actions": 0,
+      "interrupted_batches": 0,
+      "provider_reported_cost_usd": 0.12138014999999999,
+      "accounted_cost_usd": 0.16381462500000002
+    },
+    "compact4": {
+      "prompt_tokens": 3200244,
+      "completion_tokens": 390463,
+      "total_tokens": 3590707,
+      "reasoning_tokens_in_completion": 353544,
+      "calls": 577,
+      "steps": 1892,
+      "illegal_attempts": 675,
+      "invalid_requests": 2,
+      "discarded_actions": 0,
+      "interrupted_batches": 0,
+      "provider_reported_cost_usd": 0.43721251999999994,
+      "accounted_cost_usd": 0.595262
+    },
+    "compact16_interrupt": {
+      "prompt_tokens": 3862276,
+      "completion_tokens": 408896,
+      "total_tokens": 4271172,
+      "reasoning_tokens_in_completion": 365760,
+      "calls": 702,
+      "steps": 1562,
+      "illegal_attempts": 185,
+      "invalid_requests": 1,
+      "discarded_actions": 893,
+      "interrupted_batches": 185,
+      "provider_reported_cost_usd": 0.4934082999999999,
+      "accounted_cost_usd": 0.6872324999999999
+    }
+  },
+  "paired_score_minus_compact16": {
+    "full16": {
+      "32000001": -1,
+      "32000002": 5
+    },
+    "compact4": {
+      "32000001": 1,
+      "32000002": 7
+    },
+    "compact16_interrupt": {
+      "32000001": 4,
+      "32000002": 7
+    }
+  },
+  "attempts": [
+    {
+      "name": "full16-32000001",
+      "arm": "full16",
+      "seed": 32000001,
+      "score": 9,
+      "steps": 784,
+      "calls": 64,
+      "stop": "death",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 784,
+        "health": 0,
+        "achievement_mask": 277151949,
+        "episode_return": 8.0
+      },
+      "first_achievement_steps": {
+        "collect wood": 2,
+        "craft workbench": 119,
+        "defeat Blue Slime": 30,
+        "explore 30 columns": 69,
+        "heal with food or potion": 151,
+        "open chest": 129,
+        "place block": 168,
+        "place platform": 171,
+        "place torch": 121
+      },
+      "score_at_action_budget": {
+        "128": 5,
+        "512": 9,
+        "1024": 9,
+        "2048": 9,
+        "3000": 9
+      },
+      "usage": {
+        "prompt_tokens": 953031,
+        "completion_tokens": 43018,
+        "total_tokens": 996049,
+        "reasoning_tokens_in_completion": 36681
+      },
+      "accounted_cost_usd": 0.14063787499999997,
+      "provider_reported_cost_usd": 0.11826016999999997,
+      "events_sha256": "62460cbe4572a1abb2525a57810c2e6ca7c9ce189785c04a7f701b25d5e83476",
+      "tape_sha256": "8e92c7d4af88c49110a473d8dbe88d171f335585ee20cf72ff09de006250ff24"
+    },
+    {
+      "name": "compact16-32000001",
+      "arm": "compact16",
+      "seed": 32000001,
+      "score": 10,
+      "steps": 1248,
+      "calls": 97,
+      "stop": "death",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 1248,
+        "health": 0,
+        "achievement_mask": 277676111,
+        "episode_return": 9.0
+      },
+      "first_achievement_steps": {
+        "collect stone": 1208,
+        "collect wood": 3,
+        "craft wooden sword": 260,
+        "craft workbench": 64,
+        "defeat Blue Slime": 386,
+        "explore 30 columns": 170,
+        "heal with food or potion": 723,
+        "open chest": 859,
+        "place block": 116,
+        "place torch": 661
+      },
+      "score_at_action_budget": {
+        "128": 3,
+        "512": 6,
+        "1024": 9,
+        "2048": 10,
+        "3000": 10
+      },
+      "usage": {
+        "prompt_tokens": 533638,
+        "completion_tokens": 75453,
+        "total_tokens": 609091,
+        "reasoning_tokens_in_completion": 66659
+      },
+      "accounted_cost_usd": 0.10443125000000003,
+      "provider_reported_cost_usd": 0.07788507999999998,
+      "events_sha256": "5846655a5ecd4fbb3818b070211dafd66270af76ddd1153d46d7dda9b76e36c3",
+      "tape_sha256": "37b991d0aeb5322cfc9c6150f607ebf5c25e936e3efdf9f23b9fecc71f07dbba"
+    },
+    {
+      "name": "compact4-32000001",
+      "arm": "compact4",
+      "seed": 32000001,
+      "score": 11,
+      "steps": 756,
+      "calls": 240,
+      "stop": "death",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 756,
+        "health": 0,
+        "achievement_mask": 814547149,
+        "episode_return": 10.0
+      },
+      "first_achievement_steps": {
+        "climb rope": 489,
+        "collect wood": 4,
+        "craft wooden sword": 118,
+        "craft workbench": 67,
+        "defeat Blue Slime": 196,
+        "explore 30 columns": 93,
+        "heal with food or potion": 149,
+        "open chest": 145,
+        "place block": 103,
+        "place platform": 684,
+        "place torch": 167
+      },
+      "score_at_action_budget": {
+        "128": 5,
+        "512": 10,
+        "1024": 11,
+        "2048": 11,
+        "3000": 11
+      },
+      "usage": {
+        "prompt_tokens": 1327661,
+        "completion_tokens": 171631,
+        "total_tokens": 1499292,
+        "reasoning_tokens_in_completion": 156628
+      },
+      "accounted_cost_usd": 0.25177312499999993,
+      "provider_reported_cost_usd": 0.18614313999999993,
+      "events_sha256": "da97fdc83ca2e6d615ee2333cf33844bec3f6870655b92e09ca973345afadf50",
+      "tape_sha256": "f739c2e8a36046083296fec7c5b1413c102400028b33a12098f0eb9a9c49d067"
+    },
+    {
+      "name": "compact16_interrupt-32000001",
+      "arm": "compact16_interrupt",
+      "seed": 32000001,
+      "score": 14,
+      "steps": 784,
+      "calls": 351,
+      "stop": "cost_budget",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 784,
+        "health": 100,
+        "achievement_mask": 814158299,
+        "episode_return": 14.0
+      },
+      "first_achievement_steps": {
+        "climb rope": 626,
+        "collect copper": 486,
+        "collect stone": 470,
+        "collect wood": 6,
+        "craft furnace": 566,
+        "craft workbench": 48,
+        "defeat Blue Slime": 338,
+        "defeat Cave Bat": 752,
+        "explore 30 columns": 156,
+        "heal with food or potion": 97,
+        "open chest": 223,
+        "place platform": 126,
+        "place torch": 301,
+        "smelt copper": 569
+      },
+      "score_at_action_budget": {
+        "128": 4,
+        "512": 10,
+        "1024": null,
+        "2048": null,
+        "3000": null
+      },
+      "usage": {
+        "prompt_tokens": 1936720,
+        "completion_tokens": 203390,
+        "total_tokens": 2140110,
+        "reasoning_tokens_in_completion": 181531
+      },
+      "accounted_cost_usd": 0.3437849999999999,
+      "provider_reported_cost_usd": 0.247012165,
+      "events_sha256": "80ae62aab53d50b6c14ed246c93f6cee92639fc4203375bc9b531dccf9d6d76c",
+      "tape_sha256": "31b9855a7d0f3d200a4aa445f71966d9fd23e595194ca6f216fbd21af3ef21f7"
+    },
+    {
+      "name": "compact16-32000002",
+      "arm": "compact16",
+      "seed": 32000002,
+      "score": 7,
+      "steps": 584,
+      "calls": 57,
+      "stop": "death",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 584,
+        "health": 0,
+        "achievement_mask": 276889677,
+        "episode_return": 6.0
+      },
+      "first_achievement_steps": {
+        "collect wood": 15,
+        "craft workbench": 50,
+        "defeat Blue Slime": 49,
+        "explore 30 columns": 77,
+        "heal with food or potion": 30,
+        "place block": 107,
+        "place torch": 70
+      },
+      "score_at_action_budget": {
+        "128": 7,
+        "512": 7,
+        "1024": 7,
+        "2048": 7,
+        "3000": 7
+      },
+      "usage": {
+        "prompt_tokens": 313567,
+        "completion_tokens": 40375,
+        "total_tokens": 353942,
+        "reasoning_tokens_in_completion": 35472
+      },
+      "accounted_cost_usd": 0.05938337499999998,
+      "provider_reported_cost_usd": 0.04349507000000001,
+      "events_sha256": "debbcd9317fe9413a385fbee0e67ad564167380710e1273a2a6b8af9efe4b5b2",
+      "tape_sha256": "9fcd895527f11b1b36d770a5e4e459c8f1d2876ded53b8fedbd9e3a0970fbe06"
+    },
+    {
+      "name": "compact4-32000002",
+      "arm": "compact4",
+      "seed": 32000002,
+      "score": 14,
+      "steps": 1136,
+      "calls": 337,
+      "stop": "cost_budget",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 1136,
+        "health": 78,
+        "achievement_mask": 864354767,
+        "episode_return": 14.0
+      },
+      "first_achievement_steps": {
+        "climb rope": 552,
+        "collect copper": 366,
+        "collect stone": 369,
+        "collect wood": 7,
+        "craft workbench": 45,
+        "defeat Blue Slime": 35,
+        "double jump": 492,
+        "explore 30 columns": 72,
+        "heal with food or potion": 52,
+        "open chest": 210,
+        "place block": 65,
+        "place platform": 31,
+        "place torch": 245,
+        "use life crystal": 502
+      },
+      "score_at_action_budget": {
+        "128": 7,
+        "512": 13,
+        "1024": 14,
+        "2048": null,
+        "3000": null
+      },
+      "usage": {
+        "prompt_tokens": 1872583,
+        "completion_tokens": 218832,
+        "total_tokens": 2091415,
+        "reasoning_tokens_in_completion": 196916
+      },
+      "accounted_cost_usd": 0.343488875,
+      "provider_reported_cost_usd": 0.25106938,
+      "events_sha256": "580f4b43c4824c8e728a744eb7183e099b43584ef38755aae9c3a511fffdbe09",
+      "tape_sha256": "f67fab405618093681b3d10ee937c290faa19e0f6546ff433c7eefe53911df38"
+    },
+    {
+      "name": "compact16_interrupt-32000002",
+      "arm": "compact16_interrupt",
+      "seed": 32000002,
+      "score": 14,
+      "steps": 778,
+      "calls": 351,
+      "stop": "cost_budget",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 778,
+        "health": 69,
+        "achievement_mask": 310838735,
+        "episode_return": 14.0
+      },
+      "first_achievement_steps": {
+        "collect copper": 499,
+        "collect silver": 574,
+        "collect stone": 439,
+        "collect wood": 22,
+        "craft workbench": 138,
+        "defeat Blue Slime": 148,
+        "defeat Cave Bat": 621,
+        "double jump": 726,
+        "explore 30 columns": 36,
+        "heal with food or potion": 316,
+        "open chest": 724,
+        "place block": 169,
+        "place platform": 362,
+        "place torch": 154
+      },
+      "score_at_action_budget": {
+        "128": 2,
+        "512": 10,
+        "1024": null,
+        "2048": null,
+        "3000": null
+      },
+      "usage": {
+        "prompt_tokens": 1925556,
+        "completion_tokens": 205506,
+        "total_tokens": 2131062,
+        "reasoning_tokens_in_completion": 184229
+      },
+      "accounted_cost_usd": 0.3434475,
+      "provider_reported_cost_usd": 0.24639613499999988,
+      "events_sha256": "49575c91834faa934960ded0b579e15a3c4e848451cc389b6bb85d78b326d2e2",
+      "tape_sha256": "6acccb60169ebfb8eb303c72108cf66f79588be485dc751cc8496ccca9fde9e2"
+    },
+    {
+      "name": "full16-32000002",
+      "arm": "full16",
+      "seed": 32000002,
+      "score": 12,
+      "steps": 1832,
+      "calls": 146,
+      "stop": "death",
+      "native_SDL_verified": {
+        "environment_version": 7,
+        "steps": 1832,
+        "health": 0,
+        "achievement_mask": 814547151,
+        "episode_return": 11.0
+      },
+      "first_achievement_steps": {
+        "climb rope": 1031,
+        "collect stone": 591,
+        "collect wood": 51,
+        "craft wooden sword": 869,
+        "craft workbench": 168,
+        "defeat Blue Slime": 295,
+        "explore 30 columns": 48,
+        "heal with food or potion": 221,
+        "open chest": 220,
+        "place block": 982,
+        "place platform": 108,
+        "place torch": 226
+      },
+      "score_at_action_budget": {
+        "128": 3,
+        "512": 8,
+        "1024": 11,
+        "2048": 12,
+        "3000": 12
+      },
+      "usage": {
+        "prompt_tokens": 2268520,
+        "completion_tokens": 99773,
+        "total_tokens": 2368293,
+        "reasoning_tokens_in_completion": 85204
+      },
+      "accounted_cost_usd": 0.33345149999999996,
+      "provider_reported_cost_usd": 0.2888696549999999,
+      "events_sha256": "55fed1fb930d07d9db6b20d2d150c38d794f41c8cc0bce9ebc30ac78c1a4cadf",
+      "tape_sha256": "3b7174cd21d8c4153c98c05207e8ad6ce865e004497629c8e9e932702ee54dab"
+    }
+  ],
+  "interpretation": "Two-world exploratory dollar-guard comparison. Three alive cost-censored attempts; no full3000-action episode. Death is absorbing, censoring is null. No reliable significance/ranking or equal-prior PPO claim."
+}

@@ -32,12 +32,15 @@ a fair fixed-budget mean. All Python/SDL replays match. Luna follow-up paused;
 no more paid calls. PPO continues independently. These are public development
 checks, not leaderboard scores or matched-budget PPO results. Defaults unchanged.
 
-**New user-authorized Luna comparison:** [four harness packages on two paired
+**Completed user-authorized Luna comparison:** [four harness packages on two paired
 worlds](LUNA_HARNESS_STUDY_2026_10_17.md), under [a frozen protocol](LUNA_HARNESS_PROTOCOL_2026_10_17.md).
-Eight independent $0.35 guards allocate $2.80 of the newly authorized $3. Test
-compact context/history,4-versus16 action lists and paid-illegal-action
-interruption. This supersedes the previous batch's no-further-spending status
-only for these8 attempts. PPO continues independently; no defaults change.
+All8 attempts and Python/SDL replays are audited; **$1.459 actual spend** of the
+newly authorized $3. Full16/compact16/compact4/interrupt means are10.5/8.5/12.5/14.0
+on two paired worlds. Interruption cuts illegal attempts46.2%→11.8% versus
+compact16 and reaches one furnace, but both interrupt episodes are cost-censored
+before800 actions; this is not proof of full-budget survival. At512 common
+actions compact4 leads11.5 versus interrupt10.0. No robust ranking from two
+worlds. Luna follow-up paused; no further calls. PPO/defaults unchanged.
 
 See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the latest
 completed **503.3M-transition / 30-run** paired v4/v5 learning study, and

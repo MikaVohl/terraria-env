@@ -40,14 +40,21 @@ predeclared controls; no such follow-on is launched here.
 
 **Later October17 authorization:** the user granted **$3 additional API budget**
 for broad harness experiments. A separate [eight-attempt paired scaffold study](LUNA_HARNESS_STUDY_2026_10_17.md)
-is now launched: full16/compact16/compact4/compact16_interrupt on two fresh
+is now **complete and independently audited**: full16/compact16/compact4/compact16_interrupt on two fresh
 worlds, $0.35 independent guards each ($2.80 total; no reallocation). The
 [predeclared protocol](LUNA_HARNESS_PROTOCOL_2026_10_17.md) fixes the new snapshot,
 common model/high reasoning, native game, progression and censoring metrics.
 This supersedes the prior batch's stop-spending instruction only for these
-attempts. Audit all8 outcomes/replays/costs and methodology tradeoffs, report
-without cherry-picking, then stop and pause the Luna follow-up. No follow-on
-sweep or change to the ongoing PPO study/game/default policies.
+attempts. All8 outcomes,1,643 request/response pairs and exact Python/SDL replays
+pass the [audit](LUNA_HARNESS_STUDY_2026_10_17.audit.json); actual spend$1.45913,
+conservative accounted$1.92040. Final means10.5/8.5/12.5/14.0 favor more feedback
+descriptively; interrupt illegal attempts fall to11.8% and one furnace appears.
+Five deaths and three alive cost stops mean no full3,000-action evaluation;
+compact4 leads at the common512-action checkpoint. Future candidates: isolate
+history from serialization; compare generic interruption/cadence under matched
+action horizons and independent budgets on more worlds. No such follow-on is
+launched: spending stopped and Luna follow-up paused. Ongoing PPO study and all
+game/policy defaults unchanged.
 
 ## Historical plan and completed evidence
 
