@@ -14,6 +14,8 @@ def main():
     budget=json.loads((a.records/'budget-snapshot.json').read_text())
     pending=sum((Decimal(v) for v in budget['pending'].values()),Decimal(0))
     reported=Decimal(budget['spent_usd'])+Decimal(budget['prior_session_reported_usd'])
+    control=a.records.parents[1]/'validation/combat-control-03/audit.json'
+    validated=control.exists() and json.loads(control.read_text()).get('damage_total_validated')
     out=['# Terraria diagnostic campaign results','',
          f'Snapshot: **{len(rows)} recorded game attempts**, plus nine static-image probe calls. '
          'This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.','',
@@ -54,8 +56,13 @@ def main():
                   'not independent proof of the crafting operation.','']
         elif scenario=='slime':
             out+=['Guide removed; one designated blue slime is armed after window setup, while natural background mobs remain enabled. Only damage to that target is attributed. The initial rendered frame may precede '
-                  'the spawn. Target death and attributed player damage are distinct; the original operator positive '
-                  'control verified one hit, but not the kill detector. These attempts do not establish a clean clock effect.','']
+                  'the spawn. Target death and attributed player damage are distinct. These attempts do not establish a clean clock effect.','']
+            if validated:
+                out+=['Subsequent [independent unpaid controls](../../validation/README.md) validated the hit/kill path '
+                      'and the observer 0.5 fatal-hit counter fix. The first 49 attempts retain observer 0.4; C03 uses 0.5 '
+                      'and allowed a larger call budget, but was interrupted on call five. Private instrumentation versions are recorded in the CSV and audits.','']
+            else:
+                out+=['The initial operator positive control verified a hit, but not the full kill detector.','']
         out+=['| Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / limit / frames | Cost | Audit |',
               '|---|---:|---|---|---|---|---|---:|---|']
         for r in rows:

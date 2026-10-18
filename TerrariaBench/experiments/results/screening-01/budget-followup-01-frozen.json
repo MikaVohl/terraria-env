@@ -1,0 +1,19 @@
+{
+  "campaign": "runs/diagnostic-campaign-01",
+  "fixture": "runs/fixtures/diagnostic-v05",
+  "description": "One adaptive control-budget probe selected after C02 stopped at 21/25 target damage. A fresh 64-call episode tests additional control opportunity. Observer v0.5 changes only private target attribution, including lethal damage and preventing slot reuse; the independent unpaid operator control validated hit+kill+damage before this model attempt. Preserve all earlier attempts. No automatic retry or early success stop. Worst-case local allocation plus existing exposure and prior tests remains below $3.",
+  "jobs": [
+    {
+      "id": "C03-gemini-normalized-paused-64-slime",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "clock": "paused",
+      "scenario": "slime",
+      "calls": 64,
+      "seconds": 600,
+      "sim_seconds": 120,
+      "usd": 0.6,
+      "reasoning": "medium"
+    }
+  ]
+}

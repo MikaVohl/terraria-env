@@ -84,6 +84,9 @@ def audit(root):
     for relative,sha in manifest['source_hashes'].items():assert hashlib.sha256((root/'source'/relative).read_bytes()).hexdigest()==sha
     events=json.loads((root/'evaluation-events.json').read_text())
     assert events and events[0]['scenario']==config['scenario']
+    build=(root/'source/mod/TerrariaBenchObserver/build.txt').read_text().splitlines()
+    source_version=next(line.split('=',1)[1].strip() for line in build if line.strip().startswith('version ='))
+    assert events[0]['observer_version']==source_version, 'fixture/source observer version mismatch'
     assert events[0]['pve_enabled']==config['pve'];assert events[0]['trusted_setup']==(config['scenario']!='fresh')
     assert not any(e.get('event')=='calibration_probe' for e in events)
     source_events=[]
@@ -98,7 +101,7 @@ def audit(root):
     assert recomputed==result['metrics']
     if not config['pve']:assert all(e['hostile_npcs_active']==0 for e in events if e['event']=='heartbeat')
     complete=len(responses)==result['calls'] and not Decimal(result['accounting']['uncertain_reserved_usd'])
-    out={'artifact_checks_passed':True,'all_calls_accounted':complete,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),
+    out={'artifact_checks_passed':True,'all_calls_accounted':complete,'observer_version':source_version,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),
          'exact_telemetry_export_match':not inert_tail,'inert_post_snapshot_heartbeats':inert_tail,
          'latest_observation_wall_age_seconds':{'median':round(median(ages),2) if ages else None,'max':round(max(ages),2) if ages else None,'samples':len(ages)},
          'raw_telemetry_hashes':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'telemetry').glob('*.jsonl')},'official_eligible':False}
@@ -126,6 +129,7 @@ def analyze(root):
              'history':config['history'],'goal':config['goal'],'guide':config['guide'],'pve':config['pve'],'inventory_access':config['inventory'],
              'checkpoint_access':config['checkpoints'],'hold_ms':config['hold_ms'],'motor':config['motor'],
              'coordinates':config.get('coordinates','pixels'),
+             'observer_version':aud.get('observer_version'),
              'call_limit':limits['calls'],'wall_limit_seconds':limits['wall_seconds'],
              'simulation_limit_seconds':limits['simulation_seconds'],'usd_limit':limits['usd'],
              'calls':result['calls'],'commands':result['commands'],'frames':result['frames'],'invalid':result['invalid_outputs'],

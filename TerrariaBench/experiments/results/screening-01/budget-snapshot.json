@@ -1,10 +1,11 @@
 {
   "limit_usd": "2.90",
-  "spent_usd": "1.966548555",
+  "spent_usd": "1.980374055",
   "pending": {
     "01-haiku-tools-fresh": "0.0430080",
     "27-gemini-paused-slime": "0.070963200",
-    "R3-gemini-tools-fresh": "0.070963200"
+    "R3-gemini-tools-fresh": "0.070963200",
+    "C03-gemini-normalized-paused-64-slime": "0.070963200"
   },
   "prior_session_reported_usd": "0.086400375"
 }

@@ -2,246 +2,251 @@
   "01-haiku-tools-fresh": {
     "manifest.json": "ef5797c6fd041c2217a42e1f6e4c17d33c6f4d697b5888802c01cecd76ce4573",
     "result.json": "2021356a2b2fb4c79c1bf74931352a4fd2d36cb050f5eef290ca25c7f85397bb",
-    "audit.json": "b2dab61bdbccca9517434befb55e078c6852a76a0850702087d4670807105b13"
+    "audit.json": "070e8582596697736cb1cc9fe4a4681a74076f6ff6499f9b318898d03639ec32"
   },
   "02-haiku-paused-slime": {
     "manifest.json": "e7caec3ac4a9615c031f3c5786576c5d8f7578c0811f4f2a003606d8be5ef997",
     "result.json": "a87586a46734a3a981d3c4b8d65ef91995b1c845258f2bea97d2b1046c1683f8",
-    "audit.json": "7b8f2c5c35c25754b83a8403dc6b911cb60a44d0fee8c5845a2abba35b7cc42c"
+    "audit.json": "2fb0766899f190661f78a7d53629ad8fc250d5ea16b847baf69408556a714265"
   },
   "03-haiku-json-crafting": {
     "manifest.json": "ad23c9db6661e53c7a6bffac2ac96b37131fced02340c889a3b9abe54b0b5928",
     "result.json": "5dc31a19209c78af702ec30fd70870cc1c0e8db9b707adf54557f796ccbfe995",
-    "audit.json": "e2e5c61d5db7ccc3f2df0cd817595e867f8398abb5aedef50e2ff64e810de14e"
+    "audit.json": "73e09461bfb219886a3a201a8ae923b52084f103a67bab06fdd6623b159b3698"
   },
   "04-gemini-tools-fresh": {
     "manifest.json": "bec5122e35a9568d7c17a80f6cf0809d7c8d6a5e5421a4d42eac13222dd7e922",
     "result.json": "689c295507549a76069f3bdaba5918921c8a7a3beb309c5695822b15d4d80770",
-    "audit.json": "df7c298b081d3784da4b5d72cad4319e6f0fef49c7c3385435c3a483f3be594a"
+    "audit.json": "caa5e5865a3ea2fcd5163826525e240c9be4e538a1b8fa9f1a965a629cac0d71"
   },
   "05-haiku-json-fresh": {
     "manifest.json": "17508268b38073ac2403e88252cfa71945653a1d602bbade2c0dbcc73905b92a",
     "result.json": "6905fff85155be9ab5766b92f37a83dfa2aed4d07a49b78c2a67b9634204a666",
-    "audit.json": "1a6dafa8b507073abe519d2b9328a0003b471da5fcf60ed05dc276225aeec89e"
+    "audit.json": "fc59f044b1e66e3bb906b0c85bf52e99ec6d42aa63bcabb9359fe0a5ed0da566"
   },
   "06-haiku-paused-fresh": {
     "manifest.json": "6d1af5e4cbd10456e541ec6c2df930468f749d4b9a2c6824b128010c46cd8236",
     "result.json": "fd3fceb623b2e71b6feae203e98c19fb1a85aaac3850895b7866a3c812f0119c",
-    "audit.json": "2b24540a2c9eedebe8e768ec51bf55edb860946d94f8a0f6de013ff9b75d0751"
+    "audit.json": "55c5a00444b1c9511dd21e73841fa1b26c5e0981a24d1e2e7bfd0753a654fd3c"
   },
   "07-deepseek-tools-fresh": {
     "manifest.json": "e16733a91d460e66fe1edc8c795847b9b2728542d23cdc95af76f1e15b7de071",
     "result.json": "eea62cb0c248336141293d657aaf225d3c737141090206088000b149a1d8965b",
-    "audit.json": "11ec8137aaa4bb55032be64c4c0b1d2b7dd4e0c1c6a49cf80badefeed3cc9cad"
+    "audit.json": "cc75ae28c4cfc6febf982cedbe7364ef8430ae73ca9bb724fcb7d8515347f695"
   },
   "08-haiku-specific-fresh": {
     "manifest.json": "75938e437365b5b20001410965ba560ca765330b2c3717e50c20be48895f600d",
     "result.json": "cf2e9f19783073b4109bb7abc35c24b2abafdffccb87a4932e08a93f8b75efd9",
-    "audit.json": "c6a15dd189bc75636a9256c2822c80f542b8c2c8658c1832df229d21a8517570"
+    "audit.json": "5b3e66c42992092323ca2e1ca18f7c4f7aa06d405cdbd3222964f837388fe7a9"
   },
   "09-gemini-json-fresh": {
     "manifest.json": "cc891e484b0b8f39e15aee6ecc63b1bf217d8599522d586eefe95a8dbbc93793",
     "result.json": "2b4ae45150ef568bb873fa38e080e780755d6c0cbb311cca59dd41cfbabdcd8b",
-    "audit.json": "5ef9eb7169c1197a7f950efbcd570b8b02463389e3bef917589e42d37db70b80"
+    "audit.json": "4908c5fdac1636bb9992d41d46428a7725f07a799cb22a4f795c3d7250407ec8"
   },
   "10-haiku-guided-fresh": {
     "manifest.json": "42ad36528de288c62aa4518697f1fc82ebc8e84f53bc2eeb1ebb9a970118a69a",
     "result.json": "859b4c25b74b7de9c64ae3e5624d52eae7beb9a5a3a3243cd6522f09cbd64bf5",
-    "audit.json": "1fa111d1fae23bc94886c7997b83d9cec14a065afceab934e1666baa36702081"
+    "audit.json": "ed7b8c60e371955fba269ea9440d42bc8a074a43da6fbdc149078c5d2c253def"
   },
   "11-haiku-inventory-fresh": {
     "manifest.json": "835b29a528e3c3765a3922b1b702c7989519b7653de228a369a4026bf79b7f77",
     "result.json": "788db9f03e15105149bc9a7cd945f2ea4d191d769f3d3c5efe16481cdce1b53b",
-    "audit.json": "547c03c639e6b96ec9653b9e07e8d3754ced168576527c59a35bd41d7e1ab812"
+    "audit.json": "5640d5670aa4f5bb2cb48e57eadb362cc0a03a4088085714b05e3d4c7adcbe58"
   },
   "12-gemini-paused-fresh": {
     "manifest.json": "45711269d71f452544e9348f8a043cf29f9b9d9e77be056bcd288bdb17666013",
     "result.json": "03e46de7592b0f9e159f92d0df7a11c1aecf278e6b76e4f90a02013624038cca",
-    "audit.json": "b19024241dbcbb44c0e989f4d62ab3f38ac2fa962ce5eab6b4786bfac4ff4b38"
+    "audit.json": "db22564792228bed620bea7585627eb8d10225217ee724947ebf10ea74f90032"
   },
   "13-haiku-notes-fresh": {
     "manifest.json": "bf9251eabfa235a1928a612dacd7ea5e5e88907ec1ce49526ecb04080e38342a",
     "result.json": "fd3edceb9a815176393ffa04a39e9d81cc5827659fb6717931d3157fba363d0d",
-    "audit.json": "fc7271cbe107d46daa3c383282a874d0981670bde5b68222533fa5e77871672d"
+    "audit.json": "ec8be645b5cc1505b0fdcb5f358dcc4dfdefc88a3669c66f05f4e1955d3ea159"
   },
   "14-haiku-longhold-fresh": {
     "manifest.json": "aa249fb169abd27513cc29349d321098675ca739dab0ead642ea75937a10d344",
     "result.json": "a75b236c121ef92ac4fe8c468ac583d4139d49e22e586586c4008cef32991492",
-    "audit.json": "f215927c9debf61b89e55f4cdb650022ce27057531633becbeb31e65fca5e7ca"
+    "audit.json": "a5a73f27db1e869f6b5e257d75e5fda0ea9892003b60e58dfb4f19a11a21b12c"
   },
   "15-haiku-motor-fresh": {
     "manifest.json": "53315a321d324cef9515c4fd0b9ecbe3a2ff12757dea32d8028fa17d52d8d5b8",
     "result.json": "420031c1c6432b47ddb8c5836c3578be90a32c4979839d0ca038159f7052fca0",
-    "audit.json": "789256d4b43b1c4ad0ce1d187a16d792dffff6565e9dee106a09fce9b3b972df"
+    "audit.json": "86fafd1824eed62122157c777306dccdd48070a7ff890c837c4c78c388fc3e5e"
   },
   "16-deepseek-json-fresh": {
     "manifest.json": "83ee2f94688b3b340993b10b4c471484a9fba798b0c92ca638dfeb986cb7fac6",
     "result.json": "4de90b57ca2c4d5c1d41a5905bfd303c966eaa75775c8604c04d377aede24b57",
-    "audit.json": "7369ed9c3dcff138e52154e33b9e3a056aad32095ca540a60b6e9c8c5051eb27"
+    "audit.json": "c3c07613e1f24db73584a32d4ce59684520a7de88a89a442b9cde1edbd1e27fa"
   },
   "17-haiku-checkpoints-fresh": {
     "manifest.json": "c764a0337f7e441047089ffb808863032e1fcd2f19da2afe2e4748117ef992c1",
     "result.json": "a08a392b53ca418d3933650486f59d767722118ed207713ae374e2f740f85e48",
-    "audit.json": "56a916b4ab6cf16e5ce9f11d13cfcf65aa1d9103508c82baf98ea0f7842ebd29"
+    "audit.json": "10fa81251662d2a6f333bfaa21fc3697e1d6fdc5637c275d01e34bd255e6e5c0"
   },
   "18-haiku-peaceful-fresh": {
     "manifest.json": "2070c2317db710a5f53303e96b7d766ec0177fda0269d063542a0f828206483a",
     "result.json": "b269531f9d8506267c20905f61be2c2d9e8a14fc0d9254bad0c716d54d8fa72e",
-    "audit.json": "14cee13d1211947c81a160827377db59299ef983784c8b96d428df282fa0348b"
+    "audit.json": "1613fb56bdc1205275ab694176cc91a1927db3ffdc915d0e4aa56ddba2f34683"
   },
   "19-gemini-guided-fresh": {
     "manifest.json": "f8d262197cafc90521e10308a01a875f465d2acbfe32a21d7924054761c02b27",
     "result.json": "da7604d76da17a21d2a27ffc8286ca4239af8d6c40c548ebdae53f0e82853efe",
-    "audit.json": "684b8294bec8b57722f2ed80b8d6329ad9d7721214f8616fc42aba8cebf011f4"
+    "audit.json": "7e6800d89bc5ec227168a59b0ab80234e3d3df2d7b8518df4ec205c0dbe99a7e"
   },
   "20-haiku-tools-crafting": {
     "manifest.json": "3f5684ed9f672b18b4344be30849d4a5a11c149f6dcba5d10405405b3d81728b",
     "result.json": "7bcacf2747aa7af3922ddbf1bfb64ebf26ff18d9ac329f21f702ab964de28c20",
-    "audit.json": "1c838591cf120446a84aa4f6c7b90dc7f31c34fa27d41b7bf210cf6e6b3ca589"
+    "audit.json": "78593a3a8be1c691b5eb9c8aaa7d2c26a48d6240c4f5b85575744b31dd9add7f"
   },
   "21-haiku-inventory-crafting": {
     "manifest.json": "4a3a95cd7e8911a3b55b5a8f652dc19000f03d134bda4f45f753335d43d8d9af",
     "result.json": "8453f2938d0e06742cfc95bb55362da3bf71814913fc67fecd495dcb65808662",
-    "audit.json": "78201254cac496a3e4394658442e25658e512151187385be7dffd9b9b89740de"
+    "audit.json": "275f7881e47bdde53074b72f4eb15581ff54929dd6de7c75dd8137457615bd32"
   },
   "22-gemini-json-crafting": {
     "manifest.json": "5df8f2ee00ae1be25fc4ab2b1f18115f2fc8811422081bf696a429bdc08eb698",
     "result.json": "8b301c2096a953681664bf1c94ba934d4d5b9c3ca02ed447ac16a47ae2b5e200",
-    "audit.json": "20c57ced8764192ef44446493823dad37451015001e608175f721e8b07197852"
+    "audit.json": "45406671b804c80527e786118a3abf2a434ffd9eb0056c084a2f2d7e194dda29"
   },
   "23-haiku-guided-crafting": {
     "manifest.json": "ac1e18bc8b4eb43bc9ce95975d805ceab028f268767904a2e020e467850e5301",
     "result.json": "7e0c4b02e5055a596a8ba962edbccba7d596cb4edf59fd6b7ab8a4bc6d9af5bd",
-    "audit.json": "ee54dcef4951c69e9a57f38ef6e47e597f9836bc61266b8698f10ae7db8caa73"
+    "audit.json": "243dd2714b90c8d700e1a955cef1840a44e6c16a5824fd8788e7c9df2babe16a"
   },
   "24-haiku-tools-slime": {
     "manifest.json": "ae07c283b173e26e4f3b1cdb768162ba38893bde13db37fe4c07c8dd41d482e7",
     "result.json": "723a98beb61184cc0475db44ec4a7c06c935c0a5c0ebe5d0c10f2817c389282c",
-    "audit.json": "07dae293c0f38c4ca86f800c747697bd74960f42888449eb8b1033e7ef2ab0c6"
+    "audit.json": "659de547ee33b9b8979b01ca2c88f3101b736250312fcd74bd6f0b162fa98ed8"
   },
   "25-gemini-tools-slime": {
     "manifest.json": "7c8ae9212794830b03be840613df502343865c5234475e072c94aac601bec832",
     "result.json": "675bff081c437ee4d9c1eacf81dadaac7cc84eb353d08f5ec89e28abc72161f7",
-    "audit.json": "bbd2dbb8635f22fc975c64a284c403f9756db52231d587ae068a666d00d40360"
+    "audit.json": "ec50f3ddc55ff380499f675e76b004937fd1083f9f53d9a28afdfeb6e26a972e"
   },
   "26-haiku-json-slime": {
     "manifest.json": "cf40faaa55cb612478a008a256f0a02488ce38d045417c8517756e05528907c1",
     "result.json": "f756de53c20036a3ff79d16425a9d33fe29873ffe82d48b5f0aa472c9d9e6547",
-    "audit.json": "820aecfb56dcfa2b63c8e864b7b3cd14486fd27316147392bec3551c8904d8fa"
+    "audit.json": "62ad44b1fe7cb5e84a27a2cde9942e6ca32783e0494647b3afb25b188ea8713e"
   },
   "27-gemini-paused-slime": {
     "manifest.json": "ae97069d96001f35270120064ae43aa4f879ac2b188484dc74b45d79a421ba5e",
     "result.json": "d5edb184fdf0cd8ff7c3aaf2d3ff347734e4ea898e4a0994b4df821105142b44",
-    "audit.json": "d32307da7f58e9cc16e24a232a7b0c83100e5a0e3d9bc2b10b4c8589677cad9f"
+    "audit.json": "a05267d45b2085387b00fe2d91d6eb681cdc333a5cf6bc91a0121c92434560a8"
   },
   "28-deepseek-json-slime": {
     "manifest.json": "1e52970ce4b48022b3928b9f1ad17df47695be9f07b9fda724ed45adeb51ef29",
     "result.json": "a7b593510a9512b89fec808cb26ae3e90bb93de54cd67158e6efb26d089a4394",
-    "audit.json": "acb813f752b9ce72f5fc6b19f697e50df9b1bf56b55b11d6dbfb43bc05eb3402"
+    "audit.json": "45a7fbd4330a08a56048d5bd0019f9f5548f86b87bc0a72c441b8938966cde1d"
   },
   "C01-gemini-paused-slime": {
     "manifest.json": "b7065b7deaa84eade9676e9df582aead2b5f3bec943af64f98b9e8e674f9ae41",
     "result.json": "c3bd3e9757726c7be2f24bac417d9d826f3ac5715d61702b1b812440aee91199",
-    "audit.json": "c7dab1981f4f5f8e49ec99c0dabf481d56f162b9ff28bcdf2d6976844b10dece"
+    "audit.json": "1d4682eacb27f670eef40c9af083e384a265f180c3e7baad8c13b17af200cb31"
   },
   "C02-gemini-normalized-paused-slime": {
     "manifest.json": "e42ec6797a791b0992e3ff987e47431ba4601374680c7f56bf8f688dba033e6b",
     "result.json": "b8c8fb85c1e70c70b4fde7405b460497b2a92435970e78f27edce1e44d731652",
-    "audit.json": "82115887358740de1b38db6c10e18afbed8416d63721a7683f315fab05df111e"
+    "audit.json": "fdb7dd298ab4d2f116c29c9546540aad7e669b12601ac4bca159cdbd9b184f15"
+  },
+  "C03-gemini-normalized-paused-64-slime": {
+    "manifest.json": "f84a222cf1c8ec82c22c5cec0e03ad32c8ca5bcfbb41c4adc3c31701ca400621",
+    "result.json": "4f8b322ecda9963bc6938944ad0138ba29bd7c6d188d27574067721adb8106ad",
+    "audit.json": "bd9df8bb08dbdf821efeb9d24e7c4602de1322181d65b86132008649f8245d58"
   },
   "N01-gemini-normalized-fresh": {
     "manifest.json": "88db6b19aa4c59fba2bad0b1b9fd34c7f68cf2946ce9a6b0a078c6be6cd41ad7",
     "result.json": "24e05ff3c93d6a05b5d83f38fca2161736bcd0da1ca1c619d4607d6473ddfbcf",
-    "audit.json": "19a72e433a4bfa880e002b6ca1f1fa4f65610824e6ae4739229eee5563f69d52"
+    "audit.json": "c739630a0600d2a22f555b37024928bbdc88864c8acb3dc0a27d168cb97e77ab"
   },
   "N02-gemini-normalized-slime": {
     "manifest.json": "e06f368ba3642e4ac313bee2e5ed14b76d4b9da78a8f1b5b81e333724b43038a",
     "result.json": "1331a4e27a544557f58e62e9d168fd45d57879d838fdef034f376fd010e423a7",
-    "audit.json": "f4a24efb376af729718faf5227acef840ec59f9f6dfed0a664b4b6db09ed6553"
+    "audit.json": "00bac81738c175b7d39fe16bfa0087d75e8e78ddc15b3bfead042b2cea215a56"
   },
   "N03-haiku-normalized-fresh": {
     "manifest.json": "b5bf0d768ff54e107c30ed352c84b12d16f631fc9ee60d5a974fefeab8056253",
     "result.json": "aed33a97c6a77d05938b9167547b798254db4b67878aa13b5f9de64ea2c3d0df",
-    "audit.json": "5861a996295dae83ade0fa46e2075e410c79220076e649b980c0a854d0a63ef7"
+    "audit.json": "333f0ae6ce9a4e74807cd06dbb2cd0e4c58f945b4ff13ab7039c6afafab1349a"
   },
   "N04-deepseek-normalized-fresh": {
     "manifest.json": "0b1e3cd78346c41b41e8ea1058dfeaa8bd1bea37493f0649c5efad2ce6502aed",
     "result.json": "76a31da37f174e1f5ed7eb0582b4dc340812adbea10cbd9385ef9da35a562640",
-    "audit.json": "86fcdc58ebd2b23d7e79ed6b5c48bc2ff5077e904c15fd6fc278e359c90a1503"
+    "audit.json": "e1d661d11f72764e3cff597b28f4a103a1b9b9cfb97d91e61d382dfb297ffb9f"
   },
   "R1-gemini-normalized-fresh": {
     "manifest.json": "750188e85f7d0f79a7eb22a1f42f624cb763c8f43f55baa1e86fd004d30c860f",
     "result.json": "fce2fb36208a74914053b9edc4faa266184bab1908ded4fa0fb1ee3649a26238",
-    "audit.json": "4816662937aac611fa46cd082d91c606aff532c30709646ef7853a410cc10031"
+    "audit.json": "9c7d9018d688213f00d156f6954d68817a029a78ab3bb3bb895de6ed1d90479b"
   },
   "R1-gemini-tools-fresh": {
     "manifest.json": "b8a84477574399e5975166ca87bfb9e4389e1ddb8e998ce9d12c0c6d058d3a8d",
     "result.json": "ac6e8c4234840c91fb00c5419b700584baafbf2712aaeb8168bb757b3d1450be",
-    "audit.json": "84a16b2b7d4f311c5ed5f59a02a647a01d51dedab0ebea43fd2a4cf9b174a76f"
+    "audit.json": "4ec9aa7496bb5d9b343e4f12bba4eee329c35aa31b9ac335b77cba316de91819"
   },
   "R1-haiku-json-fresh": {
     "manifest.json": "84479d508f233c01f8d37e85e3bb91aa9d26095257b8bf261c864bdca7b05946",
     "result.json": "5927157816b07e29a9ddf8c099274f55f5e6ef90bf8321b98edee19592c615d0",
-    "audit.json": "e8774e32296a41a111522b5d5ec57e368f5ec6c2b802e857d79a1a486ff74389"
+    "audit.json": "078b9ff64664f0086cace4bdf8e50797beda7997db3090c5fa9a89cade558586"
   },
   "R1-haiku-paused-fresh": {
     "manifest.json": "b597ca3851b4dbdf192b6ebfada2ce560e0be515f06e62e8ad51507813a1289f",
     "result.json": "e8fff0075f421a7c17ec24f0d935ed482a4f2ce626abd118a10b495b6ade6ee1",
-    "audit.json": "d3698cc4ab1daf6d0a6b6bdb9635155761819845e65013aa1525c65a6512a383"
+    "audit.json": "4c98701b3696b82d27b555e06d8889c8ad4034cacb985f95bfa9d32a7eb0e6f8"
   },
   "R1-haiku-tools-fresh": {
     "manifest.json": "124ebeca13b51e391f1a6c4398ac40d15850c9ef0aa73f83201bb961142572a5",
     "result.json": "59b1e2a65f2851aa528350f1a9945f4d88f7c6278f9025ffc4424906f828ae12",
-    "audit.json": "6cba75f8fd466a45f350a0c45e44df47a14348a462d5d9c14558877dbf928458"
+    "audit.json": "600c12e00ef4022cf4314b0b0809fd2fc58b91564bb13da8edae091878701be9"
   },
   "R2-gemini-normalized-fresh": {
     "manifest.json": "53efd7ed5a0adcd0b684e8caefc35e76a767119a454b0a74f2ba0489e49903fe",
     "result.json": "b8d5cef78fce8e74c6d0ea32c5443b3ad9f799d86e92035ec0921dab317bee19",
-    "audit.json": "5c05750d73776f0ca6016c8a9c86f2b9b297277020b19f82c48bc658d459f7ec"
+    "audit.json": "563a13fda86750afc36ff1aa1e8db9e15e26fd5643d55d7628775f059d65d272"
   },
   "R2-gemini-tools-fresh": {
     "manifest.json": "6b5af5f3f8813d19f77ae22ac6a1cfd5cc952e3a68bc6788d8cef6e6b41a0a29",
     "result.json": "a9e98210d64faf14923819619549ce83dc60041462bb4462965872825beaf93c",
-    "audit.json": "6002232e709c2005d0d03755b501ac68eb392eaa636b22e4ca65e9ea5837e58b"
+    "audit.json": "324b17860972d86b0ea471ee9aef8ffa14c8e76bcb53f7b960671f8bed246487"
   },
   "R2-haiku-json-fresh": {
     "manifest.json": "32ce3dfbac0b79353102bb874f8ddc76a9deff63d4b62a9162e52385e2a4c267",
     "result.json": "beea6b6769992fae97466a86b46adf99c98f1d6c46d0c3c5cad1a398a6514080",
-    "audit.json": "313f745493a8b0bbe28a98ff41d7b97330eacee8795d01f18ace10f35c6448eb"
+    "audit.json": "aa352030a8b47d6008c12a30d6c3cdf36512f3c3ea7b754de4cb5f2eeaf73adf"
   },
   "R2-haiku-paused-fresh": {
     "manifest.json": "81cface6fdba39a4de822a00b2f26fe36718e4ce066346191d5092a5a3464055",
     "result.json": "97602a87d3a556ce4b245435ee4777097493e7534aa50b173f803da651b1c9ef",
-    "audit.json": "ffc2c607606b7f5291350d617f8b5e29a4a74ec4c6ff69e2af7323cde502ff5a"
+    "audit.json": "a3484b6c25a4308c36bcfd4e681281a74cd3df4dbdd9dba6d8b417eaef629287"
   },
   "R2-haiku-tools-fresh": {
     "manifest.json": "a6b4c9a07cc3b33f5740744537364d2ed6d7dfc5d4ab59e9c5abb0d11d046d27",
     "result.json": "b9f08dd6af834520e7af65e1fc4da885c357f1912d410c4bf942b0331ec4e376",
-    "audit.json": "78b5810621e3201710418544b14fbc8cf84909d066437d5732038fb84c0fcb6a"
+    "audit.json": "057a03a14e6af1b8c49646f9e3a8369c23d04f308e592ed0d74212329e68a805"
   },
   "R3-gemini-normalized-fresh": {
     "manifest.json": "fb79ddc382ea2afaf21bbfd0fbb49b76cea322f876da803cdbab159944b703d8",
     "result.json": "1f9224c5ee5e28a286cbc4518a4fd875776ffd247e351a357c98a0bac64c34eb",
-    "audit.json": "6a0e78f7eccf984852babd8a7d2673607577bed472e88122815d32196c3f69d4"
+    "audit.json": "1be69575faa97da5fbaa8d440dd222bc69c66754fba43731a8a8d14ba40bf8b0"
   },
   "R3-gemini-tools-fresh": {
     "manifest.json": "0cf55d43389206023dd837ffebe8c07a935a8f725252dc73a9f6edcccc4fef03",
     "result.json": "7391811bea0a52fe8fb5cb0e656e203b387f15343bcbf33fa28f395f6b96bdbc",
-    "audit.json": "889592e41535784181e40d3801f5653dec6d1971f8e549b3b0ff802848530a50"
+    "audit.json": "1fb54e22a0363e68668861047fb698c48ffd7fc824d49b9ffd6ccaf20a02d530"
   },
   "R3-haiku-json-fresh": {
     "manifest.json": "1b4a28d73f85d1440abf1d62d289e5184dbae01c034ee5dd8dacc10411b8407a",
     "result.json": "74a417e8244cf490cf138db3d51f905b1f7c869480587e3589455c283a95ba16",
-    "audit.json": "575e316702e2ca98c144beedae90c7fb784d287f88dca18ddbf30b33f3c6f9f2"
+    "audit.json": "043ff64d321cf4d266c7a56ce562a5535e78e798150af4bb5813db0d69738388"
   },
   "R3-haiku-paused-fresh": {
     "manifest.json": "7207c3a368ef5e65d7d338b3061771019812d16d8c34a30cbec245ac6fb3dd3e",
     "result.json": "04f5f30eacf64567886664f67869ea8a0585d18257004cadc8aa12e955c458b7",
-    "audit.json": "93a335a6ad481eb1d6a2f556460258bbaac83055f4902a34389d2fdfc625c8d6"
+    "audit.json": "35711aea788ec1308a6d72208b643949f435e7fa6dd77e789a935bb5963a8589"
   },
   "R3-haiku-tools-fresh": {
     "manifest.json": "27ad51a6b5fb4ccf4027892f7f38c9307d954f11dacd505172f43d99a493d9eb",
     "result.json": "6b93a4c5f02f65ab6544926cca199b98809d6f011e50b79af688660fcc65cea3",
-    "audit.json": "6b49bf5ebbcc729ec0e94d5fe9d4d90fb8d1d42d45d0e8575a8997294d7fe12b"
+    "audit.json": "73968f11c872b1a7170660d7566c6a0e788d6e80e029a6142dd867edc777a97b"
   }
 }

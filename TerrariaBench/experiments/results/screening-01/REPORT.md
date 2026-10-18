@@ -1,8 +1,8 @@
 # Terraria diagnostic campaign results
 
-Snapshot: **49 recorded game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
+Snapshot: **50 recorded game attempts**, plus nine static-image probe calls. This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.
 
-Session reported API charges: **$2.052949**; unresolved reservations: **$0.184934**. Combined accounted exposure: **$2.237883** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
+Session reported API charges: **$2.066774**; unresolved reservations: **$0.255898**. Combined accounted exposure: **$2.322672** against the $3 session cap. The ledger snapshot may include an active attempt; reservations are retained until reconciled.
 
 Raw records, conditions and stop reasons are in [summary.csv](summary.csv). Per-attempt manifests record prompts, tools, model metadata, source and fixture hashes. Artifact checks verify internal consistency against retained raw logs; they do not independently validate the grader.
 
@@ -72,7 +72,9 @@ Starting 50 wood, 50 stone and 5 gel are inherited setup. Wood maxima include in
 
 ## Prepared combat
 
-Guide removed; one designated blue slime is armed after window setup, while natural background mobs remain enabled. Only damage to that target is attributed. The initial rendered frame may precede the spawn. Target death and attributed player damage are distinct; the original operator positive control verified one hit, but not the kill detector. These attempts do not establish a clean clock effect.
+Guide removed; one designated blue slime is armed after window setup, while natural background mobs remain enabled. Only damage to that target is attributed. The initial rendered frame may precede the spawn. Target death and attributed player damage are distinct. These attempts do not establish a clean clock effect.
+
+Subsequent [independent unpaid controls](../../validation/README.md) validated the hit/kill path and the observer 0.5 fatal-hit counter fix. The first 49 attempts retain observer 0.4; C03 uses 0.5 and allowed a larger call budget, but was interrupted on call five. Private instrumentation versions are recorded in the CSV and audits.
 
 | Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / limit / frames | Cost | Audit |
 |---|---:|---|---|---|---|---|---:|---|
@@ -84,6 +86,7 @@ Guide removed; one designated blue slime is armed after window setup, while natu
 | [28-deepseek-json-slime](28-deepseek-json-slime/result.json) | 0 | no | 0 / no | 0 / no | 35 / 0 | 11 / 16 / 11 | $0.00495 | pass |
 | [C01-gemini-paused-slime](C01-gemini-paused-slime/result.json) | 0 | no | 0 / no | 8 / no | 20 / 0 | 16 / 16 / 9 | $0.07457 | pass |
 | [C02-gemini-normalized-paused-slime](C02-gemini-normalized-paused-slime/result.json) | 0 | no | 0 / no | 21 / no | 57 / 0 | 32 / 32 / 17 | $0.13987 | pass |
+| [C03-gemini-normalized-paused-64-slime](C03-gemini-normalized-paused-64-slime/result.json) | 0 | no | 0 / no | 3 / no | 7 / 0 | 5 / 64 / 3 | $0.01383 | partial |
 | [N02-gemini-normalized-slime](N02-gemini-normalized-slime/result.json) | 0 | no | 0 / no | 0 / no | 54 / 0 | 16 / 16 / 9 | $0.07700 | pass |
 
 ## Interpretation boundaries

@@ -10,7 +10,8 @@ and [interpretation rules](experiments/interpretation.md). The reconstructed
 reference below is retained as a historical baseline, not the final benchmark.
 
 The [audited development results](experiments/results/screening-01/README.md)
-are committed incrementally. Current trials cover early gathering, prepared
+are committed incrementally. The [first campaign findings](experiments/FINDINGS.md)
+summarize 50 recorded game attempts and their diagnostic limits. Current trials cover early gathering, prepared
 crafting and one-slime control across three model families; they do not measure
 complete-game success. Native coding-agent frameworks and progression beyond
 Wall of Flesh through Moon Lord remain future scope.

@@ -2,13 +2,15 @@
 
 Start with the [complete scorecard](REPORT.md), including the separately selected
 repeat cohort, task-specific outcomes, declared limits and cost accounting.
+The [findings report](../../FINDINGS.md) interprets the completed 50-attempt campaign.
 These are unofficial development results on one world, not a model leaderboard
 or a complete-game evaluation.
 
 The campaign screens early gathering, prepared crafting and designated-target
 combat across three model families. Most attempts allow 16 API calls, 300 wall
 seconds and 120 nominal simulation seconds; the combined combat follow-up allows
-32 calls/600 wall seconds. Actual calls, commands, observations and game updates
+32 calls/600 wall seconds. The final, interrupted budget probe allowed 64 calls;
+its actual five calls cannot answer the longer-horizon question. Actual calls, commands, observations and game updates
 vary. Check each manifest rather than assuming equal control opportunities.
 
 [Manual trajectory reviews](../../trajectory-reviews.md) describe dynamic crafting

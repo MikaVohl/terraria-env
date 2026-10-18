@@ -1,6 +1,7 @@
 {
   "artifact_checks_passed": true,
   "all_calls_accounted": false,
+  "observer_version": "0.4",
   "responses": 7,
   "commands": 20,
   "images_verified": 4,
