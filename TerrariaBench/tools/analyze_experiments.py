@@ -109,6 +109,7 @@ def analyze(root):
     root=Path(root);rows=[]
     for path in sorted(root.glob('*/result.json')):
         result=json.loads(path.read_text());config=result['config'];m=result['metrics'];sc=m['public_subset_score']
+        limits=json.loads((path.parent/'manifest.json').read_text())['limits']
         aud={}
         try:
             aud=audit(path.parent)
@@ -125,6 +126,8 @@ def analyze(root):
              'history':config['history'],'goal':config['goal'],'guide':config['guide'],'pve':config['pve'],'inventory_access':config['inventory'],
              'checkpoint_access':config['checkpoints'],'hold_ms':config['hold_ms'],'motor':config['motor'],
              'coordinates':config.get('coordinates','pixels'),
+             'call_limit':limits['calls'],'wall_limit_seconds':limits['wall_seconds'],
+             'simulation_limit_seconds':limits['simulation_seconds'],'usd_limit':limits['usd'],
              'calls':result['calls'],'commands':result['commands'],'frames':result['frames'],'invalid':result['invalid_outputs'],
              'usd':result['accounting']['reported_usd'],'uncertain_usd':result['accounting']['uncertain_reserved_usd'],
              'wood_max':inv.get('Wood',0),'held_wood_25':'wood_25' in milestones,'workbench':'workbench_1' in milestones,'torch_max':inv.get('Torch',0),'furnace':'furnace_1' in milestones,
@@ -139,6 +142,7 @@ def analyze(root):
              'max_input_hold_ms':max(holds,default=0),'holds_above_2000ms':sum(h>2000 for h in holds),
              'tool_counts':json.dumps(dict(tool_counts),sort_keys=True),
              'error_counts':json.dumps(dict(errors),sort_keys=True),
+             'providers':json.dumps(dict(Counter(r.get('provider','not_reported') for r in replies)),sort_keys=True),
              'median_observation_age_wall_seconds':aud.get('latest_observation_wall_age_seconds',{}).get('median'),
              'max_observation_age_wall_seconds':aud.get('latest_observation_wall_age_seconds',{}).get('max'),
              'max_prompt_tokens':max((r['usage']['prompt_tokens'] for r in replies),default=0),

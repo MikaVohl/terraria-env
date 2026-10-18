@@ -1,46 +1,44 @@
-# Exploratory screening records
+# Terraria diagnostic records
 
-These compact records are intermediate snapshots, updated as attempts finish.
-`summary.csv` includes every completed game attempt; `perception-rescored.json`
-contains the separate nine-call development probe. Each run retains its manifest,
-result and artifact audit, with their SHA-256 digests in `record-hashes.json`.
-Raw request/response/input/telemetry/image logs and copied saves remain in ignored
-`runs/diagnostic-campaign-01` on Omarchy; source snapshots there support the audits.
-An artifact audit establishes internal consistency, not independent correctness
-of the task definition or scorer. These are unofficial development results.
+Start with the [complete scorecard](REPORT.md), including the separately selected
+repeat cohort, task-specific outcomes, declared limits and cost accounting.
+These are unofficial development results on one world, not a model leaderboard
+or a complete-game evaluation.
 
-At the first nine-run snapshot, Haiku's JSON and paused fresh-world attempts
-obtained workbenches (64 and 44 maximum wood respectively). Its explicit-goal
-attempt obtained no wood, whereas its initial tool-loop attempt collected 43
-wood before a transport interruption. Gemini's tool and JSON attempts and
-DeepSeek's tool attempt obtained no wood. This variability warrants repeats and
-trajectory inspection rather than a model or scaffold ranking.
+The campaign screens early gathering, prepared crafting and designated-target
+combat across three model families. Most attempts allow 16 API calls, 300 wall
+seconds and 120 nominal simulation seconds; the combined combat follow-up allows
+32 calls/600 wall seconds. Actual calls, commands, observations and game updates
+vary. Check each manifest rather than assuming equal control opportunities.
 
-Prepared crafting with Haiku JSON obtained a workbench from inherited resources;
-the prepared paused combat attempt dealt no measured target damage. The latter
-is distinct from combat success, and the operator calibration has established
-only hit reporting so far. See `../../interpretation.md` for limitations and the
-adaptive selection log. Hostiles remain enabled except the named ablation.
+[Manual trajectory reviews](../../trajectory-reviews.md) describe dynamic crafting
+UI mistakes, an offered-but-unused macro, and an in-game menu pause. The
+[interpretation rules](../../interpretation.md) retain limitations and the adaptive
+selection log. The [research rationale](../../design-rationale.md) links primary
+benchmark sources and distinguishes proposed design choices from tested behavior.
 
-The four coordinate follow-ups are now complete and pass artifact checks:
+Every recorded game attempt has a manifest, result and audit, with SHA-256 hashes
+in `record-hashes.json`. `summary.csv` and `summary.json` include all attempts;
+`perception-rescored.json` contains the separate nine-call development probe.
+Raw requests/responses, images, inputs, telemetry, source snapshots and copied
+saves remain in ignored `runs/diagnostic-campaign-01` on Omarchy. Screenshots and
+source snapshots are also synchronized locally for review. They are not included
+in this compact Git export.
 
-| Attempt | Maximum wood | Workbench | Damage received | Target damage |
-|---|---:|---|---:|---:|
-| Gemini normalized, fresh | 89 | No | 82 | n/a |
-| Gemini normalized, slime | 0 | No | 54 | 0 |
-| Haiku normalized, fresh | 45 | No | 55 | n/a |
-| DeepSeek normalized, fresh | 0 | No | 35 | n/a |
+An artifact audit verifies internal consistency, not independent correctness of
+the task or scorer. Interrupted provider calls retain uncertain charges and are
+excluded from the repeated-outcome rates. A qualified legacy telemetry-tail audit
+is disclosed separately; original results and raw logs are preserved.
 
-Gemini's three static probe targets were approximately 14–16 pixels from the
-manually annotated box centers as literal pixels, versus 1–2 pixels after
-0..1000 scaling. Those box centers are development annotations, not exact ground
-truth; the end-to-end coordinate contrast still needs the declared repeats.
-No earlier action was reinterpreted. Combat's initial-render issue is documented
-in the interpretation rules.
+`budget-snapshot.json` includes reported campaign charges and pending reservations.
+The additional $0.086400375 of earlier session tests also counts toward the user’s
+$3 session cap. Active-attempt reservations can appear in intermediate snapshots.
+This session’s authorization does not establish an ongoing spending allowance.
 
 Regenerate after synchronizing completed worker artifacts:
 
 ```sh
 ../.venv/bin/python tools/export_experiments.py \
   runs/diagnostic-campaign-01 experiments/results/screening-01
+../.venv/bin/python tools/report_experiments.py experiments/results/screening-01
 ```

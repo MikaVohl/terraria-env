@@ -58,6 +58,13 @@ every other NPC.
 - Stock transport has no retry. Truncated calls retain conservative uncertain
   reservations in the campaign cap. Provider failures are separate from agent
   failures. A fresh repeated attempt is a new recorded sample, not a hidden retry.
+  R3 Gemini tools was interrupted by HTTP 429 on call 14. A read-only key check
+  showed no per-key credit cap; the exact router/provider limit source was not
+  retained by the error-redacting adapter. [OpenRouter's limits documentation](https://openrouter.ai/docs/api_reference/limits)
+  distinguishes rate limits from credit/budget limits. Future long campaigns
+  need a declared bounded backoff/retry policy, with every request and uncertain
+  charge counted. Current response-latency totals cover completed responses;
+  failed-call waiting time still contributes to agent wall time.
 - The three-image perception probe has manually annotated development boxes.
   It is illustrative, not a validated perception benchmark. Raw JSON compliance
   and offline semantic scoring after optional fence removal are both retained.

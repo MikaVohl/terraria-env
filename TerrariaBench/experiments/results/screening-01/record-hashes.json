@@ -208,5 +208,30 @@
     "manifest.json": "a6b4c9a07cc3b33f5740744537364d2ed6d7dfc5d4ab59e9c5abb0d11d046d27",
     "result.json": "b9f08dd6af834520e7af65e1fc4da885c357f1912d410c4bf942b0331ec4e376",
     "audit.json": "78b5810621e3201710418544b14fbc8cf84909d066437d5732038fb84c0fcb6a"
+  },
+  "R3-gemini-normalized-fresh": {
+    "manifest.json": "fb79ddc382ea2afaf21bbfd0fbb49b76cea322f876da803cdbab159944b703d8",
+    "result.json": "1f9224c5ee5e28a286cbc4518a4fd875776ffd247e351a357c98a0bac64c34eb",
+    "audit.json": "6a0e78f7eccf984852babd8a7d2673607577bed472e88122815d32196c3f69d4"
+  },
+  "R3-gemini-tools-fresh": {
+    "manifest.json": "0cf55d43389206023dd837ffebe8c07a935a8f725252dc73a9f6edcccc4fef03",
+    "result.json": "7391811bea0a52fe8fb5cb0e656e203b387f15343bcbf33fa28f395f6b96bdbc",
+    "audit.json": "889592e41535784181e40d3801f5653dec6d1971f8e549b3b0ff802848530a50"
+  },
+  "R3-haiku-json-fresh": {
+    "manifest.json": "1b4a28d73f85d1440abf1d62d289e5184dbae01c034ee5dd8dacc10411b8407a",
+    "result.json": "74a417e8244cf490cf138db3d51f905b1f7c869480587e3589455c283a95ba16",
+    "audit.json": "575e316702e2ca98c144beedae90c7fb784d287f88dca18ddbf30b33f3c6f9f2"
+  },
+  "R3-haiku-paused-fresh": {
+    "manifest.json": "7207c3a368ef5e65d7d338b3061771019812d16d8c34a30cbec245ac6fb3dd3e",
+    "result.json": "04f5f30eacf64567886664f67869ea8a0585d18257004cadc8aa12e955c458b7",
+    "audit.json": "93a335a6ad481eb1d6a2f556460258bbaac83055f4902a34389d2fdfc625c8d6"
+  },
+  "R3-haiku-tools-fresh": {
+    "manifest.json": "27ad51a6b5fb4ccf4027892f7f38c9307d954f11dacd505172f43d99a493d9eb",
+    "result.json": "6b93a4c5f02f65ab6544926cca199b98809d6f011e50b79af688660fcc65cea3",
+    "audit.json": "6b49bf5ebbcc729ec0e94d5fe9d4d90fb8d1d42d45d0e8575a8997294d7fe12b"
   }
 }

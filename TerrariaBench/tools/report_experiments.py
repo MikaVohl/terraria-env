@@ -15,7 +15,7 @@ def main():
     pending=sum((Decimal(v) for v in budget['pending'].values()),Decimal(0))
     reported=Decimal(budget['spent_usd'])+Decimal(budget['prior_session_reported_usd'])
     out=['# Terraria diagnostic campaign results','',
-         f'Snapshot: **{len(rows)} completed game attempts**, plus nine static-image probe calls. '
+         f'Snapshot: **{len(rows)} recorded game attempts**, plus nine static-image probe calls. '
          'This is adaptive development on one world, not a model leaderboard or a complete-game evaluation.','',
          f'Session reported API charges: **${reported:.6f}**; unresolved reservations: **${pending:.6f}**. '
          f'Combined accounted exposure: **${reported+pending:.6f}** against the $3 session cap. '
@@ -56,7 +56,7 @@ def main():
             out+=['Guide removed; one designated blue slime is armed after window setup, while natural background mobs remain enabled. Only damage to that target is attributed. The initial rendered frame may precede '
                   'the spawn. Target death and attributed player damage are distinct; the original operator positive '
                   'control verified one hit, but not the kill detector. These attempts do not establish a clean clock effect.','']
-        out+=['| Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / frames | Cost | Audit |',
+        out+=['| Attempt | Wood max | Bench | Torches max / furnace | Target damage / killed | Damage received / deaths | Calls / limit / frames | Cost | Audit |',
               '|---|---:|---|---|---|---|---|---:|---|']
         for r in rows:
             if r['scenario']!=scenario:continue
@@ -64,7 +64,7 @@ def main():
             out.append(f'| [{r["run"]}]({r["run"]}/result.json) | {r["wood_max"]} | '
                        f'{"yes" if r["workbench"] else "no"} | {r["torch_max"]} / {"yes" if r["furnace"] else "no"} | '
                        f'{target} | '
-                       f'{r["damage_received"]} / {r["deaths"]} | {r["calls"]} / {r["frames"]} | '
+                       f'{r["damage_received"]} / {r["deaths"]} | {r["calls"]} / {r["call_limit"]} / {r["frames"]} | '
                        f'${Decimal(r["usd"]):.5f} | {r["audit"]} |')
     out+=['','## Interpretation boundaries','',
           '- Equal API calls do not mean equal action/observation opportunities. Stop limits include nominal observer updates; '

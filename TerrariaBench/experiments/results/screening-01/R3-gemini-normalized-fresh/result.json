@@ -1,0 +1,142 @@
+{
+  "run": "R3-gemini-normalized-fresh",
+  "config": {
+    "clock": "realtime",
+    "pve": true,
+    "checkpoints": false,
+    "goal": "open",
+    "guide": false,
+    "inventory": false,
+    "scaffold": "tools",
+    "history": "full",
+    "hold_ms": 2000,
+    "motor": false,
+    "scenario": "fresh",
+    "reasoning": "medium",
+    "coordinates": "normalized1000"
+  },
+  "model": "google/gemini-3.8-flash",
+  "stop_reason": "call_limit",
+  "calls": 16,
+  "commands": 29,
+  "frames": 9,
+  "invalid_outputs": 0,
+  "agent_wall_seconds": 62.90389629104175,
+  "paused_seconds": 0,
+  "inference_seconds": 52.386105018202215,
+  "latencies": [
+    4.495308478130028,
+    1.6806678688153625,
+    7.092707790900022,
+    2.084861060138792,
+    3.18942066305317,
+    2.4294448159635067,
+    3.0463514260482043,
+    2.1789612569846213,
+    3.3007810439448804,
+    2.4626838790718466,
+    3.771510952152312,
+    3.5967403040267527,
+    3.88020158582367,
+    2.336139321094379,
+    4.203284606104717,
+    2.6370399659499526
+  ],
+  "accounting": {
+    "usd_limit": "0.35",
+    "reported_usd": "0.059611875",
+    "uncertain_reserved_usd": "0",
+    "tokens": 110746,
+    "reservation_per_call_usd": "0.070963200"
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 4,
+      "checkpoint_count": 4,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25",
+        "workbench_1"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 21.4838323,
+          "game_updates": 1279,
+          "timestamp_utc": "2026-10-18T00:01:29.0260772+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 22.2650533,
+          "game_updates": 1327,
+          "timestamp_utc": "2026-10-18T00:01:29.8072983+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 22.7158641,
+          "game_updates": 1354,
+          "timestamp_utc": "2026-10-18T00:01:30.2581090+00:00"
+        },
+        "workbench_1": {
+          "elapsed_seconds": 55.2477414,
+          "game_updates": 2939,
+          "timestamp_utc": "2026-10-18T00:02:02.7899867+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon",
+        "inventory_opened"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Wood": 42,
+      "Acorn": 1,
+      "Work Bench": 1
+    },
+    "progress_families": [
+      "wood",
+      "workbench_1"
+    ],
+    "deaths": 0,
+    "minimum_hp": 82,
+    "damage_received": 18,
+    "hits_received": 3,
+    "max_hostile_npcs": 3,
+    "hostile_observed_heartbeats": 54,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 3480,
+    "input_hold_seconds": 6.15,
+    "journal_closed": false
+  },
+  "official_eligible": false,
+  "exact_simulation_stepper": false,
+  "observation_and_cleanup_windows_advance_game": true
+}
