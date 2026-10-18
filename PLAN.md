@@ -1,22 +1,37 @@
-## Active study — October 17, 2026
+## Completed PPO study — October 17, 2026
 
-The [v7 reward/discount protocol](V7_REWARD_PROTOCOL_2026_10_17.md) is launched:
-25 fresh16M runs, five paired seeds, 419,430,400 main transitions. Compare v4
-equal/.999 with v7 equal/difficulty × discount.999/1.0 using the same spatial
-target package and unweighted evaluation. Frozen snapshots, preflight evidence,
-PIDs and report locations are in the [launch record](V7_REWARD_LAUNCH_2026_10_17.md).
-No reserved evaluation, automatic promotion, extra algorithms or gameplay edits.
-Next: audit all25 final runs and paired factorial effects, inspect crafting
-diagnostics, then decide whether incentives or discounting warrant adoption.
-Do not treat unfinished curves or checkpoints as independent seeds.
+The [v7 reward/discount study](V7_REWARD_STUDY_2026_10_17.md) and
+[independent artifact/statistical audit](V7_REWARD_STUDY_2026_10_17.audit.json)
+are complete:25 full16M runs,100 checkpoints,419,430,400 main transitions,
+five paired seeds. Original protocol,81,920 excluded preflight transitions,
+source/probe hashes and [launch history](V7_REWARD_LAUNCH_2026_10_17.md) remain
+preserved. All3,200 final crafting records exactly reproduce final validation.
+No reserved test consumption, policy selection, promotion or additional trials.
 
-**6:14p.m. Edmonton amendment:** the user asked to run the final queued trial
-in parallel. A [fresh coordinator](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
-adopts the three unchanged workers and starts only the untouched fourth trial.
-The old dispatcher is intentionally suspended to prevent duplicate dispatch.
-Follow the new PID/log/explicit provenance pointer; retain all source hashes,
-25-run learning settings and unused tests. Disclose four-way contention in wall
-timing, then perform the original diagnostics/report and completion audit.
+V4 equal/.999 averages 17.97; v7 equal/.999: 16.68; v7 equal/1.0: 15.90;
+v7 weighted/.999: 16.33; v7 weighted/1.0: 15.14. Gamma1's score main effect is−0.987,
+adjusted98.75% interval[−1.790,−0.184]. Weight and interaction effects are
+inconclusive. V7−v4 is negative in every seed but its adjusted interval crosses
+zero. Bench coverage rises3→278/640 with weights at.999, yet every v7 cell
+has zero furnaces/anvils at final validation. One weighted seed reaches a
+furnace in one world at8M but does not retain that result at16M.
+On stone-sufficient pre-furnace actions, v7 groups
+lack both wood and a nearby bench98.68–99.86% of the time. Neither discounting,
+weights nor neutral direct selection solved joint resource/station preparation.
+
+The [6:14p.m. concurrency-only amendment](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
+finished at6:49p.m. Edmonton. Three adopted workers kept their original
+identities; the final trial launched once from scratch. All25 summaries, final
+diagnostics and original report completed. Original dispatcher, coordinator
+and all study workers are stopped; four-way overlap timings are separately
+disclosed rather than treated as a method-speed contrast. Follow-up paused.
+
+Next research proposal, **not launched**: generic replay/predictive experience
+reuse on a frozen contract with a fresh PPO control and declared transition/
+compute budgets. Keep gamma.999/equal as reference, v4/default policies and
+all previews unchanged. No expert data, recipe-specific shaping, strategic
+resource masks or controller-generated successes. Do not infer equivalence
+from inconclusive five-seed intervals or count checkpoints as new seeds.
 
 ## LLM harness — October 17, 2026
 
@@ -53,8 +68,8 @@ Five deaths and three alive cost stops mean no full3,000-action evaluation;
 compact4 leads at the common512-action checkpoint. Future candidates: isolate
 history from serialization; compare generic interruption/cadence under matched
 action horizons and independent budgets on more worlds. No such follow-on is
-launched: spending stopped and Luna follow-up paused. Ongoing PPO study and all
-game/policy defaults unchanged.
+launched: spending stopped and Luna follow-up paused. The independent PPO study
+is also complete; all game/policy defaults unchanged.
 
 ## Historical plan and completed evidence
 

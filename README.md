@@ -9,16 +9,21 @@ rope, platforms, Cloud in a Bottle, healing, Life Crystals, campfires, and four
 ordinary ores. It uses original Terraria art from your local installation.
 The mechanics remain intentionally simplified.
 
-**October 17 study launched:** [v7 progression and reward/discount protocol](V7_REWARD_PROTOCOL_2026_10_17.md)
-and [launch record](V7_REWARD_LAUNCH_2026_10_17.md). Twenty-five fresh16M spatial
-PPO trials (419.4M main transitions) compare a matched v4 control with v7's
-equal/difficulty-weighted reward × .999/1.0 discount factorial, five paired
-training seeds. Evaluation stays unweighted; reserved tests stay unused.
-This is an active study, not evidence of improvement or a v7/default promotion.
-At the user's later request, a [documented concurrency-only amendment](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
-starts the final queued trial alongside the three existing workers; their
-processes and all frozen learning/game settings are unchanged. Final overlap
-timings are more contended and must be labeled separately.
+**October 17 PPO study complete:** [results and interpretation](V7_REWARD_STUDY_2026_10_17.md),
+[independent audit](V7_REWARD_STUDY_2026_10_17.audit.json),
+[frozen protocol](V7_REWARD_PROTOCOL_2026_10_17.md) and
+[historical launch](V7_REWARD_LAUNCH_2026_10_17.md). All25 fresh16M trials,
+419.4M main transitions and100 checkpoints are verified. Five-seed means:
+v4equal/.999 **17.97/32**; v7equal/.999 **16.68**; v7equal/1.0 **15.90**;
+v7difficulty/.999 **16.33**; v7difficulty/1.0 **15.14**. Gamma1 lowers scores
+by0.99 on average (four-primary-contrast-adjusted interval excludes zero).
+Weighting changes bench coverage but establishes no score improvement; no v7
+condition reaches a furnace at final validation. V7−v4 is negative in every seed but inconclusive
+under the adjusted interval. Resource/station coordination remains the gate.
+The [user-requested final four-way overlap](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
+is separately timing-audited; all workers/coordinators are stopped, follow-up
+paused. Evaluation stays unweighted, reserved tests unused, v4/default policies
+unchanged; v5–v7 remain unpromoted previews. No follow-on experiment launched.
 
 **October 17 LLM harness:** [usage and replay](LLM_EVALUATION.md),
 [ARC/FLE/Craftax and broader benchmark research](LLM_BENCHMARK_RESEARCH_2026_10.md).
@@ -29,8 +34,8 @@ replay-audited for **$0.896 actual reported cost**. Scores20/19 end in death;
 both reach a furnace and copper smelting. The shared conservative $2 guard
 stops world3 at129 actions/5 achievements: not three full-budget episodes or
 a fair fixed-budget mean. All Python/SDL replays match. Luna follow-up paused;
-no more paid calls. PPO continues independently. These are public development
-checks, not leaderboard scores or matched-budget PPO results. Defaults unchanged.
+no more paid calls. The independent PPO study is also complete. These are public
+development checks, not leaderboard scores or matched-budget PPO results. Defaults unchanged.
 
 **Completed user-authorized Luna comparison:** [four harness packages on two paired
 worlds](LUNA_HARNESS_STUDY_2026_10_17.md), under [a frozen protocol](LUNA_HARNESS_PROTOCOL_2026_10_17.md).
@@ -40,9 +45,9 @@ on two paired worlds. Interruption cuts illegal attempts46.2%→11.8% versus
 compact16 and reaches one furnace, but both interrupt episodes are cost-censored
 before800 actions; this is not proof of full-budget survival. At512 common
 actions compact4 leads11.5 versus interrupt10.0. No robust ranking from two
-worlds. Luna follow-up paused; no further calls. PPO/defaults unchanged.
+worlds. Luna follow-up paused; no further calls. PPO/game defaults unchanged.
 
-See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the latest
+See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the earlier
 completed **503.3M-transition / 30-run** paired v4/v5 learning study, and
 [CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md) for the earlier completed
 356.5M-transition, five-seed deadline/credit/memory/exploration study and

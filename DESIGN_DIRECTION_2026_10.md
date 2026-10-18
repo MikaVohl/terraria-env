@@ -21,7 +21,49 @@ bottleneck, not just menu cycling. Larger-batch MPS training with CPU checkpoint
 evaluation has a promising tiny calibration; learning quality remains untested.
 No additional 32M run or default promotion was made. These are not changes
 to the completed v4/v5 study or main defaults.
-The offline LLM protocol is a prototype; no provider calls or spending.
+That October12 pilot used an offline LLM prototype; the subsequent explicitly
+authorized October17 provider studies are documented below.
+
+## October 17 completed PPO evidence
+
+The [25-run reward/discount study](V7_REWARD_STUDY_2026_10_17.md),
+419,430,400 main transitions across five paired seeds, is complete and
+[independently audited](V7_REWARD_STUDY_2026_10_17.audit.json). It compares
+fresh16M spatial PPO on v4equal/.999 with a v7 reward×discount factorial.
+Means are17.97 for v4equal/.999,16.68 for v7equal/.999,15.90 for v7equal/1.0,
+16.33 for v7weighted/.999 and15.14 for v7weighted/1.0. Gamma1's−0.987 score
+main effect excludes zero under the predeclared four-contrast correction;
+weighting and interaction do not establish improvement. V7's matched equal
+contrast is negative in all seeds but family-adjusted inconclusive, not
+equivalence or a demonstrated isolated mechanics effect. All means continue
+improving late; this is a finite-budget result, not an asymptotic ceiling.
+
+The high-level implication is **do not treat a more faithful/cleaner game or
+a less discounted objective as an automatic learning improvement**. Keep
+gamma.999/equal as the PPO reference, main v4/default policies unchanged and
+v7 as an unpromoted, usable preview. Do not undo cheap fidelity or declare
+combat/scale infeasible based on a bundled version comparison. For future
+learner work, freeze one contract and explicitly name its costs/benefits.
+
+Weighting at.999 changes bench coverage3→278/640 but produces no final furnaces;
+one weighted seed reaches a furnace in one validation world at8M, not16M.
+the gamma1 groups have no benches. Missing joint preparation dominates:
+98.68–99.86% of stone-sufficient pre-furnace actions in v7 lack both enough
+wood and a nearby bench. More total wood is not sufficient in the recorded
+policies; v7equal/1.0 acquires33.23wood/world but makes zero benches. Placement
+space is virtually always available when a bench is owned. Direct selection
+removes menu friction but does not solve strategic coordination by itself.
+
+The next **proposal**, not a launched experiment, is generic experience reuse
+or predictive/world-model learning, with fresh PPO and both transition and
+compute accounting. Test reuse of rare preparation successes without expert
+trajectories, recipe controllers or strategic spending masks. These findings
+do not prove a particular replay learner will work, or that PPO cannot improve.
+No new neural diagnostics/trials or reserved evaluations were run at completion.
+All100 checkpoints and exact3,200 final diagnostic/validation outcomes passed
+audit; reserved19M worlds remain unused. The explicit final concurrency-only
+amendment is preserved and separately timing-accounted; study workers and both
+supervisors are stopped and follow-up paused.
 
 ## Priority order
 
@@ -123,10 +165,14 @@ best-of demonstrations. Private administration and human-relative action scores
 remain future work, not implied by replay verification.
 
 The [Sol smoke](LLM_SMOKE_2026_10_17.md) is plumbing evidence only. The user
-prefers **Luna high** for further low-cost development; a bounded
-[three-world batch](LLM_LUNA_2026_10_17.md) follows, with no automatic continued
-spend. These API calls supersede the historical October12 no-spend status below,
-not any frozen PPO restrictions or main game/policy defaults.
+then chose **Luna high**; the [three-world batch](LLM_LUNA_2026_10_17.md) and
+subsequently authorized [$3 harness comparison](LUNA_HARNESS_STUDY_2026_10_17.md)
+are complete. The latter spent$1.459 and verified all8 attempts/replays.
+Shorter feedback intervals/illegal-tail interruption look useful, but two
+worlds and budget-censored episodes do not establish a robust methodology
+ranking or matched-budget advantage over PPO. Both follow-ups are now paused;
+no automatic continued spend. These calls supersede the historical October12
+no-spend status, not frozen PPO restrictions or main game/policy defaults.
 
 ## Performance and acceptance policy
 

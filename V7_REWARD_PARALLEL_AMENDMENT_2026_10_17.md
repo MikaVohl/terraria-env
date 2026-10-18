@@ -60,3 +60,20 @@ mistake historical PID99218's intentional stopped state for training failure.
 Full25-run artifact/contrast/crafting auditing remains required. Main v4/game
 and policy defaults, earlier studies, LLM experiments and unrelated work are
 unchanged. No additional trials, paid API calls or new reserved tests authorized.
+
+## Completed execution
+
+The amended coordinator completed all25 trials, original frozen diagnostics
+and original report at **October17,6:49p.m. Edmonton**. The old dispatcher was
+removed after training, without redispatch. All main workers, diagnostics,
+coordinator27793 and dispatcher99218 are now stopped. The
+[completed report](V7_REWARD_STUDY_2026_10_17.md) and
+[independent audit](V7_REWARD_STUDY_2026_10_17.audit.json) verify the original24
+dispatches plus exactly one final fresh launch, unchanged adopted PID/start
+records, coordinator SHA, frozen original hashes and100 full checkpoints.
+
+Final adopted trial walls were37.63–37.64min; the new last trial was31.11min
+with only partial overlap. Original21 three-way runs had median35.16min.
+These remain separate, contention-amended timing observations, not algorithm
+throughput comparisons. No learning settings/test rules changed. Monitor
+paused after completed reporting; no follow-on work launched.

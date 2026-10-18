@@ -1,0 +1,2464 @@
+{
+  "audit_utc": "2026-10-18T03:41:57.817721+00:00",
+  "scope": "Existing-artifact audit only; no policy inference, training, replay, test evaluation or selection.",
+  "study": "/Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq",
+  "results_sha256": "3e38735e96e4d81c063213e137afc8549ff24e6a0c8ca12d740fa63c41623a3b",
+  "protocol_sha256": "5f3d6fc9114d4aff1670754897884a1aadde226afadd9594a48473a3f162cdd1",
+  "source_and_probe_hashes_verified": true,
+  "main_runs": 25,
+  "checkpoints_and_curve_points": 100,
+  "main_transitions": 419430400,
+  "preflight_transitions_excluded": 81920,
+  "validation_trajectory_records_checked": 12800,
+  "final_crafting_records_exactly_match_validation": 3200,
+  "reserved_tests_consumed": false,
+  "test_claims": [],
+  "statistical_unit": "Five paired training seeds; rates/curves/crafting telemetry are descriptive.",
+  "independent_t_df4_criticals": {
+    "descriptive_95": 2.7764451051977943,
+    "four_contrast_familywise_95": 4.314656048886755
+  },
+  "paired_contrasts": {
+    "score": {
+      "v7_equal_minus_v4": {
+        "descriptive_95": {
+          "per_seed": [
+            -1.7109375,
+            -0.5625,
+            -0.703125,
+            -2.25,
+            -1.234375
+          ],
+          "mean": -1.2921875,
+          "interval": [
+            -2.1647904751725044,
+            -0.41958452482749564
+          ]
+        },
+        "four_contrast_familywise_95": {
+          "per_seed": [
+            -1.7109375,
+            -0.5625,
+            -0.703125,
+            -2.25,
+            -1.234375
+          ],
+          "mean": -1.2921875,
+          "interval": [
+            -2.6482314923901926,
+            0.06385649239019231
+          ]
+        }
+      },
+      "discount_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            -1.265625,
+            -1.2734375,
+            -1.32421875,
+            -0.4609375,
+            -0.609375
+          ],
+          "mean": -0.98671875,
+          "interval": [
+            -1.5034422676589592,
+            -0.4699952323410408
+          ]
+        },
+        "four_contrast_familywise_95": {
+          "per_seed": [
+            -1.265625,
+            -1.2734375,
+            -1.32421875,
+            -0.4609375,
+            -0.609375
+          ],
+          "mean": -0.98671875,
+          "interval": [
+            -1.7897183291724619,
+            -0.1837191708275382
+          ]
+        }
+      },
+      "weight_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            -0.375,
+            0.53125,
+            -1.83203125,
+            -1.125,
+            0.0625
+          ],
+          "mean": -0.54765625,
+          "interval": [
+            -1.7172425202517752,
+            0.6219300202517752
+          ]
+        },
+        "four_contrast_familywise_95": {
+          "per_seed": [
+            -0.375,
+            0.53125,
+            -1.83203125,
+            -1.125,
+            0.0625
+          ],
+          "mean": -0.54765625,
+          "interval": [
+            -2.3652187388780996,
+            1.2699062388780997
+          ]
+        }
+      },
+      "interaction": {
+        "descriptive_95": {
+          "per_seed": [
+            2.390625,
+            -1.3125,
+            -1.4921875,
+            -0.3125,
+            -1.34375
+          ],
+          "mean": -0.4140625,
+          "interval": [
+            -2.4458483740584884,
+            1.6177233740584884
+          ]
+        },
+        "four_contrast_familywise_95": {
+          "per_seed": [
+            2.390625,
+            -1.3125,
+            -1.4921875,
+            -0.3125,
+            -1.34375
+          ],
+          "mean": -0.4140625,
+          "interval": [
+            -3.5715019160134474,
+            2.7433769160134474
+          ]
+        }
+      }
+    },
+    "death_rate": {
+      "v7_equal_minus_v4": {
+        "descriptive_95": {
+          "per_seed": [
+            -0.1171875,
+            -0.03125,
+            0.0078125,
+            -0.0703125,
+            -0.1328125
+          ],
+          "mean": -0.06875,
+          "interval": [
+            -0.14147140770604755,
+            0.00397140770604755
+          ]
+        }
+      },
+      "discount_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            -0.01171875,
+            -0.0546875,
+            -0.01171875,
+            -0.0703125,
+            -0.07421875
+          ],
+          "mean": -0.04453125,
+          "interval": [
+            -0.08281444248904613,
+            -0.006248057510953878
+          ]
+        }
+      },
+      "weight_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            -0.02734375,
+            -0.0703125,
+            0.01953125,
+            0.0,
+            -0.04296875
+          ],
+          "mean": -0.02421875,
+          "interval": [
+            -0.06805921500717589,
+            0.019621715007175893
+          ]
+        }
+      },
+      "interaction": {
+        "descriptive_95": {
+          "per_seed": [
+            -0.0546875,
+            0.0,
+            0.0859375,
+            0.015625,
+            -0.0234375
+          ],
+          "mean": 0.0046875,
+          "interval": [
+            -0.06060198161068357,
+            0.06997698161068357
+          ]
+        }
+      }
+    },
+    "furnace_rate": {
+      "v7_equal_minus_v4": {
+        "descriptive_95": {
+          "per_seed": [
+            -0.0078125,
+            0.0,
+            0.0,
+            -0.046875,
+            -0.0234375
+          ],
+          "mean": -0.015625,
+          "interval": [
+            -0.04035651936002586,
+            0.009106519360025857
+          ]
+        }
+      },
+      "discount_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "weight_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "interaction": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "anvil_rate": {
+      "v7_equal_minus_v4": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            -0.0078125
+          ],
+          "mean": -0.0015625,
+          "interval": [
+            -0.005900695476871545,
+            0.0027756954768715443
+          ]
+        }
+      },
+      "discount_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "weight_main_effect": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "interaction": {
+        "descriptive_95": {
+          "per_seed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "aggregates": {
+    "v4-equal-g999": {
+      "curve_means": [
+        14.2578125,
+        17.215625,
+        17.74375,
+        17.9671875
+      ],
+      "crafting": {
+        "opportunity_episodes": 10,
+        "pre_furnace_stone_sufficient_actions": 1560269,
+        "pre_furnace_joint_legal_actions": 12,
+        "missing_wood_and_bench_given_stone": 0.9387849146525374,
+        "wood_acquired_per_world": 35.6703125,
+        "bench_selected_fraction_when_owned": 0.035952978228626885,
+        "bench_space_fraction_when_owned": 0.9999816893413656,
+        "counters": {
+          "observed_actions": 1834747,
+          "furnace_chosen": 10,
+          "wood_acquired": 22829,
+          "wood_crossed_below_furnace_threshold": 2471,
+          "bench_owned_steps": 109226,
+          "bench_selected_steps": 3927,
+          "bench_owned_with_space_steps": 109224,
+          "bench_placements": 1365,
+          "bench_exists_but_far_steps": 1303117,
+          "left_bench_range": 1957,
+          "bench_removals": 626,
+          "furnace_legal_steps": 12,
+          "furnace_probability_sum": 10.224108397960663
+        },
+        "gate_steps_before_first_furnace": [
+          87356,
+          37138,
+          831386,
+          13423,
+          78986,
+          28484,
+          633371,
+          62835,
+          6930,
+          1966,
+          4659,
+          60,
+          11673,
+          3441,
+          14523,
+          12
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft workbench": 7430,
+          "craft platforms": 5743,
+          "place up-left": 562,
+          "craft torch": 1766,
+          "place down": 269,
+          "place up-right": 538,
+          "craft wooden sword": 1365,
+          "place above right column": 621,
+          "place down-right": 339,
+          "place middle-right": 448,
+          "place foot-left": 432,
+          "place down-left": 333,
+          "place head-right": 536,
+          "place head-left": 532,
+          "place up": 574,
+          "place foot-right": 402,
+          "place middle-left": 489,
+          "place below right column": 267,
+          "craft campfire": 60,
+          "craft furnace": 40
+        }
+      },
+      "collection_seconds": 2420.43689503934,
+      "optimisation_seconds": 8072.163369750604
+    },
+    "v7-equal-g999": {
+      "curve_means": [
+        14.93125,
+        16.0234375,
+        16.465625,
+        16.675
+      ],
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 1504331,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9924192215675939,
+        "wood_acquired_per_world": 16.8171875,
+        "bench_selected_fraction_when_owned": 0.1020066889632107,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 1863086,
+          "furnace_chosen": 0,
+          "wood_acquired": 10763,
+          "wood_crossed_below_furnace_threshold": 710,
+          "bench_owned_steps": 598,
+          "bench_selected_steps": 61,
+          "bench_owned_with_space_steps": 598,
+          "bench_placements": 12,
+          "bench_exists_but_far_steps": 6543,
+          "left_bench_range": 17,
+          "bench_removals": 9
+        },
+        "gate_steps_before_first_furnace": [
+          276943,
+          4510,
+          1182479,
+          997,
+          72426,
+          4821,
+          310448,
+          10102,
+          55,
+          0,
+          0,
+          0,
+          0,
+          0,
+          305,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place up": 460,
+          "craft platforms": 3740,
+          "place above right column": 518,
+          "place down-left": 350,
+          "place foot-left": 376,
+          "craft torch": 1303,
+          "place down-right": 347,
+          "place head-left": 408,
+          "place up-left": 474,
+          "place up-right": 471,
+          "place middle-left": 400,
+          "place foot-right": 392,
+          "place head-right": 441,
+          "place middle-right": 406,
+          "place below right column": 300,
+          "place down": 317,
+          "craft workbench": 30,
+          "craft campfire": 10
+        }
+      },
+      "collection_seconds": 2486.7980857760995,
+      "optimisation_seconds": 8152.365627568506
+    },
+    "v7-equal-g1": {
+      "curve_means": [
+        10.2953125,
+        14.528125,
+        15.28125,
+        15.8953125
+      ],
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 1027119,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9912532043511998,
+        "wood_acquired_per_world": 33.23125,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 1893537,
+          "furnace_chosen": 0,
+          "wood_acquired": 21268,
+          "wood_crossed_below_furnace_threshold": 1261
+        },
+        "gate_steps_before_first_furnace": [
+          742433,
+          6068,
+          760858,
+          903,
+          113577,
+          4340,
+          257277,
+          8081,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-left": 1169,
+          "place up-right": 1090,
+          "place down-right": 888,
+          "place middle-left": 1110,
+          "place down-left": 913,
+          "place middle-right": 1133,
+          "craft platforms": 4870,
+          "place foot-right": 1013,
+          "place foot-left": 1062,
+          "place up-left": 1105,
+          "place down": 761,
+          "place up": 1085,
+          "place head-right": 1056,
+          "place above right column": 1130,
+          "place below right column": 736,
+          "craft torch": 2109
+        }
+      },
+      "collection_seconds": 2445.390650505433,
+      "optimisation_seconds": 8112.962138803094
+    },
+    "v7-difficulty-g999": {
+      "curve_means": [
+        12.38125,
+        15.175,
+        15.79375,
+        16.334375
+      ],
+      "crafting": {
+        "opportunity_episodes": 1,
+        "pre_furnace_stone_sufficient_actions": 1327103,
+        "pre_furnace_joint_legal_actions": 13,
+        "missing_wood_and_bench_given_stone": 0.9867877625173027,
+        "wood_acquired_per_world": 23.671875,
+        "bench_selected_fraction_when_owned": 0.19914593085324792,
+        "bench_space_fraction_when_owned": 0.9995072677999507,
+        "counters": {
+          "observed_actions": 1866079,
+          "furnace_chosen": 0,
+          "wood_acquired": 15150,
+          "wood_crossed_below_furnace_threshold": 1428,
+          "bench_owned_steps": 12177,
+          "bench_selected_steps": 2425,
+          "bench_owned_with_space_steps": 12171,
+          "bench_placements": 687,
+          "bench_exists_but_far_steps": 780460,
+          "left_bench_range": 836,
+          "bench_removals": 210,
+          "furnace_legal_steps": 13,
+          "furnace_probability_sum": 1.4654864966869354
+        },
+        "gate_steps_before_first_furnace": [
+          432813,
+          23752,
+          1138186,
+          2319,
+          54662,
+          14505,
+          171383,
+          13876,
+          5213,
+          1371,
+          457,
+          0,
+          5377,
+          1283,
+          869,
+          13
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-right": 400,
+          "place up-left": 418,
+          "place above right column": 545,
+          "craft platforms": 3201,
+          "craft torch": 1190,
+          "place head-left": 430,
+          "place down": 219,
+          "place foot-left": 311,
+          "place up": 494,
+          "place middle-right": 369,
+          "place middle-left": 400,
+          "place down-left": 271,
+          "place below right column": 219,
+          "place foot-right": 336,
+          "place down-right": 264,
+          "place up-right": 450,
+          "craft workbench": 4770,
+          "craft wooden sword": 791,
+          "craft campfire": 50
+        }
+      },
+      "collection_seconds": 2399.4484589461936,
+      "optimisation_seconds": 7797.73828847066
+    },
+    "v7-difficulty-g1": {
+      "curve_means": [
+        11.2984375,
+        13.890625,
+        14.6,
+        15.140625
+      ],
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 890065,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9985832495379551,
+        "wood_acquired_per_world": 20.2359375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 1892162,
+          "furnace_chosen": 0,
+          "wood_acquired": 12951,
+          "wood_crossed_below_furnace_threshold": 671
+        },
+        "gate_steps_before_first_furnace": [
+          894507,
+          3399,
+          719044,
+          136,
+          102773,
+          1418,
+          169760,
+          1125,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-right": 584,
+          "place above right column": 729,
+          "place middle-left": 570,
+          "place down": 350,
+          "place middle-right": 609,
+          "place up-right": 599,
+          "craft platforms": 3981,
+          "place head-left": 695,
+          "place foot-right": 526,
+          "place foot-left": 516,
+          "place up": 661,
+          "place up-left": 652,
+          "craft torch": 1260,
+          "place below right column": 351,
+          "place down-right": 414,
+          "place down-left": 445
+        }
+      },
+      "collection_seconds": 2506.078059167892,
+      "optimisation_seconds": 8089.692897264962
+    }
+  },
+  "runs": {
+    "v4-equal-g999-801": {
+      "artifact_sha256": {
+        "summary.json": "be0647a037d50e9b6d41bf5c84a43a8e5281b4cfc984ac7399956bf7cec6e0a9",
+        "protocol.json": "2233e119304c6d8e0fc75fbdd5e537f2f95a9010baca56b15f5e5be2f95eba9c",
+        "curve.json": "ff24725d40bbebfedcb10e24869a5750b5370a7446e0d8b1b87f48698cb6ebab",
+        "crafting.json": "863f3c6b0cfe687e5b28146c557ecdaa0ebe78fc2141036b44122e64bb5e4515",
+        "step-12582912.pt": "b66360460705b13f306f58bcf38ce9e8e61790938672b3ca61aad5071058b4e8",
+        "step-16777216.pt": "4589f8c886a754f277bd95c3c5088fc30f635c6a2aa8b7111d9b01e9ae876163",
+        "step-4194304.pt": "e5d9e6d2ee2bcc87d42dcf0cc7c5ae4d5e3fef051de621b6e422cce0340611d2",
+        "step-8388608.pt": "d0d9b57f23f0b0550ff5d57b4943d9c9a48afd9fa3f352efc0cb1dfcf5540253"
+      },
+      "crafting": {
+        "opportunity_episodes": 1,
+        "pre_furnace_stone_sufficient_actions": 304395,
+        "pre_furnace_joint_legal_actions": 1,
+        "missing_wood_and_bench_given_stone": 0.9407841784523399,
+        "wood_acquired_per_world": 37.5234375,
+        "bench_selected_fraction_when_owned": 0.027163065173999825,
+        "bench_space_fraction_when_owned": 0.9999566085220862,
+        "counters": {
+          "observed_actions": 363730,
+          "furnace_chosen": 1,
+          "wood_acquired": 4803,
+          "wood_crossed_below_furnace_threshold": 502,
+          "bench_owned_steps": 46092,
+          "bench_selected_steps": 1252,
+          "bench_owned_with_space_steps": 46090,
+          "bench_placements": 364,
+          "bench_exists_but_far_steps": 320168,
+          "left_bench_range": 589,
+          "bench_removals": 183,
+          "furnace_legal_steps": 1,
+          "furnace_probability_sum": 0.7394249439239502
+        },
+        "gate_steps_before_first_furnace": [
+          10314,
+          8968,
+          73761,
+          58,
+          25779,
+          6546,
+          212609,
+          11402,
+          1802,
+          411,
+          674,
+          0,
+          3301,
+          611,
+          5890,
+          1
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft workbench": 1830,
+          "craft platforms": 1224,
+          "place up-left": 73,
+          "craft torch": 330,
+          "place down": 44,
+          "place up-right": 82,
+          "craft wooden sword": 413,
+          "place above right column": 86,
+          "place down-right": 60,
+          "place middle-right": 67,
+          "place foot-left": 70,
+          "place down-left": 48,
+          "place head-right": 85,
+          "place head-left": 84,
+          "place up": 78,
+          "place foot-right": 73,
+          "place middle-left": 81,
+          "place below right column": 31,
+          "craft campfire": 20,
+          "craft furnace": 4
+        }
+      }
+    },
+    "v7-equal-g999-801": {
+      "artifact_sha256": {
+        "summary.json": "8817890e6dae02d167a61b63c78aaa00721755424978ff6239be5191913117d8",
+        "protocol.json": "169fe921840066a06ed9499590e5d97ac4f9e17e9022910453d163e91c362a64",
+        "curve.json": "2901420a41f8d7bd8ee4f848691ea0af19b40149ce629a488bbc4f18968f9a69",
+        "crafting.json": "c91819430f878e7b7798724815decac293f11572e896ce18c50fcc70f50cf713",
+        "step-12582912.pt": "99d6a33b6f102c3a78c16d2648e28eae5f6ffbaf4f9ac113d852619aec58620e",
+        "step-16777216.pt": "58239513bfa3137d93725951a4fea9846f2d9fa654104cbbfed631ab2b32fb02",
+        "step-4194304.pt": "4c28f12643d02979f592751f00e508c288be840f585abb96fdffd30a5c41b8aa",
+        "step-8388608.pt": "99e96879ad496d7c9147e9cb41408e395817a708961d1ba7ac7ed29ebe22ba99"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 286852,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.995328601508792,
+        "wood_acquired_per_world": 18.234375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 378056,
+          "furnace_chosen": 0,
+          "wood_acquired": 2334,
+          "wood_crossed_below_furnace_threshold": 153
+        },
+        "gate_steps_before_first_furnace": [
+          72360,
+          694,
+          233196,
+          139,
+          17176,
+          974,
+          52316,
+          1201,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place up": 122,
+          "craft platforms": 617,
+          "place above right column": 125,
+          "place down-left": 99,
+          "place foot-left": 107,
+          "craft torch": 238,
+          "place down-right": 77,
+          "place head-left": 101,
+          "place up-left": 118,
+          "place up-right": 116,
+          "place middle-left": 87,
+          "place foot-right": 112,
+          "place head-right": 111,
+          "place middle-right": 117,
+          "place below right column": 90,
+          "place down": 94
+        }
+      }
+    },
+    "v7-equal-g1-801": {
+      "artifact_sha256": {
+        "summary.json": "49cd235ad9abfe9d4862068bba35112bc6ccc39b93f545811efb9d908e7d3307",
+        "protocol.json": "a3ca7cabbad7ec1be131e2cc2b7823810362e1da5027d745e8d86b8ad5a13165",
+        "curve.json": "cb7a49d60be3ef2a33b5b18dddda985ad0932921a00efb16b58a255bd0f1fcdf",
+        "crafting.json": "14421e8881d1bd820f0f5af03de171d7cf9fa67f7ea6961a27e189d4e68bbb0d",
+        "step-12582912.pt": "ec5fed9e6ed8b16985e60620a508caaeaed496b250bef6e62e05f57f2e1c48c5",
+        "step-16777216.pt": "9545e844cde60b12e43236c45f13a592a8d996ecb9111be452c63fe21d9f18f2",
+        "step-4194304.pt": "b3113faf547c29ae679295218340d63d59f0f6290d6e66c0c8e6f4453cf12458",
+        "step-8388608.pt": "8131f48aa467bd3cce25011d7c207ad3f63bef17870e004c06d658a6e60ba031"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 129605,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.999367308360017,
+        "wood_acquired_per_world": 21.703125,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 372765,
+          "furnace_chosen": 0,
+          "wood_acquired": 2778,
+          "wood_crossed_below_furnace_threshold": 83
+        },
+        "gate_steps_before_first_furnace": [
+          232127,
+          352,
+          114540,
+          0,
+          10615,
+          66,
+          14983,
+          82,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-left": 155,
+          "place up-right": 161,
+          "place down-right": 127,
+          "place middle-left": 152,
+          "place down-left": 105,
+          "place middle-right": 161,
+          "craft platforms": 710,
+          "place foot-right": 140,
+          "place foot-left": 157,
+          "place up-left": 160,
+          "place down": 112,
+          "place up": 185,
+          "place head-right": 167,
+          "place above right column": 176,
+          "place below right column": 106,
+          "craft torch": 2
+        }
+      }
+    },
+    "v7-difficulty-g999-801": {
+      "artifact_sha256": {
+        "summary.json": "854b2af7e2510fc3c3c2751cb4d52552d08a16de847aa765eb7260ca22ad028c",
+        "protocol.json": "546d593096a9cc7e09b1d9b1cfea6cf4344a12a7fc1d1a9db955876f0a62cd1b",
+        "curve.json": "85c6a2497840d868731adbc2de3aa19f00ab49c23f91ee146e928948a6bd3601",
+        "crafting.json": "a2dc5ed81fbbcc92385350945f9e50088c9a41e76f4e49fefc82b1dac1853412",
+        "step-12582912.pt": "9caaf9d9f5915f9a3486d55e0a8d5ec3107f5c9d3fc958d4f6f15ae6da80fc8f",
+        "step-16777216.pt": "f18e7beb62cec8d923246918d3b5c4cc8cb41aaa0c925ad687a27ba7820bbbf8",
+        "step-4194304.pt": "cbe6f912a94d466fad71a6787755a114a3ac1950a8dca15baeab89d59af1c333",
+        "step-8388608.pt": "98e38f452a686e1cd047b92047accf3b69abccadef07c4cccb536f7257d7dc9a"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 288874,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.999792296987614,
+        "wood_acquired_per_world": 9.9921875,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 377744,
+          "furnace_chosen": 0,
+          "wood_acquired": 1279,
+          "wood_crossed_below_furnace_threshold": 88
+        },
+        "gate_steps_before_first_furnace": [
+          83098,
+          731,
+          273085,
+          0,
+          4891,
+          150,
+          15729,
+          60,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-right": 41,
+          "place up-left": 45,
+          "place above right column": 53,
+          "craft platforms": 475,
+          "craft torch": 241,
+          "place head-left": 58,
+          "place down": 33,
+          "place foot-left": 34,
+          "place up": 49,
+          "place middle-right": 47,
+          "place middle-left": 52,
+          "place down-left": 25,
+          "place below right column": 17,
+          "place foot-right": 35,
+          "place down-right": 24,
+          "place up-right": 48
+        }
+      }
+    },
+    "v7-difficulty-g1-801": {
+      "artifact_sha256": {
+        "summary.json": "4ac175ceb9f6aa32c85f501ca5aae63f67a7389a8272050ac6b31e2aa40944a8",
+        "protocol.json": "4d724c9beda866a7d66d336da9589931d09b535066c807bce05ef9e96bc84740",
+        "curve.json": "ec8be7485c421f9c7441987ab82414a022b3791dbefad5c4a84605ee383bad40",
+        "crafting.json": "6fb31d2bd94c8d2dbd1f86d28309a845cd003749ef7d8346b63d6f9031e6638c",
+        "step-12582912.pt": "387ff4077f94690873f63cc0b4720a406753383b0c4e142d2d86e1acdd4b4aec",
+        "step-16777216.pt": "2ee8953fd84c8db0d6cc50dd3bb1863442ef562722955fbe41cdb4a5efbbd0b4",
+        "step-4194304.pt": "6e130234ea5f0bcdcf6b3ef4662502e399f4e72fe26ecedd732afe11629d2a6d",
+        "step-8388608.pt": "2c7a95a5ca0358c592b78cf3e045f81de2c149e6c65cafd4fa9ee43e019b4c37"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 149396,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9990227315323034,
+        "wood_acquired_per_world": 17.0625,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 380537,
+          "furnace_chosen": 0,
+          "wood_acquired": 2184,
+          "wood_crossed_below_furnace_threshold": 95
+        },
+        "gate_steps_before_first_furnace": [
+          208699,
+          559,
+          111471,
+          34,
+          21775,
+          108,
+          37779,
+          112,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-right": 106,
+          "place above right column": 147,
+          "place middle-left": 109,
+          "place down": 69,
+          "place middle-right": 126,
+          "place up-right": 107,
+          "craft platforms": 390,
+          "place head-left": 157,
+          "place foot-right": 103,
+          "place foot-left": 102,
+          "place up": 125,
+          "place up-left": 121,
+          "craft torch": 287,
+          "place below right column": 66,
+          "place down-right": 72,
+          "place down-left": 94
+        }
+      }
+    },
+    "v7-equal-g999-802": {
+      "artifact_sha256": {
+        "summary.json": "53603c8b9ad8255142920645dddb5353025a89f3f99b5ffbd12852f3776db4bb",
+        "protocol.json": "a9ffb9d53caa563d82ce315d2b363ac4f922b2bddf4e3c8489ca7c0fe74b0af6",
+        "curve.json": "89285e40d5500da6a1d5da49d22100d8beb367614044ad43c564afe8026cd993",
+        "crafting.json": "b1a14e8a44ae87de1720fc0ba970c6b2ce4c965ed55c91c81508c244d3aebcaa",
+        "step-12582912.pt": "6beaa5a688328509f012e6eb24c1a8329d9f78f62b7884e811db836a93e5855a",
+        "step-16777216.pt": "02385415a81413cad6153d8b8e838e8413f68bc92e67230d3bd510b7501cfaa3",
+        "step-4194304.pt": "53dccd74d61a2da7eb458215f06219aad3010e82cf993d5800d07e2f502aaa71",
+        "step-8388608.pt": "3d820383347665edfa41860a53a38428f9ff50f04f2d1ca806d7e391b72d94c0"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 288934,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9909079582188319,
+        "wood_acquired_per_world": 22.6015625,
+        "bench_selected_fraction_when_owned": 0.11538461538461539,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 372008,
+          "furnace_chosen": 0,
+          "wood_acquired": 2893,
+          "wood_crossed_below_furnace_threshold": 212,
+          "bench_owned_steps": 312,
+          "bench_selected_steps": 36,
+          "bench_owned_with_space_steps": 312,
+          "bench_placements": 9,
+          "bench_exists_but_far_steps": 1276,
+          "left_bench_range": 14,
+          "bench_removals": 8
+        },
+        "gate_steps_before_first_furnace": [
+          66757,
+          1138,
+          221779,
+          321,
+          14344,
+          835,
+          64528,
+          2001,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          305,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 753,
+          "place head-left": 110,
+          "place down-left": 116,
+          "place up-right": 139,
+          "place down-right": 120,
+          "place middle-left": 134,
+          "place middle-right": 134,
+          "place down": 116,
+          "place below right column": 94,
+          "place foot-left": 102,
+          "place above right column": 177,
+          "craft torch": 309,
+          "place foot-right": 119,
+          "place up": 146,
+          "place head-right": 153,
+          "place up-left": 155,
+          "craft workbench": 10
+        }
+      }
+    },
+    "v7-equal-g1-802": {
+      "artifact_sha256": {
+        "summary.json": "aa3d2c39358dc99e09e4f64b1aecca08d7ada706de8dbfda15ce8c5feee14992",
+        "protocol.json": "681b6a8b46cbdd08d56c31faa331bd3a914af1f0a0902e00f3ced7357ef0ce17",
+        "curve.json": "dcfb74981211a2f6a8459199994b65bd8b7568a9c51e637bc6f92b89c87fe9f9",
+        "crafting.json": "5b64c802dd689e9992ace9cca3083f279b7e72a12c7993d403d2906be0f1299e",
+        "step-12582912.pt": "334ea52600fa84cc2e90db41f3f0f69e52ab96625bf91526232f75b46ad9b1dc",
+        "step-16777216.pt": "fc4854108fa01fedebcee85a650f911801926918ea96be05d73c5cbfd2ef8571",
+        "step-4194304.pt": "2ef228388e1cc9f4c693eecbe76f2a7ad931d4c5776f21d43b9b7a1e7d6c6d21",
+        "step-8388608.pt": "b442a5c06ed962204b1a6b45497a56ad22bf05ca370f1d04f8bfb825b1c0ec16"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 240422,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9984319238672001,
+        "wood_acquired_per_world": 33.5546875,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 379729,
+          "furnace_chosen": 0,
+          "wood_acquired": 4295,
+          "wood_crossed_below_furnace_threshold": 271
+        },
+        "gate_steps_before_first_furnace": [
+          114645,
+          1250,
+          190797,
+          15,
+          22745,
+          667,
+          49248,
+          362,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place up": 206,
+          "place down": 150,
+          "craft platforms": 1125,
+          "place head-left": 218,
+          "place foot-right": 196,
+          "place down-left": 195,
+          "place middle-left": 215,
+          "place below right column": 114,
+          "place up-left": 233,
+          "place foot-left": 193,
+          "place middle-right": 192,
+          "place down-right": 185,
+          "place up-right": 216,
+          "craft torch": 444,
+          "place above right column": 212,
+          "place head-right": 199
+        }
+      }
+    },
+    "v7-difficulty-g999-802": {
+      "artifact_sha256": {
+        "summary.json": "28580051107e870a1ad017b9a10ec4b0915ed02647a8477c4b91b66b68a16639",
+        "protocol.json": "1912ed3e009e8f567b2dc1cd189b0cfeebe09478e6fce49f484b9af966d604ee",
+        "curve.json": "e834416908c6cda4badd06c667bd517a9262217ea194d21e05104b3645d71a75",
+        "crafting.json": "fa56c0319abd1c56ab5a63a4dd5e1b9232c76602f44f550795bbc0014ecfe335",
+        "step-12582912.pt": "01f7ef29729d1e14f238c58ddc29cdfec7e264d4209760c033e2bfcf4b4e68e6",
+        "step-16777216.pt": "317e9462e646a5ba16386df9b53a7c1c540d453c8da0d474986753e76a293529",
+        "step-4194304.pt": "610a1182a22771dfa937edd22b135814e1f01faf2c5de5cf184d267e1ebf209a",
+        "step-8388608.pt": "04f804133f1a9b711d5b4500206afbbcd61af8f5110f60907e60e5932ba587cd"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 295716,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9839812522825955,
+        "wood_acquired_per_world": 36.96875,
+        "bench_selected_fraction_when_owned": 0.13363105462040537,
+        "bench_space_fraction_when_owned": 0.9996564754379939,
+        "counters": {
+          "observed_actions": 379025,
+          "furnace_chosen": 0,
+          "wood_acquired": 4732,
+          "wood_crossed_below_furnace_threshold": 458,
+          "bench_owned_steps": 5822,
+          "bench_selected_steps": 778,
+          "bench_owned_with_space_steps": 5820,
+          "bench_placements": 287,
+          "bench_exists_but_far_steps": 362184,
+          "left_bench_range": 353,
+          "bench_removals": 61
+        },
+        "gate_steps_before_first_furnace": [
+          46175,
+          8378,
+          246905,
+          583,
+          16165,
+          6052,
+          44074,
+          4124,
+          2279,
+          755,
+          0,
+          0,
+          2707,
+          798,
+          30,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 758,
+          "craft workbench": 2260,
+          "place down-right": 75,
+          "place foot-right": 84,
+          "place foot-left": 66,
+          "place middle-right": 71,
+          "place up-left": 77,
+          "place above right column": 91,
+          "place head-left": 76,
+          "place up": 98,
+          "craft wooden sword": 392,
+          "craft torch": 228,
+          "place up-right": 101,
+          "place down-left": 65,
+          "place down": 64,
+          "place head-right": 96,
+          "place below right column": 58,
+          "place middle-left": 67
+        }
+      }
+    },
+    "v7-difficulty-g1-802": {
+      "artifact_sha256": {
+        "summary.json": "76473176fdb115d58e9dfa3cfe0d283eca7db8068ccce91d58291f265c255dfe",
+        "protocol.json": "9933e4a115d9621d84124e06ee7628773c7ce6ff973678328d2d16f538a0a804",
+        "curve.json": "51ad8747d2899d965663386321a0d6ef09b89a2effcbe67b94b8c02d48be57ab",
+        "crafting.json": "553fe2660591db070d72f9f1735e7e16439d25bb4f0cbaec369d972f257f0b48",
+        "step-12582912.pt": "ba5f1d4610a52da439b99568722caea31847b22de108553797e73977eea0b10d",
+        "step-16777216.pt": "93db9f97bd9ed1650820a75ba1376c20ac317f5d9ae506a23f2816bb687f68d7",
+        "step-4194304.pt": "ecf2f9a1a697811ba7ad38e33615f6a16bff577755cf9d998dde85fb9a4db2ee",
+        "step-8388608.pt": "0c271d27983d75dd398efa44fb4aa6b84aa1d800c251fb34c14f417144da7255"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 223435,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9993644684136326,
+        "wood_acquired_per_world": 25.09375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 384000,
+          "furnace_chosen": 0,
+          "wood_acquired": 3212,
+          "wood_crossed_below_furnace_threshold": 180
+        },
+        "gate_steps_before_first_furnace": [
+          140429,
+          817,
+          180397,
+          0,
+          19006,
+          313,
+          42896,
+          142,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 1152,
+          "place down-left": 99,
+          "place down-right": 96,
+          "place foot-left": 122,
+          "craft torch": 363,
+          "place above right column": 143,
+          "place down": 97,
+          "place up-right": 126,
+          "place head-left": 133,
+          "place middle-right": 139,
+          "place foot-right": 112,
+          "place up-left": 148,
+          "place head-right": 123,
+          "place middle-left": 118,
+          "place up": 156,
+          "place below right column": 82
+        }
+      }
+    },
+    "v4-equal-g999-802": {
+      "artifact_sha256": {
+        "summary.json": "ac1ef912b43c6f7f369126ea54840d0df40ace3b4f437550c3af4faf02e2b537",
+        "protocol.json": "aa7a281d8d057bc15163153b1d532ec87769cc66845b7c10a38211ef6dcda83e",
+        "curve.json": "5d0f8e15cb2b74c9dba753a9cb2212ecc3bacd38d31e351b91aeb5de1ea77836",
+        "crafting.json": "4c34e4d3b77dd37193e86b16aad53d14ab46259c8ca495a4c363986bd0cb81ef",
+        "step-12582912.pt": "18be972063fbbabdd29d4a52c5d75909ed7939b9c41f3f1de0c85e1ed6907ae6",
+        "step-16777216.pt": "a3582e794b3c5d3a4cac8c77b25d0062819be86e5c6d20770dc323d610fc5b2e",
+        "step-4194304.pt": "cf6e285d3749d62672a6ce8a68f98abbc21f4e7255c73b03d4b56624963cda40",
+        "step-8388608.pt": "6276a4b1e574362df4675eb129aa6f6a1ddac1e8c987c0cf64a5567a7788eed4"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 321739,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9944768896527931,
+        "wood_acquired_per_world": 16.2421875,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 368796,
+          "furnace_chosen": 0,
+          "wood_acquired": 2079,
+          "wood_crossed_below_furnace_threshold": 135
+        },
+        "gate_steps_before_first_furnace": [
+          35984,
+          802,
+          234588,
+          1038,
+          10083,
+          188,
+          85374,
+          739,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 1286,
+          "craft torch": 344,
+          "place up-right": 34,
+          "place head-right": 37,
+          "place head-left": 45,
+          "place foot-left": 20,
+          "place down-left": 24,
+          "place middle-left": 41,
+          "place middle-right": 42,
+          "place up-left": 39,
+          "place below right column": 23,
+          "place foot-right": 23,
+          "place up": 31,
+          "place above right column": 39,
+          "place down-right": 25,
+          "place down": 19
+        }
+      }
+    },
+    "v7-equal-g1-803": {
+      "artifact_sha256": {
+        "summary.json": "c486412415373e06c5b8d1182bf0afb680f899f0ba23acba5068f9c8097bb40c",
+        "protocol.json": "ab6a4f9917a6c7ae4a11ff9e5ab3e57c317d6fdef51d391a5ff3e158a8b27e0f",
+        "curve.json": "f4a78ec640ad8a7321624c80edb57ab9785b0cd9b9457d890c3ef1a1a4a6b5c2",
+        "crafting.json": "c23aac992ec638cd8e60c125abfbd43a23ddd1dc4e33d3007c3f5aca865a0740",
+        "step-12582912.pt": "251f5f21c8f695a457a9f517e10b7dd15542ce7532320bbcfdb84fb7c8302207",
+        "step-16777216.pt": "a29897b2012960cdc855ad389c9a7d151a8410ac41adb0ac62f1f0f95214c4a7",
+        "step-4194304.pt": "d1a07f508d5c0f34b1289a6db510975a00e69bfbec358c738f210a0f2df28653",
+        "step-8388608.pt": "58d5eb2f431bde714ee3e7a2098f85bbb12546b8b0573a7c9caf13a287e05155"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 201972,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9705602756817777,
+        "wood_acquired_per_world": 39.0859375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 381244,
+          "furnace_chosen": 0,
+          "wood_acquired": 5003,
+          "wood_crossed_below_furnace_threshold": 354
+        },
+        "gate_steps_before_first_furnace": [
+          148239,
+          1516,
+          125500,
+          497,
+          27734,
+          1783,
+          70526,
+          5449,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-left": 292,
+          "place down-right": 228,
+          "place foot-left": 259,
+          "craft platforms": 803,
+          "place above right column": 311,
+          "place below right column": 206,
+          "place foot-right": 243,
+          "place middle-right": 267,
+          "place up-left": 302,
+          "craft torch": 574,
+          "place head-right": 245,
+          "place up-right": 271,
+          "place middle-left": 274,
+          "place up": 270,
+          "place down": 198,
+          "place down-left": 241
+        }
+      }
+    },
+    "v7-difficulty-g999-803": {
+      "artifact_sha256": {
+        "summary.json": "43869197dac7a80ee48c82cc859c4ab99c6f7d3210613423713d1466b3265af7",
+        "protocol.json": "e42d845240c6115ed70aebd78f1d93a6cc22d806906fd0f5ea8a48784e4fae8f",
+        "curve.json": "d530052f5c4edb9e573e6080b5084afd3f229c5268cdfd4481097446148fdbcb",
+        "crafting.json": "3555bf0c0f99f6f5050de89e9cd5e984151ce1bfb0f8649d6a95cde9d448be69",
+        "step-12582912.pt": "eaba6ce729862cd087e2683adb18be6a9ee55d10416567e8b1dbd911bd3bab92",
+        "step-16777216.pt": "9eb5f3287fcc5e51cec5d007ea8277738e7043c60cc4e32be513dd9a25fe1f55",
+        "step-4194304.pt": "1cc65c46c7fda1b5e07549b200b1c7ddda10ae71bf3472f7ccbc556953e881f5",
+        "step-8388608.pt": "2d61f4f4c135dcff81999bcfdce61422b915bf2e13de8a584f500581a843a711"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 189060,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9985877499206601,
+        "wood_acquired_per_world": 12.234375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 366831,
+          "furnace_chosen": 0,
+          "wood_acquired": 1566,
+          "wood_crossed_below_furnace_threshold": 87
+        },
+        "gate_steps_before_first_furnace": [
+          162670,
+          675,
+          160999,
+          18,
+          14155,
+          271,
+          27794,
+          249,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 732,
+          "place above right column": 69,
+          "place up": 44,
+          "place head-right": 53,
+          "place up-right": 53,
+          "craft torch": 259,
+          "place up-left": 59,
+          "place foot-right": 48,
+          "place middle-left": 49,
+          "place middle-right": 47,
+          "place below right column": 23,
+          "place head-left": 48,
+          "place down": 15,
+          "place foot-left": 27,
+          "place down-left": 24,
+          "place down-right": 15
+        }
+      }
+    },
+    "v7-difficulty-g1-803": {
+      "artifact_sha256": {
+        "summary.json": "95eb7c586feeecda9c86e446de08dd500fb82b64143360f229f791dd983948d9",
+        "protocol.json": "95d8ea1e495bf5b402f8edc6cfdd7e3173d22ca62bb7092d15fffcd9254a93f7",
+        "curve.json": "a893dd1b3c90d03b9976f38ba44cc5aa6444e820ce795746abb8d21eb83ef47a",
+        "crafting.json": "30d71cb2617b08a27ef39423efc564d10aaa3b29c5e3eefcd38a253c628748c2",
+        "step-12582912.pt": "248667de76eccbab3630e3c4c6ae47e61de11c1d238d37a55572a89b04b60988",
+        "step-16777216.pt": "04bd55b48a6709fce46a9c75bdbfe96eadf4c420da5ff27801fdd98a03ca2a13",
+        "step-4194304.pt": "56739f4cb3c01029aed19a8454056582b4810b242dd8fbb2b41f9af55025f6fd",
+        "step-8388608.pt": "e32f46d39a2c679a0e199440578f0c580e47b87b70df0f7b82b2db4172104e15"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 104753,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.999551325499031,
+        "wood_acquired_per_world": 20.359375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 368277,
+          "furnace_chosen": 0,
+          "wood_acquired": 2606,
+          "wood_crossed_below_furnace_threshold": 108
+        },
+        "gate_steps_before_first_furnace": [
+          246039,
+          704,
+          95823,
+          0,
+          16711,
+          70,
+          8883,
+          47,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place down-right": 107,
+          "place middle-right": 155,
+          "place head-left": 191,
+          "place head-right": 156,
+          "place down-left": 107,
+          "place above right column": 208,
+          "place down": 90,
+          "place up-right": 159,
+          "craft platforms": 564,
+          "place middle-left": 155,
+          "place up": 177,
+          "place foot-right": 129,
+          "place up-left": 175,
+          "place foot-left": 143,
+          "place below right column": 84,
+          "craft torch": 5
+        }
+      }
+    },
+    "v4-equal-g999-803": {
+      "artifact_sha256": {
+        "summary.json": "bd59f368f195260636bbd70043917b35316b7f18d887fc2ddac382de991ac1e8",
+        "protocol.json": "f86333692321af72e83cbc47f717dc950dc61e4ddb02b97d6f302aba1bbeb296",
+        "curve.json": "8fec612f58f98c647b2c9108cdaefa60a3943ecbb3f26e19c900210b6f72dbf5",
+        "crafting.json": "83d523f3f8c16057fcff66af26621b67a3d6d625603e5188103d5cc17f301a15",
+        "step-12582912.pt": "3daf0b544b82c9e690c51411174bebff96c27844076146a0b24c153a172638f9",
+        "step-16777216.pt": "07c2491c22c81d3defc6e4463fd82261a68ee21d2dd32848b0545c3f72692092",
+        "step-4194304.pt": "680f5019f7c9456d57149d5f651db5279be8ce76e6cdce58d3111ab15b2cd8a4",
+        "step-8388608.pt": "896bcd31e48e07b144a2746fb2707140921c1fdcb6c66b17e635818ec6d74e93"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 324934,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9652483273526317,
+        "wood_acquired_per_world": 43.1171875,
+        "bench_selected_fraction_when_owned": 0.16558330482381114,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 378496,
+          "furnace_chosen": 0,
+          "wood_acquired": 5519,
+          "wood_crossed_below_furnace_threshold": 601,
+          "bench_owned_steps": 5846,
+          "bench_selected_steps": 968,
+          "bench_owned_with_space_steps": 5846,
+          "bench_placements": 208,
+          "bench_exists_but_far_steps": 352490,
+          "left_bench_range": 219,
+          "bench_removals": 43
+        },
+        "gate_steps_before_first_furnace": [
+          17838,
+          11311,
+          260233,
+          3658,
+          10383,
+          8362,
+          53409,
+          7526,
+          1456,
+          622,
+          83,
+          0,
+          2366,
+          1224,
+          25,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-left": 188,
+          "place up-right": 206,
+          "craft platforms": 657,
+          "place head-right": 188,
+          "craft torch": 281,
+          "place up-left": 219,
+          "place below right column": 119,
+          "place foot-right": 147,
+          "place middle-left": 160,
+          "place down-right": 129,
+          "place foot-left": 166,
+          "place down-left": 125,
+          "place down": 104,
+          "place above right column": 250,
+          "place middle-right": 173,
+          "place up": 255,
+          "craft workbench": 1650,
+          "craft wooden sword": 462,
+          "craft campfire": 30
+        }
+      }
+    },
+    "v7-equal-g999-803": {
+      "artifact_sha256": {
+        "summary.json": "6733bc45ca0ef647e0feeeddf4dc7fe5d54ac78d5f8ad3dc7f18d39edc5ac404",
+        "protocol.json": "ecaa3c22a6e430a69ddec1d925f1814c2d83cb47f5af0da9e94d44ccd66a7ea5",
+        "curve.json": "9c737a61db27420665bf81b0d1179bbdc7d7116a2184faa727ca69300f985c54",
+        "crafting.json": "288a2c8618f02f88693ebb6ebdb1757c86518e8255bb59ef371e3b9a1e0e6c7d",
+        "step-12582912.pt": "2fe64194a9e70fc6f763ce14840eaf5f9f841ae31c58ab21f217a337503d672b",
+        "step-16777216.pt": "4f29586f41704ba9eeb84b9e94ff92a363457d60f43f7410a38d2d39a73efef4",
+        "step-4194304.pt": "38da7d039a2e241f8fdb8b6ae8f233cb8b62934a9c0c3872690f1e137e5c332b",
+        "step-8388608.pt": "d89cc9e8894c9aa633d54dd7cc9e327bd4cff9c8ba4d80c1503b2d7aa79ce799"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 299736,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9843228707929644,
+        "wood_acquired_per_world": 15.421875,
+        "bench_selected_fraction_when_owned": 0.08741258741258741,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 373278,
+          "furnace_chosen": 0,
+          "wood_acquired": 1974,
+          "wood_crossed_below_furnace_threshold": 141,
+          "bench_owned_steps": 286,
+          "bench_selected_steps": 25,
+          "bench_owned_with_space_steps": 286,
+          "bench_placements": 3,
+          "bench_exists_but_far_steps": 5267,
+          "left_bench_range": 3,
+          "bench_removals": 1
+        },
+        "gate_steps_before_first_furnace": [
+          58604,
+          1291,
+          227245,
+          349,
+          12221,
+          1371,
+          67792,
+          4350,
+          55,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 714,
+          "place middle-left": 79,
+          "place up-left": 83,
+          "place head-left": 74,
+          "place foot-right": 76,
+          "place up-right": 70,
+          "place middle-right": 66,
+          "place head-right": 58,
+          "place foot-left": 69,
+          "craft torch": 281,
+          "place down-left": 46,
+          "place up": 75,
+          "place down-right": 60,
+          "place down": 56,
+          "place below right column": 52,
+          "place above right column": 81,
+          "craft workbench": 20,
+          "craft campfire": 10
+        }
+      }
+    },
+    "v7-difficulty-g999-804": {
+      "artifact_sha256": {
+        "summary.json": "ef7d23bae378ef885b61c218cc32a9e1b6882b6ce0b21e3be37d00a18af6004a",
+        "protocol.json": "54cf10b59d0c6ee5a3439e00d426ba4125e599c02d259f3611441ce7cdb1398b",
+        "curve.json": "7fce350b29457b7bc0bce577ab4b08ca71df5b6371f5cea400a6627196d382ee",
+        "crafting.json": "bd9fca6539950fe611d47054eafc05f895e4f7e4ae7c7110f2fcc7471f0624e7",
+        "step-12582912.pt": "e1d54d67da2cf02fdd73dce256c316c902c09c834c6e007555e29a8cd4d56fd7",
+        "step-16777216.pt": "c06910d76ffcbdda6c639330c901ef83b303122a31bc4e98a3bbc759035534db",
+        "step-4194304.pt": "ce3cf9dbad55e463196f62a500c9e553373e3eaf99d1e7e2fb9def4de3abbeda",
+        "step-8388608.pt": "9a42ef021568febb56e05b61112eb9b114f43e2530724f4963e273c15dddd525"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 245989,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9963656911487913,
+        "wood_acquired_per_world": 15.4921875,
+        "bench_selected_fraction_when_owned": 0.165402124430956,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 372711,
+          "furnace_chosen": 0,
+          "wood_acquired": 1983,
+          "wood_crossed_below_furnace_threshold": 213,
+          "bench_owned_steps": 659,
+          "bench_selected_steps": 109,
+          "bench_owned_with_space_steps": 659,
+          "bench_placements": 43,
+          "bench_exists_but_far_steps": 69310,
+          "left_bench_range": 45,
+          "bench_removals": 15
+        },
+        "gate_steps_before_first_furnace": [
+          113014,
+          2932,
+          212096,
+          19,
+          8822,
+          775,
+          32999,
+          875,
+          884,
+          33,
+          0,
+          0,
+          253,
+          9,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place head-left": 90,
+          "place foot-left": 67,
+          "craft platforms": 565,
+          "place down-left": 44,
+          "place above right column": 92,
+          "place up-right": 66,
+          "place middle-left": 86,
+          "craft torch": 268,
+          "place up-left": 89,
+          "place foot-right": 40,
+          "place up": 100,
+          "place middle-right": 52,
+          "place head-right": 57,
+          "place down": 25,
+          "craft workbench": 280,
+          "place below right column": 28,
+          "place down-right": 25,
+          "craft wooden sword": 7
+        }
+      }
+    },
+    "v7-difficulty-g1-804": {
+      "artifact_sha256": {
+        "summary.json": "8eb99ed358819bfca838ac1ba39a4ed5159cf5aa79d74ad2737fb56cb724bec2",
+        "protocol.json": "e98e5e5a46499d013a62ecd9bc05bfd2a91d7c8c865410a51b0f831250918df1",
+        "curve.json": "9a434c8697e7fc552b9cf53f0b5ecc58e676c9a824fbc900e2d9630a4601aa00",
+        "crafting.json": "0e36028ee3579869e4e937b79d3098a62941f389aabf3a4d1fae723f06ad4565",
+        "step-12582912.pt": "f6c9218200feba15bb2187f6953ae1541e05c0b1edf5aa06c2d235e71d515754",
+        "step-16777216.pt": "434a588dc02dbc1c35a9d9c7cd53dec40c049fb0386a10ecfe51c5b22476d215",
+        "step-4194304.pt": "5c1c747eadd91e2929c602bfdc371f2977a372a3f4ab5d527f290b246c4b62c0",
+        "step-8388608.pt": "661f0c5370bb3e5bcea5759d9ca3dcd06f2fc6227589c9737cf3fd3f23917a29"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 183739,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 1.0,
+        "wood_acquired_per_world": 12.8203125,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 379641,
+          "furnace_chosen": 0,
+          "wood_acquired": 1641,
+          "wood_crossed_below_furnace_threshold": 84
+        },
+        "gate_steps_before_first_furnace": [
+          181797,
+          505,
+          156916,
+          0,
+          13588,
+          12,
+          26823,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place above right column": 71,
+          "place up-left": 87,
+          "craft platforms": 641,
+          "place up": 75,
+          "place middle-left": 66,
+          "place middle-right": 63,
+          "place down-right": 52,
+          "place foot-left": 57,
+          "craft torch": 129,
+          "place down-left": 49,
+          "place down": 28,
+          "place head-left": 90,
+          "place up-right": 66,
+          "place foot-right": 64,
+          "place head-right": 74,
+          "place below right column": 29
+        }
+      }
+    },
+    "v4-equal-g999-804": {
+      "artifact_sha256": {
+        "summary.json": "0b1d9b167779dfaa81493a231ce8577dc792a061e537d3fa0d6d36fc6b2988b4",
+        "protocol.json": "520788aef27204b8c30c39652788a4935e3a6b44614986a675566329e75b8ebe",
+        "curve.json": "ad75bca371b627b8f1ea4920bbc9d24785f36c925f12000dc830f158a3be7402",
+        "crafting.json": "27e380c04b3793c429ddce7964a8a0e49be3f2e46292d0cd768755adc85384c5",
+        "step-12582912.pt": "cb37617439cd518bf90336a1b3b1fa1ead96b80954e8fd95943cc1fab81cee77",
+        "step-16777216.pt": "922080b8cc023bcae3ceee55e51980ff3f185b46da8c1babdfadf99eb4702f91",
+        "step-4194304.pt": "ee0dcabe1ecb95c2d2fbf3c173e22ba9031ee710f8088845572e8b940bdd8f68",
+        "step-8388608.pt": "b66ab0207212c578e7e1a506ef055ff4926770ad7b0860139abdd31b092fbc78"
+      },
+      "crafting": {
+        "opportunity_episodes": 6,
+        "pre_furnace_stone_sufficient_actions": 308556,
+        "pre_furnace_joint_legal_actions": 6,
+        "missing_wood_and_bench_given_stone": 0.8665169369579591,
+        "wood_acquired_per_world": 46.96875,
+        "bench_selected_fraction_when_owned": 0.026854454356592936,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 368078,
+          "furnace_chosen": 6,
+          "wood_acquired": 6012,
+          "wood_crossed_below_furnace_threshold": 707,
+          "bench_owned_steps": 32732,
+          "bench_selected_steps": 879,
+          "bench_owned_with_space_steps": 32732,
+          "bench_placements": 441,
+          "bench_removals": 229,
+          "left_bench_range": 654,
+          "bench_exists_but_far_steps": 318192,
+          "furnace_legal_steps": 6,
+          "furnace_probability_sum": 5.926108539104462
+        },
+        "gate_steps_before_first_furnace": [
+          13169,
+          7412,
+          167589,
+          8408,
+          13655,
+          6591,
+          99780,
+          23719,
+          2355,
+          576,
+          3267,
+          50,
+          3025,
+          800,
+          5737,
+          6
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place above right column": 168,
+          "place middle-right": 116,
+          "place head-right": 159,
+          "place up-right": 152,
+          "place up-left": 144,
+          "craft platforms": 1391,
+          "craft torch": 492,
+          "place below right column": 55,
+          "place foot-left": 125,
+          "place foot-right": 117,
+          "place down-right": 84,
+          "craft workbench": 2120,
+          "place down": 64,
+          "place middle-left": 144,
+          "place up": 140,
+          "place head-left": 148,
+          "craft wooden sword": 252,
+          "place down-left": 85,
+          "craft furnace": 24
+        }
+      }
+    },
+    "v7-equal-g999-804": {
+      "artifact_sha256": {
+        "summary.json": "503469a549e8f557c5b8ede4f7421a1bcf30fa01711bdb5a70abe7ead6466836",
+        "protocol.json": "96ca897239e19aecd65d41ae40f8abf00f2b1d5053a159fd676ae1b45c9ec081",
+        "curve.json": "f3ccf0585cb761d605404cdc3eac8d3e45de5ae1f52bb67a381a877c51476a7f",
+        "crafting.json": "e36f32fe78a31dc5e9d3932b60771d802dcf4f48b423e7bbe2d90b8a08a486b7",
+        "step-12582912.pt": "38f6b1a83cf1df3f43868002e58778636e4d35474422b9a364a72aa5b6900f19",
+        "step-16777216.pt": "69cba8e894b63eb34df0a2670d948cf4b4fe0397c57d5eff7a273266ddfe322e",
+        "step-4194304.pt": "f76d76f6858c0b7849773a221efbbbb1e25b009081a1a26637bf4d521db41937",
+        "step-8388608.pt": "38d644507a5d56aaeb6590960e75b397199f64da33e07f608915e17f1062d35a"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 312522,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9981441306532021,
+        "wood_acquired_per_world": 10.828125,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 372253,
+          "furnace_chosen": 0,
+          "wood_acquired": 1386,
+          "wood_crossed_below_furnace_threshold": 68
+        },
+        "gate_steps_before_first_furnace": [
+          46445,
+          381,
+          264209,
+          9,
+          12530,
+          375,
+          47733,
+          571,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 905,
+          "place down": 12,
+          "place up-right": 36,
+          "craft torch": 207,
+          "place head-right": 20,
+          "place down-left": 15,
+          "place up-left": 23,
+          "place foot-right": 18,
+          "place head-left": 19,
+          "place up": 19,
+          "place above right column": 27,
+          "place down-right": 18,
+          "place middle-left": 21,
+          "place foot-left": 18,
+          "place middle-right": 21,
+          "place below right column": 6
+        }
+      }
+    },
+    "v7-equal-g1-804": {
+      "artifact_sha256": {
+        "summary.json": "a981a938b568dd7b7f1cc58adea921b3a56b2c7e87f67d67e7d4b69a6ad5ca40",
+        "protocol.json": "8aba98075c32bfdffd15617734342b799004e7600c6270110afcd072951b2122",
+        "curve.json": "242fe7ce0ce728504c5524c53e1c85f5eca48e33eeda4a129b5104bc2a2eb95b",
+        "crafting.json": "71d09b4491cf28dbd4c36e57abfe4e8aa55171c5a3f842295c72348f5d10c199",
+        "step-12582912.pt": "7606045ba8ae15957fd60398dbc94b38d31f46f328e064f7a4da5dc6f1c0eee6",
+        "step-16777216.pt": "28e640ddbde558939c67c57c24aff0080b4487619ddc2240288c775ae52c356e",
+        "step-4194304.pt": "748149d19b7e8b34898a6d05f48493af87e98e52a5b7cff9b6c76950e69aaf05",
+        "step-8388608.pt": "cb92593af0d2b8ee8c57205f41d1c5f49c3b22955ad377546a23dced5ac910b3"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 193961,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9893122844283129,
+        "wood_acquired_per_world": 37.5234375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 382545,
+          "furnace_chosen": 0,
+          "wood_acquired": 4803,
+          "wood_crossed_below_furnace_threshold": 307
+        },
+        "gate_steps_before_first_furnace": [
+          152529,
+          1301,
+          136837,
+          391,
+          33656,
+          1098,
+          55051,
+          1682,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place down-left": 183,
+          "place above right column": 230,
+          "place head-right": 214,
+          "craft platforms": 1023,
+          "place foot-left": 258,
+          "place head-left": 252,
+          "place below right column": 182,
+          "craft torch": 686,
+          "place middle-right": 257,
+          "place down-right": 186,
+          "place foot-right": 213,
+          "place middle-left": 257,
+          "place up-left": 212,
+          "place up": 225,
+          "place down": 170,
+          "place up-right": 245
+        }
+      }
+    },
+    "v7-difficulty-g1-805": {
+      "artifact_sha256": {
+        "summary.json": "8efd0291d7e38243081ce8fddd96ccb9450ea1d51a161a4aa332acf4f479d2d4",
+        "protocol.json": "811f39f6711ad89baac91fd769745645e1398407befed435b519abe1cd6d38f1",
+        "curve.json": "157e4e3f20f81ec36232b0f21bdee1757139f44d81813edf1b4da102bceaf866",
+        "crafting.json": "731160e9ffbf50f4544fd3a0e3778786c4e53dab474db02206054cc9b59f8675",
+        "step-12582912.pt": "d3f8fe101cf728d34fda324877be6c8c4d7752cba2a989024d65442ae65a125c",
+        "step-16777216.pt": "f21b42d08e2e1b12eb68e4ef2fd33be522d9a33ef292501cad86336695c56b06",
+        "step-4194304.pt": "100373517f6fb0bd615d28c8629e47a11df0e1d7047b1da74d43bf4ca48be5e5",
+        "step-8388608.pt": "2af64d323d53405f4a98a26368065f9c88e0015f4c8f0dcc86e22449ca867cd6"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 228742,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.995951770990898,
+        "wood_acquired_per_world": 25.84375,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 379707,
+          "furnace_chosen": 0,
+          "wood_acquired": 3308,
+          "wood_crossed_below_furnace_threshold": 204
+        },
+        "gate_steps_before_first_furnace": [
+          117543,
+          814,
+          174437,
+          102,
+          31693,
+          915,
+          53379,
+          824,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "place up-left": 121,
+          "place head-right": 125,
+          "place above right column": 160,
+          "place middle-left": 122,
+          "place foot-left": 92,
+          "place middle-right": 126,
+          "place up": 128,
+          "place down-right": 87,
+          "place up-right": 141,
+          "craft platforms": 1234,
+          "craft torch": 476,
+          "place foot-right": 118,
+          "place down": 66,
+          "place down-left": 96,
+          "place head-left": 124,
+          "place below right column": 90
+        }
+      }
+    },
+    "v4-equal-g999-805": {
+      "artifact_sha256": {
+        "summary.json": "3905b86bc901fdd8ce0ebe1d0abf19c45c538cf788c2ccb5de924c75005f28dd",
+        "protocol.json": "250024b3bfc267385b6602e85807d327989386242f631d6880066db53ae55af6",
+        "curve.json": "5148193d0511f3d707bc523ae2bd9f31f8ebea1451db4b121c7cafcdb1643a95",
+        "crafting.json": "1078bcf12af7b641d4d4b9781a904c18b5c4463f072f987630f7e18d494bd413",
+        "step-12582912.pt": "2024933ecae3ee64d8a534ba0394054e5c122746cc1402bc6e416d9c799956b6",
+        "step-16777216.pt": "193ae37f112836da48ecc830556daac17da5d8bdb5baa8aa6f77ada80f9291c6",
+        "step-4194304.pt": "4eb8bbd2e99cc5d7ecf65c255cae75497f13dbea5e23b01f85f9d9c92b11daa1",
+        "step-8388608.pt": "d1ea72b10b8998eef7f228893d1d3a5888adff47268d049bcf67d347f72caa85"
+      },
+      "crafting": {
+        "opportunity_episodes": 3,
+        "pre_furnace_stone_sufficient_actions": 300645,
+        "pre_furnace_joint_legal_actions": 5,
+        "missing_wood_and_bench_given_stone": 0.9227294649836185,
+        "wood_acquired_per_world": 34.5,
+        "bench_selected_fraction_when_owned": 0.03371884671770647,
+        "bench_space_fraction_when_owned": 1.0,
+        "counters": {
+          "observed_actions": 355647,
+          "furnace_chosen": 3,
+          "wood_acquired": 4416,
+          "wood_crossed_below_furnace_threshold": 526,
+          "bench_owned_steps": 24556,
+          "bench_selected_steps": 828,
+          "bench_owned_with_space_steps": 24556,
+          "bench_placements": 352,
+          "bench_removals": 171,
+          "bench_exists_but_far_steps": 312267,
+          "left_bench_range": 495,
+          "furnace_legal_steps": 5,
+          "furnace_probability_sum": 3.558574914932251
+        },
+        "gate_steps_before_first_furnace": [
+          10051,
+          8645,
+          95215,
+          261,
+          19086,
+          6797,
+          182199,
+          19449,
+          1317,
+          357,
+          635,
+          10,
+          2981,
+          806,
+          2871,
+          5
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 1185,
+          "craft workbench": 1830,
+          "place up": 70,
+          "place middle-left": 63,
+          "craft torch": 319,
+          "craft wooden sword": 238,
+          "place below right column": 39,
+          "place up-right": 64,
+          "place down-right": 41,
+          "place above right column": 78,
+          "place foot-left": 51,
+          "place head-right": 67,
+          "place up-left": 87,
+          "place down-left": 51,
+          "place head-left": 67,
+          "place middle-right": 50,
+          "place down": 38,
+          "place foot-right": 42,
+          "craft campfire": 10,
+          "craft furnace": 12
+        }
+      }
+    },
+    "v7-equal-g999-805": {
+      "artifact_sha256": {
+        "summary.json": "3f11fd4c074e36c644084ba68b835f7edcac7c7ce35745691b1648946d772417",
+        "protocol.json": "68c77a955776e4d0d921b3f86fe76a16996df268990b0d523fd48eabf7783ef5",
+        "curve.json": "8c34049bedca5c654c6b68253aa52cee29ed560de53ef4768ed08bd8182219fe",
+        "crafting.json": "7d1e7d4fa8e9634b6dd2c7907891e6c961206cba878462c1b35340dae87f63d6",
+        "step-12582912.pt": "23e48a45dbd3617525d49a4e249be8c376ad4a58f7ee282c0dc06365894bad01",
+        "step-16777216.pt": "fa82a92623c54ed1b062efd280510ceee7dda4a9f872e795cac92fe6e74967fa",
+        "step-4194304.pt": "c393e6a796f46c755a6b883c24e7b52391bc61f7f139857dd9edd8c92271807f",
+        "step-8388608.pt": "8987956deda52da853ad8298e915ccf3167082ba9e5ab8fa99b83030d1348b89"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 316287,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9931770828393199,
+        "wood_acquired_per_world": 17.0,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 367491,
+          "furnace_chosen": 0,
+          "wood_acquired": 2176,
+          "wood_crossed_below_furnace_threshold": 136
+        },
+        "gate_steps_before_first_furnace": [
+          32777,
+          1006,
+          236050,
+          179,
+          16155,
+          1266,
+          78079,
+          1979,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 751,
+          "place middle-right": 68,
+          "place head-right": 99,
+          "place up-left": 95,
+          "place down-left": 74,
+          "place up-right": 110,
+          "place foot-right": 67,
+          "place middle-left": 79,
+          "craft torch": 268,
+          "place head-left": 104,
+          "place below right column": 58,
+          "place foot-left": 80,
+          "place above right column": 108,
+          "place up": 98,
+          "place down-right": 72,
+          "place down": 39
+        }
+      }
+    },
+    "v7-equal-g1-805": {
+      "artifact_sha256": {
+        "summary.json": "cbe886cc57423b7736a4d49268ae0aede71ce8d2c5046bcf9e08bc009a73d6c3",
+        "protocol.json": "8ea793fe67d3cd4b07651cdbd8f8cc31e86c1f0a51c09e1c243eb0362c5b48b3",
+        "curve.json": "9afa7497a81daee43034fbbe922704cce01f1b0c7e3b4857ad93d941d82a9c42",
+        "crafting.json": "d561874dd48620cb052d55ac54f891e37ff14ac75779f63b40ded37ae2cc90d2",
+        "step-12582912.pt": "45879014dd69dee871245544459cb6804d996f522f40ba0bd0e0b9d8ddd89eaf",
+        "step-16777216.pt": "d531f7404cafb4125cf458ecbb361ed93971a3aac89d9da15ff2afb6a9f58048",
+        "step-4194304.pt": "7532b042301b406c872415e0f9540459fbad7514bbec6d1ebfc688831d60f36f",
+        "step-8388608.pt": "f1ae22e471c4a96f354b563909acb113d3875c01d65b07261cb254683665f119"
+      },
+      "crafting": {
+        "opportunity_episodes": 0,
+        "pre_furnace_stone_sufficient_actions": 261159,
+        "pre_furnace_joint_legal_actions": 0,
+        "missing_wood_and_bench_given_stone": 0.9980624830084355,
+        "wood_acquired_per_world": 34.2890625,
+        "bench_selected_fraction_when_owned": null,
+        "bench_space_fraction_when_owned": null,
+        "counters": {
+          "observed_actions": 377254,
+          "furnace_chosen": 0,
+          "wood_acquired": 4389,
+          "wood_crossed_below_furnace_threshold": 246
+        },
+        "gate_steps_before_first_furnace": [
+          94893,
+          1649,
+          193184,
+          0,
+          18827,
+          726,
+          67469,
+          506,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft platforms": 1209,
+          "place head-left": 252,
+          "place middle-right": 256,
+          "place foot-left": 195,
+          "place below right column": 128,
+          "place down-right": 162,
+          "place up-left": 198,
+          "place down": 131,
+          "place head-right": 231,
+          "place up": 199,
+          "place middle-left": 212,
+          "place above right column": 201,
+          "place foot-right": 221,
+          "craft torch": 403,
+          "place up-right": 197,
+          "place down-left": 189
+        }
+      }
+    },
+    "v7-difficulty-g999-805": {
+      "artifact_sha256": {
+        "summary.json": "404623347b7a3619a59e49d049bdeea0c39c30e2fcef59223ae45dab7614bcdc",
+        "protocol.json": "a3e473ec2930e137bb76cf7c21de165268e60e64ecd32657b0cebd9582ce964c",
+        "curve.json": "7e19bdfa984b3098a028e4a752e08a4a1f1a5623eafe4b4be5b6a9a3ed702ad8",
+        "crafting.json": "9a82f4628cd194bd24349e3bee3314df2f61e9313105cff26aef256d2d6798bf",
+        "step-12582912.pt": "1d50a29b576cf3fb7dce2f82632cd0ee2bf3a28d4bbe0a10df260c2c1c56e32e",
+        "step-16777216.pt": "70ec4cc185ae3a81c844e358fb9a5cf8cc05c4d135cb9b2cf17337cb271ddc7f",
+        "step-4194304.pt": "c39597eb33c67a1058a0137841266d73cc248bf49df981ae7022b9ef145ae5a7",
+        "step-8388608.pt": "8d6e6c28e822245565a917c7fc9b190dd94d14c34948af9fc688442c708a90fd"
+      },
+      "crafting": {
+        "opportunity_episodes": 1,
+        "pre_furnace_stone_sufficient_actions": 307464,
+        "pre_furnace_joint_legal_actions": 13,
+        "missing_wood_and_bench_given_stone": 0.9623500637473005,
+        "wood_acquired_per_world": 43.671875,
+        "bench_selected_fraction_when_owned": 0.2700140449438202,
+        "bench_space_fraction_when_owned": 0.9992977528089888,
+        "counters": {
+          "observed_actions": 369768,
+          "furnace_chosen": 0,
+          "wood_acquired": 5590,
+          "wood_crossed_below_furnace_threshold": 582,
+          "bench_owned_steps": 5696,
+          "bench_selected_steps": 1538,
+          "bench_owned_with_space_steps": 5692,
+          "bench_placements": 357,
+          "bench_exists_but_far_steps": 348966,
+          "left_bench_range": 438,
+          "bench_removals": 134,
+          "furnace_legal_steps": 13,
+          "furnace_probability_sum": 1.4654864966869354
+        },
+        "gate_steps_before_first_furnace": [
+          27856,
+          11036,
+          245101,
+          1699,
+          10629,
+          7257,
+          50787,
+          8568,
+          2050,
+          583,
+          457,
+          0,
+          2417,
+          476,
+          839,
+          13
+        ],
+        "wood_consumed_before_first_furnace": {
+          "craft workbench": 2230,
+          "craft platforms": 671,
+          "place above right column": 240,
+          "place up-left": 148,
+          "place up-right": 182,
+          "place middle-left": 146,
+          "place down-left": 113,
+          "place up": 203,
+          "place middle-right": 152,
+          "place foot-right": 129,
+          "craft torch": 194,
+          "place head-right": 153,
+          "craft wooden sword": 392,
+          "place down-right": 125,
+          "place head-left": 158,
+          "place foot-left": 117,
+          "place down": 82,
+          "place below right column": 93,
+          "craft campfire": 50
+        }
+      }
+    }
+  },
+  "amendment": {
+    "root": "/Users/mikavohl/Projects/terraria-lite/experiments/v7-parallel-finish-20261017.mj7w51sy",
+    "coordinator_sha256": "40920da39caa6f6dbf99766100b0be93251b2085e6b08d39a7ddb8601286e09c",
+    "records_sha256": {
+      "launch.json": "961dbd8af57a1ce03dc3efe2b3a281137d14c7591f162ce28ca4968b7e79a11e",
+      "started.json": "4b7f0c15b2a744fa9ac67b3802c6ebdb5e5abfa7397accaebcfd97472fe49a20",
+      "amendment.json": "cbac0551e4c21fa8d4d8ad6bbb773bd959a9cea6afbc9d09724761ed78304717",
+      "last-trial-launch.json": "e98d4875f82acdb72338114e25e1e33b3df7c0b74b6ddbc3542e758b1aa887c9",
+      "completed.json": "8bbdab08e175221053043578fb322cdf0fcf15d1684748748d533ad8fb94c332",
+      "status-before.json": "0ac973e26f695272acec7944699ac5d19f3843262f1aab812a1a1a2c93ba0fc2",
+      "runner.log": "a2cdd5534d2fbc27517fb74616c252865a18edb6515c1d0af97c13cd99fca4d8"
+    },
+    "adopted_worker_identities": {
+      "25123": {
+        "start": "Sat Oct 17 17:55:00 2026",
+        "stat": "R",
+        "command": "/Users/mikavohl/Projects/terraria-lite/.venv/bin/python /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/variants/v4/tools/iterate_ppo.py --out /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/runs/v4-equal-g999-805 --steps 16777216 --seed 805 --envs 64 --rollout 128 --threads 4 --architecture targets --entropy .03 --gae-lambda .99 --gamma 0.999 --achievement-reward equal --interval 4194304 --validation-seed-start 17000001 --validation-episodes 128 --test-seed-start 19000001 --device cpu"
+      },
+      "25143": {
+        "start": "Sat Oct 17 17:55:12 2026",
+        "stat": "R",
+        "command": "/Users/mikavohl/Projects/terraria-lite/.venv/bin/python /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/variants/v7/tools/iterate_ppo.py --out /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/runs/v7-equal-g999-805 --steps 16777216 --seed 805 --envs 64 --rollout 128 --threads 4 --architecture targets --entropy .03 --gae-lambda .99 --gamma 0.999 --achievement-reward equal --interval 4194304 --validation-seed-start 17000001 --validation-episodes 128 --test-seed-start 19000001 --device cpu"
+      },
+      "25148": {
+        "start": "Sat Oct 17 17:55:30 2026",
+        "stat": "S",
+        "command": "/Users/mikavohl/Projects/terraria-lite/.venv/bin/python /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/variants/v7/tools/iterate_ppo.py --out /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/runs/v7-equal-g1-805 --steps 16777216 --seed 805 --envs 64 --rollout 128 --threads 4 --architecture targets --entropy .03 --gae-lambda .99 --gamma 1.0 --achievement-reward equal --interval 4194304 --validation-seed-start 17000001 --validation-episodes 128 --test-seed-start 19000001 --device cpu"
+      }
+    },
+    "last_trial_launch": {
+      "name": "v7-difficulty-g999-805",
+      "pid": 27801,
+      "identity": {
+        "start": "Sat Oct 17 18:14:23 2026",
+        "stat": "R",
+        "command": "/Users/mikavohl/Projects/terraria-lite/.venv/bin/python /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/variants/v7/tools/iterate_ppo.py --out /Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/runs/v7-difficulty-g999-805 --steps 16777216 --seed 805 --envs 64 --rollout 128 --threads 4 --architecture targets --entropy .03 --gae-lambda .99 --gamma 0.999 --achievement-reward difficulty --interval 4194304 --validation-seed-start 17000001 --validation-episodes 128 --test-seed-start 19000001 --device cpu"
+      },
+      "command": [
+        "/Users/mikavohl/Projects/terraria-lite/.venv/bin/python",
+        "/Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/variants/v7/tools/iterate_ppo.py",
+        "--out",
+        "/Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-20261017.sGYPqq/runs/v7-difficulty-g999-805",
+        "--steps",
+        "16777216",
+        "--seed",
+        "805",
+        "--envs",
+        "64",
+        "--rollout",
+        "128",
+        "--threads",
+        "4",
+        "--architecture",
+        "targets",
+        "--entropy",
+        ".03",
+        "--gae-lambda",
+        ".99",
+        "--gamma",
+        "0.999",
+        "--achievement-reward",
+        "difficulty",
+        "--interval",
+        "4194304",
+        "--validation-seed-start",
+        "17000001",
+        "--validation-episodes",
+        "128",
+        "--test-seed-start",
+        "19000001",
+        "--device",
+        "cpu"
+      ],
+      "launched_utc": 1792282463.738652
+    },
+    "all_tracked_processes_absent": true,
+    "completion_utc": "2026-10-18T00:49:21.263061+00:00",
+    "timing_caveat": "Final four trials overlap under amended contention; no intrinsic throughput contrast.",
+    "wall_seconds_including_validation_amended_overlap": {
+      "v4-equal-g999-805": 2257.600043417013,
+      "v7-difficulty-g999-805": 1866.3715620840085,
+      "v7-equal-g1-805": 2258.3424677079893,
+      "v7-equal-g999-805": 2258.6933046249906
+    },
+    "wall_seconds_including_validation_original_three_way": {
+      "v4-equal-g999-801": 2092.900942416978,
+      "v4-equal-g999-802": 2065.2241426249966,
+      "v4-equal-g999-803": 2101.515353833034,
+      "v4-equal-g999-804": 2178.916057457973,
+      "v7-difficulty-g1-801": 2153.47552566597,
+      "v7-difficulty-g1-802": 2110.3203068329603,
+      "v7-difficulty-g1-803": 2109.394774125016,
+      "v7-difficulty-g1-804": 2186.7934419590165,
+      "v7-difficulty-g1-805": 2242.154578540998,
+      "v7-difficulty-g999-801": 2152.0239883749746,
+      "v7-difficulty-g999-802": 2109.446678083972,
+      "v7-difficulty-g999-803": 2081.0351211249945,
+      "v7-difficulty-g999-804": 2187.7205327500124,
+      "v7-equal-g1-801": 2097.1741933750454,
+      "v7-equal-g1-802": 2099.8359098749934,
+      "v7-equal-g1-803": 2071.6946109170094,
+      "v7-equal-g1-804": 2234.1637261669966,
+      "v7-equal-g999-801": 2098.7661470000166,
+      "v7-equal-g999-802": 2147.8020962079754,
+      "v7-equal-g999-803": 2106.2920124999946,
+      "v7-equal-g999-804": 2229.7602642079582
+    }
+  }
+}
