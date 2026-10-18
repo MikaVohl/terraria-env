@@ -1,0 +1,220 @@
+{
+  "campaign": "runs/planner-executor-01",
+  "fixture": "runs/fixtures/heldout-v06-32000101",
+  "order_seed": 202610184,
+  "description": "Replan-interval sweep for the operator hypothesis that a planner is only needed for high-level direction every 10s-1min given a good action agent. Fresh world, 300 game-seconds (nearby trees deplete, so choosing where to go matters). hl-lj-state (Haiku high-level planner + Jev executor over agent state) with max replan interval 10/30/60 s (completion and death also trigger replans); references: jev (no LLM planner) and scripted (no model). 4 held-out worlds, one attempt each. Same $2.00 ledger.",
+  "jobs": [
+    {
+      "id": "I-32000101-fresh300-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000101-fresh300-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000104-fresh300-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000103-fresh300-hl-lj-r30",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 30
+    },
+    {
+      "id": "I-32000104-fresh300-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000102-fresh300-hl-lj-r10",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 10
+    },
+    {
+      "id": "I-32000101-fresh300-hl-lj-r10",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 10
+    },
+    {
+      "id": "I-32000103-fresh300-hl-lj-r60",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 60
+    },
+    {
+      "id": "I-32000102-fresh300-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000101-fresh300-hl-lj-r60",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 60
+    },
+    {
+      "id": "I-32000102-fresh300-hl-lj-r60",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 60
+    },
+    {
+      "id": "I-32000104-fresh300-hl-lj-r60",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 60
+    },
+    {
+      "id": "I-32000103-fresh300-hl-lj-r10",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 10
+    },
+    {
+      "id": "I-32000102-fresh300-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000101-fresh300-hl-lj-r30",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 30
+    },
+    {
+      "id": "I-32000104-fresh300-hl-lj-r30",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 30
+    },
+    {
+      "id": "I-32000102-fresh300-hl-lj-r30",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 30
+    },
+    {
+      "id": "I-32000104-fresh300-hl-lj-r10",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "hl-lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15,
+      "replan_seconds": 10
+    },
+    {
+      "id": "I-32000103-fresh300-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    },
+    {
+      "id": "I-32000103-fresh300-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 300,
+      "seconds": 480,
+      "usd": 0.15
+    }
+  ]
+}

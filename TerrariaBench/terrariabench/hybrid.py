@@ -65,19 +65,22 @@ SUBGOALS = {
 }
 PIXEL_HOLD_MS = 800
 # High-level planning: objectives stay valid for tens of seconds; tactics belong to the executor.
-HL_REPLAN_SECONDS = 30
+HL_REPLAN_SECONDS = 30  # default; --replan-seconds sweeps it
 HL_OBJECTIVES = {**{k: v for k, v in SUBGOALS.items() if k != "evade_hostile"},
                  "craft": "Craft at the inventory menu; the planner performs the menu clicks itself."}
 HL_EXECUTOR_NOTE = (" The goal is a high-level objective. You own all tactics: deal with nearby hostiles (fight or evade) "
                     "whenever needed, then return to the objective.")
-HL_PLANNER_PROMPT = (CONTROLS + " You are the HIGH-LEVEL PLANNER. A fast executor sees the newest game state every fraction of a "
-                     "second and owns all moment-to-moment tactics: movement, aiming, and fighting or fleeing nearby hostiles. "
-                     "Never give coordinates, distances or step-by-step moves. Choose what to work on for the next 10-60 seconds. "
-                     'Reply with one JSON object: objective (one of ' + ", ".join(HL_OBJECTIVES) + '), until (completion condition: '
-                     '"wood>=N", "target_killed", or "seconds=N" with N<=60), then (the objective after completion, same choices), '
-                     "notes (your memory, max 1000 chars), and ui_actions only when objective is craft (1..16 raw actions "
-                     '{"keys":[...],"mouse":"left|right","x":0-1023,"y":0-1023,"ms":20-2000}; the executor is suspended while they run). '
-                     f"You will be asked again when the condition is met, the player dies, or after {HL_REPLAN_SECONDS} seconds.")
+
+
+def hl_planner_prompt(replan_seconds):
+    return (CONTROLS + " You are the HIGH-LEVEL PLANNER. A fast executor sees the newest game state every fraction of a "
+            "second and owns all moment-to-moment tactics: movement, aiming, and fighting or fleeing nearby hostiles. "
+            "Never give coordinates, distances or step-by-step moves. Choose what to work on for the next 10-60 seconds. "
+            'Reply with one JSON object: objective (one of ' + ", ".join(HL_OBJECTIVES) + '), until (completion condition: '
+            '"wood>=N", "target_killed", or "seconds=N" with N<=60), then (the objective after completion, same choices), '
+            "notes (your memory, max 1000 chars), and ui_actions only when objective is craft (1..16 raw actions "
+            '{"keys":[...],"mouse":"left|right","x":0-1023,"y":0-1023,"ms":20-2000}; the executor is suspended while they run). '
+            f"You will be asked again when the condition is met, the player dies, or after {replan_seconds} seconds.")
 
 
 def read_state(path):
@@ -218,7 +221,7 @@ def json_content(response):
 
 def run(args):
     cond = CONDITIONS[args.condition]
-    if args.scenario not in TASKS or not 10 <= args.sim_seconds <= 600 or not 0 < args.usd <= 1:
+    if args.scenario not in TASKS or not 10 <= args.sim_seconds <= 600 or not 0 < args.usd <= 1 or not 5 <= args.replan_seconds <= 300:
         raise ValueError("invalid hybrid bounds")
     root, fixture = args.output.resolve(), args.fixture.resolve()
     if root.exists() or root.is_relative_to(fixture):
@@ -240,7 +243,8 @@ def run(args):
     config = {"condition": args.condition, **cond, "scenario": args.scenario, "pve": True, "clock": "realtime",
               "planner_model": {"llm": PLANNER_MODEL, "llm-hl": PLANNER_MODEL, "jev": JEV_MODEL}.get(cond["planner"]),
               "executor_model": {"jev": JEV_MODEL, "rule": None}.get(cond["executor"], EXECUTOR_MODEL),
-              "planner_reasoning": "low", "executor_reasoning": "none", "pixel_hold_ms": PIXEL_HOLD_MS}
+              "planner_reasoning": "low", "executor_reasoning": "none", "pixel_hold_ms": PIXEL_HOLD_MS,
+              "replan_seconds": args.replan_seconds if cond["planner"] == "llm-hl" else None}
     manifest = {"protocol": "planner-executor-v1", "config": config, "task": TASKS[args.scenario], "controls": CONTROLS,
                 "subgoals": SUBGOALS, "limits": {"simulation_seconds": args.sim_seconds, "wall_seconds": args.seconds, "usd": args.usd},
                 "privileged_state": cond["planner_state"] or cond["executor"] != "llm-pixel",
@@ -278,7 +282,7 @@ def run(args):
 
     def plan_finished(until, since):
         """High-level plans end on their completion condition, a death, or the replanning interval."""
-        if time.time() - since >= HL_REPLAN_SECONDS:
+        if time.time() - since >= args.replan_seconds:
             return "interval"
         state = read_state(state_file)
         if state["player"]["dead"]:
@@ -308,7 +312,7 @@ def run(args):
                     text["agent_state"] = compact_state(state)
                 content = [{"type": "text", "text": json.dumps(text)}, image_part(frame)]
                 if high_level:
-                    system = HL_PLANNER_PROMPT
+                    system = hl_planner_prompt(args.replan_seconds)
                 else:
                     system = (CONTROLS + " You are the PLANNER. A separate fast executor plays in real time and "
                               "follows your goal. Reply with one JSON object: goal (what the executor should do now, max 300 chars), "
@@ -522,6 +526,8 @@ def main():
     p.add_argument("--sim-seconds", type=int, default=120)
     p.add_argument("--seconds", type=int, default=240)
     p.add_argument("--usd", type=float, default=.12)
+    p.add_argument("--replan-seconds", type=int, default=HL_REPLAN_SECONDS,
+                   help="high-level planner: maximum seconds between plans (completion and death also trigger)")
     run(p.parse_args())
 
 
