@@ -1,0 +1,19 @@
+{
+  "campaign": "runs/diagnostic-campaign-02",
+  "fixture": "runs/fixtures/diagnostic-v05",
+  "description": "Re-run of the interrupted C03 budget probe (normalized coordinates, paused inference, 64 calls) on the development world. Differences from C03: combat render barrier (first frame waits for a live target heartbeat + 0.25 s) and bounded provider retries. Local cap raised 0.60 -> 0.75 so the per-call reservation does not end the episode before 64 calls. Adaptive feasibility probe, not a rate.",
+  "jobs": [
+    {
+      "id": "C04-gemini-normalized-paused-64-slime",
+      "model": "google/gemini-3.8-flash",
+      "variant": "normalized",
+      "clock": "paused",
+      "scenario": "slime",
+      "calls": 64,
+      "seconds": 600,
+      "sim_seconds": 120,
+      "usd": 0.75,
+      "reasoning": "medium"
+    }
+  ]
+}

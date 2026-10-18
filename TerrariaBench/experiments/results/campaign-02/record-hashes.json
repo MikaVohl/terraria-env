@@ -1,0 +1,47 @@
+{
+  "C04-gemini-normalized-paused-64-slime": {
+    "manifest.json": "7ab6d8280f8704a2b9956bbb71662f18bf7666466f99b33200f083eaf8607c0e",
+    "result.json": "76d18604b1b6b6f806a24008391f552cd1eef6831c4dc3629c93f477c698cf86",
+    "audit.json": "35d02123e67c3f12493cc88cfa88845a0747d35f857f0ddea572b1d89a4cad20"
+  },
+  "H-32000101-gemini-tools": {
+    "manifest.json": "c7c59b75f8142135d3b6f1812d10e07737de09b51e241f3ed61b16c0eb37c02f",
+    "result.json": "1ad100173f417c88a95ec4331374e2ec11ef80b58d1f1f23699e9c00b7bbbf88",
+    "audit.json": "74523bb056f58cab9e6e8e959e99db87af05d9933323d529ae08cdc7e7e9dfbf"
+  },
+  "H-32000101-haiku-tools": {
+    "manifest.json": "913e1c816303259808f3a7b8fa03b5a113db15a352c7929066a22471a52f3690",
+    "result.json": "188e633d6d8a2b68d59f5cc854acb2bf7e73a0ca128c3ee336f56992e3fc9b3b",
+    "audit.json": "bc3a1876bc9abb4036231103bca4f9671cf46364228a8f4f42d818e8f940fa38"
+  },
+  "H-32000102-gemini-tools": {
+    "manifest.json": "898a164c2071a452c106206eebc780243ae6b1e7bcfc8142abfe1d9bf4251095",
+    "result.json": "95150fefb608cdf3201c66de66bb3127acacef96414e903546f22b426eb545cb",
+    "audit.json": "ffffa2c5ce806d6e07044e487a4875638bb5b0d1f364d02fba6f9b318a04a138"
+  },
+  "H-32000102-haiku-tools": {
+    "manifest.json": "91839091578c2ae9e62bcddab7e146904e92ac92f1eaee412bbf15d7ce0de0dc",
+    "result.json": "336c4262d5bce2cd4d1b58508b759ab5a38021ee570b1dd68e7b9e6f4e892d99",
+    "audit.json": "7a72bede67846ec0558d3cf72b682b303d9ba0929efd28e5ec0c5ea917e79cc5"
+  },
+  "H-32000103-gemini-tools": {
+    "manifest.json": "5c3dc8c7ec1c2c50a34c78747dde8260a48ac0e96b758462c0745ad25811b079",
+    "result.json": "eff3e1200c79cd0ffcdeb6589f853cdf1f0b51fa93ac4e1d35843346b389d875",
+    "audit.json": "9ade998e85265100f7923ebaa2c005f56f9689351574bc930b9e3e1910b03e15"
+  },
+  "H-32000103-haiku-tools": {
+    "manifest.json": "8db72a36449ebed81c97fe34278432bb7346e55bb0cc2aedf4ecf462130c0291",
+    "result.json": "8085604d5ec37a21f325148e68755ce73951958d9633cb7e182691c4acf09e49",
+    "audit.json": "e69b3d5874a0d469dac200b1c8ec2348026605fae62e18f28c40ddf48c25e804"
+  },
+  "H-32000104-gemini-tools": {
+    "manifest.json": "e2156651d0d0ea676c9badf46760d2cea9e637fa8f29914436beaf2654ab2952",
+    "result.json": "03402f7da604fccf4b676fb80352789f3f7d7fb1855c88926201888ff707dc68",
+    "audit.json": "084300227b72d72bcd2f80a48d1218c579401d09fc404665adf1e3e97174bada"
+  },
+  "H-32000104-haiku-tools": {
+    "manifest.json": "ea7697a6a2dbf9d10d03570cbf412561f6786c0537ae032e9dbe676336c67a19",
+    "result.json": "df2d53a54bfecc76f5b3207ccf72df2c3ab2f4e693c97e89a71b28433cf05b2c",
+    "audit.json": "13bd81a9f0ecc8ad97a0480755a2a8b815587ac398a697ed822f658b85c5c648"
+  }
+}

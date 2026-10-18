@@ -1,0 +1,8 @@
+{
+  "limit_usd": "1.50",
+  "spent_usd": "0.713794400",
+  "pending": {
+    "C04-gemini-normalized-paused-64-slime#060.0": "0.070963200"
+  },
+  "prior_session_reported_usd": "0"
+}

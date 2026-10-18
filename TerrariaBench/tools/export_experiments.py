@@ -12,6 +12,8 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('campaign', type=Path)
     p.add_argument('output', type=Path)
+    p.add_argument('--prior-session-usd', default='0.086400375',
+                   help='reported charges outside this campaign ledger, for the budget snapshot')
     args = p.parse_args()
     analyze(args.campaign)
     rows = json.loads((args.campaign / 'summary.json').read_text())
@@ -34,7 +36,7 @@ def main():
         shutil.copyfile(plan, args.output / plan.name)
     ledger = json.loads((args.campaign / 'ledger.json').read_text())
     budget = {k: ledger[k] for k in ('limit_usd', 'spent_usd', 'pending')}
-    budget['prior_session_reported_usd'] = '0.086400375'
+    budget['prior_session_reported_usd'] = args.prior_session_usd
     (args.output / 'budget-snapshot.json').write_text(json.dumps(budget, indent=2)+'\n')
     (args.output / 'record-hashes.json').write_text(json.dumps(provenance, indent=2)+'\n')
     probe = args.campaign / 'perception' / 'rescored.json'

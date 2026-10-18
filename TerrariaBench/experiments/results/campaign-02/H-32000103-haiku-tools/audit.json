@@ -1,0 +1,22 @@
+{
+  "artifact_checks_passed": true,
+  "all_calls_accounted": true,
+  "provider_retries": 0,
+  "uncertain_reserved_usd": "0",
+  "observer_version": "0.5",
+  "responses": 15,
+  "commands": 34,
+  "images_verified": 15,
+  "source_files_verified": 23,
+  "exact_telemetry_export_match": true,
+  "inert_post_snapshot_heartbeats": 0,
+  "latest_observation_wall_age_seconds": {
+    "median": 5.87,
+    "max": 11.93,
+    "samples": 34
+  },
+  "raw_telemetry_hashes": {
+    "telemetry/13a92acc42da49a3ab1871dd0a2e38f9.jsonl": "1541101fa48d92d62278275bd67b1912f8f230856d181092c1b3afa4fffff451"
+  },
+  "official_eligible": false
+}

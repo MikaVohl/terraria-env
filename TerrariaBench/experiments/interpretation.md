@@ -140,3 +140,11 @@ every other NPC.
   another adaptive feasibility probe, not a success-rate estimate. Private
   instrumentation changes version; keyboard/mouse and agent observations do
   not gain new capabilities. No further extension is part of this campaign.
+- Campaign 02 (separate $1.50 ledger, user-authorized 2026-10-18), declared before
+  any paid call: (a) `heldout-01`, one attempt of the repeat-cohort baseline per
+  model on each of four worlds generated from seeds 32000101..32000104, order
+  shuffled with seed 20261018; (b) `combat-budget-02` C04, re-running C03 with
+  the local cap raised to $0.75 so per-call reservations cannot end it before 64
+  calls. Both use the bounded retry policy and the combat render barrier. Execution
+  moved mid-plan from an SSH-attached driver to a detached runner on Omarchy; the
+  in-flight attempt completed unaffected and was recorded once. Stop here.
