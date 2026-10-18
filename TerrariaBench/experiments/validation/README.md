@@ -35,3 +35,19 @@ bash LaunchUtils/ScriptCaller.sh \
 .venv/bin/python tools/calibrate_combat.py \
   --fixture runs/fixtures/diagnostic-v05 --output runs/NEW-OPERATOR-CONTROL
 ```
+
+## Combat render barrier (unpaid, 2026-10-18)
+
+Campaign 01 combat attempts could start from a screenshot captured before the
+armed slime existed (`interpretation.md`, N02). `experiments.run` now waits,
+after arming, for the first heartbeat whose designated target has a slot, is
+active and has positive life (`target_ready`), then waits 0.25 s (≥15 rendered
+frames at 60 FPS) before the first observation. The result records
+`scenario_ready`.
+
+Unpaid check on `diagnostic-v05`, no API calls: a frame captured immediately
+after arming (`render-barrier-01/unbarriered.png`) shows no slime. After the
+barrier (ready 1.40 s after arming, at heartbeat 240, slime at 25 HP in NPC slot 1),
+`render-barrier-01/barriered.png` shows the slime on the grass about 160 px
+right of the player, matching the mod's spawn offset. The wait lets up to about
+1.4 s of game time pass in both clock modes before the agent's first frame.
