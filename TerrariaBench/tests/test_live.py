@@ -1,11 +1,14 @@
+import io
 import os
 from pathlib import Path
+import ssl
 import tempfile
 import unittest
 from unittest.mock import patch
+import urllib.error
 
 from terrariabench.linux_control import validate_actions
-from terrariabench.openrouter import Budget, hermes_key
+from terrariabench.openrouter import Budget, ProviderError, hermes_key, request, retry_delay
 from terrariabench.live import pixel_actions
 
 
@@ -61,6 +64,42 @@ class LiveContractTests(unittest.TestCase):
         for value in ("NaN", "Infinity", "-1", None):
             with self.assertRaises(ValueError):
                 Budget(1, {"prompt": value, "completion": "0"})
+
+    def test_provider_failures_classify_retryability(self):
+        class TruncatedBody(io.BytesIO):
+            def read(self, *args):
+                raise ssl.SSLError("bad record mac")
+        cases = [
+            (TruncatedBody(), True),  # case 27 escaped as a raw SSLError
+            (urllib.error.HTTPError("u", 429, "rate", {"Retry-After": "7"}, None), True),
+            (urllib.error.HTTPError("u", 400, "bad", {}, None), False),
+            (io.BytesIO(b'{"error": {"code": 502}}'), True),
+            (io.BytesIO(b'{"error": {"code": 402}}'), False),
+            (io.BytesIO(b"not json"), True),
+        ]
+        for outcome, retryable in cases:
+            def urlopen(*args, **kwargs):
+                if isinstance(outcome, Exception):
+                    raise outcome
+                return outcome
+            with self.subTest(outcome=outcome), patch("urllib.request.urlopen", urlopen):
+                with self.assertRaises(ProviderError) as caught:
+                    request("/chat/completions", payload={})
+                self.assertEqual(caught.exception.retryable, retryable)
+        error = ProviderError("x", retryable=True, retry_after=7.0)
+        self.assertEqual(retry_delay(error, 0), 7.0)
+        self.assertEqual(retry_delay(ProviderError("x", retryable=True, retry_after=900), 0), 30.0)
+        self.assertEqual(retry_delay(ProviderError("x", retryable=True), 2), 8.0)
+
+    def test_abandoned_attempts_stay_counted_against_the_cap(self):
+        budget = Budget(".0025", {"prompt": "0", "completion": "0", "request": ".001"})
+        budget.reserve()
+        budget.abandon()
+        budget.reserve()
+        budget.abandon()
+        self.assertEqual(budget.summary()["uncertain_reserved_usd"], "0.002")
+        with self.assertRaises(RuntimeError):
+            budget.reserve()
 
     def test_loads_only_literal_hermes_key_without_shell_execution(self):
         with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {}, clear=True):

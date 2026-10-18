@@ -100,8 +100,11 @@ def audit(root):
     recomputed['input_hold_seconds']=result['metrics']['input_hold_seconds']
     assert recomputed==result['metrics']
     if not config['pve']:assert all(e['hostile_npcs_active']==0 for e in events if e['event']=='heartbeat')
-    complete=len(responses)==result['calls'] and not Decimal(result['accounting']['uncertain_reserved_usd'])
-    out={'artifact_checks_passed':True,'all_calls_accounted':complete,'observer_version':source_version,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),
+    # Every agent decision received a response. Failed-then-retried provider attempts keep
+    # uncertain reservations (reported separately) without making the trajectory partial.
+    complete=len(responses)==result['calls']
+    out={'artifact_checks_passed':True,'all_calls_accounted':complete,'provider_retries':result.get('provider_retries',0),
+         'uncertain_reserved_usd':result['accounting']['uncertain_reserved_usd'],'observer_version':source_version,'responses':len(responses),'commands':len(receipts),'images_verified':len(images),'source_files_verified':len(manifest['source_hashes']),
          'exact_telemetry_export_match':not inert_tail,'inert_post_snapshot_heartbeats':inert_tail,
          'latest_observation_wall_age_seconds':{'median':round(median(ages),2) if ages else None,'max':round(max(ages),2) if ages else None,'samples':len(ages)},
          'raw_telemetry_hashes':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'telemetry').glob('*.jsonl')},'official_eligible':False}

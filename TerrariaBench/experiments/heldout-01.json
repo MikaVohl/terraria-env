@@ -1,0 +1,104 @@
+{
+  "campaign": "runs/diagnostic-campaign-02",
+  "fixture": "runs/fixtures/diagnostic-v05",
+  "order_seed": 20261018,
+  "description": "Held-out world check of the repeat-cohort baseline (native tools, real-time, pixel coordinates, normal PvE, 16 calls). Four small Classic worlds generated after campaign 01 from declared seeds 32000101..32000104 via tools/make_world_fixtures.py; evil/spawn follow the seed and are recorded in fixture.json. One attempt per world per model: a generalization smoke, not a success-rate estimate. Bounded provider retry policy (openrouter.RETRY_POLICY) is active; failed attempts keep uncertain reservations.",
+  "jobs": [
+    {
+      "id": "H-32000101-gemini-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000101",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000104-haiku-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000104",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000103-haiku-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000103",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000103-gemini-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000103",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000104-gemini-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000104",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000101-haiku-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000101",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000102-haiku-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000102",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    },
+    {
+      "id": "H-32000102-gemini-tools",
+      "fixture": "runs/fixtures/heldout-v05-32000102",
+      "model": "google/gemini-3.8-flash",
+      "variant": "tools",
+      "scenario": "fresh",
+      "calls": 16,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.35,
+      "reasoning": "medium"
+    }
+  ]
+}

@@ -1,5 +1,10 @@
-"""Narrow OpenRouter vision adapter with explicit accounting and no retries."""
+"""Narrow OpenRouter vision adapter with explicit accounting.
+
+`request` never retries. Callers that retry must use `RETRY_POLICY` and keep every
+failed attempt's reservation as an uncertain charge.
+"""
 from decimal import Decimal, InvalidOperation
+import http.client
 import json
 import os
 from pathlib import Path
@@ -8,6 +13,24 @@ import urllib.error
 import urllib.request
 
 BASE = "https://openrouter.ai/api/v1"
+RETRYABLE_HTTP = frozenset({408, 429, 500, 502, 503, 504})
+# Bounded, declared provider recovery. Delays honor Retry-After, capped.
+RETRY_POLICY = {"max_retries_per_call": 3, "max_retries_per_run": 6,
+                "base_delay_seconds": 2.0, "max_delay_seconds": 30.0}
+
+
+class ProviderError(RuntimeError):
+    """Provider/transport failure. The attempt's charge is unknown."""
+    def __init__(self, message, *, retryable, retry_after=None):
+        super().__init__(message)
+        self.retryable = retryable
+        self.retry_after = retry_after
+
+
+def retry_delay(error, retry_index, policy=RETRY_POLICY):
+    if error.retry_after is not None:
+        return min(policy["max_delay_seconds"], max(0.0, error.retry_after))
+    return min(policy["max_delay_seconds"], policy["base_delay_seconds"] * 2 ** retry_index)
 
 
 def hermes_key(path=None):
@@ -38,11 +61,22 @@ def request(path, *, key=None, payload=None, timeout=60):
             result = json.load(response)
     except urllib.error.HTTPError as error:
         # Never persist error bodies/headers that could echo credentials.
-        raise RuntimeError(f"OpenRouter HTTP {error.code}; no automatic retry") from None
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
-        raise RuntimeError("OpenRouter transport/JSON failure; charge uncertain; no retry") from None
-    if not isinstance(result, dict) or "error" in result:
-        raise RuntimeError("OpenRouter returned an error; charge uncertain; no retry")
+        try:
+            retry_after = float(error.headers.get("Retry-After")) if error.headers else None
+        except (TypeError, ValueError):
+            retry_after = None
+        raise ProviderError(f"OpenRouter HTTP {error.code}; charge uncertain",
+                            retryable=error.code in RETRYABLE_HTTP, retry_after=retry_after) from None
+    except (OSError, http.client.HTTPException, json.JSONDecodeError) as error:
+        # URLError, timeouts, SSL record errors and truncated bodies are all OSError/HTTPException.
+        raise ProviderError(f"OpenRouter transport/JSON failure ({type(error).__name__}); charge uncertain",
+                            retryable=True) from None
+    if not isinstance(result, dict):
+        raise ProviderError("OpenRouter returned a non-object body; charge uncertain", retryable=True)
+    if "error" in result:
+        code = result["error"].get("code") if isinstance(result["error"], dict) else None
+        raise ProviderError(f"OpenRouter returned error {code}; charge uncertain",
+                            retryable=code is None or code in RETRYABLE_HTTP)
     return result
 
 
@@ -65,6 +99,7 @@ class Budget:
         self.input_ceiling, self.output_ceiling = input_ceiling, output_ceiling
         self.spent = Decimal(0)
         self.pending = Decimal(0)
+        self.uncertain = Decimal(0)
         self.tokens = 0
 
     @staticmethod
@@ -82,9 +117,14 @@ class Budget:
         return self.input_rate * self.input_ceiling + self.output_rate * self.output_ceiling + self.request_rate
 
     def reserve(self):
-        if self.pending or self.spent + self.reservation > self.limit:
+        if self.pending or self.spent + self.uncertain + self.reservation > self.limit:
             raise RuntimeError("dollar reservation limit reached")
         self.pending = self.reservation
+
+    def abandon(self):
+        """A failed attempt may still be billed: keep its reservation counted."""
+        self.uncertain += self.pending
+        self.pending = Decimal(0)
 
     def reconcile(self, usage):
         if not isinstance(usage, dict) or usage.get("cost") is None:
@@ -99,10 +139,10 @@ class Budget:
         self.tokens += prompt + completion
         if prompt > self.input_ceiling or completion > self.output_ceiling or cost > reserved:
             raise RuntimeError("accounting assumption exceeded; stop before another call")
-        if self.spent > self.limit:
+        if self.spent + self.uncertain > self.limit:
             raise RuntimeError("reported cost exceeds run ceiling")
 
     def summary(self):
         return {"usd_limit": str(self.limit), "reported_usd": str(self.spent),
-                "uncertain_reserved_usd": str(self.pending), "tokens": self.tokens,
+                "uncertain_reserved_usd": str(self.pending + self.uncertain), "tokens": self.tokens,
                 "reservation_per_call_usd": str(self.reservation)}

@@ -14,7 +14,7 @@ import signal
 import time
 
 from .linux_control import GameControl, launch, validate_actions, stop_owned_game
-from .openrouter import Budget, hermes_key, request
+from .openrouter import RETRY_POLICY, Budget, ProviderError, hermes_key, request, retry_delay
 from .reference_live import ACTION_SCHEMA
 from .reference_scoring import checkpoint_view, reference_score
 
@@ -84,6 +84,18 @@ class ProcessClock:
         with self.journal.open('a') as s:s.write(json.dumps({'paused':paused,'unix':stamp})+'\n')
     def total(self):
         return self.paused_seconds+(time.time()-self.paused_since if self.paused else 0)
+
+
+def target_ready(events):
+    """First heartbeat proving the armed target exists and is alive, else None."""
+    for e in events:
+        t=e.get('target') or {}
+        if e.get('event')=='heartbeat' and t.get('slot',-1)>=0 and t.get('active') and t.get('life',0)>0:
+            return e
+    return None
+
+
+RENDER_SETTLE_SECONDS=.25  # >=15 rendered frames at 60 FPS after the ready heartbeat
 
 
 def tool(name,description,properties=None,required=None):
@@ -199,11 +211,11 @@ def run(args):
               'limits':{'calls':args.calls,'wall_seconds':args.seconds,'simulation_seconds':args.sim_seconds,'usd':args.usd},
               'source_hashes':{str(p.relative_to(root/'source')):digest(p) for p in (root/'source').rglob('*') if p.is_file()},
               'fixture_hashes':{str(p.relative_to(fixture)):digest(p) for p in fixture.rglob('*') if p.is_file()},
-              'official_eligible':False,'started_unix':time.time()}
+              'retry_policy':RETRY_POLICY,'official_eligible':False,'started_unix':time.time()}
     dump(root/'manifest.json',manifest)
     history=[{'role':'system','content':SYSTEM},{'role':'user','content':task}]
-    images={};frame_count=calls=invalid=0;notes='';recent=[];latencies=[];start_tick=0
-    pid=game=clock=None;stop='startup';started=time.monotonic();agent_started=None
+    images={};frame_count=calls=invalid=retries=0;notes='';recent=[];latencies=[];start_tick=0
+    pid=game=clock=None;stop='startup';started=time.monotonic();agent_started=None;scenario_ready=None
     def events():
         paths=list((root/'telemetry').glob('*.jsonl'))
         return [json.loads(s) for s in paths[0].read_text().splitlines()] if len(paths)==1 else []
@@ -254,7 +266,15 @@ def run(args):
             if time.monotonic()>deadline:raise RuntimeError('heartbeat_timeout')
             time.sleep(.1)
         clock=ProcessClock(pid,config['clock']=='paused',root/'clock.jsonl')
-        (root/'scenario-armed').write_text(str(time.time()))
+        armed=time.monotonic();(root/'scenario-armed').write_text(str(time.time()))
+        if config['scenario']=='slime':
+            # Barrier: never show the agent a first frame captured before the target exists.
+            while (ready:=target_ready(events())) is None:
+                if time.monotonic()-armed>5:raise RuntimeError('scenario_ready_timeout')
+                time.sleep(.05)
+            time.sleep(RENDER_SETTLE_SECONDS)
+            scenario_ready={'ready_heartbeat_game_updates':ready['game_updates'],'target':ready['target'],
+                            'arm_to_ready_wall_seconds':time.monotonic()-armed,'render_settle_seconds':RENDER_SETTLE_SECONDS}
         history.append(observe());agent_started=time.monotonic()
         start_tick=max(e['game_updates'] for e in events());stop='call_limit'
         for step in range(args.calls):
@@ -269,19 +289,33 @@ def run(args):
             if config['scaffold']=='tools':payload.update(tools=tools,tool_choice='auto')
             else:payload['response_format']={'type':'json_object'}
             dump(root/f'request-{step:03d}.json',archive(payload))
-            budget.reserve()
-            try:ledger.change(root.name,reserve=budget.reservation)
-            except Exception:
-                budget.pending=Decimal(0);raise
-            calls+=1;t0=time.monotonic()
-            response=request('/chat/completions',key=key,payload=payload,timeout=min(90,max(1,args.seconds-elapsed)))
+            calls+=1;attempt=0
+            while True:
+                budget.reserve();charge_key=f'{root.name}#{step:03d}.{attempt}'
+                try:ledger.change(charge_key,reserve=budget.reservation)
+                except Exception:
+                    budget.pending=Decimal(0);raise
+                t0=time.monotonic()
+                try:
+                    response=request('/chat/completions',key=key,payload=payload,timeout=min(90,max(1,args.seconds-(time.monotonic()-agent_started))))
+                    break
+                except ProviderError as error:
+                    budget.abandon();dump(root/'accounting.json',budget.summary())
+                    wait=retry_delay(error,attempt)
+                    retry=(error.retryable and attempt<RETRY_POLICY['max_retries_per_call'] and retries<RETRY_POLICY['max_retries_per_run']
+                           and time.monotonic()-agent_started+wait<args.seconds)
+                    with (root/'provider-failures.jsonl').open('a') as s:
+                        s.write(json.dumps({'step':step,'attempt':attempt,'error':str(error),'retryable':error.retryable,'will_retry':retry,
+                                            'wait_seconds':wait,'attempt_seconds':time.monotonic()-t0,'uncertain_usd':str(budget.reservation),'unix':time.time()})+'\n')
+                    if not retry:raise
+                    retries+=1;attempt+=1;time.sleep(wait)
             latency=time.monotonic()-t0;latencies.append(latency)
             dump(root/f'response-{step:03d}.json',response)
             usage=response.get('usage')
             # Reconcile both journals even when usage exceeds a local assumption.
             try:budget.reconcile(usage)
             finally:
-                if usage and usage.get('cost') is not None:ledger.change(root.name,charge=Budget.decimal(usage['cost']))
+                if usage and usage.get('cost') is not None:ledger.change(charge_key,charge=Budget.decimal(usage['cost']))
                 dump(root/'accounting.json',budget.summary())
             if response.get('model')!=args.model:raise RuntimeError('returned_model_mismatch')
             message=response['choices'][0]['message'];history.append(copy.deepcopy(message))
@@ -337,7 +371,8 @@ def run(args):
             dump(root/'termination.json',stop_owned_game(pid,root/'tml'))
         ev=events();receipts=[json.loads(s) for s in (root/'inputs.jsonl').read_text().splitlines()] if (root/'inputs.jsonl').exists() else []
         dump(root/'evaluation-events.json',ev);dump(root/'accounting.json',budget.summary())
-        result={'run':root.name,'config':config,'model':args.model,'stop_reason':stop,'calls':calls,'commands':len(receipts),
+        result={'run':root.name,'config':config,'model':args.model,'stop_reason':stop,'calls':calls,'provider_retries':retries,
+                'scenario_ready':scenario_ready,'commands':len(receipts),
                 'frames':frame_count,'invalid_outputs':invalid,'agent_wall_seconds':agent_seconds,'paused_seconds':frozen_seconds,
                 'inference_seconds':sum(latencies),'latencies':latencies,'accounting':budget.summary(),'metrics':metrics(ev,receipts,start_tick),
                 'official_eligible':False,'exact_simulation_stepper':False,'observation_and_cleanup_windows_advance_game':True}

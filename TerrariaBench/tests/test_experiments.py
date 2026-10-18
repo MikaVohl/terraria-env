@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from terrariabench.experiments import DEFAULT, Ledger, VARIANTS, metrics, tools_for, pixel_actions
+from terrariabench.experiments import DEFAULT, Ledger, VARIANTS, metrics, target_ready, tools_for, pixel_actions
 from tools.analyze_experiments import verify_event_snapshot
 
 
@@ -59,3 +59,10 @@ class ExperimentTests(unittest.TestCase):
         self.assertEqual(baseline,{'look','act'})
         privileged={t['function']['name'] for t in tools_for(DEFAULT|VARIANTS['inventory'])}
         self.assertEqual(privileged,{'look','act','inventory'})
+
+    def test_combat_barrier_waits_for_a_live_spawned_target(self):
+        before={'event':'heartbeat','game_updates':60,'target':{'slot':-1,'active':False,'life':0}}
+        dead={'event':'heartbeat','game_updates':120,'target':{'slot':4,'active':False,'life':0,'killed':True}}
+        live={'event':'heartbeat','game_updates':180,'target':{'slot':4,'active':True,'life':25}}
+        self.assertIsNone(target_ready([{'event':'start'},before,dead]))
+        self.assertEqual(target_ready([before,live])['game_updates'],180)

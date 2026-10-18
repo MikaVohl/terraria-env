@@ -24,8 +24,8 @@ def main():
         exposure=float(ledger['spent_usd'])+sum(float(v) for v in ledger['pending'].values())
         if exposure>=float(ledger['limit_usd'])-.01:break
         cmd=[sys.executable,'-u','-m','terrariabench.experiments','--campaign',str(root),
-             '--fixture',plan['fixture'],'--output',str(output)]
-        settings={k:v for k,v in job.items() if k!='id'}
+             '--fixture',job.get('fixture',plan['fixture']),'--output',str(output)]
+        settings={k:v for k,v in job.items() if k not in ('id','fixture')}
         for key,value in settings.items():
             cmd.append('--'+key.replace('_','-'))
             if not isinstance(value,bool):cmd.append(str(value))
