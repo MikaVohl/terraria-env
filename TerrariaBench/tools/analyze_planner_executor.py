@@ -72,7 +72,9 @@ def main():
     a = p.parse_args()
     rows = []
     for result in sorted(a.campaign.glob("P-*/result.json")):
-        rows.append(row(result.parent, "hybrid" if (result.parent / "decisions.jsonl").exists() or "roles" in json.loads(result.read_text()) else "single"))
+        if "." in result.parent.name:
+            continue  # archived runs (.infra-failed-N, .excluded-*) are evidence, not samples
+        rows.append(row(result.parent, "hybrid" if "roles" in json.loads(result.read_text()) else "single"))
     for run in a.baseline:
         rows.append(row(run, "single"))
     (a.campaign / "summary.json").write_text(json.dumps(rows, indent=2) + "\n")

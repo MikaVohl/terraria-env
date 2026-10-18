@@ -117,7 +117,7 @@ def catalog(s):
             "jump_left": ("Jump while moving left.", [{"keys": ["space", "a"], "ms": 400}]),
             "jump_right": ("Jump while moving right.", [{"keys": ["space", "d"], "ms": 400}])}
     if s["player"]["inventory_open"]:
-        opts["close_inventory"] = ("Close the open inventory screen.", [{"keys": ["escape"], "ms": 60}])
+        opts["close_inventory"] = ("Close the open inventory screen.", [{"keys": ["esc"], "ms": 60}])
     axe, sword = _slot(s, "axe"), _slot(s, "melee")
     if s["trees"]:
         t = s["trees"][0]
@@ -254,6 +254,7 @@ def run(args):
     log_lock = threading.Lock()
     executed = []  # (choice/actions summary) for planner context
     frame_n = [0]
+    fatal = []  # reason that ended the planner thread, reported as the run's stop reason
     pid = game = None
     stop_reason = "startup"
     start_tick = 0
@@ -350,7 +351,8 @@ def run(args):
                 log({"role": "planner", "error": f"{type(error).__name__}: {error}", "unix": time.time()})
                 stop.wait(2.0)
             except Exception as error:  # budget exhaustion or game failure ends the run
-                log({"role": "planner", "fatal": f"{type(error).__name__}: {error}", "unix": time.time()})
+                fatal.append(f"{type(error).__name__}: {error}")
+                log({"role": "planner", "fatal": fatal[-1], "unix": time.time()})
                 stop.set()
 
     def execute(actions, source):
@@ -449,7 +451,7 @@ def run(args):
         step = errors = 0
         while True:
             if stop.is_set():
-                stop_reason = "planner_fatal"
+                stop_reason = fatal[0] if fatal else "planner_fatal"
                 break
             if game_updates() >= args.sim_seconds * 60:
                 break

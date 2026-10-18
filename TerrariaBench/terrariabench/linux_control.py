@@ -62,6 +62,35 @@ def desktop_environment():
     return env
 
 
+LAYOUT_MARGIN = 10
+
+
+def monitor_area(env):
+    """Usable logical rectangle (x, y, w, h) of the focused monitor, excluding reserved bars."""
+    monitors = json.loads(subprocess.check_output(["hyprctl", "-j", "monitors"], env=env, text=True, timeout=5))
+    m = next((m for m in monitors if m.get("focused")), monitors[0])
+    left, top, right, bottom = m.get("reserved", [0, 0, 0, 0])
+    w, h = round(m["width"] / m["scale"]), round(m["height"] / m["scale"])
+    return m["x"] + left, m["y"] + top, w - left - right, h - top - bottom
+
+
+def game_rect(env, width, height):
+    """Top-left placement for the game window; refuses displays where it would not be fully visible."""
+    x, y, w, h = monitor_area(env)
+    if width + 2 * LAYOUT_MARGIN > w or height + 2 * LAYOUT_MARGIN > h:
+        raise RuntimeError(f"display_too_small: {width}x{height} game needs a {width + 2 * LAYOUT_MARGIN}x"
+                           f"{height + 2 * LAYOUT_MARGIN} logical area, display offers {w}x{h}")
+    return x + LAYOUT_MARGIN, y + LAYOUT_MARGIN, width, height
+
+
+def panel_rect(env, game_width, game_height):
+    """The space right of the game window, for the live panel."""
+    gx, gy, _, _ = game_rect(env, game_width, game_height)
+    x, y, w, h = monitor_area(env)
+    px = gx + game_width + LAYOUT_MARGIN
+    return px, gy, x + w - LAYOUT_MARGIN - px, y + h - LAYOUT_MARGIN - gy
+
+
 def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEIGHT, extra_env=None, config_updates=None):
     profile, log, telemetry = (Path(p).resolve() for p in (profile, log, telemetry))
     for p in (profile / "Mods", log.parent, telemetry):
@@ -151,6 +180,11 @@ class GameControl:
         active = json.loads(self.hypr("-j", "activewindow"))
         if active.get("pid") != self.pid:
             raise RuntimeError("game did not receive focus")
+        # Off-display pixels can be neither captured nor clicked: never act on a partly hidden window.
+        x, y, w, h = monitor_area(self.env)
+        (wx, wy), (ww, wh) = window["at"], window["size"]
+        if wx < x or wy < y or wx + ww > x + w or wy + wh > y + h:
+            raise RuntimeError(f"game_window_off_display: window {wx},{wy} {ww}x{wh}, display area {x},{y} {w}x{h}")
         return window
 
     def setup_window(self):
@@ -159,7 +193,8 @@ class GameControl:
         if not window.get("floating"):
             self.hypr("dispatch", 'hl.dsp.window.float({window=' + json.dumps(address) + ',action="set"})')
         self.hypr("dispatch", 'hl.dsp.window.resize({window=' + json.dumps(address) + f',x={self.width},y={self.height},relative=false}})')
-        self.hypr("dispatch", 'hl.dsp.window.move({window=' + json.dumps(address) + ',x=30,y=70,relative=false})')
+        x, y, _, _ = game_rect(self.env, self.width, self.height)
+        self.hypr("dispatch", 'hl.dsp.window.move({window=' + json.dumps(address) + f',x={x},y={y},relative=false}})')
         self.focus()
         time.sleep(.3)
         return self.window()

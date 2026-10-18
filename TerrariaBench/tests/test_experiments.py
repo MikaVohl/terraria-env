@@ -83,3 +83,5 @@ class ExperimentTests(unittest.TestCase):
         self.assertEqual(near['chop_tree'][1][-1],{'x':544,'y':525,'mouse':'left','ms':700})
         self.assertEqual(near['attack'][1][0]['keys'],['1'])
         self.assertEqual(near['retreat'][1][0]['keys'],['space','a'])
+        opened=catalog(base|{'player':{'inventory_open':True},'trees':[],'hostiles':[]})
+        self.assertEqual(opened['close_inventory'][1],[{'keys':['esc'],'ms':60}])  # 'escape' is not a valid key name

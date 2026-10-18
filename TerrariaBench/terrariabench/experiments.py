@@ -216,24 +216,30 @@ def start_game(root,config,max_hold_ms,extra_env=None):
     pid=launch(root/'tml',root/'client.log',root/'telemetry',skipselect=True,width=1024,height=1024,
                config_updates={'UIScale':.9,'ResetDefaultUIScale':False,'Zoom':1.0},extra_env=env)
     dump(root/'game.json',{'pid':pid})
-    deadline=time.monotonic()+100
-    while not read_events(root):
-        if time.monotonic()>deadline or not Path(f'/proc/{pid}').exists():raise RuntimeError('startup_timeout')
-        time.sleep(.5)
-    game=GameControl(pid,root/'inputs.jsonl',width=1024,height=1024,max_hold_ms=max_hold_ms);game.setup_window()
-    while not any(e['event']=='heartbeat' for e in read_events(root)):
-        if time.monotonic()>deadline:raise RuntimeError('heartbeat_timeout')
-        time.sleep(.1)
-    scenario_ready=None
-    armed=time.monotonic();(root/'scenario-armed').write_text(str(time.time()))
-    if config['scenario']=='slime':
-        # Barrier: never show the agent a first frame captured before the target exists.
-        while (ready:=target_ready(read_events(root))) is None:
-            if time.monotonic()-armed>5:raise RuntimeError('scenario_ready_timeout')
-            time.sleep(.05)
-        time.sleep(RENDER_SETTLE_SECONDS)
-        scenario_ready={'ready_heartbeat_game_updates':ready['game_updates'],'target':ready['target'],
-                        'arm_to_ready_wall_seconds':time.monotonic()-armed,'render_settle_seconds':RENDER_SETTLE_SECONDS}
+    game=None
+    try:
+        deadline=time.monotonic()+100
+        while not read_events(root):
+            if time.monotonic()>deadline or not Path(f'/proc/{pid}').exists():raise RuntimeError('startup_timeout')
+            time.sleep(.5)
+        game=GameControl(pid,root/'inputs.jsonl',width=1024,height=1024,max_hold_ms=max_hold_ms);game.setup_window()
+        while not any(e['event']=='heartbeat' for e in read_events(root)):
+            if time.monotonic()>deadline:raise RuntimeError('heartbeat_timeout')
+            time.sleep(.1)
+        scenario_ready=None
+        armed=time.monotonic();(root/'scenario-armed').write_text(str(time.time()))
+        if config['scenario']=='slime':
+            # Barrier: never show the agent a first frame captured before the target exists.
+            while (ready:=target_ready(read_events(root))) is None:
+                if time.monotonic()-armed>5:raise RuntimeError('scenario_ready_timeout')
+                time.sleep(.05)
+            time.sleep(RENDER_SETTLE_SECONDS)
+            scenario_ready={'ready_heartbeat_game_updates':ready['game_updates'],'target':ready['target'],
+                            'arm_to_ready_wall_seconds':time.monotonic()-armed,'render_settle_seconds':RENDER_SETTLE_SECONDS}
+    except BaseException:
+        # The caller never receives the pid on failure; never leave an orphaned client behind.
+        stop_game(root,pid,game)
+        raise
     return pid,game,scenario_ready
 
 

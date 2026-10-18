@@ -6,6 +6,25 @@ import subprocess
 import sys
 import time
 
+# Infrastructure failures (startup, or a display that cannot show the whole game window) are not agent
+# outcomes. Keep the evidence and retry the job once; any partial spend stays in the ledger.
+INFRA_STOPS=('RuntimeError: startup_timeout','RuntimeError: heartbeat_timeout',
+             'RuntimeError: display_too_small','RuntimeError: game_window_off_display')
+INFRA_RETRIES=1
+
+
+def infra_failed(output):
+    path=output/'result.json'
+    return path.exists() and json.loads(path.read_text())['stop_reason'].startswith(INFRA_STOPS)
+
+
+def archive(root,job_id):
+    n=1+sum(1 for p in root.glob(job_id+'.infra-failed-*') if p.is_dir())
+    dest=f'{job_id}.infra-failed-{n}'
+    (root/job_id).rename(root/dest)
+    if (root/(job_id+'.log')).exists():(root/(job_id+'.log')).rename(root/(dest+'.log'))
+    return dest
+
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
@@ -16,6 +35,7 @@ def main():
     summary=[];unavailable=set()
     for job in plan['jobs']:
         output=root/job['id']
+        if infra_failed(output):archive(root,job['id'])  # never reached gameplay; no model call was made
         if (output/'result.json').exists():
             summary.append({'id':job['id'],'status':'already_recorded'});continue
         if job.get('model') in unavailable:
@@ -31,8 +51,13 @@ def main():
             cmd.append('--'+key.replace('_','-'))
             if not isinstance(value,bool):cmd.append(str(value))
         print(json.dumps({'starting':job['id'],'exposure_usd':exposure,'unix':time.time()}),flush=True)
-        with (root/(job['id']+'.log')).open('w') as log:
-            proc=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)
+        for attempt in range(1+INFRA_RETRIES):
+            with (root/(job['id']+'.log')).open('w') as log:
+                proc=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)
+            if attempt<INFRA_RETRIES and infra_failed(output):
+                print(json.dumps({'infra_failure':job['id'],'archived_as':archive(root,job['id']),'retrying':True}),flush=True)
+                continue
+            break
         if (output/'result.json').exists():
             result=json.loads((output/'result.json').read_text())
             score=result['metrics']['public_subset_score']
