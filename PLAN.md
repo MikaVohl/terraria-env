@@ -10,6 +10,14 @@ Next: audit all25 final runs and paired factorial effects, inspect crafting
 diagnostics, then decide whether incentives or discounting warrant adoption.
 Do not treat unfinished curves or checkpoints as independent seeds.
 
+**6:14p.m. Edmonton amendment:** the user asked to run the final queued trial
+in parallel. A [fresh coordinator](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
+adopts the three unchanged workers and starts only the untouched fourth trial.
+The old dispatcher is intentionally suspended to prevent duplicate dispatch.
+Follow the new PID/log/explicit provenance pointer; retain all source hashes,
+25-run learning settings and unused tests. Disclose four-way contention in wall
+timing, then perform the original diagnostics/report and completion audit.
+
 ## LLM harness — October 17, 2026
 
 [Research/design review](LLM_BENCHMARK_RESEARCH_2026_10.md) and

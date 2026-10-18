@@ -15,6 +15,10 @@ PPO trials (419.4M main transitions) compare a matched v4 control with v7's
 equal/difficulty-weighted reward × .999/1.0 discount factorial, five paired
 training seeds. Evaluation stays unweighted; reserved tests stay unused.
 This is an active study, not evidence of improvement or a v7/default promotion.
+At the user's later request, a [documented concurrency-only amendment](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
+starts the final queued trial alongside the three existing workers; their
+processes and all frozen learning/game settings are unchanged. Final overlap
+timings are more contended and must be labeled separately.
 
 **October 17 LLM harness:** [usage and replay](LLM_EVALUATION.md),
 [ARC/FLE/Craftax and broader benchmark research](LLM_BENCHMARK_RESEARCH_2026_10.md).
