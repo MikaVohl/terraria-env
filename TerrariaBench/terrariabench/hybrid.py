@@ -19,6 +19,7 @@ from decimal import Decimal
 import json
 from pathlib import Path
 import queue
+import re
 import statistics
 import threading
 import time
@@ -36,6 +37,10 @@ CONDITIONS = {
     "ll-state": {"planner": "llm", "planner_state": True, "executor": "llm-catalog"},
     "lj-state": {"planner": "llm", "planner_state": True, "executor": "jev"},
     "jev": {"planner": "jev", "planner_state": True, "executor": "jev"},
+    # High-level planner: objectives with completion conditions; the executor owns all tactics.
+    "hl-ll-pixel": {"planner": "llm-hl", "planner_state": False, "executor": "llm-pixel"},
+    "hl-ll-state": {"planner": "llm-hl", "planner_state": True, "executor": "llm-catalog"},
+    "hl-lj-state": {"planner": "llm-hl", "planner_state": True, "executor": "jev"},
     # Unpaid reference: a fixed priority rule over the same catalog, no model.
     "scripted": {"planner": None, "planner_state": False, "executor": "rule"},
 }
@@ -59,6 +64,20 @@ SUBGOALS = {
     "explore_right": "Travel right to find trees or resources.",
 }
 PIXEL_HOLD_MS = 800
+# High-level planning: objectives stay valid for tens of seconds; tactics belong to the executor.
+HL_REPLAN_SECONDS = 30
+HL_OBJECTIVES = {**{k: v for k, v in SUBGOALS.items() if k != "evade_hostile"},
+                 "craft": "Craft at the inventory menu; the planner performs the menu clicks itself."}
+HL_EXECUTOR_NOTE = (" The goal is a high-level objective. You own all tactics: deal with nearby hostiles (fight or evade) "
+                    "whenever needed, then return to the objective.")
+HL_PLANNER_PROMPT = (CONTROLS + " You are the HIGH-LEVEL PLANNER. A fast executor sees the newest game state every fraction of a "
+                     "second and owns all moment-to-moment tactics: movement, aiming, and fighting or fleeing nearby hostiles. "
+                     "Never give coordinates, distances or step-by-step moves. Choose what to work on for the next 10-60 seconds. "
+                     'Reply with one JSON object: objective (one of ' + ", ".join(HL_OBJECTIVES) + '), until (completion condition: '
+                     '"wood>=N", "target_killed", or "seconds=N" with N<=60), then (the objective after completion, same choices), '
+                     "notes (your memory, max 1000 chars), and ui_actions only when objective is craft (1..16 raw actions "
+                     '{"keys":[...],"mouse":"left|right","x":0-1023,"y":0-1023,"ms":20-2000}; the executor is suspended while they run). '
+                     f"You will be asked again when the condition is met, the player dies, or after {HL_REPLAN_SECONDS} seconds.")
 
 
 def read_state(path):
@@ -211,7 +230,7 @@ def run(args):
     (root / "calls").mkdir()
     source_hashes, fixture_hashes = snapshot_inputs(root, fixture)
     roles = {}
-    if cond["planner"] == "llm":
+    if cond["planner"] in ("llm", "llm-hl"):
         roles["planner"] = Role("planner", root, ledger, Budget(args.usd / 2, model_pricing(catalog_models[PLANNER_MODEL]), input_ceiling=32768, output_ceiling=2048))
     if cond["executor"] == "jev":
         roles["executor"] = Role("executor", root, ledger, Budget(args.usd / 2, JEV_PRICING, input_ceiling=32768, output_ceiling=4096))
@@ -219,7 +238,7 @@ def run(args):
         roles["executor"] = Role("executor", root, ledger, Budget(args.usd / 2, model_pricing(catalog_models[EXECUTOR_MODEL]), input_ceiling=16384, output_ceiling=512))
     state_file = root / "agent-state.json"
     config = {"condition": args.condition, **cond, "scenario": args.scenario, "pve": True, "clock": "realtime",
-              "planner_model": {"llm": PLANNER_MODEL, "jev": JEV_MODEL}.get(cond["planner"]),
+              "planner_model": {"llm": PLANNER_MODEL, "llm-hl": PLANNER_MODEL, "jev": JEV_MODEL}.get(cond["planner"]),
               "executor_model": {"jev": JEV_MODEL, "rule": None}.get(cond["executor"], EXECUTOR_MODEL),
               "planner_reasoning": "low", "executor_reasoning": "none", "pixel_hold_ms": PIXEL_HOLD_MS}
     manifest = {"protocol": "planner-executor-v1", "config": config, "task": TASKS[args.scenario], "controls": CONTROLS,
@@ -256,8 +275,25 @@ def run(args):
     def game_updates():
         return max((e["game_updates"] for e in read_events(root)), default=start_tick) - start_tick
 
+    def plan_finished(until, since):
+        """High-level plans end on their completion condition, a death, or the replanning interval."""
+        if time.time() - since >= HL_REPLAN_SECONDS:
+            return "interval"
+        state = read_state(state_file)
+        if state["player"]["dead"]:
+            return "death"
+        if m := re.fullmatch(r"wood>=(\d+)", until):
+            return "condition" if state["wood"] >= int(m.group(1)) else None
+        if until == "target_killed":
+            beats = [e for e in read_events(root) if e.get("event") == "heartbeat"]
+            return "condition" if beats and (beats[-1].get("target") or {}).get("killed") else None
+        if m := re.fullmatch(r"seconds=(\d+)", until):
+            return "condition" if time.time() - since >= int(m.group(1)) else None
+        return None
+
     def planner_loop():
         role = roles["planner"]
+        high_level = cond["planner"] == "llm-hl"
         while not stop.is_set():
             try:
                 frame, meta = capture()
@@ -270,19 +306,32 @@ def run(args):
                 if state:
                     text["agent_state"] = compact_state(state)
                 content = [{"type": "text", "text": json.dumps(text)}, image_part(frame)]
+                if high_level:
+                    system = HL_PLANNER_PROMPT
+                else:
+                    system = (CONTROLS + " You are the PLANNER. A separate fast executor plays in real time and "
+                              "follows your goal. Reply with one JSON object: goal (what the executor should do now, max 300 chars), "
+                              "notes (your memory, max 1000 chars), and optional ui_actions (1..16 raw actions "
+                              '{"keys":[...],"mouse":"left|right","x":0-1023,"y":0-1023,"ms":20-2000} for inventory/crafting menus only; '
+                              "the executor is suspended while they run).")
                 payload = {"model": PLANNER_MODEL, "max_tokens": 2048, "stream": False, "reasoning": {"effort": "low"},
                            "response_format": {"type": "json_object"},
                            "provider": {"allow_fallbacks": False, "require_parameters": True},
-                           "messages": [{"role": "system", "content": CONTROLS + " You are the PLANNER. A separate fast executor plays in real time and "
-                                         "follows your goal. Reply with one JSON object: goal (what the executor should do now, max 300 chars), "
-                                         "notes (your memory, max 1000 chars), and optional ui_actions (1..16 raw actions "
-                                         '{"keys":[...],"mouse":"left|right","x":0-1023,"y":0-1023,"ms":20-2000} for inventory/crafting menus only; '
-                                         "the executor is suspended while they run)."},
+                           "messages": [{"role": "system", "content": system},
                                         {"role": "user", "content": content}]}
                 response, latency, n = role.call(lambda p: request("/chat/completions", key=key, payload=p, timeout=60),
                                                  payload, archive_messages(payload, [frame]))
                 body = json_content(response)
-                goal, notes = str(body.get("goal", ""))[:300], str(body.get("notes", ""))[:1000]
+                notes = str(body.get("notes", ""))[:1000]
+                if high_level:
+                    objective, until, then = body.get("objective"), str(body.get("until", "")), body.get("then")
+                    if objective not in HL_OBJECTIVES or (then is not None and then not in HL_OBJECTIVES):
+                        raise ValueError(f"unknown objective {objective!r} / then {then!r}")
+                    if not re.fullmatch(r"wood>=\d+|target_killed|seconds=\d+", until):
+                        raise ValueError(f"unsupported completion condition {until!r}")
+                    goal = f"{objective}: {HL_OBJECTIVES[objective]} Until {until}" + (f"; then {then}." if then else ".")
+                else:
+                    goal = str(body.get("goal", ""))[:300]
                 ui = body.get("ui_actions") or []
                 if ui:
                     validate_actions(ui, width=1024, height=1024, max_hold_ms=2000)
@@ -291,6 +340,12 @@ def run(args):
                     plan.update(goal=goal or plan["goal"], notes=notes, version=plan["version"] + 1)
                 log({"role": "planner", "n": n, "frame": str(frame.relative_to(root)), "frame_unix": meta["captured_unix"],
                      "latency": latency, "goal": goal, "ui_actions": len(ui), "unix": time.time()})
+                if high_level:
+                    since = time.time()
+                    while not stop.is_set() and not (reason := plan_finished(until, since)):
+                        stop.wait(.5)
+                    if not stop.is_set():
+                        log({"role": "planner", "replan": reason, "plan_seconds": round(time.time() - since, 1), "unix": time.time()})
             except (ProviderError, ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
                 log({"role": "planner", "error": f"{type(error).__name__}: {error}", "unix": time.time()})
                 stop.wait(2.0)
@@ -309,6 +364,7 @@ def run(args):
 
     def executor_step(step):
         role = roles.get("executor")
+        tactics = HL_EXECUTOR_NOTE if cond["planner"] == "llm-hl" else ""
         with lock:
             goal = plan["goal"]
             recent = [e["source"] for e in executed[-4:]]
@@ -319,7 +375,7 @@ def run(args):
                        "messages": [{"role": "system", "content": CONTROLS + " You are the fast EXECUTOR. Follow the planner's goal using the "
                                      'current screenshot. Reply with JSON only: {"actions":[1..3 actions]}, each action '
                                      '{"keys":[...],"mouse":"left|right","x":0-1023,"y":0-1023,"ms":20-' + str(PIXEL_HOLD_MS) + "}. "
-                                     "x,y are screenshot pixels."},
+                                     "x,y are screenshot pixels." + tactics},
                                     {"role": "user", "content": [{"type": "text", "text": json.dumps({"goal": goal, "your_recent_actions": recent})},
                                                                  image_part(frame)]}]}
             response, latency, n = role.call(lambda p: request("/chat/completions", key=key, payload=p, timeout=30),
@@ -341,7 +397,7 @@ def run(args):
                 payload = {"model": EXECUTOR_MODEL, "max_tokens": 64, "stream": False, "reasoning": {"effort": "none"},
                            "response_format": {"type": "json_object"}, "provider": {"allow_fallbacks": False, "require_parameters": True},
                            "messages": [{"role": "system", "content": CONTROLS + " You are the fast EXECUTOR. Choose the one option that best "
-                                         'advances the planner goal right now. Reply with JSON only: {"choice":"<option key>"}.'},
+                                         'advances the planner goal right now. Reply with JSON only: {"choice":"<option key>"}.' + tactics},
                                         {"role": "user", "content": json.dumps({"goal": goal, "state": view, "your_recent_choices": recent,
                                                                                 "options": {k: d for k, (d, _) in opts.items()}})}]}
                 response, latency, n = role.call(lambda p: request("/chat/completions", key=key, payload=p, timeout=30), payload, payload)
@@ -350,7 +406,7 @@ def run(args):
             else:
                 questions = {"action": {"type": "choice", "criteria": {k: d for k, (d, _) in opts.items()},
                                         "instructions": "Choose the next Terraria player action that best advances `goal` right now. "
-                                                        "Survive: avoid hostiles that are close unless attacking them is the goal."}}
+                                                        "Survive: avoid hostiles that are close unless attacking them is the goal." + tactics}}
                 if cond["planner"] == "jev":
                     questions["subgoal"] = {"type": "choice", "criteria": SUBGOALS,
                                             "instructions": "Given `task` and `state`, which subgoal should the player pursue now?"}
