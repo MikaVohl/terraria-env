@@ -41,9 +41,22 @@ including explicit 404s, rather than 19 successful downloads.
 - **Prompt/tools/context:** original prompt, schemas, transcripts and detailed
   settings are unavailable. The exposed run transcript/settings files return
   404. Our `look`, `act`, `checkpoints` interface, 2-second holds, 16-command
-  batches, provider-default sampling, 4,096-token output ceiling and full
-  conversation retention are explicit choices. No silent compaction or
-  strategy helpers are used.
+  batches, provider-default sampling and output ceiling are explicit choices.
+  **Context (since 2026-10-18):** all text and tool results are kept; only the
+  newest 8 screenshots stay, older ones become a fixed placeholder. Upstream
+  must also have bounded images: Gemini 3 Flash took 2,407 captures (~2.4M image
+  tokens) against a 1M context. Text still grows ~300–400 tokens per call, so
+  once a request exceeds `--max-context-tokens` (default 120k) the oldest whole
+  turns are dropped to ~60% of that limit and one note records how many
+  (`context-trims.jsonl`). **Continuation:** a reply without a tool call before
+  the budget ends gets "The run is still in progress (N s left). Continue
+  playing."; five in a row end the run. Upstream behavior is unknown. Observed
+  agents used the countdown to stop early, so `--hide-time` drops the "N s left".
+  **Information variant:** `--hide-progress` removes the checkpoint tool, the
+  in-game checkpoint chat lines and the countdown, with a prompt that never
+  mentions checkpoints (`prompts/reference_open_ended_hidden_progress.txt`).
+  Vanilla achievement popups remain. No compaction summaries or strategy
+  helpers are used.
 - **PvE semantics:** upstream booleans do not reveal implementation. Our mod
   deactivates hostile NPCs/projectiles without loot or defeat credit.
   **This includes bosses and prevents boss-completion milestones.** It is an
@@ -60,6 +73,32 @@ including explicit 404s, rather than 19 successful downloads.
 
 These uncertainties remain in `configs/reference-reconstructed.json` and every
 run manifest. No exact or official reproduction claim is made.
+
+## Further public evidence (checked 2026-10-18)
+
+- The [spec](https://terrariabench.com/spec/) and `/docs/README.txt` describe
+  native coding-agent CLIs (Claude Code max, Codex xhigh, OpenCode) driving
+  `tools/terraria_slot.py`; the published sweep instead labels every run `api`
+  with medium reasoning and OpenRouter model IDs. We reproduce the published
+  `api` runs. The spec also lists scored families our 13 identifiers lack
+  (mana upgrades, boss/underworld prep, Wall of Flesh summon).
+- All seven runs started in the same second and every one stopped acting at
+  ~21,950 s (6.1 h). Five then idled to the 28,800 s timeout and were flagged
+  `agent_stalled` (300 s idle threshold); two exited with code 1. `stalled`
+  therefore reflects a shared external stop, not model behavior.
+- Video metadata shows Xvfb display `:90`, a side-by-side game/agent recording
+  at 2 fps, and each capture saved as PNG and JPG in the agent workspace.
+  Published activity: 811–3,076 captures and 4.7k–9.8k inputs per run.
+
+## Gateway route
+
+`--provider gateway` (`terrariabench/gateway.py`) sends Anthropic Messages
+requests shaped like omp 18.1.16's: same headers, SSE streaming, and omp's reasoning
+mappings. Endpoint, key-header name and key come from the local 0600 file
+`~/.config/terrariabench/gateway.json` on each machine and are never committed. Streamed
+responses carry no cost header, so accounting uses list prices and records `cost_source`.
+Runs live under `runs/<campaign>/<run>/` so the desktop recorder (`tools/record_runs.py`)
+captures `desktop.mp4`.
 
 ## Scorer regression
 
