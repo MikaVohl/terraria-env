@@ -295,13 +295,15 @@ def run(args):
                            "reasoning": {"effort": args.reasoning},
                            "provider": {"allow_fallbacks": False, "require_parameters": True}}
                 dump(output / f"request-{step:03d}.json", archived(payload))
-            attempt = 0
+            attempt = outage_attempt = 0  # sent-failure retries vs. unsent (outage) waits
             while True:
                 budget.reserve()
                 calls += 1
                 t0 = time.monotonic()
                 try:
-                    timeout = 30 if frozen_at is not None else min(90, max(1, args.seconds - (time.monotonic() - started)))
+                    # Clock is paused while frozen, so a real request always gets the normal budget.
+                    elapsed = time.monotonic() - started - (time.monotonic() - frozen_at if frozen_at is not None else 0)
+                    timeout = min(90, max(1, args.seconds - elapsed))
                     if gw:
                         message, meta = gateway.messages(payload, key=key, session=session, timeout=timeout)
                         response = gateway.normalize(message, meta, args.model)
@@ -317,12 +319,12 @@ def run(args):
                         if frozen_at is None:
                             os.killpg(pid, signal.SIGSTOP)
                             frozen_at = time.monotonic()
-                        wait = min(60.0, 5.0 * 2 ** min(attempt, 4))
+                        wait = min(60.0, 5.0 * 2 ** min(outage_attempt, 4))
                         with (output / "provider-failures.jsonl").open("a") as stream:
-                            stream.write(json.dumps({"step": step, "attempt": attempt, "error": str(error), "sent": False,
-                                                     "game_frozen": True, "outage_seconds": outage_so_far,
+                            stream.write(json.dumps({"step": step, "outage_attempt": outage_attempt, "error": str(error),
+                                                     "sent": False, "game_frozen": True, "outage_seconds": outage_so_far,
                                                      "wait_seconds": wait, "unix": time.time()}) + "\n")
-                        attempt += 1
+                        outage_attempt += 1
                         time.sleep(wait)
                         continue
                     thaw()

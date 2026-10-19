@@ -38,6 +38,8 @@ route_up() {
 }
 run() {  # name model reasoning usd_cap seconds extra-flags...
   local name=$1 model=$2 reasoning=$3 cap=$4 seconds=$5; shift 5
+  [ -e $C/$name ] && { echo "$(date -Is) skip $name: already exists"; return; }
+  while pgrep -f "terrariabench run --fixture" >/dev/null; do sleep 10; done
   local waited=0
   until route_up; do
     [ $waited -ge 3600 ] && { echo "$(date -Is) skip $name: gateway unreachable for 60 min"; return; }
@@ -56,7 +58,7 @@ run() {  # name model reasoning usd_cap seconds extra-flags...
   fi
 }
 run sonnet-low-ref-45min-02      claude-sonnet-5-5 low    12 2700 --hide-time
-run opus-low-ref-30min-02        claude-opus-5-5   low    12 1800 --hide-time
+run opus-low-ref-30min-03        claude-opus-5-5   low    12 1800 --hide-time
 run haiku-medium-hidden-45min-02 claude-haiku-5-5  medium 3  2700 --hide-progress
 run sonnet-low-hidden-45min-02   claude-sonnet-5-5 low    10 2700 --hide-progress
 echo "$(date -Is) done (spent $(spent))"
