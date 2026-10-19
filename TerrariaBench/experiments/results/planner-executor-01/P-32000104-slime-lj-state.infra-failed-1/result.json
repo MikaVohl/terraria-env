@@ -1,0 +1,106 @@
+{
+  "run": "P-32000104-slime-lj-state",
+  "config": {
+    "condition": "lj-state",
+    "planner": "llm",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "slime",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "anthropic/claude-haiku-5.5",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800
+  },
+  "stop_reason": "RuntimeError: startup_timeout",
+  "scenario_ready": null,
+  "agent_wall_seconds": 0,
+  "commands": 0,
+  "frames": 0,
+  "roles": {
+    "planner": {
+      "calls": 0,
+      "failures": 0,
+      "latency_median": null,
+      "latency_p90": null,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0",
+        "uncertain_reserved_usd": "0",
+        "tokens": 0,
+        "reservation_per_call_usd": "0.0215040"
+      }
+    },
+    "executor": {
+      "calls": 0,
+      "failures": 0,
+      "latency_median": null,
+      "latency_p90": null,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0",
+        "uncertain_reserved_usd": "0",
+        "tokens": 0,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 0,
+    "executor_errors": 0,
+    "planner_updates": 0,
+    "observation_age_median": null,
+    "observation_age_p90": null,
+    "input_held_fraction": null
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 0,
+      "checkpoint_count": 0,
+      "furthest_level": 0,
+      "level_counts": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [],
+      "first_unlocks": {},
+      "diagnostics_not_scored": [],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {},
+    "progress_families": [],
+    "deaths": 0,
+    "minimum_hp": null,
+    "damage_received": 0,
+    "hits_received": 0,
+    "max_hostile_npcs": 0,
+    "hostile_observed_heartbeats": 0,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 0,
+    "input_hold_seconds": 0,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

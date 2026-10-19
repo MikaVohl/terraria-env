@@ -1,0 +1,125 @@
+{
+  "run": "P-32000102-slime-ll-state",
+  "config": {
+    "condition": "ll-state",
+    "planner": "llm",
+    "planner_state": true,
+    "executor": "llm-catalog",
+    "scenario": "slime",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "anthropic/claude-haiku-5.5",
+    "executor_model": "anthropic/claude-haiku-5.5",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": {
+    "ready_heartbeat_game_updates": 180,
+    "target": {
+      "slot": 1,
+      "active": true,
+      "type": 1,
+      "life": 25,
+      "killed": false,
+      "player_damage": 0
+    },
+    "arm_to_ready_wall_seconds": 0.3006192450411618,
+    "render_settle_seconds": 0.25
+  },
+  "agent_wall_seconds": 120.67385774594732,
+  "commands": 111,
+  "frames": 27,
+  "roles": {
+    "planner": {
+      "calls": 27,
+      "failures": 0,
+      "latency_median": 4.617139579029754,
+      "latency_p90": 5.404688015114516,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.0143699",
+        "uncertain_reserved_usd": "0",
+        "tokens": 88907,
+        "reservation_per_call_usd": "0.0215040"
+      }
+    },
+    "executor": {
+      "calls": 98,
+      "failures": 0,
+      "latency_median": 0.7901922404998913,
+      "latency_p90": 0.8678406989201903,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.0108269",
+        "uncertain_reserved_usd": "0",
+        "tokens": 102789,
+        "reservation_per_call_usd": "0.0094720"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 94,
+    "executor_errors": 4,
+    "planner_updates": 27,
+    "observation_age_median": 0.8789101839065552,
+    "observation_age_p90": 0.9609487056732178,
+    "input_held_fraction": 0.2413062565046669
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 0,
+      "checkpoint_count": 0,
+      "furthest_level": 0,
+      "level_counts": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [],
+      "first_unlocks": {},
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1
+    },
+    "progress_families": [],
+    "deaths": 2,
+    "minimum_hp": 0,
+    "damage_received": 282,
+    "hits_received": 40,
+    "max_hostile_npcs": 5,
+    "hostile_observed_heartbeats": 122,
+    "target_killed": false,
+    "player_damage_to_target": 17,
+    "game_updates_during_agent": 7260,
+    "input_hold_seconds": 29.1,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

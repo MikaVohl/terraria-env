@@ -1,0 +1,127 @@
+{
+  "run": "P-32000101-slime-single-haiku",
+  "config": {
+    "clock": "realtime",
+    "pve": true,
+    "checkpoints": false,
+    "goal": "open",
+    "guide": false,
+    "inventory": false,
+    "scaffold": "tools",
+    "history": "full",
+    "hold_ms": 2000,
+    "motor": false,
+    "scenario": "slime",
+    "reasoning": "medium"
+  },
+  "model": "anthropic/claude-haiku-5.5",
+  "stop_reason": "TimeoutError: simulation_limit_before_batch",
+  "calls": 22,
+  "provider_retries": 0,
+  "scenario_ready": {
+    "ready_heartbeat_game_updates": 240,
+    "target": {
+      "slot": 1,
+      "active": true,
+      "type": 1,
+      "life": 25,
+      "killed": false,
+      "player_damage": 0
+    },
+    "arm_to_ready_wall_seconds": 1.1566113291773945,
+    "render_settle_seconds": 0.25
+  },
+  "commands": 55,
+  "frames": 22,
+  "invalid_outputs": 0,
+  "agent_wall_seconds": 122.17294382397085,
+  "paused_seconds": 0,
+  "inference_seconds": 98.15930931363255,
+  "latencies": [
+    3.5827709808945656,
+    2.454271994996816,
+    3.6258418809156865,
+    4.25043707084842,
+    4.161436008987948,
+    5.037183108041063,
+    5.217334212968126,
+    3.270833703223616,
+    3.695873463060707,
+    5.289031209889799,
+    4.297321415971965,
+    4.042404948966578,
+    4.009911418892443,
+    4.52161329286173,
+    6.598526088055223,
+    4.589808000950143,
+    4.339269195916131,
+    3.864469181979075,
+    5.224862476112321,
+    5.389956234022975,
+    5.934223237913102,
+    4.761930188164115
+  ],
+  "accounting": {
+    "usd_limit": "0.15",
+    "reported_usd": "0.0484001",
+    "uncertain_reserved_usd": "0",
+    "tokens": 461645,
+    "reservation_per_call_usd": "0.0430080"
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 0,
+      "checkpoint_count": 0,
+      "furthest_level": 0,
+      "level_counts": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [],
+      "first_unlocks": {},
+      "diagnostics_not_scored": [
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1
+    },
+    "progress_families": [],
+    "deaths": 2,
+    "minimum_hp": 0,
+    "damage_received": 280,
+    "hits_received": 39,
+    "max_hostile_npcs": 5,
+    "hostile_observed_heartbeats": 124,
+    "target_killed": false,
+    "player_damage_to_target": 4,
+    "game_updates_during_agent": 7380,
+    "input_hold_seconds": 15.77,
+    "journal_closed": false
+  },
+  "official_eligible": false,
+  "exact_simulation_stepper": false,
+  "observation_and_cleanup_windows_advance_game": true
+}

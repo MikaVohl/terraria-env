@@ -1,0 +1,150 @@
+{
+  "run": "I-32000102-fresh300-hl-lj-r60",
+  "config": {
+    "condition": "hl-lj-state",
+    "planner": "llm-hl",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "fresh",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "anthropic/claude-haiku-5.5",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800,
+    "replan_seconds": 60
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": null,
+  "agent_wall_seconds": 299.90055625489913,
+  "commands": 372,
+  "frames": 19,
+  "roles": {
+    "planner": {
+      "calls": 19,
+      "failures": 0,
+      "latency_median": 4.948280498152599,
+      "latency_p90": 5.53281357511878,
+      "accounting": {
+        "usd_limit": "0.075",
+        "reported_usd": "0.0110272",
+        "uncertain_reserved_usd": "0",
+        "tokens": 65240,
+        "reservation_per_call_usd": "0.0215040"
+      }
+    },
+    "executor": {
+      "calls": 296,
+      "failures": 0,
+      "latency_median": 0.28339816397055984,
+      "latency_p90": 0.36025860207155347,
+      "accounting": {
+        "usd_limit": "0.075",
+        "reported_usd": "0.012931548",
+        "uncertain_reserved_usd": "0",
+        "tokens": 331845,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 296,
+    "executor_errors": 0,
+    "planner_updates": 4,
+    "observation_age_median": 0.4929471015930176,
+    "observation_age_p90": 0.5870227813720703,
+    "input_held_fraction": 0.4215614200665062
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 4,
+      "checkpoint_count": 4,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25",
+        "wood_100"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 13.1016963,
+          "game_updates": 772,
+          "timestamp_utc": "2026-10-19T01:09:35.2370922+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 13.9164683,
+          "game_updates": 822,
+          "timestamp_utc": "2026-10-19T01:09:36.0518642+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 14.5379432,
+          "game_updates": 859,
+          "timestamp_utc": "2026-10-19T01:09:36.6733391+00:00"
+        },
+        "wood_100": {
+          "elapsed_seconds": 37.183136,
+          "game_updates": 2218,
+          "timestamp_utc": "2026-10-19T01:09:59.3185318+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Acorn": 41,
+      "Wood": 525,
+      "Recall Potion": 1,
+      "Gel": 9,
+      "Copper Coin": 93,
+      "Daybloom Seeds": 1,
+      "Daybloom": 1,
+      "Silver Coin": 1
+    },
+    "progress_families": [
+      "wood"
+    ],
+    "deaths": 0,
+    "minimum_hp": 47,
+    "damage_received": 102,
+    "hits_received": 15,
+    "max_hostile_npcs": 4,
+    "hostile_observed_heartbeats": 196,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 18060,
+    "input_hold_seconds": 126.35,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

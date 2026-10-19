@@ -1,0 +1,146 @@
+{
+  "run": "P-32000102-fresh-hl-lj-state",
+  "config": {
+    "condition": "hl-lj-state",
+    "planner": "llm-hl",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "fresh",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "anthropic/claude-haiku-5.5",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800,
+    "replan_seconds": 30
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": null,
+  "agent_wall_seconds": 120.03847024100833,
+  "commands": 191,
+  "frames": 15,
+  "roles": {
+    "planner": {
+      "calls": 15,
+      "failures": 0,
+      "latency_median": 4.152160505997017,
+      "latency_p90": 5.3477758090011775,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.0081172",
+        "uncertain_reserved_usd": "0",
+        "tokens": 49272,
+        "reservation_per_call_usd": "0.0215040"
+      }
+    },
+    "executor": {
+      "calls": 113,
+      "failures": 0,
+      "latency_median": 0.2772459660191089,
+      "latency_p90": 0.31901753321290016,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.005009592",
+        "uncertain_reserved_usd": "0",
+        "tokens": 128432,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 113,
+    "executor_errors": 0,
+    "planner_updates": 3,
+    "observation_age_median": 0.43442416191101074,
+    "observation_age_p90": 0.5053281784057617,
+    "input_held_fraction": 0.5610876167031683
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 4,
+      "checkpoint_count": 4,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25",
+        "wood_100"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 11.1717616,
+          "game_updates": 657,
+          "timestamp_utc": "2026-10-19T00:07:35.3143822+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 11.2527905,
+          "game_updates": 663,
+          "timestamp_utc": "2026-10-19T00:07:35.3954108+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 12.4344482,
+          "game_updates": 734,
+          "timestamp_utc": "2026-10-19T00:07:36.5770685+00:00"
+        },
+        "wood_100": {
+          "elapsed_seconds": 33.3511269,
+          "game_updates": 1989,
+          "timestamp_utc": "2026-10-19T00:07:57.4937471+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Acorn": 25,
+      "Wood": 356,
+      "Peach": 1,
+      "Copper Coin": 71
+    },
+    "progress_families": [
+      "wood"
+    ],
+    "deaths": 0,
+    "minimum_hp": 30,
+    "damage_received": 70,
+    "hits_received": 10,
+    "max_hostile_npcs": 2,
+    "hostile_observed_heartbeats": 52,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 7320,
+    "input_hold_seconds": 67.3,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

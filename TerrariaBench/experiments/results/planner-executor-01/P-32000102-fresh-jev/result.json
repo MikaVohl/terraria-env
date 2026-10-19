@@ -1,0 +1,132 @@
+{
+  "run": "P-32000102-fresh-jev",
+  "config": {
+    "condition": "jev",
+    "planner": "jev",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "fresh",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "typesafe/jev-1.14",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800,
+    "replan_seconds": null
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": null,
+  "agent_wall_seconds": 120.28600872913375,
+  "commands": 201,
+  "frames": 0,
+  "roles": {
+    "executor": {
+      "calls": 116,
+      "failures": 0,
+      "latency_median": 0.22137309948448092,
+      "latency_p90": 0.2627845089882612,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.005392716",
+        "uncertain_reserved_usd": "0",
+        "tokens": 145788,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 116,
+    "executor_errors": 0,
+    "planner_updates": 0,
+    "observation_age_median": 0.36254942417144775,
+    "observation_age_p90": 0.41309499740600586,
+    "input_held_fraction": 0.6333792160079038
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 4,
+      "checkpoint_count": 4,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25",
+        "wood_100"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 10.6405751,
+          "game_updates": 632,
+          "timestamp_utc": "2026-10-18T23:33:01.2748889+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 10.7400045,
+          "game_updates": 639,
+          "timestamp_utc": "2026-10-18T23:33:01.3743183+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 11.9389575,
+          "game_updates": 711,
+          "timestamp_utc": "2026-10-18T23:33:02.5732714+00:00"
+        },
+        "wood_100": {
+          "elapsed_seconds": 30.7722136,
+          "game_updates": 1841,
+          "timestamp_utc": "2026-10-18T23:33:21.4065274+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Acorn": 37,
+      "Wood": 516,
+      "Copper Coin": 55
+    },
+    "progress_families": [
+      "wood"
+    ],
+    "deaths": 0,
+    "minimum_hp": 100,
+    "damage_received": 0,
+    "hits_received": 0,
+    "max_hostile_npcs": 0,
+    "hostile_observed_heartbeats": 0,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 7260,
+    "input_hold_seconds": 76.14999999999999,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

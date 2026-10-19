@@ -3,10 +3,9 @@
 An independent benchmark subproject for agents playing the real Terraria game
 on `mika@Omarchy`, using screenshots and real keyboard/mouse inputs.
 
-**Current work: exploratory design experiments.** We are comparing observation
-loops, timing, instructions, memory, control granularity and prepared tasks
-before selecting benchmark variants. See the [campaign plan](experiments/campaign-2026-10-17.md)
-and [interpretation rules](experiments/interpretation.md). The reconstructed
+**Current work: exploratory design experiments.** Latest: [real-time planner/executor agents](experiments/planner-executor.md)
+(fast executors, high-level planners, replan-interval sweep). Earlier: the [campaign plan](experiments/campaign-2026-10-17.md),
+[findings](experiments/FINDINGS.md) and [interpretation rules](experiments/interpretation.md). The reconstructed
 reference below is retained as a historical baseline, not the final benchmark.
 
 The [audited development results](experiments/results/screening-01/README.md)

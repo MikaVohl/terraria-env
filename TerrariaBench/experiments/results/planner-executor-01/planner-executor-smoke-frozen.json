@@ -1,0 +1,43 @@
+{
+  "campaign": "runs/planner-executor-01",
+  "fixture": "runs/fixtures/heldout-v06-32000101",
+  "description": "Plumbing smoke, one short real-time slime attempt per planner/executor condition. Excluded from the comparison.",
+  "jobs": [
+    {
+      "id": "S-ll-pixel",
+      "runner": "hybrid",
+      "condition": "ll-pixel",
+      "scenario": "slime",
+      "sim_seconds": 30,
+      "seconds": 90,
+      "usd": 0.05
+    },
+    {
+      "id": "S-ll-state",
+      "runner": "hybrid",
+      "condition": "ll-state",
+      "scenario": "slime",
+      "sim_seconds": 30,
+      "seconds": 90,
+      "usd": 0.05
+    },
+    {
+      "id": "S-lj-state",
+      "runner": "hybrid",
+      "condition": "lj-state",
+      "scenario": "slime",
+      "sim_seconds": 30,
+      "seconds": 90,
+      "usd": 0.05
+    },
+    {
+      "id": "S-jev",
+      "runner": "hybrid",
+      "condition": "jev",
+      "scenario": "slime",
+      "sim_seconds": 30,
+      "seconds": 90,
+      "usd": 0.05
+    }
+  ]
+}

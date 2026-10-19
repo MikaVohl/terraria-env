@@ -1,0 +1,149 @@
+{
+  "run": "P-32000102-slime-lj-state",
+  "config": {
+    "condition": "lj-state",
+    "planner": "llm",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "slime",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "anthropic/claude-haiku-5.5",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": {
+    "ready_heartbeat_game_updates": 180,
+    "target": {
+      "slot": 1,
+      "active": true,
+      "type": 1,
+      "life": 25,
+      "killed": false,
+      "player_damage": 0
+    },
+    "arm_to_ready_wall_seconds": 0.4012037159409374,
+    "render_settle_seconds": 0.25
+  },
+  "agent_wall_seconds": 119.9699846750591,
+  "commands": 178,
+  "frames": 39,
+  "roles": {
+    "planner": {
+      "calls": 39,
+      "failures": 0,
+      "latency_median": 2.679767274064943,
+      "latency_p90": 3.870206761872396,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.0181788",
+        "uncertain_reserved_usd": "0",
+        "tokens": 121640,
+        "reservation_per_call_usd": "0.0215040"
+      }
+    },
+    "executor": {
+      "calls": 170,
+      "failures": 0,
+      "latency_median": 0.22088741045445204,
+      "latency_p90": 0.26523092086426914,
+      "accounting": {
+        "usd_limit": "0.06",
+        "reported_usd": "0.007394772",
+        "uncertain_reserved_usd": "0",
+        "tokens": 190180,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 170,
+    "executor_errors": 0,
+    "planner_updates": 38,
+    "observation_age_median": 0.3274979591369629,
+    "observation_age_p90": 0.38101744651794434,
+    "input_held_fraction": 0.5600537043086609
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 3,
+      "checkpoint_count": 3,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 1,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 116.9137835,
+          "game_updates": 7003,
+          "timestamp_utc": "2026-10-18T22:38:09.3300679+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 117.9075892,
+          "game_updates": 7063,
+          "timestamp_utc": "2026-10-18T22:38:10.3238736+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 118.0904555,
+          "game_updates": 7074,
+          "timestamp_utc": "2026-10-18T22:38:10.5067402+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Acorn": 3,
+      "Wood": 50
+    },
+    "progress_families": [
+      "wood"
+    ],
+    "deaths": 1,
+    "minimum_hp": 0,
+    "damage_received": 127,
+    "hits_received": 10,
+    "max_hostile_npcs": 4,
+    "hostile_observed_heartbeats": 115,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 7260,
+    "input_hold_seconds": 67.15,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

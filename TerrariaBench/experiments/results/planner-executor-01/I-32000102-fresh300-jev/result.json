@@ -1,0 +1,138 @@
+{
+  "run": "I-32000102-fresh300-jev",
+  "config": {
+    "condition": "jev",
+    "planner": "jev",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "fresh",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "typesafe/jev-1.14",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800,
+    "replan_seconds": null
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": null,
+  "agent_wall_seconds": 300.08138735499233,
+  "commands": 424,
+  "frames": 0,
+  "roles": {
+    "executor": {
+      "calls": 253,
+      "failures": 0,
+      "latency_median": 0.29704656009562314,
+      "latency_p90": 0.3796504552010447,
+      "accounting": {
+        "usd_limit": "0.075",
+        "reported_usd": "0.012513228",
+        "uncertain_reserved_usd": "0",
+        "tokens": 337990,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 253,
+    "executor_errors": 0,
+    "planner_updates": 0,
+    "observation_age_median": 0.4896688461303711,
+    "observation_age_p90": 0.5888421535491943,
+    "input_held_fraction": 0.536943580438974
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 4,
+      "checkpoint_count": 4,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25",
+        "wood_100"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 11.8544279,
+          "game_updates": 698,
+          "timestamp_utc": "2026-10-19T00:58:39.8665891+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 12.8010487,
+          "game_updates": 756,
+          "timestamp_utc": "2026-10-19T00:58:40.8132096+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 13.3347737,
+          "game_updates": 788,
+          "timestamp_utc": "2026-10-19T00:58:41.3469347+00:00"
+        },
+        "wood_100": {
+          "elapsed_seconds": 34.71786,
+          "game_updates": 2071,
+          "timestamp_utc": "2026-10-19T00:59:02.7300209+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Acorn": 55,
+      "Wood": 691,
+      "Gel": 4,
+      "Copper Coin": 96,
+      "Apple": 1,
+      "Grapefruit": 2,
+      "Mushroom": 2,
+      "Rotten Egg": 1,
+      "Lemon": 2
+    },
+    "progress_families": [
+      "wood"
+    ],
+    "deaths": 1,
+    "minimum_hp": 0,
+    "damage_received": 170,
+    "hits_received": 25,
+    "max_hostile_npcs": 4,
+    "hostile_observed_heartbeats": 211,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 18060,
+    "input_hold_seconds": 161.04999999999998,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

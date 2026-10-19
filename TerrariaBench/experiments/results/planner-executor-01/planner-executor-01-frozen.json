@@ -1,0 +1,456 @@
+{
+  "campaign": "runs/planner-executor-01",
+  "fixture": "runs/fixtures/heldout-v06-32000101",
+  "order_seed": 202610182,
+  "description": "Real-time planner/executor comparison, game never paused. Equal budget of 120 game-seconds per attempt on the 4 held-out worlds, tasks fresh (wood/workbench) and slime (designated-target combat). Conditions: ll-pixel (Haiku planner + Haiku no-reasoning executor, screenshots only), ll-state and lj-state (Haiku planner + Haiku or Jev executor over privileged observer-v0.6 text state and a fixed action catalog), jev (Jev chooses subgoal and action), scripted (unpaid fixed-priority rule over the same catalog, ceiling reference). Baselines: campaign-02 single-Haiku fresh runs on the same worlds and new single-Haiku slime runs (tools loop, 120 game-seconds). One attempt per world/task/condition. Campaign ledger cap $2.00.",
+  "jobs": [
+    {
+      "id": "P-32000101-slime-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "lj-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-fresh-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-fresh-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-slime-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "scripted",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-slime-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "ll-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-fresh-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-slime-single-haiku",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "slime",
+      "calls": 64,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.15,
+      "reasoning": "medium"
+    },
+    {
+      "id": "P-32000101-slime-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "scripted",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-slime-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "jev",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-slime-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "scripted",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-slime-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "lj-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-slime-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "ll-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-fresh-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "ll-pixel",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-fresh-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "ll-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-fresh-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "ll-pixel",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-fresh-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "ll-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-slime-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "jev",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-slime-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "scripted",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-fresh-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-slime-single-haiku",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "slime",
+      "calls": 64,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.15,
+      "reasoning": "medium"
+    },
+    {
+      "id": "P-32000101-fresh-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "lj-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-slime-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "jev",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-fresh-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-slime-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "lj-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-fresh-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "ll-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-fresh-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-slime-lj-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "lj-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-slime-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "ll-pixel",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-slime-single-haiku",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "slime",
+      "calls": 64,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.15,
+      "reasoning": "medium"
+    },
+    {
+      "id": "P-32000104-slime-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "ll-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-slime-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "ll-pixel",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-fresh-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "ll-pixel",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-slime-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "jev",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-fresh-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "ll-pixel",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-fresh-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-slime-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "ll-state",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-slime-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "ll-pixel",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-fresh-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-slime-single-haiku",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "model": "anthropic/claude-haiku-5.5",
+      "variant": "tools",
+      "scenario": "slime",
+      "calls": 64,
+      "seconds": 300,
+      "sim_seconds": 120,
+      "usd": 0.15,
+      "reasoning": "medium"
+    },
+    {
+      "id": "P-32000102-fresh-scripted",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "scripted",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000104-slime-ll-pixel",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000104",
+      "condition": "ll-pixel",
+      "scenario": "slime",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000102-fresh-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000102",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000103-fresh-ll-state",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000103",
+      "condition": "ll-state",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    },
+    {
+      "id": "P-32000101-fresh-jev",
+      "runner": "hybrid",
+      "fixture": "runs/fixtures/heldout-v06-32000101",
+      "condition": "jev",
+      "scenario": "fresh",
+      "sim_seconds": 120,
+      "seconds": 300,
+      "usd": 0.12
+    }
+  ]
+}

@@ -10,6 +10,8 @@ import json
 from pathlib import Path
 import statistics
 
+from diagnostic_campaign import INFRA_STOPS
+
 
 def jsonl(path):
     return [json.loads(s) for s in path.read_text().splitlines()] if path.exists() else []
@@ -44,10 +46,12 @@ def row(run, kind):
             "wood_max": m["inventory_stack_maxima"].get("Wood", 0), "wood_25": "wood_25" in milestones,
             "workbench": "workbench_1" in milestones, "deaths": m["deaths"], "damage_received": m["damage_received"],
             "target_damage": m["player_damage_to_target"], "target_killed": m["target_killed"], "kill_game_s": kill_seconds(events)}
+    base["budget_s"] = json.loads((run / "manifest.json").read_text())["limits"]["simulation_seconds"]
     if kind == "hybrid":
         c = result["config"]
         t = result["timing"]
-        base |= {"condition": c["condition"], "scenario": c["scenario"],
+        cond = c["condition"] + (f'-r{c["replan_seconds"]}' if c.get("replan_seconds") else "")
+        base |= {"condition": cond, "scenario": c["scenario"],
                  "usd": round(sum(float(r["accounting"]["reported_usd"]) for r in result["roles"].values()), 6),
                  "uncertain_usd": round(sum(float(r["accounting"]["uncertain_reserved_usd"]) for r in result["roles"].values()), 6),
                  "executor_decisions": t["executor_decisions"], "executor_errors": t["executor_errors"],
@@ -71,9 +75,11 @@ def main():
     p.add_argument("--baseline", type=Path, action="append", default=[], help="extra single-model run directories")
     a = p.parse_args()
     rows = []
-    for result in sorted(a.campaign.glob("P-*/result.json")):
+    for result in sorted([*a.campaign.glob("P-*/result.json"), *a.campaign.glob("I-*/result.json")]):
         if "." in result.parent.name:
             continue  # archived runs (.infra-failed-N, .excluded-*) are evidence, not samples
+        if json.loads(result.read_text())["stop_reason"].startswith(INFRA_STOPS):
+            continue  # never played (dropped conditions' unretried startup failures)
         rows.append(row(result.parent, "hybrid" if "roles" in json.loads(result.read_text()) else "single"))
     for run in a.baseline:
         rows.append(row(run, "single"))
@@ -84,11 +90,12 @@ def main():
         w.writerows(rows)
     groups = {}
     for r in rows:
-        groups.setdefault((r["scenario"], r["condition"]), []).append(r)
-    for (scen, cond), rs in sorted(groups.items()):
+        groups.setdefault((r["scenario"], r["budget_s"], r["condition"]), []).append(r)
+    for (scen, budget, cond), rs in sorted(groups.items()):
         ages = [r["obs_age_median"] for r in rs if r["obs_age_median"] is not None]
-        print(json.dumps({"scenario": scen, "condition": cond, "n": len(rs),
+        print(json.dumps({"scenario": scen, "budget_s": budget, "condition": cond, "n": len(rs),
                           "wood_max": [r["wood_max"] for r in rs], "wood_25": sum(r["wood_25"] for r in rs),
+                          "planner_updates": [r["planner_updates"] for r in rs],
                           "workbench": sum(r["workbench"] for r in rs), "deaths": sum(r["deaths"] for r in rs),
                           "kills": sum(r["target_killed"] for r in rs), "target_damage": [r["target_damage"] for r in rs],
                           "kill_game_s": [r["kill_game_s"] for r in rs], "damage_received": [r["damage_received"] for r in rs],

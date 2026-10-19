@@ -1,0 +1,148 @@
+{
+  "run": "I-32000101-fresh300-hl-lj-r60",
+  "config": {
+    "condition": "hl-lj-state",
+    "planner": "llm-hl",
+    "planner_state": true,
+    "executor": "jev",
+    "scenario": "fresh",
+    "pve": true,
+    "clock": "realtime",
+    "planner_model": "anthropic/claude-haiku-5.5",
+    "executor_model": "typesafe/jev-1.14",
+    "planner_reasoning": "low",
+    "executor_reasoning": "none",
+    "pixel_hold_ms": 800,
+    "replan_seconds": 60
+  },
+  "stop_reason": "simulation_limit",
+  "scenario_ready": null,
+  "agent_wall_seconds": 299.8738931880798,
+  "commands": 451,
+  "frames": 15,
+  "roles": {
+    "planner": {
+      "calls": 15,
+      "failures": 0,
+      "latency_median": 4.063736598007381,
+      "latency_p90": 4.603594622109085,
+      "accounting": {
+        "usd_limit": "0.075",
+        "reported_usd": "0.0074484",
+        "uncertain_reserved_usd": "0",
+        "tokens": 48476,
+        "reservation_per_call_usd": "0.0215040"
+      }
+    },
+    "executor": {
+      "calls": 318,
+      "failures": 0,
+      "latency_median": 0.2806640095077455,
+      "latency_p90": 0.33264807192608714,
+      "accounting": {
+        "usd_limit": "0.075",
+        "reported_usd": "0.013994946",
+        "uncertain_reserved_usd": "0",
+        "tokens": 360839,
+        "reservation_per_call_usd": "0.001376256"
+      }
+    }
+  },
+  "timing": {
+    "executor_decisions": 318,
+    "executor_errors": 0,
+    "planner_updates": 11,
+    "observation_age_median": 0.483137845993042,
+    "observation_age_p90": 0.542604923248291,
+    "input_held_fraction": 0.4547953001794326
+  },
+  "metrics": {
+    "public_subset_score": {
+      "score_name": "agent_driven_progress_checkpoints_public_subset",
+      "agency_score": 4,
+      "checkpoint_count": 4,
+      "furthest_level": 2,
+      "level_counts": {
+        "1": 2,
+        "2": 2,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "level_labels": {
+        "1": "Starter resources",
+        "2": "Basic crafting",
+        "3": "Underground self-sufficiency",
+        "4": "Pre-hardmode bosses",
+        "5": "Underworld and Wall of Flesh"
+      },
+      "milestones": [
+        "wood_1",
+        "wood_10",
+        "wood_25",
+        "wood_100"
+      ],
+      "first_unlocks": {
+        "wood_1": {
+          "elapsed_seconds": 11.8185097,
+          "game_updates": 696,
+          "timestamp_utc": "2026-10-19T01:04:07.0438645+00:00"
+        },
+        "wood_10": {
+          "elapsed_seconds": 12.6334757,
+          "game_updates": 746,
+          "timestamp_utc": "2026-10-19T01:04:07.8588306+00:00"
+        },
+        "wood_25": {
+          "elapsed_seconds": 13.2990711,
+          "game_updates": 786,
+          "timestamp_utc": "2026-10-19T01:04:08.5244258+00:00"
+        },
+        "wood_100": {
+          "elapsed_seconds": 115.7492332,
+          "game_updates": 6933,
+          "timestamp_utc": "2026-10-19T01:05:50.9745882+00:00"
+        }
+      },
+      "diagnostics_not_scored": [
+        "held_axe",
+        "held_weapon"
+      ],
+      "unknown_milestones_not_scored": [],
+      "direct_tile_control_used": false,
+      "valid_for_scoring": true,
+      "valid_for_long_horizon": true,
+      "stalled": false,
+      "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+      "complete_upstream_catalog_verified": false,
+      "exact_reference_reproduction": false,
+      "official_eligible": false
+    },
+    "inventory_stack_maxima": {
+      "Copper Shortsword": 1,
+      "Copper Pickaxe": 1,
+      "Copper Axe": 1,
+      "Wood": 126,
+      "Acorn": 7,
+      "Copper Coin": 79,
+      "Gel": 10,
+      "Silver Coin": 2,
+      "Mushroom": 1
+    },
+    "progress_families": [
+      "wood"
+    ],
+    "deaths": 1,
+    "minimum_hp": 0,
+    "damage_received": 231,
+    "hits_received": 34,
+    "max_hostile_npcs": 3,
+    "hostile_observed_heartbeats": 271,
+    "target_killed": false,
+    "player_damage_to_target": 0,
+    "game_updates_during_agent": 18060,
+    "input_hold_seconds": 136.3,
+    "journal_closed": false
+  },
+  "official_eligible": false
+}

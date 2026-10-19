@@ -145,6 +145,16 @@ retried after 2 s and succeeded; the episode completed. The attempt's $0.070963
 reservation remains an uncertain charge. Under campaign 01's no-retry rule this
 run would have been partial.
 
+## Campaign 03: real-time planner/executor (2026-10-18)
+
+Full report: [planner-executor.md](planner-executor.md). With the game never paused, a fast
+executor acting on fresh observations (Jev at about 0.3 s observation age) outperformed the
+single-model loop (6-10 s). With screenshots only, a high-level planner plus a fast Haiku executor
+killed the slime 2/4 times against 1/4. A planner added nothing measurable on top of a good
+executor: Jev alone matched planner + Jev at 120 s, and over 300 s replanning every 10, 30 or 60 s
+made no reliable difference. Structured-state conditions are privileged. A no-model scripted rule
+over the same action catalog still beats every model, and exploration of a barren world is unsolved.
+
 ## Candidates to discuss for the next benchmark phase
 
 These are proposals for selection together, not newly implemented benchmarks.
