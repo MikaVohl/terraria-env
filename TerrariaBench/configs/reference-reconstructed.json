@@ -25,7 +25,7 @@
     "harness": "reconstructed_shared_API_tool_loop",
     "observation_tools": ["look", "checkpoints"],
     "action_tool": "act",
-    "context": "all_text_and_tool_results_plus_newest_8_screenshots_older_replaced_by_placeholder",
+    "context": "all_text_and_tool_results_until_120k_then_oldest_turns_dropped; newest_8_to_15_screenshots_older_dropped_8_at_a_time",
     "task_prompt": "prompts/reference_open_ended.txt",
     "strategy_hints": false,
     "external_tools": false,

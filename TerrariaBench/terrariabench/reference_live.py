@@ -55,8 +55,14 @@ def digest(path):
 OMITTED_IMAGE = {"type": "text", "text": "[earlier screenshot omitted from context]"}
 
 
-def cap_images(messages, keep):
-    """Context policy: all text and tool results stay; only the newest `keep` screenshots stay."""
+def cap_images(messages, keep, block=1):
+    """Context policy: all text and tool results stay; screenshots older than the newest `keep`
+    are replaced by a placeholder, `block` at a time. With block > 1 the model sees between keep
+    and keep+block-1 screenshots, and the prompt prefix (hence the provider cache) changes only
+    once every `block` new screenshots instead of on every one."""
+    total = sum(isinstance(m.get("content"), list) and sum(p.get("type") == "image_url" for p in m["content"])
+                for m in messages)
+    keep += (total - keep) % block if total > keep else 0
     seen, capped = 0, []
     for message in reversed(messages):
         if isinstance(message.get("content"), list) and any(p.get("type") == "image_url" for p in message["content"]):
@@ -138,11 +144,12 @@ def _operator_stop(signum, _frame):
     raise OperatorStop(signal.Signals(signum).name)
 
 
+
 def run(args):
     if not 0 < args.usd <= 15 or not 1 <= args.calls <= 4096:
         raise ValueError("invalid local spending/call ceiling")
-    if args.mode == "calibration" and not 1 <= args.seconds <= 1800:
-        raise ValueError("calibration must be 1..1800 seconds")
+    if args.mode == "calibration" and not 1 <= args.seconds <= 3600:
+        raise ValueError("calibration must be 1..3600 seconds")
     if args.mode == "evaluation" and args.seconds != 28800:
         raise ValueError("reference evaluation uses 28800 seconds; use calibration for short tests")
     fixture, output = args.fixture.resolve(), args.output.resolve()
@@ -195,7 +202,8 @@ def run(args):
                 "limits": {"calls": args.calls, "active_wall_seconds": args.seconds, "usd": args.usd,
                            "max_completion_tokens": budget.output_ceiling, "max_input_tokens_per_call": budget.input_ceiling,
                            "input_commands": 65536, "reported_tokens": args.max_tokens_total},
-                "context_policy": {"keep_images": args.keep_images, "text_and_tool_results": "all until the limit",
+                "context_policy": {"keep_images": args.keep_images, "image_block": args.image_block,
+                                   "text_and_tool_results": "all until the limit",
                                    "max_context_tokens": args.max_context_tokens,
                                    "over_limit": "drop oldest whole turns to ~60% of the limit; note the count"},
                 "retry_policy": RETRY_POLICY, "provider": args.provider,
@@ -259,7 +267,7 @@ def run(args):
                     stream.write(json.dumps({"step": step, "prompt_tokens_before": last_prompt,
                                              "turns_dropped": dropped, "unix_seconds": time.time()}) + "\n")
                 last_prompt = 0
-            context = cap_images(messages, args.keep_images)
+            context = cap_images(messages, args.keep_images, args.image_block)
             if gw:
                 anthropic_messages, anthropic_tools = gateway.convert(context, tools)
                 payload = gateway.body(args.model, args.reasoning, HARNESS, anthropic_messages, anthropic_tools, session)
@@ -413,6 +421,8 @@ def main():
     parser.add_argument("--provider", choices=("openrouter", "gateway"), default="openrouter")
     parser.add_argument("--keep-images", type=int, default=8,
                         help="context policy: newest screenshots kept; all text/tool results are kept")
+    parser.add_argument("--image-block", type=int, default=8,
+                        help="drop old screenshots this many at a time (cache-stable); 1 = exactly --keep-images")
     parser.add_argument("--max-tokens-total", type=int, default=2000000)
     parser.add_argument("--reasoning", choices=("low", "medium", "high"), default="medium")
     parser.add_argument("--hide-progress", action="store_true",

@@ -29,23 +29,23 @@ for run in glob.glob("runs/reference-gw-0*/*/manifest.json"):
 print(total)
 PY
 }
-run() {  # name model reasoning usd_cap extra-flags...
-  local name=$1 model=$2 reasoning=$3 cap=$4; shift 4
+run() {  # name model reasoning usd_cap seconds extra-flags...
+  local name=$1 model=$2 reasoning=$3 cap=$4 seconds=$5; shift 5
   local s; s=$(spent)
   if .venv/bin/python -c "import sys; sys.exit(0 if $s + $cap <= $TOTAL_USD else 1)"; then
     echo "$(date -Is) start $name (spent $s)"
     .venv/bin/python -u -m terrariabench run --fixture runs/fixtures/reference-reconstructed-v1 \
       --output $C/$name --provider gateway --model $model --reasoning $reasoning --mode calibration \
-      --seconds 2700 --calls 4096 --usd $cap --keep-images 8 --max-context-tokens 120000 \
+      --seconds $seconds --calls 4096 --usd $cap --keep-images 8 --max-context-tokens 120000 \
       --max-tokens-total 200000000 "$@" > $C/$name.log 2>&1
     sleep 5
   else
     echo "$(date -Is) skip $name: spent $s + cap $cap > $TOTAL_USD"
   fi
 }
-run haiku-medium-ref-45min-01  claude-haiku-5-5  medium 3  --hide-time
-run sonnet-low-ref-45min-01    claude-sonnet-5-5 low    10 --hide-time
-run opus-low-ref-45min-01      claude-opus-5-5   low    15 --hide-time
-run haiku-medium-hidden-45min-01 claude-haiku-5-5 medium 3 --hide-progress
-run sonnet-low-hidden-45min-01 claude-sonnet-5-5 low    10 --hide-progress
+run haiku-medium-ref-45min-01    claude-haiku-5-5  medium 3  2700 --hide-time
+run sonnet-low-ref-45min-01      claude-sonnet-5-5 low    12 2700 --hide-time
+run opus-low-ref-30min-01        claude-opus-5-5   low    12 1800 --hide-time
+run haiku-medium-hidden-45min-01 claude-haiku-5-5  medium 3  2700 --hide-progress
+run sonnet-low-hidden-45min-01   claude-sonnet-5-5 low    10 2700 --hide-progress
 echo "$(date -Is) done (spent $(spent))"

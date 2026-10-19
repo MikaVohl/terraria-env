@@ -42,8 +42,11 @@ including explicit 404s, rather than 19 successful downloads.
   settings are unavailable. The exposed run transcript/settings files return
   404. Our `look`, `act`, `checkpoints` interface, 2-second holds, 16-command
   batches, provider-default sampling and output ceiling are explicit choices.
-  **Context (since 2026-10-18):** all text and tool results are kept; only the
-  newest 8 screenshots stay, older ones become a fixed placeholder. Upstream
+  **Context (since 2026-10-18):** all text and tool results are kept; old
+  screenshots become a fixed placeholder 8 at a time, so the model sees the
+  newest 8–15 and the provider's prompt cache is rewritten only once every 8
+  screenshots (dropping one per screenshot made cache writes dominate cost:
+  $2.60 of $2.79 in a 10-minute Sonnet run). Upstream
   must also have bounded images: Gemini 3 Flash took 2,407 captures (~2.4M image
   tokens) against a 1M context. Text still grows ~300–400 tokens per call, so
   once a request exceeds `--max-context-tokens` (default 120k) the oldest whole
