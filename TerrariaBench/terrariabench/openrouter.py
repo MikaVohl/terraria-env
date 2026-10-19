@@ -20,11 +20,13 @@ RETRY_POLICY = {"max_retries_per_call": 3, "max_retries_per_run": 6,
 
 
 class ProviderError(RuntimeError):
-    """Provider/transport failure. The attempt's charge is unknown."""
-    def __init__(self, message, *, retryable, retry_after=None):
+    """Provider/transport failure. The attempt's charge is unknown unless `sent` is False
+    (the request never reached the provider, e.g. a connection failure)."""
+    def __init__(self, message, *, retryable, retry_after=None, sent=True):
         super().__init__(message)
         self.retryable = retryable
         self.retry_after = retry_after
+        self.sent = sent
 
 
 def retry_delay(error, retry_index, policy=RETRY_POLICY):
@@ -135,9 +137,11 @@ class Budget:
             raise RuntimeError("dollar reservation limit reached")
         self.pending = self.reservation
 
-    def abandon(self):
-        """A failed attempt may still be billed: keep its reservation counted."""
-        self.uncertain += self.pending
+    def abandon(self, sent=True):
+        """A failed attempt may still be billed: keep its reservation counted, unless the
+        request provably never reached the provider."""
+        if sent:
+            self.uncertain += self.pending
         self.pending = Decimal(0)
 
     def reconcile(self, usage):

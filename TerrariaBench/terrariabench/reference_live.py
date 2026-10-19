@@ -22,6 +22,7 @@ from .reference_scoring import checkpoint_view, load_reference_events, reference
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTINUE = "The run is still in progress ({seconds} s left). Continue playing."
+OUTAGE_LIMIT_SECONDS = 1800
 # --hide-progress: no checkpoint tool, no checkpoint chat lines, no remaining-time count.
 CONTINUE_HIDDEN = "The run is still in progress. Continue playing."
 HIDDEN_PROGRESS_PROMPT = "prompts/reference_open_ended_hidden_progress.txt"
@@ -87,10 +88,12 @@ def _estimate_tokens(message):
     return sum(map(len, text)) / 3.5
 
 
-def trim_turns(messages, excess_tokens, keep_turns=6):
+def trim_turns(messages, excess_tokens, prompt_tokens, keep_turns=6):
     """Drop the oldest whole turns (assistant + its tool results/observations) until about
-    `excess_tokens` are removed. Head (system, task prompt) and the newest turns stay; one note
-    records how many turns are gone. Returns (messages, turns_dropped_now)."""
+    `excess_tokens` are removed. Character estimates miss thinking blocks and tool JSON, so they
+    are scaled to the provider's reported `prompt_tokens`. Head (system, task prompt) and the
+    newest turns stay; one note records how many turns are gone. Returns (messages, dropped)."""
+    scale = prompt_tokens / max(1.0, sum(_estimate_tokens(m) for m in messages))
     head, body = messages[:2], messages[2:]
     omitted = 0
     if body and body[0].get("omitted_turns"):
@@ -100,7 +103,7 @@ def trim_turns(messages, excess_tokens, keep_turns=6):
     for n, start in enumerate(starts[1:len(starts) - keep_turns + 1], 1):
         if removed >= excess_tokens:
             break
-        removed += sum(_estimate_tokens(m) for m in body[cut:start])
+        removed += scale * sum(_estimate_tokens(m) for m in body[cut:start])
         cut, dropped = start, n
     total = omitted + dropped
     note = [{"role": "user", "omitted_turns": total,
@@ -207,6 +210,9 @@ def run(args):
                                    "max_context_tokens": args.max_context_tokens,
                                    "over_limit": "drop oldest whole turns to ~60% of the limit; note the count"},
                 "retry_policy": RETRY_POLICY, "provider": args.provider,
+                "outage_policy": {"applies_to": "requests never sent (connection failures)",
+                                  "game": "process group frozen (SIGSTOP) and run clock paused",
+                                  "backoff_seconds": "5 doubling to 60", "max_outage_seconds": OUTAGE_LIMIT_SECONDS},
                 "continuation_policy": {"message": continue_message, "stop_after_consecutive_tool_less_replies": 5},
                 "reasoning_effort": args.reasoning, "reasoning_mapping": (
                     f"omp --thinking {args.reasoning}: {json.dumps(model['reasoning_fields'])}" if gw else
@@ -218,7 +224,16 @@ def run(args):
     image_refs = {}
     pid, game, frame_count, calls, commands, invalid, retries, streak = None, None, 0, 0, 0, 0, 0, 0
     continuations = quiet = last_prompt = 0
+    frozen_at, outage_total = None, 0.0
     stop, started, started_unix = "startup", time.monotonic(), time.time()
+
+    def thaw():
+        """Resume a game frozen for a provider outage and shift the run clock by the outage."""
+        nonlocal frozen_at, outage_total, started
+        if frozen_at is not None:
+            os.killpg(pid, signal.SIGCONT)
+            outage = time.monotonic() - frozen_at
+            outage_total, started, frozen_at = outage_total + outage, started + outage, None
 
     def observation():
         nonlocal frame_count
@@ -262,7 +277,7 @@ def run(args):
                 stop = "wall_or_resource_limit"
                 break
             if last_prompt > args.max_context_tokens:
-                messages, dropped = trim_turns(messages, last_prompt - .6 * args.max_context_tokens)
+                messages, dropped = trim_turns(messages, last_prompt - .6 * args.max_context_tokens, last_prompt)
                 with (output / "context-trims.jsonl").open("a") as stream:
                     stream.write(json.dumps({"step": step, "prompt_tokens_before": last_prompt,
                                              "turns_dropped": dropped, "unix_seconds": time.time()}) + "\n")
@@ -286,21 +301,37 @@ def run(args):
                 calls += 1
                 t0 = time.monotonic()
                 try:
-                    timeout = min(90, max(1, args.seconds - (time.monotonic() - started)))
+                    timeout = 30 if frozen_at is not None else min(90, max(1, args.seconds - (time.monotonic() - started)))
                     if gw:
                         message, meta = gateway.messages(payload, key=key, session=session, timeout=timeout)
                         response = gateway.normalize(message, meta, args.model)
                     else:
                         response = request("/chat/completions", key=key, payload=payload, timeout=timeout)
+                    thaw()
                     break
                 except ProviderError as error:
-                    budget.abandon()
+                    budget.abandon(error.sent)
+                    outage_so_far = outage_total + (time.monotonic() - frozen_at if frozen_at is not None else 0)
+                    if not error.sent and outage_so_far < OUTAGE_LIMIT_SECONDS:
+                        # Route down (request never sent): freeze the game and stop the run clock.
+                        if frozen_at is None:
+                            os.killpg(pid, signal.SIGSTOP)
+                            frozen_at = time.monotonic()
+                        wait = min(60.0, 5.0 * 2 ** min(attempt, 4))
+                        with (output / "provider-failures.jsonl").open("a") as stream:
+                            stream.write(json.dumps({"step": step, "attempt": attempt, "error": str(error), "sent": False,
+                                                     "game_frozen": True, "outage_seconds": outage_so_far,
+                                                     "wait_seconds": wait, "unix": time.time()}) + "\n")
+                        attempt += 1
+                        time.sleep(wait)
+                        continue
+                    thaw()
                     wait = retry_delay(error, attempt)
-                    retry = (error.retryable and attempt < RETRY_POLICY["max_retries_per_call"]
+                    retry = (error.retryable and error.sent and attempt < RETRY_POLICY["max_retries_per_call"]
                              and retries < RETRY_POLICY["max_retries_per_run"]
                              and time.monotonic() - started + wait < args.seconds)
                     with (output / "provider-failures.jsonl").open("a") as stream:
-                        stream.write(json.dumps({"step": step, "attempt": attempt, "error": str(error),
+                        stream.write(json.dumps({"step": step, "attempt": attempt, "error": str(error), "sent": error.sent,
                                                  "retryable": error.retryable, "will_retry": retry, "wait_seconds": wait,
                                                  "attempt_seconds": time.monotonic() - t0, "unix": time.time()}) + "\n")
                     if not retry:
@@ -385,6 +416,8 @@ def run(args):
         stop = type(error).__name__ + ": " + str(error).replace(key, "[redacted]")
     finally:
         end = time.time()
+        if frozen_at is not None and pid:
+            os.killpg(pid, signal.SIGCONT)
         if game:
             game.close()
         if pid:
@@ -396,7 +429,7 @@ def run(args):
         result = {"profile_id": profile["profile_id"], "mode": args.mode, "provider": args.provider,
                   "model": args.model, "exact_reference_reproduction": False, "official_eligible": False,
                   "stop_reason": stop, "calls": calls, "provider_retries": retries, "input_commands": commands,
-                  "continuations": continuations,
+                  "continuations": continuations, "provider_outage_seconds": outage_total,
                   "frames": frame_count, "invalid_tools": invalid,
                   "active_wall_seconds": time.monotonic()-started, "evaluation_end_unix": end,
                   "accounting": budget.summary(), "score": reference_score(events, actions=receipts),

@@ -168,6 +168,11 @@ def messages(payload, *, key, session, timeout=90, base=None):
             retry_after = None
         raise ProviderError(f"gateway HTTP {error.code}; charge uncertain",
                             retryable=error.code in RETRYABLE_HTTP | {529}, retry_after=retry_after) from None
+    except urllib.error.URLError as error:
+        # urllib raises URLError only while connecting/sending (DNS, refused, TLS, connect timeout):
+        # the gateway never received a complete request, so no charge is possible.
+        raise ProviderError(f"gateway connection failure (URLError/{type(error.reason).__name__}); not sent",
+                            retryable=True, sent=False) from None
     except (OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         raise ProviderError(f"gateway transport/JSON failure ({type(error).__name__}); charge uncertain",
                             retryable=True) from None
