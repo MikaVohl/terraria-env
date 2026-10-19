@@ -74,6 +74,8 @@ _lib.tl_ach_name.restype = ctypes.c_char_p
 _lib.tl_ach_name.argtypes = [ctypes.c_int]
 _lib.tl_item_name.restype = ctypes.c_char_p
 _lib.tl_item_name.argtypes = [ctypes.c_int]
+_lib.tl_tile_name.restype = ctypes.c_char_p
+_lib.tl_tile_name.argtypes = [ctypes.c_int]
 
 _lib.tl_create.restype = ctypes.c_void_p
 _lib.tl_create.argtypes = [ctypes.c_int]
@@ -103,6 +105,15 @@ _lib.tl_message.restype = ctypes.c_char_p
 for _name in ("tl_steps", "tl_return", "tl_health", "tl_depth",
               "tl_achievements", "tl_message"):
     getattr(_lib, _name).argtypes = [ctypes.c_void_p]
+_lib.tl_player_x.restype = ctypes.c_int
+_lib.tl_player_x.argtypes = [ctypes.c_void_p]
+_lib.tl_state_bytes.restype = ctypes.c_int
+_lib.tl_state_bytes.argtypes = []
+_lib.tl_save_state.restype = None
+_lib.tl_save_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+_lib.tl_load_state.restype = None
+_lib.tl_load_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+_STATE_BYTES = _lib.tl_state_bytes()
 
 
 class _Spec:
@@ -141,6 +152,8 @@ class _Spec:
         # the text view lie. unknown_tile has no glyph; render_ascii blanks it.
         self.tile_glyphs = [chr(lib.tl_tile_glyph(t))
                             for t in range(self.tile_kinds - 1)]
+        self.tile_names = [lib.tl_tile_name(t).decode()
+                           for t in range(self.tile_kinds - 1)]
 
     def __repr__(self):
         return (f"<terraria-lite v{self.version} {self.view_w}x{self.view_h} window, "
@@ -253,6 +266,27 @@ class TerrariaLite:
         """
         _lib.tl_action_mask(self._h, self._p_mask)
         return self._mask.astype(bool)
+
+    # -- snapshots ---------------------------------------------------------
+
+    def save_state(self) -> bytes:
+        """Exact simulator state as an opaque in-memory blob (this build only)."""
+        buf = ctypes.create_string_buffer(_STATE_BYTES)
+        _lib.tl_save_state(self._h, buf)
+        return buf.raw
+
+    def load_state(self, state: bytes):
+        """Continue from a `save_state` blob; returns (obs, info) like reset."""
+        if len(state) != _STATE_BYTES:
+            raise ValueError("state blob does not match this library build")
+        _lib.tl_load_state(self._h, state)
+        _lib.tl_observe(self._h, self._p_tile, self._p_light, self._p_status)
+        return self._encode().copy(), self._info()
+
+    @property
+    def position(self) -> tuple[int, int]:
+        """World (x, feet y); diagnostics and memory features only."""
+        return _lib.tl_player_x(self._h), _lib.tl_depth(self._h)
 
     # -- debugging ---------------------------------------------------------
 

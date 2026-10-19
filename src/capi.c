@@ -84,6 +84,10 @@ TL_API int tl_tile_glyph(int t)
 {
     return (t >= 0 && t < TILE_COUNT) ? TILE_INFO[t].glyph : '?';
 }
+TL_API const char *tl_tile_name(int t)
+{
+    return (t >= 0 && t < TILE_COUNT) ? TILE_INFO[t].name : "";
+}
 
 /* ---- lifecycle ---------------------------------------------------------- */
 
@@ -156,6 +160,17 @@ TL_API int      tl_health(const Env *e)       { return e ? e->health : 0; }
 TL_API int      tl_depth(const Env *e)        { return e ? e->py : 0; }
 TL_API unsigned tl_achievements(const Env *e) { return e ? e->achievements : 0u; }
 TL_API const char *tl_message(const Env *e)   { return e ? e->msg : ""; }
+TL_API int      tl_player_x(const Env *e)     { return e ? e->px : 0; }
+
+/* ---- whole-state snapshots ----------------------------------------------
+   Env owns no pointers (env_free is a no-op), so a byte copy is an exact,
+   complete simulator state: world, lighting caches, RNG, step counter and
+   achievements. Restoring continues the same episode deterministically.
+   Blobs are only valid for the library build that produced them; callers
+   keep them in memory and never persist them across builds. */
+TL_API int  tl_state_bytes(void) { return (int)sizeof(Env); }
+TL_API void tl_save_state(const Env *e, void *out) { if (e && out) memcpy(out, e, sizeof *e); }
+TL_API void tl_load_state(Env *e, const void *in) { if (e && in) memcpy(e, in, sizeof *e); }
 
 /* Writes tl_action_count() bytes, 1 where the action would change the state.
    A separate call rather than another out-parameter on tl_step: most callers

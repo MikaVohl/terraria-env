@@ -40,7 +40,9 @@ def load_agent(path: str | Path, device: str = "cpu"):
     from terraria_lite.spatial_agent import build_agent
     architecture=raw.get("architecture","mlp")
     hidden=int(state["actor.weight"].shape[1])
-    agent = build_agent(architecture,hidden).to(device)
+    agent = build_agent(architecture,hidden,int(raw.get("extra",0))).to(device)
+    if raw.get("memory_features") is not None:
+        agent.memory_features = raw["memory_features"]   # read by evaluate()
     agent.load_state_dict(state)
     agent.eval()
     return agent
@@ -50,7 +52,16 @@ def load_agent(path: str | Path, device: str = "cpu"):
 def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
              greedy: bool = False, sample_seed: int = 12345,
              device: str = "cpu") -> dict:
-    """Evaluate exactly one episode per seed and return aggregate metrics."""
+    """Evaluate exactly one episode per seed and return aggregate metrics.
+
+    An agent with a `memory_features` attribute (set by load_agent from the
+    checkpoint) acts from obs concatenated with that feature set, recomputed
+    per lane from its own observations starting at episode start.
+    """
+    memory_name = getattr(agent, "memory_features", None)
+    if memory_name is not None:
+        from terraria_lite.memory_features import PolicyFeatures
+        PolicyFeatures(memory_name, 1)   # validates the name before any episode
     torch.manual_seed(sample_seed)
     records: list[dict] = []
 
@@ -62,6 +73,8 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
             obs = np.stack([e.reset(seed=s)[0] for e, s in zip(envs, batch_seeds)])
             mask = np.stack([e.action_mask() for e in envs])
             active = np.ones(len(envs), dtype=bool)
+            # Fresh memory per batch: every lane starts its only episode here.
+            memory = PolicyFeatures(memory_name, len(envs)) if memory_name is not None else None
             from terraria_lite.batch import NativeBatch
             native=NativeBatch(envs,workers=4)
             status_start=SPEC.cells*(SPEC.tile_kinds+1)
@@ -76,7 +89,8 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
                 done = torch.zeros(len(envs), device=device)
 
             while active.any():
-                x = torch.as_tensor(obs, device=device)
+                x = torch.as_tensor(obs if memory is None else
+                                    np.concatenate((obs, memory.update(obs, mask)), 1), device=device)
                 m = torch.as_tensor(mask, device=device)
                 if recurrent:
                     h, state = agent.core_step(x, state, done)

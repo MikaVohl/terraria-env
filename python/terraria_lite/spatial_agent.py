@@ -43,10 +43,13 @@ class SpatialActorCritic(ActorCritic):
         self.critic=layer_init(nn.Linear(hidden,1),std=1.)
 
 
-def build_agent(architecture="mlp", hidden=None):
+def build_agent(architecture="mlp", hidden=None, extra=0):
+    """`extra` appends non-observation input features; only 'targets' supports it."""
     if architecture=="targets":
         from terraria_lite.target_agent import TargetActorCritic
-        return TargetActorCritic(hidden or 128)
+        return TargetActorCritic(hidden or 128,extra)
+    if extra:
+        raise ValueError(f"Architecture {architecture} does not accept extra features")
     if architecture=="mlp":
         return ActorCritic(SPEC.obs_size,SPEC.n_actions,hidden=hidden or 512)
     if architecture=="tokens":

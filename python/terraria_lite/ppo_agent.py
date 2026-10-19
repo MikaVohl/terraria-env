@@ -16,6 +16,7 @@ Policy updates reuse the masks that defined their original sampling support.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import time
 from dataclasses import dataclass
@@ -59,6 +60,15 @@ class Config:
     progress_anneal: bool = False
     seed: int = 1
     device: str = "cpu"              # benchmark device/batch together; CNN can benefit from MPS
+    # Speed only; neither changes the losses or the sampling distribution.
+    # collect_device: "" samples on `device`; e.g. "cpu" with device="mps"
+    # samples batch-N rollouts on CPU with a synchronised policy copy and
+    # learns on MPS (float rounding then differs from an all-CPU run).
+    collect_device: str = ""
+    # collect_threads: torch intra-op threads while sampling, 0 = unchanged.
+    # Batch-N forwards are latency-bound; 1 is fastest for targets/cnn and
+    # was bit-identical to the unchanged run at 4 and 6 threads (targets).
+    collect_threads: int = 0
     quiet: bool = False              # suppress per-iteration lines when sweeping
     save: str = "ppo_terraria.pt"    # "" to skip, so parallel sweeps don't collide
     init: str = ""                    # optional actor/critic state_dict warm start
@@ -68,6 +78,15 @@ class Config:
     curiosity_balanced: bool = False
     bootstrap_time_limit: bool = False  # legacy/control only for the inherent deadline
     achievement_reward: str = "equal"  # optional fixed sparse weighting; evaluation unchanged
+    # Training-only exploration aids; all off by default, evaluation unchanged.
+    archive_start_prob: float = 0.0   # Go-Explore start states (archive.py)
+    archive_capacity: int = 4096
+    sil_minibatches: int = 0          # self-imitation updates per iteration
+    sil_value_coef: float = 0.01
+    novelty_coef: float = 0.0         # count-based progress-cell novelty
+    potential_coef: float = 0.0       # potential-based recipe shaping (prior knowledge)
+    memory_features: str = ""         # "stations_v1": observed station memory inputs
+    aux_coef: float = 0.0             # predictive inventory/unlock auxiliary loss
 
     @property
     def batch(self) -> int:
@@ -143,12 +162,17 @@ class VecTerraria:
         can bootstrap it; the benchmark's inherent action deadline does not.
     """
 
-    def __init__(self, n: int, seed: int = 1):
+    def __init__(self, n: int, seed: int = 1, restart=None):
         self.envs = [TerrariaLite() for _ in range(n)]
         self.n = n
         self._next_seed = seed
         self.obs = np.zeros((n, SPEC.obs_size), dtype=np.float32)
         self.mask = np.zeros((n, SPEC.n_actions), dtype=bool)
+        # Optional training-only start-state hook: restart(lane, env) returns
+        # (obs, info) after restoring some state, or None for a fresh world.
+        # `restored[i]` says whether lane i's current episode came from it.
+        self.restart = restart
+        self.restored = np.zeros(n, dtype=bool)
         from terraria_lite.batch import NativeBatch
         self.native = NativeBatch(self.envs)
 
@@ -177,8 +201,12 @@ class VecTerraria:
         for i in np.flatnonzero(term | trunc):
             e = self.envs[i]
             final[i] = self.obs[i]
-            finished.append((int(i), e._info()))
-            self.obs[i] = e.reset(seed=self._fresh_seed())[0]
+            info = e._info()
+            info["restored_start"] = bool(self.restored[i])
+            finished.append((int(i), info))
+            started = self.restart(int(i), e) if self.restart is not None else None
+            self.restored[i] = started is not None
+            self.obs[i] = started[0] if started is not None else e.reset(seed=self._fresh_seed())[0]
             self.mask[i] = e.action_mask()
         return self.obs, self.mask, rew, term, trunc, final, finished
 
@@ -330,34 +358,59 @@ def train(cfg: Config, checkpoint_callback=None):
         raise ValueError("rollout batch must be divisible by positive minibatches")
     if cfg.achievement_reward not in ("equal", "difficulty"):
         raise ValueError("Unknown achievement reward scheme")
+    if cfg.memory_features and cfg.bootstrap_time_limit:
+        raise ValueError("Truncation bootstrap does not track memory features")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
+    collect_device = torch.device(cfg.collect_device or cfg.device)
 
-    envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed)
+    archive = None
+    if cfg.archive_start_prob:
+        from terraria_lite.archive import StartArchive
+        archive = StartArchive(cfg.archive_capacity, cfg.archive_start_prob, seed=cfg.seed)
+    envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed,
+                       restart=archive.restart if archive is not None else None)
+    memory = None
+    if cfg.memory_features:
+        from terraria_lite.memory_features import PolicyFeatures
+        memory = PolicyFeatures(cfg.memory_features, cfg.num_envs)
+    width = SPEC.obs_size + (memory.N_FEATURES if memory is not None else 0)
     from terraria_lite.spatial_agent import build_agent
-    agent = build_agent(cfg.architecture).to(device)
+    agent = build_agent(cfg.architecture, extra=width - SPEC.obs_size).to(device)
+    if memory is not None:
+        agent.memory_features = cfg.memory_features
     if cfg.init:
         raw = torch.load(cfg.init, map_location=device, weights_only=True)
         from terraria_lite.checkpoints import validate_checkpoint
         validate_checkpoint(raw)
         agent.load_state_dict(raw.get("model", raw) if isinstance(raw, dict) else raw)
-    opt = torch.optim.Adam(agent.parameters(), lr=cfg.lr, eps=1e-5)
+    aux = None
+    if cfg.aux_coef:
+        from terraria_lite.predictive_aux import PredictiveAux
+        aux = PredictiveAux(agent.actor.in_features).to(device)
+    opt = torch.optim.Adam(list(agent.parameters()) + (list(aux.parameters()) if aux is not None else []),
+                           lr=cfg.lr, eps=1e-5)
+    # Rollout policy: the learner itself, or a copy re-synchronised after every
+    # update, so collection always samples from the current parameters.
+    actor = agent if collect_device == device else copy.deepcopy(agent).to(collect_device)
 
     T, N = cfg.rollout, cfg.num_envs
-    obs_b = torch.zeros((T, N, SPEC.obs_size), device=device)
-    act_b = torch.zeros((T, N), dtype=torch.long, device=device)
-    logp_b = torch.zeros((T, N), device=device)
-    rew_b = torch.zeros((T, N), device=device)
-    done_b = torch.zeros((T, N), device=device)
-    val_b = torch.zeros((T, N), device=device)
+    # Rollout buffers live where they are written; the update moves them to the
+    # learner once per iteration (a no-op when the devices coincide).
+    obs_b = torch.zeros((T, N, width), device=collect_device)
+    act_b = torch.zeros((T, N), dtype=torch.long, device=collect_device)
+    logp_b = torch.zeros((T, N), device=collect_device)
+    rew_b = torch.zeros((T, N), device=collect_device)
+    done_b = torch.zeros((T, N), device=collect_device)
+    val_b = torch.zeros((T, N), device=collect_device)
     # Stored, not recomputed: the update pass must score actions under the same
     # support they were sampled from, or the ratio is against a distribution
     # that never existed.
-    msk_b = torch.zeros((T, N, SPEC.n_actions), dtype=torch.bool, device=device)
+    msk_b = torch.zeros((T, N, SPEC.n_actions), dtype=torch.bool, device=collect_device)
     from terraria_lite.curiosity import RND
     curiosity=RND(SPEC.obs_size,device,balanced=cfg.curiosity_balanced) if cfg.curiosity_coef else None
-    novelty_b=torch.empty_like(obs_b) if curiosity is not None else None
+    novelty_b=torch.empty((T, N, SPEC.obs_size), device=collect_device) if curiosity is not None else None
 
     o0, m0 = envs.reset()
     achievement_rewards = None
@@ -367,9 +420,30 @@ def train(cfg: Config, checkpoint_callback=None):
     shaper = ProgressShaper(N) if cfg.progress_coef else None
     if shaper is not None:
         shaper.reset(o0)
-    next_obs = torch.as_tensor(o0, device=device)
-    next_mask = torch.as_tensor(m0, device=device)
-    next_done = torch.zeros(N, device=device)
+    from terraria_lite.cells import cell_keys
+    novelty = potential = sil = None
+    if cfg.novelty_coef:
+        from terraria_lite.count_novelty import CellNovelty
+        novelty = CellNovelty(o0)
+    if cfg.potential_coef:
+        from terraria_lite.potential import RecipePotential
+        potential = RecipePotential(o0, cfg.gamma, cfg.potential_coef)
+    if cfg.sil_minibatches:
+        from terraria_lite.self_imitation import SelfImitation
+        sil = SelfImitation(N, cfg.gamma, device=device, value_coef=cfg.sil_value_coef, seed=cfg.seed)
+    if archive is not None:
+        archive.observe(envs.envs, o0, cell_keys(o0))
+
+    def policy_input(raw, mask):
+        """Agent input for the obs the policy acts from (raw plus feature sets)."""
+        return raw if memory is None else np.concatenate((raw, memory.update(raw, mask)), 1)
+
+    current = policy_input(o0, m0)
+    next_obs = torch.as_tensor(current, device=collect_device)
+    next_mask = torch.as_tensor(m0, device=collect_device)
+    next_done = torch.zeros(N, device=collect_device)
+    extrinsic_episodes = restored_episodes = 0
+    sil_stats: dict = {}
 
     n_iters = cfg.total_steps // cfg.batch
     ep_returns, ep_achievements, ep_lengths, ep_deaths = [], [], [], []
@@ -394,74 +468,103 @@ def train(cfg: Config, checkpoint_callback=None):
 
         # ---- collect ----------------------------------------------------
         phase_start = time.perf_counter()
+        threads = torch.get_num_threads()
+        if cfg.collect_threads:
+            torch.set_num_threads(cfg.collect_threads)
         for t in range(T):
             obs_b[t] = next_obs
             done_b[t] = next_done
             msk_b[t] = next_mask
-            with torch.no_grad():
-                a, logp, _, v = agent.act(next_obs, mask=next_mask)
+            with torch.inference_mode():
+                a, logp, _, v = actor.act(next_obs, mask=next_mask)
             act_b[t], logp_b[t], val_b[t] = a, logp, v
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
+            ended = term | trunc
+            if sil is not None:
+                sil.add_step(obs_b[t].cpu().numpy(), act_b[t].cpu().numpy(),
+                             msk_b[t].cpu().numpy(), r, ended)
             if achievement_rewards is not None:
-                r = achievement_rewards.step(r, obs, final, term | trunc)
+                r = achievement_rewards.step(r, obs, final, ended)
             if novelty_b is not None:
-                novelty_b[t]=torch.as_tensor(obs,device=device)
-                ended=np.flatnonzero(term|trunc)
-                if len(ended): novelty_b[t,torch.as_tensor(ended,device=device)]=torch.as_tensor(final[ended],device=device)
+                novelty_b[t]=torch.as_tensor(obs,device=collect_device)
+                ended_lanes=np.flatnonzero(ended)
+                if len(ended_lanes): novelty_b[t,torch.as_tensor(ended_lanes,device=collect_device)]=torch.as_tensor(final[ended_lanes],device=collect_device)
             if shaper is not None:
                 r = r + progress_coef * shaper.step(obs, final, term, trunc)
-            rew_b[t] = torch.as_tensor(r, device=device)
-            _absorb_truncation(cfg, agent, rew_b, term, trunc, final, t, device)
+            if novelty is not None:
+                r = r + cfg.novelty_coef * novelty.step(obs, final, ended)
+            if potential is not None:
+                r = r + potential.step(obs, final, ended)
+            if archive is not None:
+                archive.observe(envs.envs, obs, cell_keys(obs))
+            rew_b[t] = torch.as_tensor(r, device=collect_device)
+            _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device)
 
-            next_obs = torch.as_tensor(obs, device=device)
-            next_mask = torch.as_tensor(msk, device=device)
+            if memory is not None:
+                memory.reset(np.flatnonzero(ended))
+            next_obs = torch.as_tensor(policy_input(obs, msk), device=collect_device)
+            next_mask = torch.as_tensor(msk, device=collect_device)
             # Autoreset makes both kinds episode boundaries. An explicitly
             # enabled external bootstrap was folded into rew_b above; using
             # only `term` here would add V(reset_obs) as well and carry GAE from
             # an unrelated fresh world across the boundary.
             boundary = np.logical_or(term, trunc)
-            next_done = torch.as_tensor(boundary.astype(np.float32), device=device)
+            next_done = torch.as_tensor(boundary.astype(np.float32), device=collect_device)
             step_count += N
 
             for _, info in finished:
+                # Restored starts are training curriculum, not fresh-world
+                # performance; keep them out of the episode telemetry.
+                if info["restored_start"]:
+                    restored_episodes += 1
+                    continue
+                extrinsic_episodes += 1
                 ep_returns.append(info["episode_return"])
                 ep_achievements.append(info["achievements"])
                 ep_lengths.append(info["steps"])
                 ep_deaths.append(1.0 if info["health"] <= 0 else 0.0)
                 ep_masks.append(info["achievement_mask"])
 
+        torch.set_num_threads(threads)
         collection_seconds += time.perf_counter() - phase_start
         phase_start = time.perf_counter()
         # ---- GAE ---------------------------------------------------------
         novelty_error=0.0
         if curiosity is not None:
-            bonus,novelty_error=curiosity.bonus_and_update(novelty_b.reshape(-1,SPEC.obs_size))
+            bonus,novelty_error=curiosity.bonus_and_update(novelty_b.reshape(-1,SPEC.obs_size).to(device))
             scale=cfg.curiosity_coef
             if cfg.curiosity_anneal:
                 scale*=max(0.,1.-2.*(it-1)/n_iters)
-            rew_b+=scale*bonus.reshape(T,N)
+            rew_b+=scale*bonus.reshape(T,N).to(collect_device)
         with torch.no_grad():
-            next_value = agent.value(next_obs)
+            next_value = actor.value(next_obs)
             adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
                               cfg.gamma, cfg.gae_lambda)
             ret = adv + val_b
 
-        b_obs = obs_b.reshape(-1, SPEC.obs_size)
-        b_act = act_b.reshape(-1)
-        b_logp = logp_b.reshape(-1)
-        b_adv = adv.reshape(-1)
-        b_ret = ret.reshape(-1)
-        b_val = val_b.reshape(-1)
-        b_msk = msk_b.reshape(-1, SPEC.n_actions)
+        b_obs = obs_b.reshape(-1, width).to(device)
+        b_act = act_b.reshape(-1).to(device)
+        b_logp = logp_b.reshape(-1).to(device)
+        b_adv = adv.reshape(-1).to(device)
+        b_ret = ret.reshape(-1).to(device)
+        b_val = val_b.reshape(-1).to(device)
+        b_msk = msk_b.reshape(-1, SPEC.n_actions).to(device)
+        if aux is not None:
+            delta, unlock, valid = PredictiveAux.targets(obs_b, next_obs, done_b, next_done)
+            b_delta = delta.reshape(-1, SPEC.n_items).to(device)
+            b_unlock = unlock.reshape(-1, SPEC.n_achievements).to(device)
+            b_valid = valid.reshape(-1).to(device)
 
         # ---- optimise ----------------------------------------------------
         idx = np.arange(cfg.batch)
         clipfracs, approx_kl = [], torch.tensor(0.0)
         for _ in range(cfg.epochs):
             np.random.shuffle(idx)
+            # One index upload per epoch, not one per gathered tensor.
+            perm = torch.as_tensor(idx, device=device)
             for s in range(0, cfg.batch, cfg.minibatch):
-                mb = idx[s: s + cfg.minibatch]
+                mb = perm[s: s + cfg.minibatch]
                 _, newlogp, entropy, newval = agent.act(b_obs[mb], b_act[mb],
                                                         mask=b_msk[mb])
                 logratio = newlogp - b_logp[mb]
@@ -471,7 +574,7 @@ def train(cfg: Config, checkpoint_callback=None):
                     # Schulman's low-variance KL estimator; also the early-stop signal.
                     approx_kl = ((ratio - 1) - logratio).mean()
                     clipfracs.append(
-                        ((ratio - 1.0).abs() > cfg.clip_coef).float().mean().item())
+                        ((ratio - 1.0).abs() > cfg.clip_coef).float().mean())
 
                 # Normalise advantages per minibatch, not per batch.
                 mb_adv = b_adv[mb]
@@ -491,6 +594,9 @@ def train(cfg: Config, checkpoint_callback=None):
                     v_loss = 0.5 * ((newval - b_ret[mb]) ** 2).mean()
 
                 loss = pg - cfg.ent_coef * entropy.mean() + cfg.vf_coef * v_loss
+                if aux is not None:
+                    loss = loss + cfg.aux_coef * aux.loss(agent, b_obs[mb], b_act[mb], b_delta[mb],
+                                                          b_unlock[mb], b_valid[mb])
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss; preserve this run without retrying")
 
@@ -501,6 +607,10 @@ def train(cfg: Config, checkpoint_callback=None):
 
             if cfg.target_kl is not None and approx_kl > cfg.target_kl:
                 break
+        if sil is not None:
+            sil_stats = sil.update(agent, opt, cfg.sil_minibatches, cfg.max_grad_norm)
+        if actor is not agent:
+            actor.load_state_dict(agent.state_dict())
 
         optimisation_seconds += time.perf_counter() - phase_start
         if checkpoint_callback is not None:
@@ -509,10 +619,15 @@ def train(cfg: Config, checkpoint_callback=None):
                 "optimisation_seconds": optimisation_seconds,
                 "novelty_error": novelty_error,
                 "policy_entropy": float(entropy.detach().mean()),
+                "fresh_episodes": extrinsic_episodes,
+                "restored_episodes": restored_episodes,
+                **({"archive": archive.stats()} if archive is not None else {}),
+                **(novelty.stats() if novelty is not None else {}),
+                **({"sil": sil_stats} if sil is not None else {}),
             })
         # ---- report ------------------------------------------------------
-        y = b_ret.cpu().numpy()
-        yhat = b_val.cpu().numpy()
+        y = ret.cpu().numpy().ravel()
+        yhat = val_b.cpu().numpy().ravel()
         var = np.var(y)
         ev = np.nan if var == 0 else 1 - np.var(y - yhat) / var
         sps = step_count / (time.perf_counter() - start)
@@ -524,7 +639,7 @@ def train(cfg: Config, checkpoint_callback=None):
                   f"{np.mean(ep_lengths[w]) if ep_lengths else 0:6.0f} "
                   f"{100 * np.mean(ep_deaths[w]) if ep_deaths else 0:7.0f} "
                   f"{entropy.mean().item():8.3f} {approx_kl.item():7.4f} "
-                  f"{np.mean(clipfracs):6.3f} {ev:6.2f} {sps:7,.0f}")
+                  f"{torch.stack(clipfracs).mean().item():6.3f} {ev:6.2f} {sps:7,.0f}")
 
     envs.close()
 
@@ -548,6 +663,12 @@ def train(cfg: Config, checkpoint_callback=None):
         "hits": {SPEC.achievement_names[i]: sum((m >> i) & 1 for m in tail)
                  for i in range(SPEC.n_achievements)
                  if any((m >> i) & 1 for m in tail)},
+        "exploration": {"archive_start_prob": cfg.archive_start_prob, "sil_minibatches": cfg.sil_minibatches,
+                        "novelty_coef": cfg.novelty_coef, "potential_coef": cfg.potential_coef,
+                        "memory_features": cfg.memory_features, "restored_episodes": restored_episodes,
+                        **({"archive": archive.stats()} if archive is not None else {}),
+                        **(novelty.stats() if novelty is not None else {}),
+                        **({"sil": sil_stats} if sil is not None else {})},
     }
 
     if ep_achievements and not cfg.quiet:
@@ -575,7 +696,9 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.save:
         torch.save({"model": agent.state_dict(), "architecture": cfg.architecture,
                     "environment_version": SPEC.version,
-                    "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions}, cfg.save)
+                    "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions,
+                    **({"memory_features": cfg.memory_features, "extra": width - SPEC.obs_size}
+                       if memory is not None else {})}, cfg.save)
         if not cfg.quiet:
             print(f"\nsaved {cfg.save}")
     return summary
@@ -632,6 +755,10 @@ if __name__ == "__main__":
                    help="torch/numpy/env seed; sweep it before trusting a delta")
     p.add_argument("--device", type=str, default=Config.device,
                    help="cpu or mps; cpu usually wins for a net this small")
+    p.add_argument("--collect-device", type=str, default=Config.collect_device,
+                   help='rollout sampling device, "" = --device; cpu with --device mps')
+    p.add_argument("--collect-threads", type=int, default=Config.collect_threads,
+                   help="torch threads while sampling, 0 = --threads")
     p.add_argument("--save", type=str, default=Config.save,
                    help='checkpoint path, "" to skip')
     p.add_argument("--init", type=str, default=Config.init,
@@ -646,6 +773,7 @@ if __name__ == "__main__":
                      lr=a.lr, gamma=a.gamma, ent_coef=a.ent_coef, seed=a.seed,
                      progress_coef=a.progress_coef,
                      progress_anneal=a.progress_anneal, device=a.device,
+                     collect_device=a.collect_device, collect_threads=a.collect_threads,
                      save=a.save, init=a.init, quiet=a.quiet,architecture=a.architecture,
                      gae_lambda=a.gae_lambda,bootstrap_time_limit=a.bootstrap_time_limit,curiosity_coef=a.curiosity_coef,
                      curiosity_balanced=a.balanced_curiosity))

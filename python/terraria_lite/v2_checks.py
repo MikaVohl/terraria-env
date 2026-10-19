@@ -82,6 +82,26 @@ def check_recurrent_targets():
         act.reset()
         assert mask[0, act(x[0, 0].numpy(), mask[0].numpy(), False)]
 
+def check_state_snapshots():
+    """save_state/load_state must continue an episode bit-identically in another
+    instance; this breaks if Env ever gains a pointer or out-of-struct state."""
+    rng=np.random.default_rng(3)
+    for seed in (11,12,13):
+        a,b=TerrariaLite(),TerrariaLite(); a.reset(seed=seed); b.reset(seed=seed+100)
+        try:
+            for _ in range(200):
+                a.step(int(rng.choice(np.flatnonzero(a.action_mask()))))
+            b.load_state(a.save_state())
+            assert a._info()==b._info()
+            for _ in range(400):
+                act=int(rng.choice(np.flatnonzero(a.action_mask())))
+                ra,rb=a.step(act),b.step(act)
+                np.testing.assert_array_equal(ra[0],rb[0]); assert ra[1:]==rb[1:]
+                np.testing.assert_array_equal(a.action_mask(),b.action_mask())
+                if ra[2] or ra[3]: break
+        finally:
+            a.close(); b.close()
+
 
 def main():
     from terraria_lite.checkpoints import validate_checkpoint
@@ -199,6 +219,7 @@ def main():
                 np.testing.assert_array_equal(a,b)
     finally:
         for e in owners: e.close()
-    print(f"v{SPEC.version} Python checks passed: 64,000 scalar/batch transitions at 1/2/4/8 workers; raw/flat encoding; legal support; recurrent boundaries; model reloads; RND")
+    check_state_snapshots()
+    print(f"v{SPEC.version} Python checks passed: 64,000 scalar/batch transitions at 1/2/4/8 workers; raw/flat encoding; legal support; recurrent boundaries; model reloads; RND; state snapshots")
 
 if __name__=="__main__": main()

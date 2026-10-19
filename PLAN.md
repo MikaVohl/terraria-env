@@ -1,3 +1,20 @@
+## Exploration aids — October 18, 2026
+
+[Report](EXPLORATION_2026_10_18.md). New exact simulator snapshots
+(`save_state`/`load_state`), Go-Explore start archive, self-imitation, cell-count
+novelty, observed station memory, crafting-menu input, potential-based recipe
+shaping and a predictive auxiliary loss, all off by default. Potential shaping
+(prior knowledge, disclosed) is the only consistent gain: +1.41/32 over five
+paired seeds at 16M and 21.67/20.90 vs 19.66/20.52 at 48M with furnace in
+61–86/128 worlds. Surface traps (novelty, some early potential runs) and
+self-imitation lock-in are the main failure modes. Next, not launched: longer
+potential runs with more seeds and an anti-surface-trap schedule; target return
+to surface and wood breastplate; low-coefficient underground novelty. No policy
+selected or promoted; reserved test worlds 25,000,001–25,000,128 unused.
+On v7 (unchanged gameplay) potential shaping is +1.61/32 over four paired 16M
+seeds; a 48M v7 potential-vs-control pair (seeds 941/942, MPS) is running in
+`experiments/explore-v7-long-20261019` to test whether the furnace step is retained.
+
 ## Completed PPO study — October 17, 2026
 
 The [v7 reward/discount study](V7_REWARD_STUDY_2026_10_17.md) and

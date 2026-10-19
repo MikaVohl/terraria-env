@@ -9,6 +9,21 @@ rope, platforms, Cloud in a Bottle, healing, Life Crystals, campfires, and four
 ordinary ores. It uses original Terraria art from your local installation.
 The mechanics remain intentionally simplified.
 
+**October 18 exploration study (v4, mechanics unchanged):** [results](EXPLORATION_2026_10_18.md),
+[numeric evidence](EXPLORATION_2026_10_18.json). Training-only aids and policy
+inputs screened against a paired PPO control at 16M. **Potential-based recipe
+shaping** (disclosed prior knowledge) is the first change that reliably passes
+the furnace: five-seed paired +1.41/32 (95% [+0.17,+2.66], unadjusted), furnace
+worlds 1.5→23/128. At 48M the best policy scores **21.67/32** with furnace in
+86/128 worlds, all four smelts and anvils (control 19.66/20.52). Crafting-menu
+input helps on one of three seeds; archive starts, station memory and a
+predictive auxiliary loss are neutral; self-imitation and cell novelty hurt.
+Return to surface is mechanically reachable (scripted 39/39) but never learned.
+All defaults unchanged; reserved worlds 25,000,001–25,000,128 unused. On the
+**v7 preview** (unchanged gameplay), potential shaping is +1.61/32 over four paired
+16M seeds (95% [+1.34,+1.87]): workbench 0→126–128/128 worlds and first v7
+furnaces/smelts, though furnace rates are not yet retained at 16M.
+
 **October 17 PPO study complete:** [results and interpretation](V7_REWARD_STUDY_2026_10_17.md),
 [independent audit](V7_REWARD_STUDY_2026_10_17.audit.json),
 [frozen protocol](V7_REWARD_PROTOCOL_2026_10_17.md) and
