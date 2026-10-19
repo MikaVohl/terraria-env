@@ -1,0 +1,4 @@
+{"step": 0, "attempt": 0, "error": "gateway transport/JSON failure (URLError); charge uncertain", "retryable": true, "will_retry": true, "wait_seconds": 2.0, "attempt_seconds": 0.08024614490568638, "unix": 1792389426.427717}
+{"step": 0, "attempt": 1, "error": "gateway transport/JSON failure (URLError); charge uncertain", "retryable": true, "will_retry": true, "wait_seconds": 4.0, "attempt_seconds": 0.05619252286851406, "unix": 1792389428.4841733}
+{"step": 0, "attempt": 2, "error": "gateway transport/JSON failure (URLError); charge uncertain", "retryable": true, "will_retry": true, "wait_seconds": 8.0, "attempt_seconds": 0.0797180188819766, "unix": 1792389432.5641654}
+{"step": 0, "attempt": 3, "error": "gateway transport/JSON failure (URLError); charge uncertain", "retryable": true, "will_retry": false, "wait_seconds": 16.0, "attempt_seconds": 0.06273884209804237, "unix": 1792389440.6271775}

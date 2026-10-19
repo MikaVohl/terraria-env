@@ -156,6 +156,15 @@ made no reliable difference. Structured-state conditions are privileged (Jev can
 OpenRouter's Decisions API as `image_url` parts; the campaign's Jev runs used text state). A no-model scripted rule
 over the same action catalog still beats every model, and exploration of a barren world is unsolved.
 
+## Reference profile via gateway (2026-10-18/19)
+
+Full report: [reference-gw.md](reference-gw.md). On the reconstructed terrariabench.com
+profile, Haiku, Sonnet and Opus 5.5 all placed a workbench within 1–3 minutes (no published
+model did in six hours); Opus alone scored 5 (wood_100 at 29 minutes). After the workbench
+nothing else scored in up to 45 minutes: with PvE off there are no slimes, hence no gel,
+torches or furnace. Models repeatedly stop and need continuation messages (Opus least).
+Hiding checkpoints did not change scores in single runs. Reported spend $15.46.
+
 ## Candidates to discuss for the next benchmark phase
 
 These are proposals for selection together, not newly implemented benchmarks.

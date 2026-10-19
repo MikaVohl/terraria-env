@@ -1,0 +1,1 @@
+{"step": 112, "attempt": 0, "error": "gateway transport/JSON failure (TimeoutError); charge uncertain", "sent": true, "retryable": true, "will_retry": false, "wait_seconds": 2.0, "attempt_seconds": 9.874437480000779, "unix": 1792440051.790263}

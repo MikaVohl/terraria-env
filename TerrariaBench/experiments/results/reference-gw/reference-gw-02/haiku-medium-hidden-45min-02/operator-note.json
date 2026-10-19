@@ -1,0 +1,7 @@
+{
+  "note": "Possible operator input: Smart Cursor may have been toggled via a Moonlight session (Ctrl reaches the game, unlogged). The agent sent no Ctrl input.",
+  "moonlight_sessions_local": ["16:02:33-16:02:41", "16:07:16-16:08:02", "16:09:39-16:10:08"],
+  "frame_evidence": {"00021 (16:05:37)": "no smart-cursor outline", "00043 (16:11:09)": "dim one-tile outline offset from mouse"},
+  "score_effect": "none: all progress milestones (last wood_25 at 179 s, ~16:04:30) precede the 16:07 session",
+  "behavior_effect": "post-16:07 mining/chopping may have been assisted; treat activity after 16:07 as not operator-clean"
+}

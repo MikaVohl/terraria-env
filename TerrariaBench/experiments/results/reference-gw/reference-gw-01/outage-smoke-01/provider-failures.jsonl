@@ -1,0 +1,3 @@
+{"step": 3, "attempt": 0, "error": "gateway connection failure (URLError/ConnectionRefusedError); not sent", "sent": false, "game_frozen": true, "outage_seconds": 0.0, "wait_seconds": 5.0, "unix": 1792428960.4663088}
+{"step": 3, "attempt": 1, "error": "gateway connection failure (URLError/ConnectionRefusedError); not sent", "sent": false, "game_frozen": true, "outage_seconds": 5.004029480041936, "wait_seconds": 10.0, "unix": 1792428965.4702694}
+{"step": 6, "attempt": 0, "error": "gateway transport/JSON failure (TimeoutError); charge uncertain", "sent": true, "retryable": true, "will_retry": false, "wait_seconds": 2.0, "attempt_seconds": 15.726538458839059, "unix": 1792429025.4076421}

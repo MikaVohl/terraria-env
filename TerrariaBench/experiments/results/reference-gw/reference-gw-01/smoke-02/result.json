@@ -1,0 +1,94 @@
+{
+  "profile_id": "reference-reconstructed-v1",
+  "mode": "calibration",
+  "provider": "gateway",
+  "model": "claude-haiku-5-5",
+  "exact_reference_reproduction": false,
+  "official_eligible": false,
+  "stop_reason": "TimeoutError: wall_limit_before_tool",
+  "calls": 6,
+  "provider_retries": 0,
+  "input_commands": 10,
+  "frames": 6,
+  "invalid_tools": 0,
+  "active_wall_seconds": 50.93357000104152,
+  "evaluation_end_unix": 1792381600.8510058,
+  "accounting": {
+    "usd_limit": "1.0",
+    "reported_usd": "0.0024946700",
+    "uncertain_reserved_usd": "0",
+    "tokens": 45305,
+    "reservation_per_call_usd": "0.0500000000"
+  },
+  "score": {
+    "score_name": "agent_driven_progress_checkpoints_public_subset",
+    "agency_score": 3,
+    "checkpoint_count": 3,
+    "furthest_level": 2,
+    "level_counts": {
+      "1": 2,
+      "2": 1,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "level_labels": {
+      "1": "Starter resources",
+      "2": "Basic crafting",
+      "3": "Underground self-sufficiency",
+      "4": "Pre-hardmode bosses",
+      "5": "Underworld and Wall of Flesh"
+    },
+    "milestones": [
+      "wood_1",
+      "wood_10",
+      "wood_25"
+    ],
+    "first_unlocks": {
+      "wood_1": {
+        "elapsed_seconds": 30.3450699,
+        "game_updates": 1809,
+        "timestamp_utc": "2026-10-19T03:46:21.2360538+00:00"
+      },
+      "wood_10": {
+        "elapsed_seconds": 30.5765903,
+        "game_updates": 1824,
+        "timestamp_utc": "2026-10-19T03:46:21.4675746+00:00"
+      },
+      "wood_25": {
+        "elapsed_seconds": 30.9267304,
+        "game_updates": 1845,
+        "timestamp_utc": "2026-10-19T03:46:21.8177143+00:00"
+      }
+    },
+    "diagnostics_not_scored": [
+      "held_axe",
+      "held_weapon",
+      "inventory_opened"
+    ],
+    "unknown_milestones_not_scored": [],
+    "direct_tile_control_used": false,
+    "valid_for_scoring": true,
+    "valid_for_long_horizon": true,
+    "stalled": false,
+    "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+    "complete_upstream_catalog_verified": false,
+    "exact_reference_reproduction": false,
+    "official_eligible": false
+  },
+  "score_metrics": {
+    "action_count": 10,
+    "capture_count": 6,
+    "first_action_seconds": 7.3454766273498535,
+    "last_action_seconds": 41.86515021324158,
+    "idle_after_last_action_seconds": 4.192770004272461,
+    "idle_stall_threshold_seconds": 300,
+    "stalled": false,
+    "median_action_gap_seconds": 2.0894367694854736,
+    "p95_action_gap_seconds": 12.477530717849731,
+    "max_action_gap_seconds": 12.477530717849731,
+    "direct_tile_control_used": false
+  },
+  "journal_closed": false,
+  "calibration_probe_present": false
+}
