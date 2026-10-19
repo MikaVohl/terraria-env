@@ -80,7 +80,8 @@ def request(path, *, key=None, payload=None, timeout=60, base=BASE):
     return result
 
 
-# OpenRouter serves TypeSafe's System One API (text state only) on this alpha path.
+# OpenRouter's Decisions API (TypeSafe System One models). Images go in `state` as
+# {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}} parts.
 DECISIONS_BASE = "https://openrouter.ai/api/alpha"
 
 

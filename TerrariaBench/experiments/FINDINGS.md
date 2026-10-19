@@ -152,7 +152,8 @@ executor acting on fresh observations (Jev at about 0.3 s observation age) outpe
 single-model loop (6-10 s). With screenshots only, a high-level planner plus a fast Haiku executor
 killed the slime 2/4 times against 1/4. A planner added nothing measurable on top of a good
 executor: Jev alone matched planner + Jev at 120 s, and over 300 s replanning every 10, 30 or 60 s
-made no reliable difference. Structured-state conditions are privileged. A no-model scripted rule
+made no reliable difference. Structured-state conditions are privileged (Jev can take screenshots through
+OpenRouter's Decisions API as `image_url` parts; the campaign's Jev runs used text state). A no-model scripted rule
 over the same action catalog still beats every model, and exploration of a barren world is unsolved.
 
 ## Candidates to discuss for the next benchmark phase

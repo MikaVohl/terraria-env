@@ -9,8 +9,9 @@ observation without waiting for the planner. Conditions:
   jev       Jev alone: subgoal and action choices from agent state
 
 "Agent state" is privileged structured observation from observer v0.6 (tree trunks,
-hostiles, drops and terrain with screen coordinates). Jev is reached through OpenRouter,
-which forwards text state only. Catalog options expand to ordinary keyboard/mouse input.
+hostiles, drops and terrain with screen coordinates). Jev is reached through OpenRouter's
+Decisions API (images would go as image_url parts in `state`; these conditions send text state).
+Catalog options expand to ordinary keyboard/mouse input.
 """
 import argparse
 import base64

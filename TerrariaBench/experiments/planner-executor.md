@@ -21,9 +21,12 @@ planner UI batches, and every model call has a stored request/response.
   TypeSafe Jev 1.14 through OpenRouter (`/api/alpha/decisions`, about 0.2 s per decision).
 - Observations: screenshots (`*-pixel` conditions), or **privileged structured state**
   from observer v0.6 (trees, hostiles, drops and terrain with screen coordinates, written
-  about 10 times per second). OpenRouter forwards text only to Jev: black, red and real
-  screenshots produced identical answers and token counts, so every Jev condition uses
-  the structured state.
+  about 10 times per second). Every Jev condition in this campaign uses the structured state.
+  The pre-campaign image probe sent images in TypeSafe's native `assets` format, which
+  OpenRouter ignores, and wrongly concluded that Jev was text-only on this route. OpenRouter's
+  Decisions API takes images as `image_url` data-URL parts in the `state` array. Re-tested
+  that way, Jev 1.14 separates black, red and real frames (nouls 0.97 / 0.99 / 0.98) and boxes
+  the player correctly, at about 0.45 s and $0.00013 per 1024x1024 frame.
 - State-based executors choose from a fixed action catalog whose options expand to
   ordinary keyboard/mouse input. Aiming (where to click on a trunk or a hostile) is done
   in code from the state, so these conditions measure decisions over prepared actions,
@@ -105,8 +108,8 @@ Deaths: 0-2 per run, with no pattern by condition.
 ## What this does not show
 
 One attempt per cell on four worlds: no rankings or significance. The tasks are short and
-early-game; crafting, night, bosses and multi-stage goals are untested. Jev never sees
-pixels on this route. Executors decide sequentially (decide, then act for 0.25-0.75 s);
+early-game; crafting, night, bosses and multi-stage goals are untested. No Jev run here saw
+pixels (see Setup). Executors decide sequentially (decide, then act for 0.25-0.75 s);
 overlapped deciding and interruptible actions are untested.
 
 ## Infrastructure incidents (no effect on retained results)
@@ -147,5 +150,5 @@ smoke runs, campaign runs and the sweep. Jev executor calls cost about $0.00005 
   repeat the interval sweep there.
 - A crafting action, so that progression beyond wood is reachable without menu clicking
   by the planner.
-- Pixel-based fast executors (Jev images through TypeSafe's direct API, or a small vision
-  model), to bring the latency gains to non-privileged play.
+- A screenshot-only Jev executor (image input via OpenRouter, Box answers for aiming), to
+  bring the latency gains to non-privileged play.
