@@ -129,10 +129,31 @@ continuation policy is load-bearing for any long run and must be stated with res
   clock during outages (up to 30 minutes per run), and the scheduler waits for the route before
   each run.
 
+## Follow-up variants (reference-gw-03, 15 minutes each)
+
+Two one-factor tests from the trace analysis ($3.86 reported).
+
+| Run | Played | Score | Milestones (s) | Deaths | Max gel | Torches | USD |
+|---|---:|---:|---|---:|---:|---:|---:|
+| Haiku medium, screenshot after every act | 904 s | 3 | wood 1/10 66, workbench 90 | 0 | 0 | 0 | 0.17 |
+| Sonnet low, PvE on | 905 s | 4 | wood 1/10/25 40, workbench 100 | 11 | 39 | 0 | 1.81 |
+| Opus low, PvE on † | 637 s | 4 | wood 1/10/25 39, workbench 84 | 6 | 26 | 0 | 1.88 |
+
+† Stopped by the local cap: Opus reserves $3.28 per call (128k-token output ceiling at $20/M),
+so a $5 cap ends the run once $1.72 is spent. Long Opus runs need a cap well above that.
+
+- **Fresh screenshots did not get Haiku digging.** It stayed within 2 tiles of the surface and
+  still called `look` 89 times despite an image with every `act` result. Staleness is not
+  Haiku's bottleneck in this run.
+- **With PvE on, gel stops being the limit and survival becomes it.** Both models collected gel
+  (39 and 26) yet neither crafted a torch, which needs only gel and wood and no station. Sonnet
+  noticed the gel and considered torches at ~714 s; Opus spent its time fighting slimes and
+  re-placing benches. Both died repeatedly to blue slimes (11 and 6 times in under 15 minutes).
+
 ## Next
 
-- Decide the PvE question with gel in mind: a profile where hostile damage is off but slimes
-  still spawn and drop gel would make torches and furnaces reachable without combat.
+- PvE on makes gel available but adds deaths; a profile where hostiles cannot damage the player
+  but slimes still spawn and drop gel would isolate the crafting chain from combat.
 - Repeat cells on several worlds before reading anything into ref vs hidden.
 - If an 8-hour run is wanted, Opus is the only model here that kept acting without prompting;
   budget ~$70 for one run.

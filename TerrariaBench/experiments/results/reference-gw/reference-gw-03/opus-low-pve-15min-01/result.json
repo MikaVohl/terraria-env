@@ -1,0 +1,103 @@
+{
+  "profile_id": "reference-reconstructed-v1",
+  "mode": "calibration",
+  "provider": "gateway",
+  "model": "claude-opus-5-5",
+  "exact_reference_reproduction": false,
+  "official_eligible": false,
+  "stop_reason": "RuntimeError: dollar reservation limit reached",
+  "calls": 65,
+  "provider_retries": 0,
+  "input_commands": 222,
+  "continuations": 0,
+  "provider_outage_seconds": 0.0,
+  "frames": 65,
+  "invalid_tools": 0,
+  "active_wall_seconds": 637.9777953589801,
+  "evaluation_end_unix": 1792449399.6073904,
+  "accounting": {
+    "usd_limit": "5.0",
+    "reported_usd": "1.8829846000",
+    "uncertain_reserved_usd": "0",
+    "tokens": 1688612,
+    "reservation_per_call_usd": "3.2800000000"
+  },
+  "score": {
+    "score_name": "agent_driven_progress_checkpoints_public_subset",
+    "agency_score": 4,
+    "checkpoint_count": 4,
+    "furthest_level": 2,
+    "level_counts": {
+      "1": 2,
+      "2": 2,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "level_labels": {
+      "1": "Starter resources",
+      "2": "Basic crafting",
+      "3": "Underground self-sufficiency",
+      "4": "Pre-hardmode bosses",
+      "5": "Underworld and Wall of Flesh"
+    },
+    "milestones": [
+      "wood_1",
+      "wood_10",
+      "wood_25",
+      "workbench_1"
+    ],
+    "first_unlocks": {
+      "wood_1": {
+        "elapsed_seconds": 38.3680988,
+        "game_updates": 2297,
+        "timestamp_utc": "2026-10-19T22:26:41.2718869+00:00"
+      },
+      "wood_10": {
+        "elapsed_seconds": 39.1933193,
+        "game_updates": 2348,
+        "timestamp_utc": "2026-10-19T22:26:42.0971073+00:00"
+      },
+      "wood_25": {
+        "elapsed_seconds": 39.6595949,
+        "game_updates": 2376,
+        "timestamp_utc": "2026-10-19T22:26:42.5633833+00:00"
+      },
+      "workbench_1": {
+        "elapsed_seconds": 84.1759272,
+        "game_updates": 5047,
+        "timestamp_utc": "2026-10-19T22:27:27.0797150+00:00"
+      }
+    },
+    "diagnostics_not_scored": [
+      "held_axe",
+      "held_pickaxe",
+      "held_weapon",
+      "inventory_opened"
+    ],
+    "unknown_milestones_not_scored": [],
+    "direct_tile_control_used": false,
+    "valid_for_scoring": true,
+    "valid_for_long_horizon": true,
+    "stalled": false,
+    "catalog_coverage": "public_chart_manifest_plus_observed_wood_thresholds",
+    "complete_upstream_catalog_verified": false,
+    "exact_reference_reproduction": false,
+    "official_eligible": false
+  },
+  "score_metrics": {
+    "action_count": 222,
+    "capture_count": 65,
+    "first_action_seconds": 3.574665069580078,
+    "last_action_seconds": 631.0348176956177,
+    "idle_after_last_action_seconds": 0.16801047325134277,
+    "idle_stall_threshold_seconds": 300,
+    "stalled": false,
+    "median_action_gap_seconds": 2.086987257003784,
+    "p95_action_gap_seconds": 7.761118173599243,
+    "max_action_gap_seconds": 15.228638887405396,
+    "direct_tile_control_used": false
+  },
+  "journal_closed": false,
+  "calibration_probe_present": false
+}
