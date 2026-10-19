@@ -12,8 +12,10 @@ potential runs with more seeds and an anti-surface-trap schedule; target return
 to surface and wood breastplate; low-coefficient underground novelty. No policy
 selected or promoted; reserved test worlds 25,000,001–25,000,128 unused.
 On v7 (unchanged gameplay) potential shaping is +1.61/32 over four paired 16M
-seeds; a 48M v7 potential-vs-control pair (seeds 941/942, MPS) is running in
-`experiments/explore-v7-long-20261019` to test whether the furnace step is retained.
+seeds and +1.45/+1.61 at 48M (19.05 vs 17.60/17.44). It unlocks the workbench and
+wooden sword, but v7 furnace rates stay 0–13/128 even at 48M: v7 has a second
+furnace-stage barrier that v4 lacks (undiagnosed). Next: crafting diagnostics on
+the 48M v7 potential policies.
 
 ## Completed PPO study — October 17, 2026
 

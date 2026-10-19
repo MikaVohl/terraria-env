@@ -21,8 +21,8 @@ predictive auxiliary loss are neutral; self-imitation and cell novelty hurt.
 Return to surface is mechanically reachable (scripted 39/39) but never learned.
 All defaults unchanged; reserved worlds 25,000,001–25,000,128 unused. On the
 **v7 preview** (unchanged gameplay), potential shaping is +1.61/32 over four paired
-16M seeds (95% [+1.34,+1.87]): workbench 0→126–128/128 worlds and first v7
-furnaces/smelts, though furnace rates are not yet retained at 16M.
+16M seeds (95% [+1.34,+1.87]) and +1.45/+1.61 at 48M (19.05 vs 17.60/17.44):
+workbench 0→126–128/128 worlds, but v7 furnace rates stay 0–13/128 even at 48M.
 
 **October 17 PPO study complete:** [results and interpretation](V7_REWARD_STUDY_2026_10_17.md),
 [independent audit](V7_REWARD_STUDY_2026_10_17.audit.json),

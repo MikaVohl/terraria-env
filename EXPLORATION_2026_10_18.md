@@ -92,6 +92,24 @@ and smelts. Furnace counts peak mid-run (up to 19/128 at 12M) and fall by 16M,
 so the furnace step is reached but not yet retained. v7 with potential (18.2)
 roughly matches the v4 control (17.7) but remains below v4 with potential (19.0).
 
+### v7 at 48M (two paired seeds, hybrid MPS)
+
+| Run | 8M | 16M | 24M | 32M | 40M | 48M | Workbench / furnace / copper smelt / wooden sword at 48M |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| control-941 | 16.68 | 16.63 | 16.96 | 17.34 | 17.45 | 17.60 | 3 / 0 / 0 / 0 |
+| control-942 | 16.25 | 16.17 | 16.83 | 16.87 | 16.98 | 17.44 | 4 / 0 / 0 / 0 |
+| potential-941 | 16.95 | 17.63 | 18.96 | 18.79 | 18.45 | **19.05** | 128 / 7 / 4 / 110 |
+| potential-942 | 17.15 | 17.54 | 18.11 | 18.89 | 18.51 | **19.05** | 127 / 13 / 10 / 101 |
+
+Potential leads by +1.45 and +1.61 at 48M. v7 with potential (19.05) exceeds the v4
+16M control mean (17.73) but stays below v4 at 48M (control 19.66/20.52, potential
+21.67/20.90). Unlike v4, the gain stays
+in the workbench/wooden-sword tier: furnace rates remain 0–13/128 across the whole
+run and v7 controls never pass the workbench even at 48M. So v7 has a second
+barrier at the furnace that v4 does not [inference: candidates are v7's multi-tile
+station footprints/placement and station range, not yet diagnosed].
+
+
 ## Interpretation
 
 - **Joint-prerequisite assembly was the gate, and dense progress toward it opens
