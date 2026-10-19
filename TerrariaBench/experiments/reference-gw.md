@@ -70,6 +70,54 @@ Gemini 3 Flash 4 (wood_100 at 2,819 s), Gemini 3.1 Flash Lite and Pro 3, the oth
    screenshots 8 at a time cut provider cache writes, which were $2.60 of $2.79 in the first
    10-minute hidden Sonnet run.
 
+## What the traces show
+
+Per-run timelines (model words, actions, milestones, once-a-minute game state) were built for
+the five long runs.
+
+| Run | Max depth below spawn | Tool-less replies (of which "stopping") | Inference share of play | Screenshot age at action (median) |
+|---|---:|---:|---:|---:|
+| Haiku ref 45 | 26 tiles | 70 (68) | 68% | 11.8 s |
+| Haiku hidden 45 | 17 tiles | 39 (37) | 73% | 11.6 s |
+| Sonnet ref 45 (33 min) | 63 tiles | 43 (13) | 61% | 18.6 s |
+| Sonnet hidden 45 | **519 tiles** | 23 (2) | 48% | 19.4 s |
+| Opus ref 30 | 232 tiles | 7 (7) | 48% | 13.8 s |
+
+1. **The breakthrough skill is a camera-relative routine, not perception.** The camera keeps the
+   player centred, so holding the mouse at a fixed point just below centre and pressing S always
+   digs the tile underneath. Sonnet (hidden) found this at ~950 s after ~15 minutes of failing
+   to dig by aiming at tiles in screenshots, then repeated it blind in the dark down to 519
+   tiles. Opus dug the same way from ~214 s. Neither Haiku run found it; both stayed within 26
+   tiles of the surface.
+2. **Actions run on stale screenshots.** `look` and `act` are separate model calls, so a
+   screenshot is at least one inference old when acted on: median 12–19 s. The model spends
+   48–73% of play time thinking while the game runs. Clicking a specific tile from a screenshot
+   fails once the camera has moved; the fixed-point routine above survives because it does not
+   depend on the screenshot.
+3. **Tool-less replies are status reports.** They are assistant-style summaries ("Done so far…
+   Where it stands…") that end the turn; the continuation message turns them back into play.
+   Haiku's almost always announce stopping; most of Sonnet's are progress notes. Opus produced
+   the fewest (7 in 30 minutes).
+4. **Control and UI knowledge gaps cost minutes.** Sonnet spent minutes concluding that arrow keys
+   do nothing (Terraria moves with WASD). Haiku (ref) spent long stretches "digging" with hotbar
+   slot 6 selected, which holds the workbench; it found the mistake at 2,418 s. Several runs
+   fought the inventory toggle and the crafting list before the workbench.
+5. **Unchecked claims of progress.** Opus believed it had "the workbench and furnace set up" at
+   214 s; no furnace existed. Later it reasoned correctly that a furnace needs torches, that torches
+   need gel and that disabled PvE removes slimes (896 s), and planned to break pots for torches
+   (1,440 s). Reading the checkpoint log corrected its beliefs; the hidden runs had no such check.
+6. **Opus's extra point was incidental.** Trapped in a flooded, dark shaft 25 tiles down, it
+   deliberately drowned to respawn (1,701 s), then picked up 3 wood on the surface: 98 → 101
+   gave wood_100. Its depth (232 tiles), copper ore and 180 stone earned nothing.
+7. **The scorer misses real progress.** Depth, ore and loot (Sonnet hidden: 519 tiles, 21 copper
+   ore, rope, bombs, 2 torches from pots) are invisible to the published catalog. The spec
+   deliberately dropped descent counters as reward-hackable, so layer entry (underground,
+   cavern) as a one-time milestone is the natural candidate.
+
+Implications: report screenshot age and inference share alongside scores; a variant that returns
+a screenshot with every `act` result would separate perception from latency; the
+continuation policy is load-bearing for any long run and must be stated with results.
+
 ## Spend and incidents
 
 - Reported charges for every run in both campaigns: **$15.46**, plus $0.17 in three runs
