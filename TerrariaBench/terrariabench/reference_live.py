@@ -194,10 +194,18 @@ def run(args):
     tools = TOOLS[:2] if hidden else TOOLS
     continue_message = CONTINUE_HIDDEN if hidden or args.hide_time else CONTINUE
     prompt = (ROOT / (HIDDEN_PROGRESS_PROMPT if hidden else profile["agent"]["task_prompt"])).read_text()
+    if args.pve:
+        prompt = prompt.replace("This scenario begins with hostile PvE disabled.",
+                                "Hostile enemies are active under normal game rules.")
+    if args.observe_after_act:
+        prompt = prompt.replace("Request another look when needed.",
+                                "Each act result includes a fresh screenshot; use look for any other observation.")
     manifest = {"profile": profile, "mode": args.mode, "model": model,
                 "task_prompt": prompt, "system_prompt": HARNESS, "tools": tools,
                 "information_policy": {"checkpoint_tool": not hidden, "checkpoint_chat": not hidden,
-                                       "remaining_time_in_continuations": not (hidden or args.hide_time)},
+                                       "remaining_time_in_continuations": not (hidden or args.hide_time),
+                                       "screenshot_after_act": args.observe_after_act},
+                "pve_enabled": args.pve,
                 "exact_reference_reproduction": False, "official_eligible": False,
                 "source_hashes": {str(p.relative_to(output / "source")): digest(p) for p in (output / "source").rglob("*") if p.is_file()},
                 "fixture_hashes": {str(p.relative_to(fixture)): digest(p) for p in fixture.rglob("*") if p.is_file()},
@@ -257,7 +265,8 @@ def run(args):
         pid = launch(output / "tml", output / "client.log", output / "telemetry", skipselect=True,
                      width=1024, height=1024,
                      config_updates={"UIScale": profile["environment"]["ui_scale"], "ResetDefaultUIScale": False, "Zoom": 1.0},
-                     extra_env={"TERRARIABENCH_PROFILE": profile["profile_id"], "TERRARIABENCH_PVE": "disabled",
+                     extra_env={"TERRARIABENCH_PROFILE": profile["profile_id"],
+                                "TERRARIABENCH_PVE": "enabled" if args.pve else "disabled",
                                 "TERRARIABENCH_REFERENCE_STARTER_PREFIXES": "plain",
                                 "TERRARIABENCH_CHECKPOINT_CHAT": "disabled" if hidden else "enabled"})
         dump(output / "game.json", {"pid": pid, "profile": str(output / "tml")})
@@ -392,6 +401,9 @@ def run(args):
                         receipts = game.act(actions)
                         commands += len(actions)
                         value = {"dispatched_commands": len(receipts), "held_inputs_released": True}
+                        if args.observe_after_act:
+                            next_images.append(observation())
+                            value["image_follows"] = True
                     elif name == "look" and not parameters:
                         next_images.append(observation())
                         value = {"image_follows": True, "viewport": [1024, 1024]}
@@ -464,6 +476,9 @@ def main():
                         help="variant: no checkpoint tool or chat lines, and no remaining time in continuations")
     parser.add_argument("--hide-time", action="store_true", help="no remaining time in continuation messages")
     parser.add_argument("--max-context-tokens", type=int, default=120000)
+    parser.add_argument("--observe-after-act", action="store_true",
+                        help="variant: every act result carries a fresh screenshot")
+    parser.add_argument("--pve", action="store_true", help="variant: hostile NPCs active (normal rules)")
     run(parser.parse_args())
 
 
