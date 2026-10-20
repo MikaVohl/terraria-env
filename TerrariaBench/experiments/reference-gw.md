@@ -75,13 +75,13 @@ Gemini 3 Flash 4 (wood_100 at 2,819 s), Gemini 3.1 Flash Lite and Pro 3, the oth
 Per-run timelines (model words, actions, milestones, once-a-minute game state) were built for
 the five long runs.
 
-| Run | Max depth below spawn | Tool-less replies (of which "stopping") | Inference share of play | Screenshot age at action (median) |
+| Run | Max depth below spawn | Tool-less replies (of which "stopping") | Inference share of play | Screenshot age at action start (median) |
 |---|---:|---:|---:|---:|
-| Haiku ref 45 | 26 tiles | 70 (68) | 68% | 11.8 s |
-| Haiku hidden 45 | 17 tiles | 39 (37) | 73% | 11.6 s |
-| Sonnet ref 45 (33 min) | 63 tiles | 43 (13) | 61% | 18.6 s |
-| Sonnet hidden 45 | **519 tiles** | 23 (2) | 48% | 19.4 s |
-| Opus ref 30 | 232 tiles | 7 (7) | 48% | 13.8 s |
+| Haiku ref 45 | 26 tiles | 70 (68) | 68% | 6.6 s |
+| Haiku hidden 45 | 17 tiles | 39 (37) | 73% | 6.2 s |
+| Sonnet ref 45 (33 min) | 63 tiles | 43 (13) | 61% | 12.6 s |
+| Sonnet hidden 45 | **519 tiles** | 23 (2) | 48% | 4.9 s |
+| Opus ref 30 | 232 tiles | 7 (7) | 48% | 6.1 s |
 
 1. **The breakthrough skill is a camera-relative routine, not perception.** The camera keeps the
    player centred, so holding the mouse at a fixed point just below centre and pressing S always
@@ -90,7 +90,9 @@ the five long runs.
    tiles. Opus dug the same way from ~214 s. Neither Haiku run found it; both stayed within 26
    tiles of the surface.
 2. **Actions run on stale screenshots.** `look` and `act` are separate model calls, so a
-   screenshot is at least one inference old when acted on: median 12–19 s. The model spends
+   screenshot is at least one inference old when acted on: median 5–7 s at the first input of an
+   action (12.6 s in Sonnet's ref run, which often acted repeatedly without looking; an earlier
+   12–19 s figure measured to the end of each action batch and is superseded). The model spends
    48–73% of play time thinking while the game runs. Clicking a specific tile from a screenshot
    fails once the camera has moved; the fixed-point routine above survives because it does not
    depend on the screenshot.
@@ -149,6 +151,34 @@ so a $5 cap ends the run once $1.72 is spent. Long Opus runs need a cap well abo
   (39 and 26) yet neither crafted a torch, which needs only gel and wood and no station. Sonnet
   noticed the gel and considered torches at ~714 s; Opus spent its time fighting slimes and
   re-placing benches. Both died repeatedly to blue slimes (11 and 6 times in under 15 minutes).
+
+## Latency measurements (2026-10-19)
+
+Controlled calls from Omarchy, 3–12 tries per cell. "Turn" = our prompt, tools and 8 real 1024²
+screenshots (~12.4k input tokens, 3.4 MB body); prompt caching defeated with a per-call nonce.
+
+| Route, model | Ping | Turn |
+|---|---:|---:|
+| Gateway Haiku 5.5 / Sonnet 5.5 / Opus 5.5 | 1.2 s | 2.7 / 3.6 / 4.2 s |
+| OpenRouter Haiku 5.5 / Sonnet 5.5 / Opus 5.5 | 1.1–1.9 s | 6.5 / 6.3 / 9.7 s |
+| OpenRouter Gemini 3.8 Flash | 1.7 s | 3.4 s |
+| Cursor via omp (from the Mac) Sonnet 5.5 / Opus 5.5 | 1.6–1.8 s | 3.9 / 5.3 s |
+
+- Gateway turns: ~0.55 s TLS through the relay tunnel, ~0.5 s upload, ~2 s server time to first
+  output, ~1 s generation. OpenRouter connects in 0.05 s but first bytes arrive after 4–9 s.
+  Same-client comparison on the Mac: Cursor is not faster than the gateway.
+- Real study calls: median 5.2–6.0 s with 34–65k-token prompts (87–90% cache reads) and
+  250–320 output tokens; token counts explain almost none of the variance (R² ≤ 0.08); p90 10–21 s.
+- Screenshot capture 0.10–0.14 s; 16–90 ms between input commands. Screenshots are only taken on
+  request, so their rate is set by model calls. `--observe-after-act` cut Haiku's screenshot age
+  at action start from ~5 s to 3.5 s (middle half 3.0–4.4 s).
+- Keeping one gateway connection alive saves ~0.55 s on tiny requests (pings 1.2 → 0.6 s,
+  connections survive 60 s idle) but not on 3.4 MB turns: 2.75 s fresh vs 3.23 s reused (median of 12
+  alternating Haiku tries; reuse faster in 4/12).
+- Smaller uploads help: JPEG q85 (1.6 MB, same tokens) −0.5 to −0.6 s; 512² PNG (4.3k tokens)
+  −0.6 s; 4 instead of 8 screenshots −0.7 to −0.9 s (medians, Sonnet and Haiku, 6 tries each).
+  The published runs saved each capture as PNG and JPG; which one the model saw is unknown.
+- The tool call is complete only 0.01–0.03 s before the stream ends: acting early saves nothing.
 
 ## Next
 
