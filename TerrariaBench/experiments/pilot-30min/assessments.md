@@ -235,3 +235,26 @@ torch_10 16:31 (Torch Zombie drop). No workbench, 24 deaths, never below the sur
 
 **Judgement.** Fast reflexes and endless gathering, but no progression, partly because of the harness bug.
 Anchor 2 (wood only).
+
+---
+
+## combo-v2-opus-haiku-01: Opus 5.5 (low) planner + Haiku 5.5 executor, combo-v2 UI sessions, real time, PvE on. **2/10**
+
+Played the full 30 minutes, $2.03. Milestone score 6: wood ×3 at 0:32, workbench 1:51, wood_100 2:20, torch_10 14:36
+(Torch Zombie drop). 43 deaths, never below the surface. 33 planner click batches, no rejected replies.
+
+**What went well**
+- The combo-v2 mechanics work: the planner opened the inventory and crafted the workbench itself, inside a UI session
+  ("Wait while the planner crafts"), less than 2 minutes in. combo-v1 never got that far.
+- 112 wood and 35 gel collected: materials for torches and more were there.
+
+**What went wrong**
+- **It never placed the workbench.** For about five minutes (2:15-7:20) every plan was "select slot 6 and click the
+  ground next to you". Clicks on the solid ground tile itself do not place anything; telemetry shows the bench still in
+  the inventory at the end, so nothing was ever crafted at it and the 35 gel never became torches.
+- Digging failed the same way as for the other non-Opus-solo runs: single-tile holds under the feet, so depth stayed 0.
+- Night death loop: 43 deaths, plans degenerating into "swing at the zombie touching you".
+
+**Judgement.** The fix moved the bottleneck from the harness to the game: crafting now works, block placement and
+digging do not. Planning from screenshots every 5-60 s cannot correct a fine placement error that a single model in a tight
+look-act loop eventually fixes. Anchor 2-3 (workbench crafted, never placed or used), 2 for the death loop.
