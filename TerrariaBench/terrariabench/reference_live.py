@@ -8,6 +8,7 @@ import base64
 import copy
 import hashlib
 import html
+import io
 import json
 import os
 from pathlib import Path
@@ -216,6 +217,9 @@ def run(args):
                 "limits": {"calls": args.calls, "active_wall_seconds": args.seconds, "usd": args.usd,
                            "max_completion_tokens": budget.output_ceiling, "max_input_tokens_per_call": budget.input_ceiling,
                            "input_commands": 65536, "reported_tokens": args.max_tokens_total},
+                "observation_encoding": {"format": args.image_format,
+                                         "jpeg_quality": args.jpeg_quality if args.image_format == "jpeg" else None,
+                                         "resolution": [1024, 1024]},
                 "context_policy": {"keep_images": args.keep_images, "image_block": args.image_block,
                                    "text_and_tool_results": "all until the limit",
                                    "max_context_tokens": args.max_context_tokens,
@@ -250,7 +254,14 @@ def run(args):
         nonlocal frame_count
         path = output / "frames" / f"{frame_count:05d}.png"
         meta = game.capture(path)
-        url = "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode()
+        if args.image_format == "jpeg":
+            # The PNG stays on disk as the record; the model receives the same pixels as JPEG.
+            from PIL import Image
+            buffer = io.BytesIO()
+            Image.open(path).convert("RGB").save(buffer, "JPEG", quality=args.jpeg_quality)
+            url = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode()
+        else:
+            url = "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode()
         image_refs[url] = {"artifact": str(path.relative_to(output)), "sha256": digest(path), "capture": meta}
         frame_count += 1
         return {"role": "user", "content": [{"type": "text", "text": "Current game screenshot:"}, {"type": "image_url", "image_url": {"url": url}}]}
@@ -484,6 +495,9 @@ def main():
     parser.add_argument("--pve", action="store_true", help="variant: hostile NPCs active (normal rules)")
     parser.add_argument("--reserve-output-tokens", type=int, default=None,
                         help="gateway: output tokens reserved per call for spend control (default max_tokens)")
+    parser.add_argument("--image-format", choices=("png", "jpeg"), default="png",
+                        help="encoding of screenshots sent to the model (frames are always saved as PNG)")
+    parser.add_argument("--jpeg-quality", type=int, default=85)
     run(parser.parse_args())
 
 
