@@ -102,8 +102,8 @@ Played the full 30 minutes, $5.28. Milestone score 5: wood ×3 at 24 s, workbenc
 - **It died at night on the surface 30+ times** to slimes, zombies and an Eater of Souls, with 1-hit-to-death health
   most of the time. It never retreated, built shelter or dug in. Graveyard formed at spawn from its tombstones.
 - `torch_10` did not come from crafting. Telemetry shows the torches arrived in two pickups while walking (0→9→29), with gel
-  unchanged at 22 and no crafting call. The milestone is real by the published definition (possession), but it is not
-  evidence of the gel→torch chain.
+  unchanged at 22 and no crafting call: drops from Torch Zombies (5-20 torches each). The milestone is real by the published
+  definition (possession), but it is not evidence of the gel→torch chain.
 
 **Judgement.** Strong first minute, then no progress for 29 minutes. The failure is persistence and problem-solving,
 not control or latency: it diagnosed its problems in words, kept giving up, and never tried a new approach. The milestone score
@@ -128,7 +128,7 @@ workbench 0:45, torch_10 12:02. **43 deaths, never below the surface, 63 continu
   every ~30 s from minute 3 onward.
 - From nightfall (about 12 minutes) it died at spawn every ~25 s: 39 deaths in 18 minutes, without ever moving
   away from spawn, building cover or digging in. In its own words: "I can't reliably tell which nearby figures are friendly and which are hostile."
-- `torch_10` came from picking up 20 torches near spawn at night (gel unchanged), not from crafting, as in sonnet-rt-01.
+- `torch_10` came from a Torch Zombie drop at night (20 torches, gel unchanged), not from crafting, as in sonnet-rt-01.
 
 **Judgement.** Real-time control is good enough to gather and craft quickly, but Haiku has no early-game plan
 beyond the workbench and no survival response to night. The milestone score (5) badly overrates it.
@@ -183,3 +183,30 @@ workbench 2:18, wood_100 at the end. 28 deaths, deepest 6 tiles, 57 continuation
 **Judgement.** Better than real-time Haiku: it crafted, placed and planned the right next step, and the frozen clock gave
 it time to do so. UI state confusion (is the bench in range?) and no digging technique stopped it one step
 before the furnace. Anchor 5 (torches crafted), −1 for the death loop and constant quitting.
+
+---
+
+## combo-haiku-01: Sonnet 5.5 (low) planner + Haiku 5.5 executor, real time, PvE on. **2/10**
+
+Played the full 30 minutes, $1.34 (planner $1.21, executor $0.13). Milestone score 5: wood ×3 at 0:43, wood_100 5:54,
+torch_10 13:24 (a Torch Zombie drop). **No workbench**, 35 deaths, never below 5 tiles. 70 plans, 638 executor actions,
+2.6 s median screenshot age (fresher than any single-model run).
+
+**What went well**
+- The split works mechanically: the planner gave concrete, screen-referenced objectives ("trunk at x~480 just left of the
+  player") every 10-30 s and Haiku carried them out; 121 wood, the most of any run.
+- Correct tactical calls at the surface (kill this slime, avoid the pit), and once night fell it recognised the graveyard
+  and tried to lead the executor out of it.
+
+**What went wrong**
+- **The planner never crafted.** Its schema lets it click in the inventory itself, but in 70 plans it used that twice (a hotbar
+  key and one stray click) and mentioned crafting twice. It never made a workbench, even with 121 wood. The executor cannot open
+  menus on its own initiative, so nothing was crafted all run.
+- From 6 minutes on, the plans became "kill the slime, stay nearby, walk right": reactive steering of the executor
+  instead of progression. A planner that sees one screenshot every 10-30 s ends up narrating combat.
+- 35 deaths at night near spawn and in the graveyard, the same pattern as every surface run.
+
+**Judgement.** The fastest and freshest control loop of the pilot, applied to the wrong job. Delegation removed the
+crafting step entirely: Sonnet alone crafted a workbench in under a minute, but as a planner it never did. This is a design
+issue of combo-v1 (the planner treats itself as a coach, not the player), not proof that combos can't work.
+Anchor 2 (wood only).

@@ -8,8 +8,8 @@ Things the pilot exposed about the benchmark itself (not about the models). Each
    seed will play differently in another month. Core v0.1 must pin the date (fake system time for the game process,
    or the observer mod forcing the seasonal flags off).
 2. **Possession milestones don't prove crafting.** `torch_10` (published catalog) fires on holding 10 torches. Sonnet and
-   Haiku real-time both reached it by picking up 20 torches near spawn at night (gel unchanged, no crafting call); the
-   source of those torches is not yet identified. The extended scorer needs crafted-item attribution (observer
+   Haiku real-time and the Haiku combo all reached it by picking up 20-61 torches at night (gel unchanged, no crafting call):
+   the Torch Zombie, a night surface variant, always drops 5-20 torches. One zombie kill satisfies the milestone. The extended scorer needs crafted-item attribution (observer
    `OnCraft` hook) next to possession.
 3. **Every 30-minute run contains a night.** The first dusk comes at about game-minute 15. Where the model is at
    nightfall (deep underground vs. surface) dominated deaths: Opus real time underground, 2 deaths; Opus frozen,
