@@ -204,12 +204,17 @@ def run(args):
     if args.observe_after_act:
         prompt = prompt.replace("Request another look when needed.",
                                 "Each act result includes a fresh screenshot; use look for any other observation.")
+    if args.clock == "frozen":
+        prompt = prompt.replace("The game continues running while you think.",
+                                "The game is paused while you think and runs only while your commands execute.")
+    if args.interface_card:
+        prompt += "\n" + (ROOT / "prompts/interface_card.txt").read_text()
     manifest = {"profile": profile, "mode": args.mode, "model": model,
                 "task_prompt": prompt, "system_prompt": HARNESS, "tools": tools,
                 "information_policy": {"checkpoint_tool": not hidden, "checkpoint_chat": not hidden,
                                        "remaining_time_in_continuations": not (hidden or args.hide_time),
                                        "screenshot_after_act": args.observe_after_act},
-                "pve_enabled": args.pve,
+                "pve_enabled": args.pve, "clock": args.clock, "interface_card": args.interface_card,
                 "exact_reference_reproduction": False, "official_eligible": False,
                 "source_hashes": {str(p.relative_to(output / "source")): digest(p) for p in (output / "source").rglob("*") if p.is_file()},
                 "fixture_hashes": {str(p.relative_to(fixture)): digest(p) for p in fixture.rglob("*") if p.is_file()},
@@ -239,16 +244,31 @@ def run(args):
     image_refs = {}
     pid, game, frame_count, calls, commands, invalid, retries, streak = None, None, 0, 0, 0, 0, 0, 0
     continuations = quiet = last_prompt = 0
-    frozen_at, outage_total = None, 0.0
+    frozen_at, freeze_reason, outage_total, think_frozen_total = None, None, 0.0, 0.0
     stop, started, started_unix = "startup", time.monotonic(), time.time()
 
+    def freeze(reason):
+        """Stop the game process group; the run clock pauses until thaw()."""
+        nonlocal frozen_at, freeze_reason
+        if frozen_at is None:
+            os.killpg(pid, signal.SIGSTOP)
+            frozen_at = time.monotonic()
+        if reason == "outage":
+            freeze_reason = "outage"  # an outage during a thinking pause counts as outage
+        elif freeze_reason is None:
+            freeze_reason = reason
+
     def thaw():
-        """Resume a game frozen for a provider outage and shift the run clock by the outage."""
-        nonlocal frozen_at, outage_total, started
+        """Resume a frozen game and shift the run clock by the pause (thinking or provider outage)."""
+        nonlocal frozen_at, freeze_reason, outage_total, think_frozen_total, started
         if frozen_at is not None:
             os.killpg(pid, signal.SIGCONT)
-            outage = time.monotonic() - frozen_at
-            outage_total, started, frozen_at = outage_total + outage, started + outage, None
+            paused = time.monotonic() - frozen_at
+            if freeze_reason == "outage":
+                outage_total += paused
+            else:
+                think_frozen_total += paused
+            started, frozen_at, freeze_reason = started + paused, None, None
 
     def observation():
         nonlocal frame_count
@@ -320,6 +340,8 @@ def run(args):
                 dump(output / f"request-{step:03d}.json", archived(payload))
             attempt = outage_attempt = 0  # sent-failure retries vs. unsent (outage) waits
             while True:
+                if args.clock == "frozen":
+                    freeze("think")
                 budget.reserve()
                 calls += 1
                 t0 = time.monotonic()
@@ -336,12 +358,10 @@ def run(args):
                     break
                 except ProviderError as error:
                     budget.abandon(error.sent)
-                    outage_so_far = outage_total + (time.monotonic() - frozen_at if frozen_at is not None else 0)
+                    outage_so_far = outage_total + (time.monotonic() - frozen_at if freeze_reason == "outage" else 0)
                     if not error.sent and outage_so_far < OUTAGE_LIMIT_SECONDS:
                         # Route down (request never sent): freeze the game and stop the run clock.
-                        if frozen_at is None:
-                            os.killpg(pid, signal.SIGSTOP)
-                            frozen_at = time.monotonic()
+                        freeze("outage")
                         wait = min(60.0, 5.0 * 2 ** min(outage_attempt, 4))
                         with (output / "provider-failures.jsonl").open("a") as stream:
                             stream.write(json.dumps({"step": step, "outage_attempt": outage_attempt, "error": str(error),
@@ -458,6 +478,7 @@ def run(args):
                   "model": args.model, "exact_reference_reproduction": False, "official_eligible": False,
                   "stop_reason": stop, "calls": calls, "provider_retries": retries, "input_commands": commands,
                   "continuations": continuations, "provider_outage_seconds": outage_total,
+                  "clock": args.clock, "think_frozen_seconds": think_frozen_total,
                   "frames": frame_count, "invalid_tools": invalid,
                   "active_wall_seconds": time.monotonic()-started, "evaluation_end_unix": end,
                   "accounting": budget.summary(), "score": reference_score(events, actions=receipts),
@@ -498,6 +519,10 @@ def main():
     parser.add_argument("--image-format", choices=("png", "jpeg"), default="png",
                         help="encoding of screenshots sent to the model (frames are always saved as PNG)")
     parser.add_argument("--jpeg-quality", type=int, default=85)
+    parser.add_argument("--clock", choices=("realtime", "frozen"), default="realtime",
+                        help="frozen: the game is paused during every model call; --seconds counts game time")
+    parser.add_argument("--interface-card", action="store_true",
+                        help="append key bindings and screen geometry (no strategy) to the task prompt")
     run(parser.parse_args())
 
 
