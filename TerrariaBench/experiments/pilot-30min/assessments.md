@@ -361,3 +361,19 @@ Played the full 30 minutes, $5.77 (fewer, cheaper calls than run 1: it spent muc
 **Judgement.** Same model, same world, same settings: run 1 reached a furnace with 2 deaths, run 2 stalled at the bench
 with 29. The difference is almost entirely where Opus was when night fell. Single 30-minute runs with PvE on can't rank
 models. Anchor 4 (workbench plus armour, weapon and a shaft attempt), −1 for the death loop.
+
+---
+
+## haiku-rt-card2-01: Haiku 5.5, real time, PvE on, **interface card v2** (tile mechanics). **2/10**
+
+Played the full 30 minutes, $0.47. Milestone score 4 (game time): wood_1 0:41, wood_25 0:59, workbench 1:04. 14 deaths,
+deepest 7 tiles, 30 continuation prompts.
+
+**Compared with haiku-rt-01 (card v1)**
+- Deeper (7 tiles vs 0) and fewer deaths (14 vs 43), but it got down by digging into a dirt pocket and then fought zombies
+  in a small cave for most of the last 15 minutes, not by a 2-wide shaft.
+- Still never placed the workbench (in the inventory all run) and never crafted torches (15 gel unused).
+- No `torch_10` from zombie drops this time, so its milestone score is lower even though play was marginally better.
+
+**Judgement.** Being told how placement and holes work did not change what Haiku does on screen; its failures are
+execution and persistence ("the same failing digging approach"), not missing facts. Anchor 2 (workbench crafted, never placed).
