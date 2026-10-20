@@ -26,8 +26,10 @@ def setup(run):
     bits = [man.get("clock", "realtime")]
     if not man.get("pve_enabled", True):
         bits.append("PvE off")
-    if not man.get("interface_card", False):
+    if not man.get("interface_card"):
         bits.append("no card")
+    elif man["interface_card"] == "v2":
+        bits.append("card v2")
     return f"{cfg} ({', '.join(bits)})"
 
 

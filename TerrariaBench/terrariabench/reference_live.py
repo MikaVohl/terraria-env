@@ -208,7 +208,8 @@ def run(args):
         prompt = prompt.replace("The game continues running while you think.",
                                 "The game is paused while you think and runs only while your commands execute.")
     if args.interface_card:
-        prompt += "\n" + (ROOT / "prompts/interface_card.txt").read_text()
+        card = {"v1": "interface_card.txt", "v2": "interface_card_v2.txt"}[args.interface_card]
+        prompt += "\n" + (ROOT / "prompts" / card).read_text()
     manifest = {"profile": profile, "mode": args.mode, "model": model,
                 "task_prompt": prompt, "system_prompt": HARNESS, "tools": tools,
                 "information_policy": {"checkpoint_tool": not hidden, "checkpoint_chat": not hidden,
@@ -521,8 +522,9 @@ def main():
     parser.add_argument("--jpeg-quality", type=int, default=85)
     parser.add_argument("--clock", choices=("realtime", "frozen"), default="realtime",
                         help="frozen: the game is paused during every model call; --seconds counts game time")
-    parser.add_argument("--interface-card", action="store_true",
-                        help="append key bindings and screen geometry (no strategy) to the task prompt")
+    parser.add_argument("--interface-card", nargs="?", const="v1", choices=("v1", "v2"), default=None,
+                        help="append key bindings and screen geometry (no strategy) to the task prompt; "
+                             "v2 adds tile mechanics (placement target, 2-tile body)")
     run(parser.parse_args())
 
 

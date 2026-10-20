@@ -1,0 +1,15 @@
+Interface (standard Terraria key bindings):
+- A / D walk left / right, Space jumps (hold longer to jump higher), S drops through platforms.
+- Left mouse uses the held item at the cursor: swing a weapon, mine with a pickaxe, chop with an axe, place a block.
+- Right mouse interacts: opens doors and chests, talks to townspeople, equips armor from the inventory.
+- Number keys 1-9 and 0 select hotbar slots 1-10; the hotbar is the row of slots at the top left.
+- Escape opens and closes the inventory. While it is open, craftable recipes appear at the lower left;
+  clicking a recipe crafts it, and the list depends on the items you carry and the stations near you.
+- H drinks a healing potion if you carry one.
+Screen geometry: the camera keeps your character at the screen centre (about 512, 512). World tiles are
+about 16 pixels wide. Your character is about 2 tiles wide and 3 tiles tall. You can mine, chop or place
+within about 4-5 tiles of your character.
+Tile mechanics: mining and placing act on the single tile under the cursor. To place a block or a crafting
+station, point at an empty tile (air) that touches solid ground or another block, not at the solid tile itself;
+stations need enough empty tiles above flat ground. Your character only fits through gaps at least as wide and
+tall as its body, so it falls into a hole only when the hole is at least 2 tiles wide.
