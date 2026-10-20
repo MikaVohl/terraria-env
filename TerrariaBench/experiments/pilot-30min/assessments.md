@@ -133,3 +133,53 @@ workbench 0:45, torch_10 12:02. **43 deaths, never below the surface, 63 continu
 **Judgement.** Real-time control is good enough to gather and craft quickly, but Haiku has no early-game plan
 beyond the workbench and no survival response to night. The milestone score (5) badly overrates it.
 Anchor 2-3 (workbench crafted but never placed or used); 2 because the last 18 minutes were a passive death loop.
+
+---
+
+## sonnet-frozen-01: Sonnet 5.5 (reasoning low), frozen clock, PvE on, interface card. **4/10**
+
+Played 29.9 game-minutes (plus 28.7 minutes paused while thinking), $8.96. Milestone score 4: wood ×3 at 35 s,
+workbench 0:56. 13 deaths, deepest 125 tiles, 72 continuation prompts.
+
+**What went well**
+- Placed the workbench and **crafted torches from gel at 9.5 minutes** (its own crafting call; wood and gel both dropped).
+  Real-time Sonnet never crafted anything after the workbench.
+- After ~7 minutes of failing to dig, it worked out the 2-tile-wide shaft and dug to 125 tiles, collecting stone,
+  clay and 7 copper ore.
+- Picked up 28 pumpkins (Halloween season, see harness notes).
+
+**What went wrong**
+- ~7 minutes lost to the same digging misconception as real-time Sonnet ("the pickaxe only removes the surface layer"),
+  before discovering the fix on its own.
+- Never placed a torch underground ("ores should pick up automatically"), so it dug blind and found little ore.
+- Two deaths deep in its shaft (~117 tiles), then 11 surface deaths at night after respawning, the same nightfall pattern as opus-frozen-01.
+- At 29.8 wall-minutes it declared "the game appears to have frozen". Telemetry shows the game advanced at full speed
+  during all 204 input batches of 2 s or more; it was stuck and misread identical frames as a hang.
+- Quit 72 times.
+
+**Judgement.** The frozen clock clearly helped Sonnet: it reached the torch and shaft stage that real-time Sonnet never did,
+mostly because it had time to recover from mistakes rather than dying while thinking. Anchor 5 (torches crafted),
+−1 for the night deaths, constant quitting and blind digging.
+
+---
+
+## haiku-frozen-01: Haiku 5.5 (reasoning medium), frozen clock, PvE on, interface card. **4/10**
+
+Played 30.0 game-minutes (plus 30.2 minutes paused while thinking), $0.99. Milestone score 5: wood ×3 at 1:10,
+workbench 2:18, wood_100 at the end. 28 deaths, deepest 6 tiles, 57 continuation prompts.
+
+**What went well**
+- Crafted torches from its first gel at about 2 minutes, the earliest crafted torches in the pilot.
+- At ~17 minutes it stated the correct furnace plan unprompted (20 stone, a nearby workbench, torches) and gathered
+  26 stone for it.
+- Collected 108 wood and 38 gel, enough materials for the next tier.
+
+**What went wrong**
+- The furnace never appeared in its crafting list. It re-placed workbenches and re-opened the menu several times but could
+  not tell whether a bench was standing in range [INFERENCE: placement failed or the bench was out of range].
+- Could not dig: the deepest point was 6 tiles. Like real-time Haiku and Sonnet, it never found the 2-wide shaft.
+- 28 deaths, mostly at night after minute 25 (wall), and quit 57 times ("more clicks aren't likely to help").
+
+**Judgement.** Better than real-time Haiku: it crafted, placed and planned the right next step, and the frozen clock gave
+it time to do so. UI state confusion (is the bench in range?) and no digging technique stopped it one step
+before the furnace. Anchor 5 (torches crafted), −1 for the death loop and constant quitting.
