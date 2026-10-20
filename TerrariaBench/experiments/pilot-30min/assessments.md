@@ -436,3 +436,24 @@ Played the full 30 minutes, $0.52. Milestone score 4 (game time): wood ×3 by 0:
 
 Judgement: a near copy of haiku-rt-01 (43 deaths, depth 0, 63 continuations). Real-time Haiku is consistent: a quick
 opening, then no plan and a night death loop. Anchor 2-3 (workbench crafted, never placed), 2 for the death loop.
+
+## opus-frozen-02: Opus 5.5 (reasoning low), frozen clock, PvE on ($17 cap). **7/10**
+
+**The best run so far.** The $17 cap ended it at 17.8 game-minutes ($15.95 reported, 262 calls, 29.7 minutes thinking).
+Milestones (game time): wood ×3 by 0:23, workbench 0:42, wood_100 2:01, **furnace 9:10**. Telemetry: furnace placed at
+10:37, **copper bars smelted at 10:40** (2, then a third by 15:40). 5 deaths, deepest 102 tiles, 37 continuations.
+
+**What went well**
+- **Placed both stations**: the workbench (picked up and re-placed several times as it moved), then the furnace, and
+  smelted bars from it. That's the first furnace placement and the first bars of all 22 runs.
+- Wood armour crafted at a placed bench; a bow, arrows and 36 of item 42 (Shuriken, per its own crafting) for ranged combat.
+- Only 5 deaths. When its own shaft stalled ("only 2 tiles wide... player not falling through"), it walked left across
+  the desert and dropped into a natural cave.
+
+**What went wrong**
+- Still single-tile digging when it tried to shaft down; its depth came from the natural cave.
+- Ended stuck "in total dark" in the cave with 2 torches.
+- **Cost:** $0.90 per game-minute, about 1.8× opus-frozen-01. A full 30 game-minutes would cost about $27.
+
+**Judgement.** Without the ANR dialog, frozen Opus did what no other run did: furnace placed and used, bars smelted, with
+very few deaths. Anchor 7 (bars smelted); no adjustment, as the cut-off was budget, not play.
