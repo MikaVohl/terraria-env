@@ -44,6 +44,8 @@ CONDITIONS = {
     "hl-lj-state": {"planner": "llm-hl", "planner_state": True, "executor": "jev"},
     # Unpaid reference: a fixed priority rule over the same catalog, no model.
     "scripted": {"planner": None, "planner_state": False, "executor": "rule"},
+    # Jev alone from the screenshot only: generic options; Box answers aim the clicks.
+    "jev-pixel": {"planner": None, "planner_state": False, "executor": "jev-pixel"},
 }
 RULE_PRIORITY = {
     "fresh": ("attack", "chop_tree", "collect_drop", "approach_tree", "walk_right"),
@@ -64,6 +66,17 @@ SUBGOALS = {
     "explore_left": "Travel left to find trees or resources.",
     "explore_right": "Travel right to find trees or resources.",
 }
+# Screenshot-only Jev: options carry no game-state information; aiming comes from Box questions.
+PIXEL_OPTIONS = {
+    "wait": "Do nothing for a moment.",
+    "walk_left": "Walk left briefly.", "walk_right": "Walk right briefly.",
+    "jump_left": "Jump while moving left.", "jump_right": "Jump while moving right.",
+    "chop_tree": "Select the axe and hold it on the trunk of the nearest tree; only works when the tree is within a few tiles.",
+    "attack": "Select the sword and stab the nearest hostile creature; only works when it is close.",
+    "close_inventory": "Press escape (closes the inventory screen if it is open).",
+}
+PIXEL_BOXES = {"trunk": "the trunk of the tree closest to the player character at the screen centre",
+               "hostile": "the hostile creature (slime, zombie or other enemy) closest to the player character"}
 PIXEL_HOLD_MS = 800
 # High-level planning: objectives stay valid for tens of seconds; tactics belong to the executor.
 HL_REPLAN_SECONDS = 30  # default; --replan-seconds sweeps it
@@ -236,19 +249,20 @@ def run(args):
     roles = {}
     if cond["planner"] in ("llm", "llm-hl"):
         roles["planner"] = Role("planner", root, ledger, Budget(args.usd / 2, model_pricing(catalog_models[PLANNER_MODEL]), input_ceiling=32768, output_ceiling=2048))
-    if cond["executor"] == "jev":
+    if cond["executor"] in ("jev", "jev-pixel"):
         roles["executor"] = Role("executor", root, ledger, Budget(args.usd / 2, JEV_PRICING, input_ceiling=32768, output_ceiling=4096))
     elif cond["executor"] != "rule":
         roles["executor"] = Role("executor", root, ledger, Budget(args.usd / 2, model_pricing(catalog_models[EXECUTOR_MODEL]), input_ceiling=16384, output_ceiling=512))
     state_file = root / "agent-state.json"
     config = {"condition": args.condition, **cond, "scenario": args.scenario, "pve": True, "clock": "realtime",
               "planner_model": {"llm": PLANNER_MODEL, "llm-hl": PLANNER_MODEL, "jev": JEV_MODEL}.get(cond["planner"]),
-              "executor_model": {"jev": JEV_MODEL, "rule": None}.get(cond["executor"], EXECUTOR_MODEL),
+              "executor_model": {"jev": JEV_MODEL, "jev-pixel": JEV_MODEL, "rule": None}.get(cond["executor"], EXECUTOR_MODEL),
               "planner_reasoning": "low", "executor_reasoning": "none", "pixel_hold_ms": PIXEL_HOLD_MS,
               "replan_seconds": args.replan_seconds if cond["planner"] == "llm-hl" else None}
     manifest = {"protocol": "planner-executor-v1", "config": config, "task": TASKS[args.scenario], "controls": CONTROLS,
                 "subgoals": SUBGOALS, "limits": {"simulation_seconds": args.sim_seconds, "wall_seconds": args.seconds, "usd": args.usd},
-                "privileged_state": cond["planner_state"] or cond["executor"] != "llm-pixel",
+                "privileged_state": cond["planner_state"] or cond["executor"] not in ("llm-pixel", "jev-pixel"),
+                **({"pixel_options": PIXEL_OPTIONS, "pixel_boxes": PIXEL_BOXES} if cond["executor"] == "jev-pixel" else {}),
                 "source_hashes": source_hashes, "fixture_hashes": fixture_hashes, "official_eligible": False, "started_unix": time.time()}
     dump(root / "manifest.json", manifest)
 
@@ -393,6 +407,42 @@ def run(args):
             validate_actions(actions, width=1024, height=1024, max_hold_ms=PIXEL_HOLD_MS)
             obs = {"frame": str(frame.relative_to(root)), "observed_unix": meta["captured_unix"]}
             choice = "pixel_actions"
+        elif cond["executor"] == "jev-pixel":
+            frame, meta = capture()
+            questions = {"action": {"type": "choice", "criteria": PIXEL_OPTIONS,
+                                    "instructions": "You control the player character at the centre of this Terraria screenshot. "
+                                                    "Choose the next action that best advances `task` right now. Survive: avoid "
+                                                    "hostiles that are close unless you attack them."},
+                         **{name: {"type": "box", "instructions": text} for name, text in PIXEL_BOXES.items()}}
+            payload = {"model": JEV_MODEL, "questions": questions,
+                       "state": [f"Task: {TASKS[args.scenario]} {CONTROLS}", f"Your recent actions: {recent}",
+                                 "Current Terraria game screenshot:", image_part(frame)]}
+            archived = {**payload, "state": payload["state"][:3] + [{"artifact": str(frame.relative_to(root))}]}
+            response, latency, n = role.call(lambda p: decide(p, key=key, timeout=15), payload, archived)
+            answers = response["answers"]
+            choice = answers["action"]["choice"]
+            if choice not in PIXEL_OPTIONS:
+                raise ValueError(f"choice outside offered options: {choice!r}")
+
+            def aim(name):
+                b = answers[name]["box"]
+                return round((b["left"] + b["right"]) / 2 * 1023), round((b["top"] + b["bottom"]) / 2 * 1023)
+
+            actions = {"wait": [], "walk_left": [{"keys": ["a"], "ms": 400}], "walk_right": [{"keys": ["d"], "ms": 400}],
+                       "jump_left": [{"keys": ["space", "a"], "ms": 400}], "jump_right": [{"keys": ["space", "d"], "ms": 400}],
+                       "close_inventory": [{"keys": ["esc"], "ms": 60}]}.get(choice)
+            if choice == "chop_tree":
+                x, y = aim("trunk")
+                actions = [{"keys": ["3"], "ms": 50}, {"x": x, "y": y, "mouse": "left", "ms": 700}]
+            elif choice == "attack":
+                x, y = aim("hostile")
+                actions = [{"keys": ["1"], "ms": 50}, {"x": x, "y": y, "mouse": "left", "ms": 300}]
+            if actions:
+                validate_actions(actions, width=1024, height=1024, max_hold_ms=2000)
+            obs = {"frame": str(frame.relative_to(root)), "observed_unix": meta["captured_unix"],
+                   "confidence": answers["action"].get("confidence"), "probabilities": answers["action"].get("probabilities"),
+                   "boxes": {k: answers[k].get("box") for k in PIXEL_BOXES},
+                   "box_confidence": {k: answers[k].get("confidence") for k in PIXEL_BOXES}}
         else:
             state = read_state(state_file)
             opts = catalog(state)
