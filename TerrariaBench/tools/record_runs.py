@@ -31,8 +31,10 @@ def main():
             recorder = current = None
         if run and recorder is None and not (run / "desktop.mp4").exists():
             current = run
+            # Frozen-clock runs take about twice their game time in wall time; result.json ends the recording.
             recorder = subprocess.Popen([str(ROOT / ".venv/bin/python"), str(ROOT / "tools/record_desktop.py"),
-                                         str(run / "desktop.mp4"), "--fps", fps, "--until-file", str(run / "result.json")])
+                                         str(run / "desktop.mp4"), "--fps", fps, "--until-file", str(run / "result.json"),
+                                         "--max-seconds", "14400"])
             print(f"recording {run}", flush=True)
         time.sleep(1)
 
