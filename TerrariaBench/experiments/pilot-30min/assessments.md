@@ -377,3 +377,20 @@ deepest 7 tiles, 30 continuation prompts.
 
 **Judgement.** Being told how placement and holes work did not change what Haiku does on screen; its failures are
 execution and persistence ("the same failing digging approach"), not missing facts. Anchor 2 (workbench crafted, never placed).
+
+---
+
+## sonnet-rt-card2-01: Sonnet 5.5 (reasoning low), real time, PvE on, **interface card v2** (tile mechanics). **2/10**
+
+Played the full 30 minutes, $4.61. Milestone score 4 (game time): wood ×3 at 0:42-0:43, workbench 1:00. 39 deaths,
+deepest 4 tiles, 115 continuation prompts.
+
+**Compared with sonnet-rt-01 (card v1)**
+- It used the new fact out loud within two minutes ("a one-tile-wide hole that's too narrow for my two-tile-wide
+  character... I need to widen it") and again at 4:24, but never executed it: holes stayed one tile wide, deepest point 4.
+- "I placed the workbench and got the Benched achievement": Benched is the crafting achievement, and the bench stayed in
+  the inventory all run. The placement fact did not help either.
+- Otherwise the same run: night death loop (39), constant quitting (115), torches only from zombie drops (gel unchanged at 31).
+
+**Judgement.** Knowing the rule is not the bottleneck; turning it into the right sequence of clicks from screenshots is.
+Anchor 2-3 (workbench crafted, never placed), 2 for the loop and quitting.
