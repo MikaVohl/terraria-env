@@ -428,3 +428,11 @@ torch_10 16:45 (Torch Zombie drop; gel unchanged at 30). **8 deaths**, deepest 2
 
 Judgement: fewer deaths and some digging, but less crafting than haiku-frozen-01 (which crafted torches and planned a
 furnace). Anchor 3-4 (workbench crafted, a shallow shaft), 3 for the constant quitting.
+
+## haiku-rt-02: Haiku 5.5, real time, PvE on (replicate of haiku-rt-01). **2/10**
+
+Played the full 30 minutes, $0.52. Milestone score 4 (game time): wood ×3 by 0:31, workbench 1:13. **32 deaths**, deepest
+5 tiles, 61 continuations. The bench stayed in the inventory all run; 31 gel never became torches.
+
+Judgement: a near copy of haiku-rt-01 (43 deaths, depth 0, 63 continuations). Real-time Haiku is consistent: a quick
+opening, then no plan and a night death loop. Anchor 2-3 (workbench crafted, never placed), 2 for the death loop.
