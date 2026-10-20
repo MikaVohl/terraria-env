@@ -175,7 +175,10 @@ def run(args):
                  "cache_pricing": {k: f"{price[k]:.10f}" for k in ("cache_read", "cache_write")},
                  "request_shape": f"omp {gateway.OMP_VERSION} anthropic-messages, streamed",
                  "reasoning_fields": spec["reasoning"][args.reasoning], "max_tokens": spec["max_tokens"]}
-        budget = Budget(args.usd, model["pricing"], input_ceiling=180000, output_ceiling=spec["max_tokens"])
+        # Accounting reserves for --reserve-output-tokens (default: the request's max_tokens); a reply
+        # beyond it stops the run as an exceeded accounting assumption.
+        budget = Budget(args.usd, model["pricing"], input_ceiling=180000,
+                        output_ceiling=min(args.reserve_output_tokens or spec["max_tokens"], spec["max_tokens"]))
         key, session = gateway.load_key(), gateway.session_id()
     else:
         model = model_metadata(args.model)
@@ -479,6 +482,8 @@ def main():
     parser.add_argument("--observe-after-act", action="store_true",
                         help="variant: every act result carries a fresh screenshot")
     parser.add_argument("--pve", action="store_true", help="variant: hostile NPCs active (normal rules)")
+    parser.add_argument("--reserve-output-tokens", type=int, default=None,
+                        help="gateway: output tokens reserved per call for spend control (default max_tokens)")
     run(parser.parse_args())
 
 
