@@ -394,3 +394,37 @@ deepest 4 tiles, 115 continuation prompts.
 
 **Judgement.** Knowing the rule is not the bottleneck; turning it into the right sequence of clicks from screenshots is.
 Anchor 2-3 (workbench crafted, never placed), 2 for the loop and quitting.
+
+---
+
+# Batch B (20 October, afternoon): frozen-clock replicates without the ANR dialog
+
+Same world, settings and card v1 as the pilot (still the Halloween season). Hyprland's ANR dialog is disabled; a process
+watcher logged no dialog during any batch-B run, and no batch-B model mentioned one.
+
+## sonnet-frozen-02: Sonnet 5.5 (reasoning low), frozen clock, PvE on. **3/10**
+
+**Ended by the continuation rule at 10.5 game-minutes** ("I'm stopping here. The run is stuck and I have no new approach to
+try", five replies in a row without an action). $4.05, 90 continuations before that. Milestones (game time): wood ×3 by 0:18,
+workbench 0:22. 2 deaths (both at 65 tiles), deepest 65 tiles.
+
+- Torches crafted by hand at 2:43 game time, faster than any other run.
+- Stated the placement rule correctly ("placement needs an empty tile adjacent to something solid") and still never placed
+  the bench; twice it decided the bench was placed when it was still in slot 6.
+- Widened its hole after a few tries and dug to 65 tiles, then died there twice and gave up.
+
+Judgement: the frozen clock again let Sonnet craft and dig, which it never did in real time, but it abandoned the run a
+third of the way in. Anchor 4-5 (torches crafted, a real shaft), −1 for quitting the run outright.
+
+## haiku-frozen-02: Haiku 5.5 (reasoning medium), frozen clock, PvE on. **3/10**
+
+Played the full 30 game-minutes (about 73 wall-minutes), $1.53. Milestones (game time): wood ×3 by 0:17, workbench 0:18,
+torch_10 16:45 (Torch Zombie drop; gel unchanged at 30). **8 deaths**, deepest 29 tiles, 116 continuations.
+
+- Dug a short shaft (29 tiles, 44 stone), deeper than any real-time Haiku run (0-7 tiles).
+- Never placed the bench, never crafted torches itself; spent minutes 5-14 "at the top of the same shaft", quitting
+  every few calls.
+- Fewest deaths of any PvE-on Haiku run (8 vs 14-43).
+
+Judgement: fewer deaths and some digging, but less crafting than haiku-frozen-01 (which crafted torches and planned a
+furnace). Anchor 3-4 (workbench crafted, a shallow shaft), 3 for the constant quitting.
