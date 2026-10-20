@@ -336,3 +336,28 @@ chasms; the "depth 129" in the summary is the fall, not digging), **118 continua
 **Judgement.** Removing enemies removed deaths but not passivity. Sonnet's real-time problem in this pilot is giving up and
 not finding a digging technique, not combat. Anchor 3 (workbench crafted and placed), −1 for the constant quitting and
 aimless wandering.
+
+---
+
+## opus-rt-02: Opus 5.5 (reasoning low), real time, PvE on, interface card ($11 cap). Repeat of opus-rt-01. **3/10**
+
+Played the full 30 minutes, $5.77 (fewer, cheaper calls than run 1: it spent much of the night dead). Milestone score 5
+(game time): wood_1 0:08, wood_25 0:38, workbench 1:09, torch_10 22:41 (Torch Zombie drop; 51 gel never crafted).
+**29 deaths**, deepest 27 tiles, 2 continuation prompts.
+
+**What went well**
+- Same knowledgeable opening as run 1: workbench placed, wooden sword, hammer and breastplate crafted and equipped by
+  4.5 minutes; 112 wood; 10 tin ore mined from a surface vein.
+- Rarely quit (2 continuations), against 5 in run 1 and 34-118 for Sonnet and Haiku.
+
+**What went wrong**
+- It started digging only at about 7 minutes, with one-tile holes ("I seem to be standing next to the hole rather than in
+  it"), and was still at the surface when night fell at about 12 minutes.
+- Night loop: 27 deaths between 11:51 and 22:24 at spawn, almost exactly one every 25 s.
+- The same perception errors as run 1: slimes and zombies read as "hostile bunnies", "lag" and "dropped inputs"
+  blamed for missed chops.
+- 51 gel and a placed bench, but no torches crafted.
+
+**Judgement.** Same model, same world, same settings: run 1 reached a furnace with 2 deaths, run 2 stalled at the bench
+with 29. The difference is almost entirely where Opus was when night fell. Single 30-minute runs with PvE on can't rank
+models. Anchor 4 (workbench plus armour, weapon and a shaft attempt), −1 for the death loop.
