@@ -38,7 +38,7 @@ def main(run):
     run = Path(run)
     res = json.loads((run / "result.json").read_text())
     man = json.loads((run / "manifest.json").read_text())
-    combo = res.get("protocol") == "combo-v1"
+    combo = str(res.get("protocol", "")).startswith("combo-")
     t0 = res["evaluation_end_unix"] - res["active_wall_seconds"] - (res.get("provider_outage_seconds") or 0) - (res.get("think_frozen_seconds") or 0)
     tel = [json.loads(l) for f in sorted((run / "telemetry").glob("*.jsonl")) for l in open(f)]
     beats = [e for e in tel if e.get("event") == "heartbeat"]

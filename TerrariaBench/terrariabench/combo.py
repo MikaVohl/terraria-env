@@ -37,6 +37,8 @@ PLANNER_SYSTEM = (
     "\nReply with one JSON object only: {\"objective\": concrete instruction for the executor (max 300 chars), "
     "\"replan_seconds\": 10-60 (when you want to look again), \"notes\": your memory for next time (max 1500 chars), "
     "\"ui_actions\": optional list of 1-16 actions {\"keys\":[...],\"mouse\":\"left|right\",\"x\":0-1023,\"y\":0-1023,\"ms\":20-2000}}.")
+UI_SESSION_NOTE = (" After your ui_actions run you immediately get a new screenshot and can keep clicking; the executor stays "
+                   "paused until you reply without ui_actions.")
 HAIKU_EXECUTOR_SYSTEM = (
     "You are the fast EXECUTOR of a Terraria agent. A planner gives you an objective; act on the newest screenshot "
     "right now. The game runs in real time. Holding a mouse button keeps swinging the held tool, about one swing "
@@ -129,10 +131,12 @@ def run(args):
     else:
         okey = hermes_key()
         roles["executor"] = Role("executor", root, Budget(args.usd_executor, JEV_PRICING, input_ceiling=40000, output_ceiling=4096), "openrouter")
-    manifest = {"protocol": "combo-v1", "config": {"planner_model": args.planner, "planner_reasoning": args.planner_reasoning,
+    planner_system = PLANNER_SYSTEM + (UI_SESSION_NOTE if args.ui_session else "")
+    protocol = "combo-v2" if args.ui_session else "combo-v1"
+    manifest = {"protocol": protocol, "config": {"planner_model": args.planner, "planner_reasoning": args.planner_reasoning,
                 "executor": args.executor, "executor_model": JEV_MODEL if args.executor == "jev" else "claude-haiku-5-5",
-                "pve": args.pve, "clock": "realtime", "seconds": args.seconds, "jev_frames": args.jev_frames},
-                "task_prompt": task, "planner_system": PLANNER_SYSTEM, "executor_system": HAIKU_EXECUTOR_SYSTEM if args.executor == "haiku" else None,
+                "pve": args.pve, "clock": "realtime", "seconds": args.seconds, "jev_frames": args.jev_frames, "ui_session": args.ui_session},
+                "task_prompt": task, "planner_system": planner_system, "executor_system": HAIKU_EXECUTOR_SYSTEM if args.executor == "haiku" else None,
                 "privileged_state": False, "official_eligible": False, "started_unix": time.time(),
                 "source_hashes": {p.name: digest(p) for p in Path(__file__).parent.glob("*.py")}}
     dump(root / "manifest.json", manifest)
@@ -141,6 +145,8 @@ def run(args):
     plan = {"objective": "Look around and start making progress.", "notes": "", "version": 0, "since": time.monotonic(), "replan": 15}
     ui_queue, executed, frames, fatal = queue.Queue(), [], [], []
     replan_now = threading.Event()
+    # combo-v2 UI session: while set, the executor only runs planner clicks; ui_done marks each click batch as executed.
+    ui_session, ui_done = threading.Event(), threading.Event()
     frame_n = [0]
     pid = game = None
     stop_reason, started = "startup", None
@@ -175,12 +181,17 @@ def run(args):
                 content = [{"type": "text", "text": text}] + [b for i, p in enumerate(shots) for b in (
                     {"type": "text", "text": "Newest screenshot:" if i == len(shots) - 1 else "Earlier screenshot:"}, image_block(jpeg_url(p)))]
                 archived = {"text": text, "frames": [str(p.relative_to(root)) for p in shots]}
-                response, latency, n = role.call(lambda: gateway_text(args.planner, args.planner_reasoning, PLANNER_SYSTEM, content, gkey), archived)
+                response, latency, n = role.call(lambda: gateway_text(args.planner, args.planner_reasoning, planner_system, content, gkey), archived)
                 body = json_object(response["choices"][0]["message"]["content"] or "{}")
                 ui = body.get("ui_actions") or []
                 if ui:
                     validate_actions(ui, width=1024, height=1024, max_hold_ms=2000)
+                    if args.ui_session:
+                        ui_done.clear()
+                        ui_session.set()
                     ui_queue.put((n, ui))
+                else:
+                    ui_session.clear()
                 replan = max(10, min(60, int(body.get("replan_seconds", 20))))
                 with lock:
                     plan.update(objective=str(body.get("objective", plan["objective"]))[:300], notes=str(body.get("notes", ""))[:1500],
@@ -188,9 +199,14 @@ def run(args):
                 log({"role": "planner", "n": n, "latency": latency, "objective": plan["objective"], "replan_seconds": replan,
                      "ui_actions": len(ui), "frame": str(newest.relative_to(root)), "unix": time.time()})
                 replan_now.clear()
+                if ui and args.ui_session:
+                    while not (ui_done.wait(1) or stop.is_set()):
+                        pass
+                    continue
                 replan_now.wait(replan)
             except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
                 log({"role": "planner", "error": f"{type(error).__name__}: {error}"[:300], "unix": time.time()})
+                ui_session.clear()  # never leave the executor paused behind a failed planner call
                 stop.wait(3)
             except Exception as error:
                 fatal.append(f"{type(error).__name__}: {error}")
@@ -239,8 +255,10 @@ def run(args):
             "action": {"type": "choice", "instructions": "Choose the action that best advances `Planner objective` right now from the "
                                                           "current screenshot. Survive: deal with hostiles that are close.",
                        "criteria": {"walk_left": "Walk left.", "walk_right": "Walk right.", "jump_left": "Jump while moving left.",
-                                    "jump_right": "Jump while moving right.", "chop_tree": "Step toward the nearest tree and chop it with the axe.",
-                                    "attack": "Swing the sword at the nearest hostile.",
+                                    "jump_right": "Jump while moving right.",
+                                    "chop_tree": "Chop a tree trunk within about 4 tiles of the player with the axe. If the nearest tree is "
+                                                 "farther away, walk toward it instead.",
+                                    "attack": "Fight a hostile creature (slime, zombie) that is close, with the sword. Never for trees.",
                                     "dig_down": "Dig straight down two tiles wide with the pickaxe.",
                                     "dig_left": "Dig a tunnel to the left with the pickaxe.", "dig_right": "Dig a tunnel to the right with the pickaxe.",
                                     "toggle_inventory": "Press escape to open or close the inventory.", "wait": "Do nothing for a moment."}}}
@@ -248,18 +266,20 @@ def run(args):
         response, latency, n = roles["executor"].call(
             lambda: decide({"model": JEV_MODEL, "state": state, "questions": questions}, key=okey, timeout=20), archived)
         a = response["answers"]
-        choice = a["action"]["choice"]
         tree_side, foe_side = a["tree_side"]["choice"], a["hostile_side"]["choice"]
-        executed_choice = choice
-        if choice == "toggle_inventory" and a["inventory_open"].get("noul", 0) < .5 and not args.allow_open_inventory:
-            choice = executed_choice = "wait_inventory_closed"
-        if choice == "chop_tree" and tree_side in ("left", "right"):
-            s, key = (1, "d") if tree_side == "right" else (-1, "a")
-            actions = [{"keys": ["3"], "ms": 40}, {"keys": [key], "ms": 250}] + \
-                      [{"x": CENTER + s * d, "y": 505, "mouse": "left", "ms": 600} for d in SWEEP_PX]
+        # Jev's action choice is used only when its target exists; otherwise the next most probable valid action.
+        valid = lambda c: not ((c == "chop_tree" and tree_side == "none") or (c == "attack" and foe_side == "none")
+                               or (c == "toggle_inventory" and a["inventory_open"].get("noul", 0) < .5 and not args.allow_open_inventory))
+        ranked = sorted((a["action"].get("probabilities") or {a["action"]["choice"]: 1}).items(), key=lambda kv: -kv[1])
+        choice = next((c for c, _ in ranked if valid(c)), "wait")
+        executed_choice = choice if choice == a["action"]["choice"] else f'{choice} (instead of {a["action"]["choice"]})'
+        if choice == "chop_tree":
+            s = 1 if tree_side == "right" else -1
+            actions = [{"keys": ["3"], "ms": 40}] + [{"x": CENTER + s * d, "y": 505, "mouse": "left", "ms": 700} for d in SWEEP_PX]
         elif choice == "attack":
-            sides = [1 if foe_side == "right" else -1] if foe_side in ("left", "right") else [-1, 1]
-            actions = [{"keys": ["1"], "ms": 40}] + [{"x": CENTER + s * 40, "y": 500, "mouse": "left", "ms": 350} for s in sides]
+            s = 1 if foe_side == "right" else -1
+            actions = [{"keys": ["1"], "ms": 40}, {"x": CENTER + s * 40, "y": 500, "mouse": "left", "ms": 350},
+                       {"x": CENTER + s * 56, "y": 490, "mouse": "left", "ms": 350}]
         else:
             actions = {"walk_left": [{"keys": ["a"], "ms": 500}], "walk_right": [{"keys": ["d"], "ms": 500}],
                        "jump_left": [{"keys": ["space", "a"], "ms": 450}], "jump_right": [{"keys": ["space", "d"], "ms": 450}],
@@ -269,8 +289,6 @@ def run(args):
                        "dig_right": [{"keys": ["2"], "ms": 40}, {"x": 536, "y": 500, "mouse": "left", "ms": 500},
                                      {"x": 536, "y": 524, "mouse": "left", "ms": 500}, {"keys": ["d"], "ms": 250}],
                        "toggle_inventory": [{"keys": ["esc"], "ms": 60}]}.get(choice, [])
-            if choice == "chop_tree":
-                executed_choice = "chop_tree_no_target"
         status = "done" if a["objective_done"].get("noul", 0) > .7 else "working"
         detail = {"choice": choice, "executed": executed_choice, "confidence": a["action"].get("confidence"),
                   "probabilities": a["action"].get("probabilities"), "tree_side": tree_side, "hostile_side": foe_side,
@@ -308,9 +326,12 @@ def run(args):
                 with lock:
                     executed.append({"source": f"planner_ui_{n}", "at_s": round(time.monotonic() - started)})
                 log({"role": "planner_ui", "n": n, "actions": ui, "receipts": len(receipts), "unix": time.time()})
+                ui_done.set()
                 continue
             except queue.Empty:
-                pass
+                if ui_session.is_set():
+                    time.sleep(.1)
+                    continue
             with lock:
                 objective, recent = plan["objective"], [e["source"] for e in executed[-4:]]
             try:
@@ -345,7 +366,7 @@ def run(args):
         dump(root / "evaluation-events.json", events)
         receipts = [json.loads(s) for s in (root / "inputs.jsonl").read_text().splitlines()] if (root / "inputs.jsonl").exists() else []
         started_unix = end - (time.monotonic() - started) if started else end
-        result = {"protocol": "combo-v1", "config": manifest["config"], "stop_reason": stop_reason, "frames": frame_n[0],
+        result = {"protocol": protocol, "config": manifest["config"], "stop_reason": stop_reason, "frames": frame_n[0],
                   "input_commands": len(receipts), "active_wall_seconds": time.monotonic() - started if started else 0,
                   "evaluation_end_unix": end, "roles": {k: r.summary() for k, r in roles.items()},
                   "score": reference_score(events, actions=receipts),
@@ -368,6 +389,8 @@ def main():
     p.add_argument("--jev-frames", type=int, default=3)
     p.add_argument("--pve", action="store_true")
     p.add_argument("--allow-open-inventory", action="store_true", help="let Jev open the inventory (default: only close it)")
+    p.add_argument("--ui-session", action="store_true",
+                   help="combo-v2: after planner clicks, replan at once on a fresh screenshot; executor waits until the planner stops clicking")
     run(p.parse_args())
 
 
