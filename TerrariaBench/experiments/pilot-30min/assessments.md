@@ -4,6 +4,10 @@ One reviewer's (the harness author's) judgement of each run, written from the ev
 (`evidence/timeline.md`, `summary.json`, `contact-sheet.png`), the frames the model saw and the
 desktop recording. The scores are subjective by design. They complement the milestone score; they do not replace it.
 
+Harness caveats (details in `harness-notes.md`): the three frozen-clock runs were intermittently shown a desktop
+"Application Not Responding" dialog over the game (note 7), and combo-v1 planners could not open the inventory because
+of a key-name bug (note 8). All runs played during the Halloween season (note 1).
+
 ## Scale (0-10)
 
 Anchors are progress within the 30-minute window. Play quality moves a score by up to ±1 from its anchor.
@@ -208,4 +212,25 @@ torch_10 13:24 (a Torch Zombie drop). **No workbench**, 35 deaths, never below 5
 
 **Judgement.** The fastest and freshest control loop of the pilot, with its crafting path broken by a harness bug.
 The score reflects what happened in the game, not what the setup can do; combo-v2 reruns it with the bug fixed.
+Anchor 2 (wood only).
+
+---
+
+## combo-jev-01: Sonnet 5.5 (low) planner + Jev 1.14 screenshot executor, real time, PvE on. **2/10**
+
+Played the full 30 minutes, $1.66 (planner $1.14, Jev $0.51). Milestone score 5: wood_1 1:53, wood_25 4:38, wood_100 7:30,
+torch_10 16:31 (Torch Zombie drop). No workbench, 24 deaths, never below the surface.
+**0.38 s median executor latency and 0.44 s screenshot age**, an order of magnitude fresher than any LLM-only loop.
+
+**What went well**
+- 221 wood, the most of any run, from about 1,280 Jev decisions (side classification plus reach sweeps).
+- Fewest deaths of the surface-bound runs (24 vs 35-43), probably because Jev reacts within half a second. Not tested.
+
+**What went wrong**
+- No crafting: 47 planner replies containing inventory clicks were dropped by the key-name bug (harness note 8).
+- Jev's own action choice is weak: in 348 of its decisions the harness had to override `attack`/`chop_tree` because Jev
+  reported no target on that side, and 327 decisions were `wait`.
+- Slow start: the first wood came at 1:53, against about 25 s for every LLM-only run.
+
+**Judgement.** Fast reflexes and endless gathering, but no progression, partly because of the harness bug.
 Anchor 2 (wood only).
