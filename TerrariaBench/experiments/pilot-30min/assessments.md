@@ -315,3 +315,24 @@ Played the full 30 minutes, $0.55. Milestone score 5 (game time): wood ×3 at 3:
 
 **Judgement.** The card buys the opening minutes, not the barriers. Anchor 2-3 (workbench crafted, not demonstrably
 placed or used), 2 for the death loop.
+
+---
+
+## sonnet-rt-pveoff-01: Sonnet 5.5 (reasoning low), real time, **PvE off**, interface card. **2/10**
+
+Played the full 30 minutes, $4.15. Milestone score 4 (game time): wood ×3 at 0:50, workbench 1:05. 2 deaths (both falls into
+chasms; the "depth 129" in the summary is the fall, not digging), **118 continuation prompts**.
+
+**What went well**
+- Crafted **and placed** the workbench by about 2 minutes, after first mistaking a placement preview for a placed bench and
+  then correcting itself ("that earlier sighting must have been a ghost image").
+
+**What went wrong**
+- Never dug: 16 dirt blocks in 30 minutes. After the bench it wandered the surface (214 tiles right and back twice),
+  fell into chasms twice, and later mined its own bench back up.
+- Quit 118 times, the most of any run; with no enemies there was nothing to react to, and it reported instead of playing.
+- No gel exists without enemies, so torches were impossible; it did not look for other progress (ore, caves).
+
+**Judgement.** Removing enemies removed deaths but not passivity. Sonnet's real-time problem in this pilot is giving up and
+not finding a digging technique, not combat. Anchor 3 (workbench crafted and placed), −1 for the constant quitting and
+aimless wandering.
