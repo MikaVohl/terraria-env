@@ -22,3 +22,16 @@ Things the pilot exposed about the benchmark itself (not about the models). Each
    sweeps, and only runs `attack`/`chop_tree` when Jev reports a target on that side.
 6. **Executor parity.** The first combo executor capped holds at 1 s while single-model runs allow 2 s; trees took
    about 100 s to fell. Fixed to 2 s before any 30-minute combo run.
+7. **Frozen runs were shown a desktop "Application Not Responding" dialog.** SIGSTOP makes the game miss Hyprland's
+   window pings, so Hyprland overlaid an ANR dialog on the game window during long model calls. All three frozen runs
+   saw it in their screenshots (Haiku 3+ times; Opus and Sonnet blamed "lag" on it), and Haiku clicked the screen while
+   it was up. Real-time runs were not affected. Fixed on Omarchy with `misc.enable_anr_dialog = false` (runtime and
+   `~/.config/hypr/hyprland.lua`). The frozen-vs-real-time comparison in this pilot carries this confound.
+8. **Combo planners' inventory clicks were silently rejected.** Planners wrote `"Escape"`; the controller only accepts
+   `"esc"`, so 92 planner replies in combo-haiku-01 and combo-jev-01 (106 attempts to open the inventory, including the
+   smoke runs) failed validation and were dropped without telling the planner. Fixed: key aliases are normalised, and a
+   rejected reply is reported back on the planner's next call with the valid key names. combo-v1 results therefore
+   do not measure planner crafting at all.
+9. **Recordings of frozen runs stop at 30 wall-minutes.** The desktop recorder had a 1800 s cap; frozen runs take
+   about 60 wall-minutes. The second half of opus-, sonnet- and haiku-frozen-01 has frames and logs but no desktop
+   video. Fixed (4 h cap; recording still ends on result.json).

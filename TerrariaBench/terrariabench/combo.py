@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 
 from . import gateway
-from .linux_control import GameControl, launch, stop_owned_game, validate_actions
+from .linux_control import KEY_NAMES, GameControl, launch, stop_owned_game, validate_actions
 from .openrouter import Budget, ProviderError, decide, hermes_key
 from .reference_live import ROOT, digest, dump, reference_metrics
 from .reference_scoring import checkpoint_view, load_reference_events, reference_score
@@ -57,6 +57,18 @@ def jpeg_url(path, quality=85):
 
 def json_object(text):
     return json.loads(text[text.index("{"): text.rindex("}") + 1])
+
+
+KEY_ALIASES = {"escape": "esc", "spacebar": "space", "return": "enter", "shift": "leftshift", "ctrl": "leftctrl",
+               "control": "leftctrl", "arrowup": "up", "arrowdown": "down", "arrowleft": "left", "arrowright": "right"}
+
+
+def normalized(actions):
+    """Map common key spellings ("Escape", "Space", "Shift") onto the controller's key names before validation."""
+    for action in actions:
+        if isinstance(action, dict) and isinstance(action.get("keys"), list):
+            action["keys"] = [KEY_ALIASES.get(str(k).lower(), str(k).lower()) for k in action["keys"]]
+    return actions
 
 
 class Role:
@@ -167,6 +179,7 @@ def run(args):
 
     def planner_loop():
         role = roles["planner"]
+        rejected = None  # last reply the harness could not use; shown to the planner once
         while not stop.is_set():
             try:
                 with lock:
@@ -177,13 +190,15 @@ def run(args):
                 events = checkpoint_view(load_reference_events(root / "telemetry")) if list((root / "telemetry").glob("*.jsonl")) else []
                 text = json.dumps({"task": task, "your_notes": current["notes"], "current_objective": current["objective"],
                                    "executor_recent_actions": history, "checkpoint_log": events,
-                                   "seconds_since_start": round(time.monotonic() - started)})
+                                   "seconds_since_start": round(time.monotonic() - started),
+                                   **({"your_previous_reply_was_rejected": rejected} if rejected else {})})
+                rejected = None
                 content = [{"type": "text", "text": text}] + [b for i, p in enumerate(shots) for b in (
                     {"type": "text", "text": "Newest screenshot:" if i == len(shots) - 1 else "Earlier screenshot:"}, image_block(jpeg_url(p)))]
                 archived = {"text": text, "frames": [str(p.relative_to(root)) for p in shots]}
                 response, latency, n = role.call(lambda: gateway_text(args.planner, args.planner_reasoning, planner_system, content, gkey), archived)
                 body = json_object(response["choices"][0]["message"]["content"] or "{}")
-                ui = body.get("ui_actions") or []
+                ui = normalized(body.get("ui_actions") or [])
                 if ui:
                     validate_actions(ui, width=1024, height=1024, max_hold_ms=2000)
                     if args.ui_session:
@@ -206,6 +221,9 @@ def run(args):
                 replan_now.wait(replan)
             except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
                 log({"role": "planner", "error": f"{type(error).__name__}: {error}"[:300], "unix": time.time()})
+                if not isinstance(error, ProviderError):
+                    rejected = f"{type(error).__name__}: {error}"[:300] + \
+                        f" (key names: a-z, 0-9, {', '.join(k for k in KEY_NAMES if len(k) > 1)})"
                 ui_session.clear()  # never leave the executor paused behind a failed planner call
                 stop.wait(3)
             except Exception as error:
@@ -224,7 +242,7 @@ def run(args):
         actions = body.get("actions") or []
         if not isinstance(actions, list) or not 1 <= len(actions) <= 4:
             raise ValueError("executor must return 1-4 actions")
-        validate_actions(actions, width=1024, height=1024, max_hold_ms=2000)
+        validate_actions(normalized(actions), width=1024, height=1024, max_hold_ms=2000)
         summary = "; ".join(f'{"+".join(a.get("keys", []))}{" " + a["mouse"] if a.get("mouse") else ""}'
                             f'{"@%d,%d" % (a["x"], a["y"]) if "x" in a else ""}' for a in actions)
         return actions, summary, body.get("status", "working"), latency, n, frame, meta, {}

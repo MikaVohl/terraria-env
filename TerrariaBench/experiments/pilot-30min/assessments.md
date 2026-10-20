@@ -199,14 +199,13 @@ torch_10 13:24 (a Torch Zombie drop). **No workbench**, 35 deaths, never below 5
   and tried to lead the executor out of it.
 
 **What went wrong**
-- **The planner never crafted.** Its schema lets it click in the inventory itself, but in 70 plans it used that twice (a hotbar
-  key and one stray click) and mentioned crafting twice. It never made a workbench, even with 121 wood. The executor cannot open
-  menus on its own initiative, so nothing was crafted all run.
-- From 6 minutes on, the plans became "kill the slime, stay nearby, walk right": reactive steering of the executor
-  instead of progression. A planner that sees one screenshot every 10-30 s ends up narrating combat.
+- **The harness blocked crafting.** The planner tried to open the inventory with `"Escape"` dozens of times; the controller
+  only accepts `"esc"`, so those replies were rejected and dropped without feedback (harness note 8). The executor cannot
+  open menus on its own initiative, so nothing was crafted all run. This run does not measure the planner's crafting.
+- From 6 minutes on, the accepted plans were "kill the slime, stay nearby, walk right": reactive steering of the executor
+  instead of progression.
 - 35 deaths at night near spawn and in the graveyard, the same pattern as every surface run.
 
-**Judgement.** The fastest and freshest control loop of the pilot, applied to the wrong job. Delegation removed the
-crafting step entirely: Sonnet alone crafted a workbench in under a minute, but as a planner it never did. This is a design
-issue of combo-v1 (the planner treats itself as a coach, not the player), not proof that combos can't work.
+**Judgement.** The fastest and freshest control loop of the pilot, with its crafting path broken by a harness bug.
+The score reflects what happened in the game, not what the setup can do; combo-v2 reruns it with the bug fixed.
 Anchor 2 (wood only).
