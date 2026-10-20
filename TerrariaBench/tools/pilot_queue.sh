@@ -6,7 +6,7 @@
 set -u
 Q=~/tb-queue
 P=~/Projects/TerrariaBench
-CAMPAIGN=$P/runs/pilot-30min
+CAMPAIGN=${CAMPAIGN:-$P/runs/pilot-30min}
 BUDGET_GATEWAY=${BUDGET_GATEWAY:-68}
 BUDGET_OPENROUTER=${BUDGET_OPENROUTER:-4.8}
 mkdir -p $Q/jobs $Q/done $Q/skipped $Q/logs
