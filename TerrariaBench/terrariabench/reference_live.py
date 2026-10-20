@@ -150,7 +150,7 @@ def _operator_stop(signum, _frame):
 
 
 def run(args):
-    if not 0 < args.usd <= 15 or not 1 <= args.calls <= 4096:
+    if not 0 < args.usd <= 20 or not 1 <= args.calls <= 4096:
         raise ValueError("invalid local spending/call ceiling")
     if args.mode == "calibration" and not 1 <= args.seconds <= 3600:
         raise ValueError("calibration must be 1..3600 seconds")
