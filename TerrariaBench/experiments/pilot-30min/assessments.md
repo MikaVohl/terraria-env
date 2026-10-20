@@ -446,7 +446,7 @@ Milestones (game time): wood ×3 by 0:23, workbench 0:42, wood_100 2:01, **furna
 **What went well**
 - **Placed both stations**: the workbench (picked up and re-placed several times as it moved), then the furnace, and
   smelted bars from it. That's the first furnace placement and the first bars of all 22 runs.
-- Wood armour crafted at a placed bench; a bow, arrows and 36 of item 42 (Shuriken, per its own crafting) for ranged combat.
+- Wood armour crafted at a placed bench, plus a bow (item 39) and 32 wooden arrows.
 - Only 5 deaths. When its own shaft stalled ("only 2 tiles wide... player not falling through"), it walked left across
   the desert and dropped into a natural cave.
 

@@ -112,3 +112,80 @@ uv run python -m terraria_lite.ppo_agent \
 6. **The next wall is the copper pickaxe.** A better next experiment is a
    curriculum or auxiliary objective around repeated copper smelting, not a
    larger generic MLP or more entropy.
+
+## Copper-pick wall study — 2026-09-10
+
+The fresh 100M unshaped policy still scored 13.828/24 and never crafted a copper
+pick on the 128 validation worlds. Direct policy instrumentation localized the
+failure more precisely: across those episodes, the copper-pick action became legal
+on 108 steps, but the policy assigned only $4.88\times10^{-7}$ total probability
+to it. On those same states it assigned about 95% probability to crafting a torch.
+Forcing copper-pick only when already legal produced 67/128 copper picks. The
+immediate wall is therefore action preference after prerequisites are satisfied,
+not failure to encounter feasible states.
+
+### Generic exploration controls
+
+Starting from the final 100M checkpoint, each candidate ran 8,028,160 additional
+unshaped transitions at fixed LR $3\times10^{-5}$, 256 environments, eight native
+workers, cached lighting, MPS, and checked CPU sampling. Checkpoints at 2M, 4M,
+and 8M were evaluated on validation worlds 1000001–1000128 with sampling seed
+54321. These are one-seed screening experiments, not robust estimates.
+
+| Variant | Best mean /24 | Copper pick /128 | Max |
+| --- | ---: | ---: | ---: |
+| Continued PPO control | 13.734 | 0 | 14 |
+| Entropy coefficient .03 | 13.867 | 0 | 14 |
+| 2% uniform legal mixture | 13.836 | 0 | 14 |
+| 5% uniform legal mixture | 13.758 | 0 | 14 |
+| 10% uniform legal mixture | 13.773 | 0 | 14 |
+| 5% copper-pick mixture while legal | 13.781 | 0 | 14 |
+
+The targeted mixture generated one copper-pick/iron trajectory in the final 200
+training episodes, but PPO did not retain it in evaluation. More entropy or
+undirected legal exploration is not enough once the learned torch preference is
+this extreme.
+
+### Compositional action-head transfer
+
+A small structural prior worked. Before further ordinary unshaped PPO, unseen
+crafting output rows were initialized from analogous learned actions:
+
+- copper pick $\leftarrow$ stone pick;
+- iron smelting and gold smelting $\leftarrow$ copper smelting;
+- anvil $\leftarrow$ furnace;
+- iron pick $\leftarrow$ copper pick;
+- lantern $\leftarrow$ torch.
+
+Only the final actor rows were copied; the learned representation, critic,
+environment, masks, rewards, observations and PPO objective were unchanged. The
+initial transferred policy already averaged 14.648, reached copper picks in
+41/128 worlds, and produced one complete 24-achievement episode. Ordinary PPO
+then improved it:
+
+| Additional PPO transitions | Mean /24 | Median | Max | Copper pick | Smelt iron | Anvil | Iron pick | Lantern placed |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2,031,616 | **15.969** | 17 | 24 | 87 | 81 | 7 | 4 | 3 |
+| 4,030,464 | 15.719 | 16 | 24 | 86 | 67 | 9 | 5 | 1 |
+| 8,028,160 | 15.453 | 16 | 19 | 75 | 64 | 6 | 0 | 0 |
+| 16,023,552 more from the 8M model | 15.398 | 15 | 24 | 69 | 66 | 13 | 4 | 1 |
+
+The best checkpoint is
+`experiments/wall-study-20260910/targeted/transferred-extended/step-2031616.pt`.
+It reaches 15.969 mean achievements, 17 median, 87/128 copper picks, 86/128 iron
+collections, 81/128 iron smelts and three full clears. Continued fine-tuning
+regressed the mean and deep-tail reliability, so checkpoint selection matters.
+
+This is more targeted than the preferred bitter-lesson approach, but still small:
+it encodes that crafting operations of the same grammatical type should initially
+share behavior, rather than encoding maps, trajectories, rewards, or action
+sequences. The result argues for making this inductive bias architectural—shared
+action/recipe embeddings or parameterized crafting actions—then training from
+scratch across multiple seeds. Repeating ad-hoc row copying at every new tier is
+not a maintainable final design.
+
+Artifacts and per-world records are in `experiments/wall-study-20260910/`.
+Recommended next experiment: a from-scratch policy with compositional action
+representations, measured across at least three seeds and selected by validation
+mean plus copper/iron progression. Do not spend another large budget on unchanged
+flat action heads or generic entropy alone.
