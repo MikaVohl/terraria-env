@@ -39,10 +39,11 @@ PLANNER_SYSTEM = (
     "\"ui_actions\": optional list of 1-16 actions {\"keys\":[...],\"mouse\":\"left|right\",\"x\":0-1023,\"y\":0-1023,\"ms\":20-2000}}.")
 HAIKU_EXECUTOR_SYSTEM = (
     "You are the fast EXECUTOR of a Terraria agent. A planner gives you an objective; act on the newest screenshot "
-    "right now. The game runs in real time.\n" + CARD +
+    "right now. The game runs in real time. Holding a mouse button keeps swinging the held tool, about one swing "
+    "per 0.3 s.\n" + CARD +
     "\nReply with one JSON object only: {\"actions\": 1-4 actions {\"keys\":[...],\"mouse\":\"left|right\","
-    "\"x\":0-1023,\"y\":0-1023,\"ms\":20-1000}, \"status\": \"working\" | \"done\" | \"stuck\"}. Coordinates are screenshot pixels.")
-CENTER, REACH_PX = 512, 72  # screen centre; ~4.5 tiles of reach
+    "\"x\":0-1023,\"y\":0-1023,\"ms\":20-2000}, \"status\": \"working\" | \"done\" | \"stuck\"}. Coordinates are screenshot pixels.")
+CENTER, SWEEP_PX = 512, (24, 40, 56)  # screen centre; axe/sword holds at 1.5, 2.5, 3.5 tiles from the player
 
 
 def jpeg_url(path, quality=85):
@@ -207,7 +208,7 @@ def run(args):
         actions = body.get("actions") or []
         if not isinstance(actions, list) or not 1 <= len(actions) <= 4:
             raise ValueError("executor must return 1-4 actions")
-        validate_actions(actions, width=1024, height=1024, max_hold_ms=1000)
+        validate_actions(actions, width=1024, height=1024, max_hold_ms=2000)
         summary = "; ".join(f'{"+".join(a.get("keys", []))}{" " + a["mouse"] if a.get("mouse") else ""}'
                             f'{"@%d,%d" % (a["x"], a["y"]) if "x" in a else ""}' for a in actions)
         return actions, summary, body.get("status", "working"), latency, n, frame, meta, {}
@@ -223,16 +224,23 @@ def run(args):
             state += ["Current screenshot:" if i == len(history) - 1 else "Earlier screenshot:",
                       {"type": "image_url", "image_url": {"url": jpeg_url(p)}}]
         questions = {
-            "tree": {"type": "box", "instructions": "the trunk of the tree closest to the player character in the current screenshot"},
-            "hostile": {"type": "box", "instructions": "the hostile creature (slime, zombie or other enemy) closest to the player character in the current screenshot"},
+            # Jev cannot ground "nearest to the player" in a box (it boxes the player or the most salient tree), so
+            # targeting uses side classification plus fixed reach sweeps; holds on empty tiles are harmless.
+            "tree_side": {"type": "choice", "instructions": "On which side of the player character (the small person at the exact "
+                                                             "screen centre) is the nearest tree trunk in the current screenshot?",
+                          "criteria": {"left": "Nearest trunk is left of the player.", "right": "Nearest trunk is right of the player.",
+                                       "none": "No tree trunk visible."}},
+            "hostile_side": {"type": "choice", "instructions": "Is a hostile creature (slime, zombie, flying eye) within 6 tiles (96 px) "
+                                                                "of the player character in the current screenshot, and on which side?",
+                             "criteria": {"left": "Hostile close on the left.", "right": "Hostile close on the right.",
+                                          "none": "No hostile within 6 tiles."}},
             "inventory_open": {"type": "noul", "instructions": "Is the inventory screen open in the current screenshot (grid of item slots and a crafting list)?"},
-            "hostile_close": {"type": "noul", "instructions": "Is a hostile creature within about 5 tiles (80 pixels) of the player character in the current screenshot?"},
             "objective_done": {"type": "noul", "instructions": "Do the screenshots show that `Planner objective` has been achieved?"},
             "action": {"type": "choice", "instructions": "Choose the action that best advances `Planner objective` right now from the "
                                                           "current screenshot. Survive: deal with hostiles that are close.",
                        "criteria": {"walk_left": "Walk left.", "walk_right": "Walk right.", "jump_left": "Jump while moving left.",
-                                    "jump_right": "Jump while moving right.", "chop_tree": "Chop the nearest tree with the axe (walks toward it if far).",
-                                    "attack": "Attack the nearest hostile with the sword (turns toward it).",
+                                    "jump_right": "Jump while moving right.", "chop_tree": "Step toward the nearest tree and chop it with the axe.",
+                                    "attack": "Swing the sword at the nearest hostile.",
                                     "dig_down": "Dig straight down two tiles wide with the pickaxe.",
                                     "dig_left": "Dig a tunnel to the left with the pickaxe.", "dig_right": "Dig a tunnel to the right with the pickaxe.",
                                     "toggle_inventory": "Press escape to open or close the inventory.", "wait": "Do nothing for a moment."}}}
@@ -241,21 +249,17 @@ def run(args):
             lambda: decide({"model": JEV_MODEL, "state": state, "questions": questions}, key=okey, timeout=20), archived)
         a = response["answers"]
         choice = a["action"]["choice"]
-        box = lambda k: a[k].get("box") or {}
-        centre = lambda b: (round((b["left"] + b["right"]) / 2 * 1023), round((b["top"] + b["bottom"]) / 2 * 1023)) if b else None
-        tree, foe = centre(box("tree")), centre(box("hostile"))
+        tree_side, foe_side = a["tree_side"]["choice"], a["hostile_side"]["choice"]
         executed_choice = choice
         if choice == "toggle_inventory" and a["inventory_open"].get("noul", 0) < .5 and not args.allow_open_inventory:
             choice = executed_choice = "wait_inventory_closed"
-        if choice == "chop_tree" and tree:
-            dx = tree[0] - CENTER
-            if abs(dx) > REACH_PX:  # out of reach: walk toward it instead
-                executed_choice = "approach_tree"
-                actions = [{"keys": ["d" if dx > 0 else "a"], "ms": 500}]
-            else:
-                actions = [{"keys": ["3"], "ms": 40}, {"x": tree[0], "y": min(tree[1], 600), "mouse": "left", "ms": 900}]
-        elif choice == "attack" and foe:
-            actions = [{"keys": ["1"], "ms": 40}, {"x": foe[0], "y": foe[1], "mouse": "left", "ms": 350}]
+        if choice == "chop_tree" and tree_side in ("left", "right"):
+            s, key = (1, "d") if tree_side == "right" else (-1, "a")
+            actions = [{"keys": ["3"], "ms": 40}, {"keys": [key], "ms": 250}] + \
+                      [{"x": CENTER + s * d, "y": 505, "mouse": "left", "ms": 600} for d in SWEEP_PX]
+        elif choice == "attack":
+            sides = [1 if foe_side == "right" else -1] if foe_side in ("left", "right") else [-1, 1]
+            actions = [{"keys": ["1"], "ms": 40}] + [{"x": CENTER + s * 40, "y": 500, "mouse": "left", "ms": 350} for s in sides]
         else:
             actions = {"walk_left": [{"keys": ["a"], "ms": 500}], "walk_right": [{"keys": ["d"], "ms": 500}],
                        "jump_left": [{"keys": ["space", "a"], "ms": 450}], "jump_right": [{"keys": ["space", "d"], "ms": 450}],
@@ -265,12 +269,12 @@ def run(args):
                        "dig_right": [{"keys": ["2"], "ms": 40}, {"x": 536, "y": 500, "mouse": "left", "ms": 500},
                                      {"x": 536, "y": 524, "mouse": "left", "ms": 500}, {"keys": ["d"], "ms": 250}],
                        "toggle_inventory": [{"keys": ["esc"], "ms": 60}]}.get(choice, [])
-            if choice in ("chop_tree", "attack"):
-                executed_choice = choice + "_no_target"
+            if choice == "chop_tree":
+                executed_choice = "chop_tree_no_target"
         status = "done" if a["objective_done"].get("noul", 0) > .7 else "working"
         detail = {"choice": choice, "executed": executed_choice, "confidence": a["action"].get("confidence"),
-                  "probabilities": a["action"].get("probabilities"), "tree": tree, "hostile": foe,
-                  "inventory_open": a["inventory_open"].get("noul"), "hostile_close": a["hostile_close"].get("noul"),
+                  "probabilities": a["action"].get("probabilities"), "tree_side": tree_side, "hostile_side": foe_side,
+                  "inventory_open": a["inventory_open"].get("noul"),
                   "objective_done": a["objective_done"].get("noul")}
         return actions, executed_choice, status, latency, n, frame, meta, detail
 
