@@ -258,3 +258,24 @@ Played the full 30 minutes, $2.03. Milestone score 6: wood ×3 at 0:32, workbenc
 **Judgement.** The fix moved the bottleneck from the harness to the game: crafting now works, block placement and
 digging do not. Planning from screenshots every 5-60 s cannot correct a fine placement error that a single model in a tight
 look-act loop eventually fixes. Anchor 2-3 (workbench crafted, never placed or used), 2 for the death loop.
+
+---
+
+## combo-v2-sonnet-haiku-01: Sonnet 5.5 (low) planner + Haiku 5.5 executor, combo-v2 UI sessions, real time, PvE on. **2/10**
+
+Played the full 30 minutes, $1.08. Milestone score 6: wood ×3 at 1:52, wood_100 4:16, workbench 4:54, torch_10 18:21
+(Torch Zombie drop: torches 0→15 with gel unchanged). 40 deaths, deepest 1 tile. 17 planner click batches, no rejected replies.
+
+**What went well**
+- The planner crafted the workbench itself in a UI session, with the executor waiting ("Stand still; crafting in progress").
+- Plans were concrete and screen-referenced throughout.
+
+**What went wrong**
+- The workbench was never placed (still in the inventory at the end), so nothing else was crafted.
+- Digging: every plan was "aim at the block directly below your feet", one tile wide, from minute 10 to the end; the
+  2-tile-wide shaft was never found. Deepest point 1 tile.
+- 40 deaths in the night loop at spawn.
+
+**Judgement.** Same outcome as the Opus-planner combo, a little slower. With the harness bug fixed, the combo's limits
+are the same two game skills the single models struggle with (placing, digging), now without a tight feedback loop.
+Anchor 2-3 (workbench crafted, never placed or used), 2 for the death loop.
