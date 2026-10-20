@@ -6,7 +6,8 @@ desktop recording. The scores are subjective by design. They complement the mile
 
 Harness caveats (details in `harness-notes.md`): the three frozen-clock runs were intermittently shown a desktop
 "Application Not Responding" dialog over the game (note 7), and combo-v1 planners could not open the inventory because
-of a key-name bug (note 8). All runs played during the Halloween season (note 1).
+of a key-name bug (note 8). All runs played during the Halloween season (note 1). Milestone times are game time;
+other times quoted for frozen runs come from their timelines and are wall time (including thinking pauses).
 
 ## Scale (0-10)
 
@@ -63,11 +64,11 @@ UI churn.
 
 ## opus-frozen-01: Opus 5.5 (reasoning low), frozen clock, PvE on, interface card. **4/10**
 
-Played 28.1 game-minutes (plus 20.3 minutes paused while thinking); the $15 cap ended it. Milestone score 4: wood ×3 at 25 s,
-workbench 0:55. 20 deaths, deepest 340 tiles, 7 continuation prompts. Cost $14.14, twice the real-time run for similar game time.
+Played 28.1 game-minutes (plus 20.3 minutes paused while thinking); the $15 cap ended it. Milestone score 4 (game time): wood ×3 at 0:14,
+workbench 0:29. 20 deaths, deepest 340 tiles, 7 continuation prompts. Cost $14.14, twice the real-time run for similar game time.
 
 **What went well**
-- Fastest start of any run: 25 wood in 25 s, workbench and wood armour within 2 minutes.
+- Fastest start of any run: 25 wood in 14 game-seconds, workbench at 29 game-seconds, wood armour soon after.
 - Crafted 6 torches at 9 minutes, earlier than the real-time run. That is below the `torch_10` threshold, so the milestone
   score misses it. Dug a 2-wide shaft to 340 tiles by 24 minutes, collecting 12 copper and 7 lead ore.
 - Correctly diagnosed the Graveyard biome (tombstones from its own deaths) and walked out of it.
@@ -142,8 +143,8 @@ Anchor 2-3 (workbench crafted but never placed or used); 2 because the last 18 m
 
 ## sonnet-frozen-01: Sonnet 5.5 (reasoning low), frozen clock, PvE on, interface card. **4/10**
 
-Played 29.9 game-minutes (plus 28.7 minutes paused while thinking), $8.96. Milestone score 4: wood ×3 at 35 s,
-workbench 0:56. 13 deaths, deepest 125 tiles, 72 continuation prompts.
+Played 29.9 game-minutes (plus 28.7 minutes paused while thinking), $8.96. Milestone score 4 (game time): wood ×3 at 0:16,
+workbench 0:18. 13 deaths, deepest 125 tiles, 72 continuation prompts.
 
 **What went well**
 - Placed the workbench and **crafted torches from gel at 9.5 minutes** (its own crafting call; wood and gel both dropped).
@@ -169,8 +170,8 @@ mostly because it had time to recover from mistakes rather than dying while thin
 
 ## haiku-frozen-01: Haiku 5.5 (reasoning medium), frozen clock, PvE on, interface card. **4/10**
 
-Played 30.0 game-minutes (plus 30.2 minutes paused while thinking), $0.99. Milestone score 5: wood ×3 at 1:10,
-workbench 2:18, wood_100 at the end. 28 deaths, deepest 6 tiles, 57 continuation prompts.
+Played 30.0 game-minutes (plus 30.2 minutes paused while thinking), $0.99. Milestone score 5 (game time): wood ×3 at 0:37,
+workbench 0:46, wood_100 25:44. 28 deaths, deepest 6 tiles, 57 continuation prompts.
 
 **What went well**
 - Crafted torches from its first gel at about 2 minutes, the earliest crafted torches in the pilot.

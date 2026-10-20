@@ -111,6 +111,10 @@ def main(run):
     summary = {"run": run.name, "stop": res["stop_reason"], "played_s": round(res["active_wall_seconds"]),
                "think_frozen_s": round(res.get("think_frozen_seconds") or 0), "score": res["score"]["agency_score"],
                "milestones_s": {k: round(v["elapsed_seconds"]) for k, v in res["score"].get("first_unlocks", {}).items()},
+               # game time (60 updates/s): comparable across real-time and frozen-clock runs
+               "milestones_game_s": {e["milestone"]: round(e["game_updates"] / 60) for e in tel
+                                     if e.get("event") == "checkpoint" and e.get("category") == "progress"
+                                     and e.get("game_updates") is not None and e["milestone"] in res["score"].get("first_unlocks", {})},
                "diagnostics": res["score"].get("diagnostics_not_scored"), "deaths": deaths, "max_depth_tiles": round(max_depth),
                "final_inventory": inv(beats[-1]) if beats else {}, "frames": res["frames"], "inputs": res.get("input_commands"),
                "continuations": res.get("continuations"), "latency_median_s": lat, "usd": usd,
