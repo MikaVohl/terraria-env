@@ -19,7 +19,7 @@ ITEMS = {2: "Dirt Block", 3: "Stone Block", 8: "Torch", 9: "Wood", 11: "Iron Ore
          150: "Cobweb", 166: "Bomb", 176: "Mud Block", 282: "Glowstick", 424: "Silt Block", 699: "Tin Ore", 700: "Lead Ore",
          701: "Tungsten Ore", 702: "Platinum Ore", 703: "Tin Bar", 704: "Lead Bar", 705: "Tungsten Bar", 706: "Platinum Bar",
          727: "Wood Helmet", 728: "Wood Breastplate", 729: "Wood Greaves", 965: "Rope", 3506: "Copper Axe",
-         3507: "Copper Shortsword", 3509: "Copper Pickaxe"}
+         3507: "Copper Shortsword", 3509: "Copper Pickaxe", 1725: "Pumpkin"}
 TILE, SURFACE_Y = 16, None
 
 

@@ -81,3 +81,55 @@ workbench 0:55. 20 deaths, deepest 340 tiles, 7 continuation prompts. Cost $14.1
 then lost to one bad position at nightfall and a passive response to it. Freezing the clock did not help survival:
 the deaths were strategic (night at the surface, drowning, falls), not reaction-time failures. Anchor 5 (torches), −1 for
 the death spiral and passive "die until morning" plan.
+
+---
+
+## sonnet-rt-01: Sonnet 5.5 (reasoning low), real time, PvE on, interface card. **2/10**
+
+Played the full 30 minutes, $5.28. Milestone score 5: wood ×3 at 24 s, workbench 0:48, torch_10 at 13:00.
+**34 deaths, never below the surface (deepest 1 tile), 101 continuation prompts.**
+
+**What went well**
+- Fast opening: 29 wood within 20 s from one 3×2 s chop sequence on an adjacent trunk, workbench crafted and placed in under a minute.
+- Accurate self-reports. Each death, coin loss and health level it reported matched telemetry.
+
+**What went wrong**
+- **It quit 101 times.** From the second call onward almost every turn ended in a "I'm stopping here" report, so a
+  continuation prompt was needed every ~18 s. Each one took one or two actions before the next report. It spent most of the
+  run writing status reports instead of playing.
+- **It never learned to dig.** It concluded "the pickaxe only removes the surface layer" and repeated that for 20 minutes,
+  without ever widening the hole or trying a 2-wide shaft (the insight Opus found at 7 minutes).
+- **It died at night on the surface 30+ times** to slimes, zombies and an Eater of Souls, with 1-hit-to-death health
+  most of the time. It never retreated, built shelter or dug in. Graveyard formed at spawn from its tombstones.
+- `torch_10` did not come from crafting. Telemetry shows the torches arrived in two pickups while walking (0→9→29), with gel
+  unchanged at 22 and no crafting call. The milestone is real by the published definition (possession), but it is not
+  evidence of the gel→torch chain.
+
+**Judgement.** Strong first minute, then no progress for 29 minutes. The failure is persistence and problem-solving,
+not control or latency: it diagnosed its problems in words, kept giving up, and never tried a new approach. The milestone score
+(5) overrates this run; it is the clearest example of why possession milestones need a crafting check.
+Anchor 3 (workbench), −1 for constant quitting and the passive death spiral.
+
+---
+
+## haiku-rt-01: Haiku 5.5 (reasoning medium), real time, PvE on, interface card. **2/10**
+
+Played the full 30 minutes for $0.50 (0.07 of Opus' cost per minute). Milestone score 5: wood ×3 at 24 s,
+workbench 0:45, torch_10 12:02. **43 deaths, never below the surface, 63 continuation prompts.**
+
+**What went well**
+- The fastest opening in the pilot: an adjacent trunk chopped with two 2 s holds (33 wood by 24 s), workbench crafted at 45 s.
+- Mined 9 gold ore from a surface vein next to spawn in its second minute.
+- Cheapest run by far, at 3.1 s median latency, with a fresher view (3.4 s screenshot age) than Opus or Sonnet.
+
+**What went wrong**
+- The workbench stayed in the inventory for the whole run, so nothing was ever crafted at it. The gold ore was never used.
+- After the opening it had no plan. It tried to mine at the surface, wandered, and wrote "I'm stopping here" reports
+  every ~30 s from minute 3 onward.
+- From nightfall (about 12 minutes) it died at spawn every ~25 s: 39 deaths in 18 minutes, without ever moving
+  away from spawn, building cover or digging in. In its own words: "I can't reliably tell which nearby figures are friendly and which are hostile."
+- `torch_10` came from picking up 20 torches near spawn at night (gel unchanged), not from crafting, as in sonnet-rt-01.
+
+**Judgement.** Real-time control is good enough to gather and craft quickly, but Haiku has no early-game plan
+beyond the workbench and no survival response to night. The milestone score (5) badly overrates it.
+Anchor 2-3 (workbench crafted but never placed or used); 2 because the last 18 minutes were a passive death loop.
