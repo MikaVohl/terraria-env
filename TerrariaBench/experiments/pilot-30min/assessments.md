@@ -279,3 +279,39 @@ Played the full 30 minutes, $1.08. Milestone score 6: wood ×3 at 1:52, wood_100
 **Judgement.** Same outcome as the Opus-planner combo, a little slower. With the harness bug fixed, the combo's limits
 are the same two game skills the single models struggle with (placing, digging), now without a tight feedback loop.
 Anchor 2-3 (workbench crafted, never placed or used), 2 for the death loop.
+
+---
+
+## haiku-rt-pveoff-01: Haiku 5.5, real time, **PvE off**, interface card. **2/10**
+
+Played the full 30 minutes, $0.52. Milestone score 3: wood_1 0:21, wood_10 1:31, workbench 1:45. **0 deaths**, deepest 2 tiles,
+63 continuation prompts.
+
+**What went well**
+- No deaths, as expected without enemies; a workbench within 2 minutes.
+
+**What went wrong**
+- Fewer than 25 wood all run, and the workbench stayed in the inventory (never placed).
+- From about minute 5 to the end it tried to dig down with one-tile holes and reported "stuck on the same digging problem"
+  dozens of times, quitting 63 times. Without enemies there is no gel, so torches were out of reach anyway.
+
+**Judgement.** Taking the enemies away removed the deaths but not the barrier: Haiku's limit in this pilot is the
+digging and placing technique, not combat. Its PvE-on run had a higher milestone score only through zombie drops.
+Anchor 2 (wood, workbench crafted but never placed).
+
+---
+
+## haiku-rt-nocard-01: Haiku 5.5, real time, PvE on, **no interface card**. **2/10**
+
+Played the full 30 minutes, $0.55. Milestone score 5 (game time): wood ×3 at 3:06-3:08, workbench 3:26, torch_10 17:07
+(Torch Zombie drop; 29 gel never used). 36 deaths, deepest 1 tile, 34 continuation prompts.
+
+**Compared with haiku-rt-01 (same setup with the card)**
+- The opening was **2.7 minutes slower**: about 3 minutes of holding the mouse on trunks without selecting the axe
+  (the card names the hotbar keys; without it Haiku took a while to switch tools).
+- Everything after the opening matched: no digging (depth 1), a night death loop from about minute 10 (36 deaths), and
+  "workbench placed" claims while the bench stayed in the inventory.
+- Fewer continuation prompts (34 vs 63), probably because more of the run was spent dead or respawning.
+
+**Judgement.** The card buys the opening minutes, not the barriers. Anchor 2-3 (workbench crafted, not demonstrably
+placed or used), 2 for the death loop.
