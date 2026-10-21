@@ -51,8 +51,9 @@ def main():
     p.add_argument("--sil-value-coef", type=float, default=0.01)
     p.add_argument("--novelty", type=float, default=0.0)
     p.add_argument("--potential", type=float, default=0.0)
-    p.add_argument("--potential-mode", choices=["mean", "frontier"], default="mean",
-                   help="frontier: shaping averages only over recipes whose achievement is not yet earned")
+    p.add_argument("--potential-mode", choices=["mean", "frontier", "frontier_surface"], default="mean",
+                   help="frontier: shaping averages only over recipes whose achievement is not yet earned; "
+                        "frontier_surface: plus a climb-back goal after descending deep")
     p.add_argument("--memory-features", default="", help='policy feature sets, e.g. "stations_v1+craftable_v1"')
     p.add_argument("--aux", type=float, default=0.0, help="predictive inventory/unlock auxiliary loss weight")
     # Performance options (perf/REPORT.md); exact ones leave results unchanged.

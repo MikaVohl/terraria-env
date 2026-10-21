@@ -54,6 +54,11 @@ def depth_band(obs: np.ndarray) -> np.ndarray:
     return np.minimum((_status(obs)[..., SPEC.status_depth] * DEPTH_BANDS).astype(np.int64), DEPTH_BANDS - 1)
 
 
+def depth_rows(obs: np.ndarray) -> np.ndarray:
+    """Exact player row (N,) as int64; the C side encodes py / (world_h - 1)."""
+    return np.rint(_status(obs)[..., SPEC.status_depth].astype(np.float64) * (SPEC.world_h - 1)).astype(np.int64)
+
+
 def cell_parts(obs: np.ndarray) -> dict[str, np.ndarray]:
     return {"achievements": achievements(obs),
             "inventory_bins": np.searchsorted(BIN_EDGES, inventory(obs), side="right"),

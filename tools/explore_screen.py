@@ -89,7 +89,9 @@ for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall
                       "wall_pot10_nov01": ["--potential", "10", "--novelty", ".01"],
                       # Shaping pull only toward not-yet-earned recipes (potential.py mode="frontier").
                       "wall_frontier": ["--potential-mode", "frontier"],
-                      "wall_frontier_nov01": ["--potential-mode", "frontier", "--novelty", ".01"]}.items():
+                      "wall_frontier_nov01": ["--potential-mode", "frontier", "--novelty", ".01"],
+                      # Frontier plus a climb-back goal after descending deep (return to surface).
+                      "wall_frontier_surface": ["--potential-mode", "frontier_surface"]}.items():
     ARMS[_name] = ARMS["pot_e1024_max"] + _extra
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
