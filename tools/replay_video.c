@@ -17,7 +17,9 @@
 
 int main(int argc, char **argv)
 {
-    if(argc!=5) { fprintf(stderr,"usage: replay-video TAPE SCHEDULE TITLE SUBTITLE\n"); return 2; }
+    if(argc!=5 && argc!=6) { fprintf(stderr,"usage: replay-video TAPE SCHEDULE TITLE SUBTITLE [FOOTER_NOTE]\n"); return 2; }
+    /* Optional footer note; without it the original two-video caption is kept. */
+    const char *note=argc==6?argv[5]:NULL;
     FILE *raw=fdopen(dup(STDOUT_FILENO),"wb");
     if(!raw || dup2(STDERR_FILENO,STDOUT_FILENO)<0) return 2;
     Tape tape={0};
@@ -68,8 +70,13 @@ int main(int argc, char **argv)
         textf(ui,12,VIDEO_HEADER+PX_WIN_H+7,UI_TEXT,"SEED %llu   ACTION %d/%d   ACHIEVEMENTS %d/%d   HEALTH %d",
               (unsigned long long)tape.seed,e->steps,cfg.max_steps,count,ACH_COUNT,e->health);
         const char *state=e->terminated?"DIED - replay held":e->truncated?"ACTION LIMIT REACHED":tape.i==tape.n?"REPLAY ENDED":"PLAYING";
-        textf(ui,12,VIDEO_HEADER+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s | ACTION-SYNCHRONIZED REPLAY; API THINKING TIME OMITTED",state);
-        text(ui,12,VIDEO_HEADER+PX_WIN_H+35,UI_DIM,"One illustrative episode, not a benchmark ranking. Same pacing in both videos.");
+        if(note) {
+            textf(ui,12,VIDEO_HEADER+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s",state);
+            text(ui,12,VIDEO_HEADER+PX_WIN_H+35,UI_DIM,note);
+        } else {
+            textf(ui,12,VIDEO_HEADER+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s | ACTION-SYNCHRONIZED REPLAY; API THINKING TIME OMITTED",state);
+            text(ui,12,VIDEO_HEADER+PX_WIN_H+35,UI_DIM,"One illustrative episode, not a benchmark ranking. Same pacing in both videos.");
+        }
         SDL_RenderPresent(ui->ren);
         if(SDL_RenderReadPixels(ui->ren,NULL,SDL_PIXELFORMAT_RGB24,pixels,PX_WIN_W*3)!=0) return 2;
         if(fwrite(pixels,3,(size_t)PX_WIN_W*VIDEO_H,raw)!=(size_t)PX_WIN_W*VIDEO_H) return 2;
