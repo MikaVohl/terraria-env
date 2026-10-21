@@ -1,0 +1,9 @@
+<terraria-lite v4 11x9 window, 24 tile kinds, 486 status, obs=2961, actions=73>
+PPO: 1024 envs x 128 steps = batch 131072, 256 iterations, 33,554,432 env steps
+
+ iter     steps   return    ach    len  death%  entropy      kl   clip     ev     sps
+epochs2-s903: 8,388,608 12.531/32 death=35.2% bench=124 stone=54 furnace=0 peak-y=58.6 (36.3s)
+epochs2-s903: 16,777,216 17.344/32 death=28.9% bench=116 stone=128 furnace=4 peak-y=89.2 (72.4s)
+epochs2-s903: 25,165,824 18.711/32 death=29.7% bench=128 stone=128 furnace=23 peak-y=90.2 (107.6s)
+epochs2-s903: 33,554,432 18.500/32 death=26.6% bench=127 stone=128 furnace=15 peak-y=90.2 (143.3s)
+Completed epochs2-s903: 143.3s
