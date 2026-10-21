@@ -11,15 +11,16 @@
 #include VIDEO_MAIN_SOURCE
 #undef main
 
-#define VIDEO_HEADER 48
-#define VIDEO_FOOTER 48
-#define VIDEO_H (VIDEO_HEADER + PX_WIN_H + VIDEO_FOOTER)
+/* Header 48 px with TITLE/SUBTITLE, or none when TITLE is empty. Footer 48 px
+   with stats, state and caption lines, or one 20 px stats line when
+   FOOTER_NOTE is given as an empty string. Output height = header+PX_WIN_H+footer. */
 
 int main(int argc, char **argv)
 {
     if(argc!=5 && argc!=6) { fprintf(stderr,"usage: replay-video TAPE SCHEDULE TITLE SUBTITLE [FOOTER_NOTE]\n"); return 2; }
     /* Optional footer note; without it the original two-video caption is kept. */
     const char *note=argc==6?argv[5]:NULL;
+    const int header=argv[3][0]?48:0, footer=note&&!note[0]?20:48, VIDEO_H=header+PX_WIN_H+footer;
     FILE *raw=fdopen(dup(STDOUT_FILENO),"wb");
     if(!raw || dup2(STDERR_FILENO,STDOUT_FILENO)<0) return 2;
     Tape tape={0};
@@ -55,27 +56,29 @@ int main(int argc, char **argv)
         v.walk_dir=target==last_target?0:last_action==ACT_LEFT?-1:last_action==ACT_RIGHT?1:0;
         v.airborne=e->jump_left>0 || !tile_solid(tile_at(e,e->px,e->py+1));
         v.toast=toast.until>seconds?toast.text:NULL;v.toast_a=v.toast?1.0f:0.0f;
-        SDL_Rect viewport={0,VIDEO_HEADER,PX_WIN_W,PX_WIN_H};
+        SDL_Rect viewport={0,header,PX_WIN_W,PX_WIN_H};
         SDL_RenderSetViewport(ui->ren,&viewport);
         px_draw(ui,e,&v);
         SDL_RenderSetViewport(ui->ren,NULL);
         SDL_RenderSetClipRect(ui->ren,NULL);
-        fill(ui,0,0,PX_WIN_W,VIDEO_HEADER,UI_BG);
-        fill(ui,0,VIDEO_HEADER+PX_WIN_H,PX_WIN_W,VIDEO_FOOTER,UI_BG);
-        SDL_RenderSetScale(ui->ren,2,2);
-        text(ui,6,4,UI_ACCENT,argv[3]);
-        SDL_RenderSetScale(ui->ren,1,1);
-        text(ui,12,31,UI_TEXT,argv[4]);
+        if(header) {
+            fill(ui,0,0,PX_WIN_W,header,UI_BG);
+            SDL_RenderSetScale(ui->ren,2,2);
+            text(ui,6,4,UI_ACCENT,argv[3]);
+            SDL_RenderSetScale(ui->ren,1,1);
+            text(ui,12,31,UI_TEXT,argv[4]);
+        }
+        fill(ui,0,header+PX_WIN_H,PX_WIN_W,footer,UI_BG);
         int count=0;for(int i=0;i<ACH_COUNT;i++) count+=(e->achievements>>i)&1;
-        textf(ui,12,VIDEO_HEADER+PX_WIN_H+7,UI_TEXT,"SEED %llu   ACTION %d/%d   ACHIEVEMENTS %d/%d   HEALTH %d",
+        textf(ui,12,header+PX_WIN_H+7,UI_TEXT,"SEED %llu   ACTION %d/%d   ACHIEVEMENTS %d/%d   HEALTH %d",
               (unsigned long long)tape.seed,e->steps,cfg.max_steps,count,ACH_COUNT,e->health);
         const char *state=e->terminated?"DIED - replay held":e->truncated?"ACTION LIMIT REACHED":tape.i==tape.n?"REPLAY ENDED":"PLAYING";
-        if(note) {
-            textf(ui,12,VIDEO_HEADER+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s",state);
-            text(ui,12,VIDEO_HEADER+PX_WIN_H+35,UI_DIM,note);
-        } else {
-            textf(ui,12,VIDEO_HEADER+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s | ACTION-SYNCHRONIZED REPLAY; API THINKING TIME OMITTED",state);
-            text(ui,12,VIDEO_HEADER+PX_WIN_H+35,UI_DIM,"One illustrative episode, not a benchmark ranking. Same pacing in both videos.");
+        if(note && note[0]) {
+            textf(ui,12,header+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s",state);
+            text(ui,12,header+PX_WIN_H+35,UI_DIM,note);
+        } else if(!note) {
+            textf(ui,12,header+PX_WIN_H+21,e->terminated?UI_BAD:UI_GOOD,"%s | ACTION-SYNCHRONIZED REPLAY; API THINKING TIME OMITTED",state);
+            text(ui,12,header+PX_WIN_H+35,UI_DIM,"One illustrative episode, not a benchmark ranking. Same pacing in both videos.");
         }
         SDL_RenderPresent(ui->ren);
         if(SDL_RenderReadPixels(ui->ren,NULL,SDL_PIXELFORMAT_RGB24,pixels,PX_WIN_W*3)!=0) return 2;

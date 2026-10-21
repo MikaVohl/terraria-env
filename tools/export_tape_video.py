@@ -52,6 +52,8 @@ def main():
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--title", default="TERRARIA-LITE | PPO POLICY REPLAY")
     p.add_argument("--subtitle", default="")
+    p.add_argument("--plain", action="store_true",
+                   help="no title header and only the one-line stats footer (game canvas and crafting list at the top)")
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     exe = build(a.env_root.resolve(), a.out)
@@ -64,13 +66,17 @@ def main():
         frames = schedule(actions, speed)
         sched.write_text("".join(f"{s}\n" for s in frames))
         video = a.out / f"{a.tape.stem}_{tag}.mp4"
-        note = f"Playback {tag} ({BASE_ACTIONS_PER_SECOND*speed:g} actions/s; 1x = terraria-px default 80 ms/action). Every action shown in order."
+        note = "" if a.plain else (f"Playback {tag} ({BASE_ACTIONS_PER_SECOND*speed:g} actions/s; "
+                                   "1x = terraria-px default 80 ms/action). Every action shown in order.")
+        title = "" if a.plain else a.title
+        # Must match replay_video.c: PX_WIN 736x528, header 48|0, footer 48|20.
+        width, height = 736, 528 + (48 if title else 0) + (20 if a.plain else 48)
         with (a.out / f"render_{tag}.log").open("w") as log:
-            render = subprocess.Popen([str(exe), str(a.tape), str(sched), a.title, a.subtitle, note],
+            render = subprocess.Popen([str(exe), str(a.tape), str(sched), title, a.subtitle, note],
                                       stdout=subprocess.PIPE, stderr=log, env=env)
             encode = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo",
-                                     "-pixel_format", "rgb24", "-video_size", "736x624", "-framerate", str(FPS),
-                                     "-i", "pipe:0", "-vf", "scale=1472:1248:flags=neighbor", "-c:v", "libx264",
+                                     "-pixel_format", "rgb24", "-video_size", f"{width}x{height}", "-framerate", str(FPS),
+                                     "-i", "pipe:0", "-vf", f"scale={2*width}:{2*height}:flags=neighbor", "-c:v", "libx264",
                                      "-preset", "fast", "-crf", "18", "-pix_fmt", "yuv420p",
                                      "-movflags", "+faststart", str(video)], stdin=render.stdout)
             render.stdout.close()
