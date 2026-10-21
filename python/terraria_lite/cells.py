@@ -39,7 +39,7 @@ def achievements(obs: np.ndarray) -> np.ndarray:
 def stations_visible(obs: np.ndarray) -> np.ndarray:
     """(N, 3) bool: workbench / furnace / anvil tile anywhere in the view."""
     tiles = obs[..., :_TILES_END].reshape(*obs.shape[:-1], SPEC.cells, SPEC.tile_kinds)
-    return tiles[..., list(STATION_TILES)].max(-2) > 0.5
+    return np.stack([(tiles[..., t] > 0.5).any(-1) for t in STATION_TILES], -1)
 
 
 def depth_band(obs: np.ndarray) -> np.ndarray:

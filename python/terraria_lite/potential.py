@@ -36,19 +36,49 @@ class RecipePotential:
             if recipe["station"] != "air":
                 self.station[r] = _STATION_INDEX[recipe["station"]]
                 self.terms[r] += 1
+        # phi depends only on the held ingredient counts and visible stations.
+        # Remember both per lane with the value computed from them, and only
+        # re-evaluate rows whose inputs changed (rare: most steps change
+        # neither). Each row is still computed by the same dense formula, so
+        # every value is bit-identical to evaluating the whole batch.
+        self._items = np.flatnonzero(self.need.any(0))
+        self._key = self._val = None
         self.previous = self.phi(initial_obs)
 
-    def phi(self, obs: np.ndarray) -> np.ndarray:
-        inv = inventory(obs).astype(np.float64)
+    def _phi_rows(self, inv: np.ndarray, vis: np.ndarray) -> np.ndarray:
         held = np.where(self.need > 0, np.minimum(inv[:, None, :] / np.maximum(self.need, 1), 1.0), 0.0).sum(-1)
-        vis = stations_visible(obs)
         has_station = self.station >= 0
         held[:, has_station] += vis[:, self.station[has_station]]
         return self.coef * (held / self.terms).mean(-1)
 
+    def _inputs(self, obs: np.ndarray):
+        return inventory(obs).astype(np.float64), stations_visible(obs)
+
+    def _phi_from(self, inv: np.ndarray, vis: np.ndarray) -> np.ndarray:
+        key = np.concatenate((inv[:, self._items], vis), 1)
+        if self._key is None or len(self._key) != len(key):
+            self._key, self._val = key, self._phi_rows(inv, vis)
+            return self._val.copy()
+        stale = np.flatnonzero((key != self._key).any(1))
+        if len(stale):
+            self._val[stale] = self._phi_rows(inv[stale], vis[stale])
+            self._key[stale] = key[stale]
+        return self._val.copy()
+
+    def phi(self, obs: np.ndarray) -> np.ndarray:
+        return self._phi_from(*self._inputs(obs))
+
     def step(self, next_obs: np.ndarray, final_obs: np.ndarray, ended: np.ndarray) -> np.ndarray:
-        reached = self.phi(np.where(ended[:, None], final_obs, next_obs) if ended.any() else next_obs)
+        """phi of each lane's reached state (the terminal observation where the
+        episode ended), without materialising the mixed observation batch."""
+        inv, vis = self._inputs(next_obs)
+        if ended.any():
+            reached_inv, reached_vis = inv.copy(), vis.copy()
+            reached_inv[ended], reached_vis[ended] = self._inputs(final_obs[ended])
+            reached = self._phi_from(reached_inv, reached_vis)
+        else:
+            reached = self._phi_from(inv, vis)
         reached[ended] = 0.0
         shaping = self.gamma * reached - self.previous
-        self.previous = self.phi(next_obs) if ended.any() else reached
+        self.previous = self._phi_from(inv, vis) if ended.any() else reached
         return shaping.astype(np.float32)
