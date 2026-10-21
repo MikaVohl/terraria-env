@@ -457,3 +457,11 @@ Milestones (game time): wood ×3 by 0:23, workbench 0:42, wood_100 2:01, **furna
 
 **Judgement.** Without the ANR dialog, frozen Opus did what no other run did: furnace placed and used, bars smelted, with
 very few deaths. Anchor 7 (bars smelted); no adjustment, as the cut-off was budget, not play.
+
+## sonnet-rt-02: Sonnet 5.5 (reasoning low), real time, PvE on (replicate of sonnet-rt-01). **2/10**
+
+Played the full 30 minutes, $5.90. Milestone score 5 (game time): wood ×3 by 0:25, workbench 0:43, torch_10 15:26 (Torch
+Zombie drops: 47 torches, gel never consumed). **42 deaths**, deepest 4 tiles, **232 continuations** (the most of any run).
+
+Judgement: a copy of sonnet-rt-01 (34 deaths, depth 1, 101 continuations), only worse on quitting. The bench was never
+placed. Real-time Sonnet is consistent across both runs. Anchor 2-3 (workbench crafted, never placed), 2.

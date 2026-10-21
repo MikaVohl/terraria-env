@@ -107,6 +107,28 @@ start; shot age is the median age of the screenshot an action was based on.
    at 24 minutes), Sonnet $4.2-5.3, Haiku about $0.5, combos $1.1-2.0. Frozen runs cost about 1.6-2× their real-time
    counterparts for the same game time.
 
+## Batch B: replicates without the ANR dialog (20 October, afternoon)
+
+Six more runs on the same world and settings, with Hyprland's "Application Not Responding" dialog disabled (a watcher
+logged no dialog in any run). Spend: $28.50 of a $35 batch budget. Tables: `runs/pilot-30min-b/results-table.md` on
+Omarchy; assessments at the end of `pilot-30min/assessments.md`.
+
+| Model | Real time (judged) | Frozen (judged) |
+|---|---|---|
+| Opus | 6, 3 | 4 (with dialog), **7** (no dialog) |
+| Sonnet | 2, 2 | 4 (with dialog), 3 (no dialog; gave up at 10.5 game-min) |
+| Haiku | 2, 2 | 4 (with dialog), 3 (no dialog) |
+
+- **opus-frozen-02 is the best run of the 22:** furnace crafted at 9:10, **placed and used, copper bars smelted at
+  10:40**, 5 deaths, 102 tiles deep (via a natural cave). It hit its $17 cap at 17.8 game-minutes, so a full frozen Opus run costs about $27.
+- **Real time is consistent and poor for Sonnet and Haiku:** both replicates repeated their first runs almost exactly
+  (32-42 deaths, depth ≤ 5, bench never placed). Sonnet real-time #2 needed 232 continuation prompts.
+- **Frozen is better for every model** on deaths and depth (2-8 deaths vs 29-43 in real time, 29-102 tiles vs ≤ 27),
+  but the weaker models still don't place stations and quit constantly. Sonnet frozen #2 ended itself through the
+  5-replies-without-action rule.
+- Updated recommendation: make the frozen clock the main track (now confirmed without the dialog), budget about $27 per
+  Opus frozen run, and look at Opus' per-call cost (prompt caching) before scaling up.
+
 ## Harness defects found (all fixed for the runs after them)
 
 Details in `pilot-30min/harness-notes.md`:
