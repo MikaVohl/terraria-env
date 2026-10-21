@@ -47,6 +47,8 @@ ARMS = {
                         "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
     "ctl_e4096": ["--envs", "4096", "--minibatches", "16", "--collect-device", "cuda",
                   "--sim-workers", "16", "--threads", "4"],
+    "ctl_e1024": ["--envs", "1024", "--minibatches", "16", "--collect-device", "cuda",
+                  "--sim-workers", "12", "--threads", "4"],
 }
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
