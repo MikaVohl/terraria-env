@@ -1638,8 +1638,13 @@ bool px_screenshot(PxUi *ui,const char *path) {
     SDL_FreeSurface(s); return ok;
 }
 
-void px_draw(PxUi *ui, const Env *e, const PxView *v)
+void px_draw(PxUi *ui, const Env *env, const PxView *v)
 {
+    /* Light, hover and mob visibility read the whole map, not just the
+       observation window the simulator keeps exact. */
+    Env full = *env;
+    light_full(&full);
+    const Env *e = &full;
     SDL_Rect view = {0, 0, PX_VIEW_W, PX_VIEW_H};
     bool over = e->terminated || e->truncated;
 

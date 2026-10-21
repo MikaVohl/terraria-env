@@ -15,7 +15,7 @@ int main(void) {
         }
         if(t%16==0)e.tiles[draw()%WORLD_H][draw()%WORLD_W]=draw()%TILE_COUNT;
         e.px=draw()%WORLD_W;e.py=draw()%WORLD_H;
-        light_recompute(&e);assert(probe_check(&e));
+        light_full(&e);assert(probe_check(&e));
     }
     puts("PASS: 20000 full-map comparisons, terrain edits, emitters, movement, edges");
     return 0;

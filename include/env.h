@@ -171,7 +171,11 @@ void env_free(Env*);
 void env_obs(const Env*,Obs*);
 void env_action_mask(const Env*,uint8_t*);
 void world_generate(Env*);
+/* Env.light is exact only inside the observation window around the player
+   (all the simulator reads); light_full() rebuilds the whole map for renderers
+   and full-map oracles. Neither touches anything but the light cache. */
 void light_recompute(Env*);
+void light_full(Env*);
 void light_tile_changed(Env*,int,int,Tile); /* exact incremental terrain lighting */
 void light_reference(Env*); /* uncached oracle for parity tests */
 const char *action_name(int);

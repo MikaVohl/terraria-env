@@ -48,7 +48,7 @@ int main(void) {
  e.terrain_dirty=true; light_recompute(&e); assert(e.light[58][42]==LIGHT_MAX);
  env_step(&e,ACT_RIGHT); assert(e.px==41&&e.inv[ITEM_WOOD]==0); /* walk through a tree */
  env_step(&e,ACT_MINE_BODY_FOOT_RIGHT); assert(e.inv[ITEM_WOOD]==6); /* chop an overlapped trunk */
- oracle=e;light_reference(&oracle);assert(!memcmp(e.light,oracle.light,sizeof e.light));
+ light_full(&e);oracle=e;light_reference(&oracle);assert(!memcmp(e.light,oracle.light,sizeof e.light));
  flat(&e); e.tiles[59][42]=TILE_LOG; e.terrain_dirty=true;light_recompute(&e);
  env_action_mask(&e,mask); assert(!mask[ACT_MINE_DOWN_RIGHT]);
  env_step(&e,ACT_MINE_DOWN_RIGHT); assert(e.tiles[60][42]==TILE_STONE&&e.inv[ITEM_STONE]==0);
