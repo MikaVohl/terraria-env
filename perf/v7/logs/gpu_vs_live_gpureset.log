@@ -1,0 +1,8 @@
+cpu lib /home/mvohl/Projects/RL/builds/v7/python/terraria_lite/libterraria.so: env v7, state 51040 B, obs 2152 B | hip: state 51040 B, obs 2152 B
+step 1000: compared 7618560 lane-steps, episodes reset 9212, bad obs 0 mask 0 rew 0 end 0 state 0/8192 (41s)
+step 2000: compared 15802368 lane-steps, episodes reset 16344, bad obs 0 mask 0 rew 0 end 0 state 0/12288 (82s)
+step 3000: compared 23990272 lane-steps, episodes reset 22395, bad obs 0 mask 0 rew 0 end 0 state 0/16384 (123s)
+step 4000: compared 32178176 lane-steps, episodes reset 29286, bad obs 0 mask 0 rew 0 end 0 state 0/20480 (167s)
+step 5000: compared 40370176 lane-steps, episodes reset 36495, bad obs 0 mask 0 rew 0 end 0 state 0/24576 (210s)
+step 6000: compared 48562176 lane-steps, episodes reset 43594, bad obs 0 mask 0 rew 0 end 0 state 0/28672 (254s)
+PARITY OK: n=4096 steps=6000 illegal_pct=10 reset=gpu lane_steps=24576000 episodes_reset=43594 obs_bad=0 mask_bad=0 rew_bad=0 end_bad=0 state_bad=0/32768

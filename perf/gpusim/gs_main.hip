@@ -61,6 +61,9 @@ static const char *env_diff(const Env *a, const Env *b) {
         for (int x = a->px - VIEW_W / 2; x <= a->px + VIEW_W / 2; x++)
             if (in_bounds(x, y) && a->light[y][x] != b->light[y][x]) return "light (window)";
     F(tiles) F(terrain_light) F(sky_cutoff) F(terrain_dirty) F(surface)
+#if ENV_VERSION >= 7
+    F(object_part)
+#endif
     F(px) F(py) F(facing) F(jump_left) F(fall_dist) F(health) F(tool_tier) F(inv) F(selected)
     F(max_health) F(weapon) F(armor) F(attack_cd) F(heal_cd) F(hurt_cd) F(mine_cd) F(safe_ticks)
     F(air_jump_used) F(drop_ticks) F(explore_min) F(explore_max) F(mining_tree)
@@ -290,7 +293,10 @@ static int bench(int n, int steps, std::string mode, int B) {
    obs/mask/reward/end compared every step, full state every full_every. */
 static int cpuparity(const char *pa, const char *pb, int n, int steps, int illegal_pct, int full_every) {
     CpuLib A, B; A.load(pa); B.load(pb);
-    if (A.state_bytes() != B.state_bytes() || A.obs_bytes() != B.obs_bytes()) { fprintf(stderr, "layout mismatch\n"); return 2; }
+    if (A.state_bytes() != (int)sizeof(Env) || B.state_bytes() != (int)sizeof(Env) || A.obs_bytes() != (int)sizeof(Obs)
+        || B.obs_bytes() != (int)sizeof(Obs) || A.version() != ENV_VERSION || B.version() != ENV_VERSION) {
+        fprintf(stderr, "layout mismatch: libraries must match the headers this driver was built with\n"); return 2;
+    }
     std::vector<Env *> ea(n), eb(n);
     std::vector<Obs> oa(n), ob(n);
     std::vector<uint8_t> ma((size_t)n * ACT_COUNT), mb((size_t)n * ACT_COUNT);

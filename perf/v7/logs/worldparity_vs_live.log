@@ -1,0 +1,9 @@
+worlds 65536/524288 bad 0 (1s)
+worlds 131072/524288 bad 0 (2s)
+worlds 196608/524288 bad 0 (3s)
+worlds 262144/524288 bad 0 (4s)
+worlds 327680/524288 bad 0 (5s)
+worlds 393216/524288 bad 0 (6s)
+worlds 458752/524288 bad 0 (7s)
+worlds 524288/524288 bad 0 (8s)
+WORLDPARITY OK: seeds [70000000, 70524288) worlds=524288 differing=0 (0.000000%) differing_tiles=0
