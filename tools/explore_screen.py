@@ -70,6 +70,13 @@ ARMS = {
                       "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
     "pot_e4096_lr2e3": ["--potential", "3", "--envs", "4096", "--minibatches", "16", "--lr", ".002",
                         "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    # Frontier: more gradient steps and higher LR together at larger batches.
+    "pot_e2048_lr1e3": ["--potential", "3", "--envs", "2048", "--minibatches", "32", "--lr", ".001",
+                        "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    "pot_e4096_lr2e3_mb64": ["--potential", "3", "--envs", "4096", "--minibatches", "64", "--lr", ".002",
+                             "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    "pot_e8192_lr2e3_mb128": ["--potential", "3", "--envs", "8192", "--minibatches", "128", "--lr", ".002",
+                              "--collect-device", "cuda", "--sim-workers", "24", "--threads", "4"],
 }
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
