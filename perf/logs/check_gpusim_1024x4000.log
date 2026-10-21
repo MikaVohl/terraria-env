@@ -1,0 +1,1 @@
+OK: 1024 envs x 4000 steps, 5912 resets; GPU backend (compact and flat) identical to VecTerraria (obs, mask, reward, ends, final rows, infos, seeds)

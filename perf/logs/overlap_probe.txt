@@ -1,0 +1,2 @@
+{"envs": 1024, "serial_ms_per_step": 1.585, "overlap_ms_per_step": 2.704, "collection_speedup": 0.586}
+{"envs": 4096, "serial_ms_per_step": 3.413, "overlap_ms_per_step": 4.001, "collection_speedup": 0.853}

@@ -598,7 +598,10 @@ static size_t compose(char *out, size_t cap, const Env *e,
 static void present(const Env *e, const char *log[], int nlog, int over)
 {
     char frame[FRAME_CAP];
-    size_t n = compose(frame, sizeof frame, e, log, nlog, over);
+    /* The map view reads light far outside the observation window. */
+    Env full = *e;
+    light_full(&full);
+    size_t n = compose(frame, sizeof frame, &full, log, nlog, over);
     size_t w = fwrite(frame, 1, n, stdout);
     (void)w;
     fflush(stdout);

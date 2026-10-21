@@ -1,0 +1,1 @@
+TRIG |x|<128 floats=2248146944 mismatches vs host glibc: ocml sinf 25552186 cosf 33975346 | glibc-port(no fma) sinf 12 cosf 22 | glibc-port(fma) sinf 0 cosf 0

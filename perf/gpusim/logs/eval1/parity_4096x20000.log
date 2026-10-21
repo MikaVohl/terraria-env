@@ -1,0 +1,20 @@
+cpu lib /home/mvohl/Projects/RL/python/terraria_lite/libterraria.so: env v4, state 38712 B, obs 2144 B | hip: state 38712 B, obs 2144 B
+STATE DIFF step step 999 lane 2150 field tiles
+step 1000: compared 7598080 lane-steps, episodes reset 8260, bad obs 0 mask 0 rew 0 end 0 state 1/8192 (31s)
+STATE DIFF step step 1999 lane 2150 field tiles
+step 2000: compared 15785984 lane-steps, episodes reset 15040, bad obs 0 mask 0 rew 0 end 0 state 2/12288 (65s)
+OUT DIFF step 2741 lane 693 obs=1 mask=1 rew=0 end=0
+OUT DIFF step 2742 lane 693 obs=1 mask=1 rew=0 end=0
+OUT DIFF step 2742 lane 693 obs=1 mask=1 rew=0 end=0
+OUT DIFF step 2743 lane 693 obs=1 mask=1 rew=0 end=0
+OUT DIFF step 2743 lane 693 obs=1 mask=1 rew=0 end=0
+STATE DIFF step step 2999 lane 693 field tiles
+STATE DIFF step step 2999 lane 2150 field tiles
+step 3000: compared 23961600 lane-steps, episodes reset 20869, bad obs 516 mask 500 rew 5 end 102 state 4/16384 (96s)
+step 4000: compared 32133120 lane-steps, episodes reset 27470, bad obs 973 mask 956 rew 7 end 331 state 4/20480 (128s)
+STATE DIFF step step 4999 lane 2316 field tiles
+STATE DIFF step step 4999 lane 3040 field tiles
+step 5000: compared 40321024 lane-steps, episodes reset 34246, bad obs 973 mask 956 rew 7 end 331 state 6/24576 (161s)
+STATE DIFF step step 5999 lane 2316 field tiles
+STATE DIFF step step 5999 lane 4072 field tiles
+step 6000: compared 48513024 lane-steps, episodes reset 40830, bad obs 973 mask 956 rew 7 end 331 state 8/28672 (193s)

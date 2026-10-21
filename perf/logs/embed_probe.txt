@@ -1,0 +1,1 @@
+{"max_abs_logp_diff": 9.5367431640625e-07, "max_abs_value_diff": 2.980232238769531e-07, "onehot_update_ms_mb8192": 3.028, "embedding_update_ms_mb8192": 7.451, "onehot_update_ms_mb16384": 5.355, "embedding_update_ms_mb16384": 13.746}

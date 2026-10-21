@@ -1,0 +1,1 @@
+CPUPARITY OK: ../../python/terraria_lite/libterraria.so vs /home/mvohl/Projects/RL/python/terraria_lite/libterraria.so n=4096 steps=10000 illegal_pct=10 lane_steps=40960000 episodes_reset=65684 out_bad=0 state_bad=0/45056

@@ -1,0 +1,73 @@
+--- a/src/light.c	2026-10-20 22:04:08.305339493 -0600
++++ b/src/light.c	2026-10-20 22:04:08.346852922 -0600
+@@ -136,7 +136,9 @@
+     /* Multi-tile emitter identity also depends on its frame/anchor, not just
+        the tile kind. Always relax an emitter edit; non-emitters keep fast skip. */
+     if(tile_opaque(before)==tile_opaque(after) && !tile_emit(before) && !tile_emit(after)) return;
+-    LightQueue q={.head=0,.tail=0,.count=0,.queued={0}};
++    /* Only the dedup bitmap needs clearing: ring cells are written before they
++       are read. (A full aggregate initialiser zeroed 26 KB per edit.) */
++    LightQueue q; q.head=q.tail=q.count=0; memset(q.queued,0,sizeof q.queued);
+     static const int dx[4]={1,-1,0,0},dy[4]={0,0,1,-1};
+     int old=e->sky_cutoff[x],fresh=column_cutoff(e,x);
+     e->sky_cutoff[x]=(uint8_t)fresh;
+@@ -162,18 +164,19 @@
+     }
+ }
+ 
++static void refresh_terrain(Env *e) {
++    if(!e->terrain_dirty) return;
++    int x=e->px,y=e->py;
++    e->px=e->py=-10; light_reference(e); e->px=x; e->py=y;
++    memcpy(e->terrain_light,e->light,sizeof e->light);
++    for(int col=0;col<WORLD_W;col++) e->sky_cutoff[col]=column_cutoff(e,col);
++    e->terrain_dirty=false;
++}
++
+ /* Exact max-composition: static sky/torch light plus the small radius-3 player
+-   wave. Cache ownership is local to Env; tile edits invalidate it explicitly. */
+-void light_recompute(Env *e) {
++   wave, seeded over whatever terrain light is already in e->light. */
++static void player_glow(Env *e) {
+     _Static_assert(PLAYER_LIGHT==3,"revalidate local light composition if player glow changes");
+-    if(e->terrain_dirty) {
+-        int x=e->px,y=e->py;
+-        e->px=e->py=-10; light_reference(e); e->px=x; e->py=y;
+-        memcpy(e->terrain_light,e->light,sizeof e->light);
+-        for(int col=0;col<WORLD_W;col++) e->sky_cutoff[col]=column_cutoff(e,col);
+-        e->terrain_dirty=false;
+-    }
+-    memcpy(e->light,e->terrain_light,sizeof e->light);
+     /* At most PLAYER_LIGHT improvements per cell in this bounding rectangle. */
+     uint16_t queue[(PLAYER_W+2*PLAYER_LIGHT)*(PLAYER_H+2*PLAYER_LIGHT)*PLAYER_LIGHT]; int head=0,tail=0;
+     for(int col=0;col<PLAYER_W;col++) for(int i=0;i<PLAYER_H;i++) {
+@@ -195,3 +198,29 @@
+         }
+     }
+ }
++
++/* The simulator only ever reads Env.light inside the observation window: the
++   observed cells, mask reach cells and nearby chests all lie within it. So
++   refresh the window plus the player glow's bounding box (11x10 cells) rather
++   than copying all 12 KB of terrain light on every move; that copy dominated
++   the step on many-core CPUs and on GPUs. Cells outside the box keep stale
++   values; light_full() rebuilds the whole map for renderers and oracles. */
++void light_recompute(Env *e) {
++    _Static_assert(PLAYER_W-1+PLAYER_LIGHT<=VIEW_W/2 && PLAYER_LIGHT<=VIEW_W/2
++                   && PLAYER_H-1+PLAYER_LIGHT<=VIEW_H/2+1 && PLAYER_LIGHT<=VIEW_H/2,
++                   "player glow box must lie inside the refreshed box");
++    refresh_terrain(e);
++    int ylo=e->py-VIEW_H/2-1, yhi=e->py+VIEW_H/2, xlo=e->px-VIEW_W/2, xhi=e->px+VIEW_W/2;
++    if(ylo<0) ylo=0;
++    if(yhi>WORLD_H-1) yhi=WORLD_H-1;
++    if(xlo<0) xlo=0;
++    if(xhi>WORLD_W-1) xhi=WORLD_W-1;
++    for(int y=ylo;y<=yhi;y++) memcpy(&e->light[y][xlo],&e->terrain_light[y][xlo],(size_t)(xhi-xlo+1));
++    player_glow(e);
++}
++
++void light_full(Env *e) {
++    refresh_terrain(e);
++    memcpy(e->light,e->terrain_light,sizeof e->light);
++    player_glow(e);
++}

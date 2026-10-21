@@ -91,6 +91,15 @@ class Config:
     potential_coef: float = 0.0       # potential-based recipe shaping (prior knowledge)
     memory_features: str = ""         # "stations_v1": observed station memory inputs
     aux_coef: float = 0.0             # predictive inventory/unlock auxiliary loss
+    # Performance options, all off by default (default training is unchanged).
+    # Exact (identical rollouts and updates):
+    native_autoreset: bool = False    # reset finished lanes in C, not a Python loop
+    compact_obs: bool = False         # move/store raw uint8 obs rows, one-hot on the learner device
+    sim_backend: str = "cpu"          # "gpu": simulate on the collect device (terraria_lite.gpusim)
+    # Change floating-point rounding (see perf/REPORT.md for learning checks):
+    compile: bool = False             # torch.compile the policy for sampling and the update
+    bf16: bool = False                # bfloat16 autocast in the PPO update
+    fused_adam: bool = False          # single fused Adam kernel
 
     @property
     def batch(self) -> int:
@@ -164,18 +173,32 @@ class VecTerraria:
         when an episode ends we retain its true final observation rather than
         confuse it with the autoreset observation. External truncation controls
         can bootstrap it; the benchmark's inherent action deadline does not.
+
+    native_autoreset=True steps and resets finished lanes inside one C call
+    (tl_batch_step_autoreset) with the same seed order, final observations and
+    infos as the Python loop below. compact=True keeps observations as raw C
+    rows (terraria_lite.compact) instead of the float32 one-hot encoding.
     """
 
-    def __init__(self, n: int, seed: int = 1, restart=None, workers: int = 4):
+    def __init__(self, n: int, seed: int = 1, restart=None, workers: int = 4,
+                 native_autoreset: bool = False, compact: bool = False):
         self.envs = [TerrariaLite() for _ in range(n)]
         self.n = n
         self._next_seed = seed
-        self.obs = np.zeros((n, SPEC.obs_size), dtype=np.float32)
+        self.compact = compact
+        if compact:
+            from terraria_lite.compact import RAW_BYTES
+            self.obs = np.zeros((n, RAW_BYTES), dtype=np.uint8)
+        else:
+            self.obs = np.zeros((n, SPEC.obs_size), dtype=np.float32)
         self.mask = np.zeros((n, SPEC.n_actions), dtype=bool)
         # Optional training-only start-state hook: restart(lane, env) returns
         # (obs, info) after restoring some state, or None for a fresh world.
         # `restored[i]` says whether lane i's current episode came from it.
         self.restart = restart
+        if restart is not None and (native_autoreset or compact):
+            raise ValueError("start-state restarts need the Python reset loop with flat observations")
+        self.native_autoreset = native_autoreset
         self.restored = np.zeros(n, dtype=bool)
         from terraria_lite.batch import NativeBatch
         self.native = NativeBatch(self.envs, workers=workers)
@@ -185,9 +208,18 @@ class VecTerraria:
         self._next_seed += 1
         return s
 
+    def _reset_lane(self, i: int, e) -> None:
+        flat = e.reset(seed=self._fresh_seed())[0]
+        if self.compact:
+            from terraria_lite.compact import fields
+            tile, light, status = fields(self.obs[i])
+            tile[:], light[:], status[:] = e._tile, e._light, e._status
+        else:
+            self.obs[i] = flat
+
     def reset(self) -> tuple[np.ndarray, np.ndarray]:
         for i, e in enumerate(self.envs):
-            self.obs[i] = e.reset(seed=self._fresh_seed())[0]
+            self._reset_lane(i, e)
             self.mask[i] = e.action_mask()
         return self.obs, self.mask
 
@@ -196,10 +228,17 @@ class VecTerraria:
 
         `obs`/`mask` are what to act from next -- already reset where an
         episode ended. `final_obs` holds the real terminal observation for
-        those lanes, for diagnostics or an explicit external-truncation control.
+        those lanes, for diagnostics or an explicit external-truncation control;
+        its other rows are zero.
         """
-        rew, term, trunc = self.native.step(actions, self.obs, self.mask)
-        final = np.zeros((self.n, SPEC.obs_size), dtype=np.float32)
+        if self.native_autoreset:
+            return self._step_native(actions)
+        if self.compact:
+            rew, term, trunc = self.native.step_raw(actions, self.obs)
+            self.mask[:] = self.native.masks
+        else:
+            rew, term, trunc = self.native.step(actions, self.obs, self.mask)
+        final = np.zeros(self.obs.shape, self.obs.dtype)   # calloc: untouched rows cost nothing
         finished = []
 
         for i in np.flatnonzero(term | trunc):
@@ -210,9 +249,30 @@ class VecTerraria:
             finished.append((int(i), info))
             started = self.restart(int(i), e) if self.restart is not None else None
             self.restored[i] = started is not None
-            self.obs[i] = started[0] if started is not None else e.reset(seed=self._fresh_seed())[0]
+            if started is not None:
+                self.obs[i] = started[0]
+            else:
+                self._reset_lane(int(i), e)
             self.mask[i] = e.action_mask()
         return self.obs, self.mask, rew, term, trunc, final, finished
+
+    def _step_native(self, actions):
+        final = np.zeros(self.obs.shape, self.obs.dtype)   # calloc: untouched rows cost nothing
+        seed0 = self._next_seed
+        lanes = self.native.step_autoreset(actions, self.obs, final, seed0)
+        self.mask[:] = self.native.masks
+        ends = self.native.ends
+        finished = []
+        for k, i in enumerate(lanes.tolist()):
+            steps, health, depth, ach = self.native.info[i].tolist()
+            ach &= 0xFFFFFFFF
+            finished.append((i, {"steps": steps, "episode_return": float(self.native.info_return[i]),
+                                 "health": health, "depth": depth, "achievements": bin(ach).count("1"),
+                                 "achievement_mask": ach, "restored_start": bool(self.restored[i])}))
+            self.restored[i] = False
+            self.envs[i]._seed = seed0 + k
+        self._next_seed = seed0 + len(lanes)
+        return self.obs, self.mask, self.native.rewards.copy(), ends == 1, ends == 2, final, finished
 
     def close(self):
         for e in self.envs:
@@ -312,7 +372,7 @@ class ProgressShaper:
 
 # ------------------------------------------------------------------ train ---
 
-def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device):
+def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device, expand=None):
     """Bootstrap external truncations only, never the finite benchmark deadline.
 
     Autoreset means the observation after a boundary belongs to a fresh world.
@@ -328,8 +388,20 @@ def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device):
     if not cut.any():
         return
     with torch.no_grad():
-        v = agent.value(torch.as_tensor(final_obs[cut], device=device))
+        x = torch.as_tensor(final_obs[cut], device=device)
+        v = agent.value(expand(x) if expand is not None else x)
     rewards[t, torch.as_tensor(cut, device=device)] += cfg.gamma * v
+
+
+def _score_bf16(agent, x, action, mask):
+    """agent.act's update-time outputs with the network under bfloat16
+    autocast; the masked distribution, log-probs and values stay float32."""
+    with torch.autocast(device_type=x.device.type, dtype=torch.bfloat16):
+        h = agent.trunk(x)
+        logits, value = agent.actor(h), agent.critic(h)
+    logits = logits.float().masked_fill(~mask, float("-inf"))
+    dist = Categorical(logits=logits)
+    return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
 
 
 def compute_gae(rewards, dones, values, next_value, next_done,
@@ -364,6 +436,14 @@ def train(cfg: Config, checkpoint_callback=None):
         raise ValueError("Unknown achievement reward scheme")
     if cfg.memory_features and cfg.bootstrap_time_limit:
         raise ValueError("Truncation bootstrap does not track memory features")
+    if cfg.compact_obs:
+        unsupported = {"memory_features": cfg.memory_features, "sil_minibatches": cfg.sil_minibatches,
+                       "curiosity_coef": cfg.curiosity_coef, "progress_coef": cfg.progress_coef,
+                       "archive_start_prob": cfg.archive_start_prob, "aux_coef": cfg.aux_coef,
+                       "achievement_reward=difficulty": cfg.achievement_reward != "equal"}
+        used = [k for k, v in unsupported.items() if v]
+        if used:
+            raise ValueError(f"compact_obs supports potential/novelty shaping only, not {', '.join(used)}")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
@@ -373,9 +453,19 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.archive_start_prob:
         from terraria_lite.archive import StartArchive
         archive = StartArchive(cfg.archive_capacity, cfg.archive_start_prob, seed=cfg.seed)
-    envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed,
-                       restart=archive.restart if archive is not None else None,
-                       workers=cfg.sim_workers)
+    env_seed = cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed
+    if cfg.sim_backend == "gpu":
+        if archive is not None:
+            raise ValueError("the GPU simulator backend does not support archive restarts")
+        from terraria_lite.gpusim import GpuVec
+        envs = GpuVec(cfg.num_envs, seed=env_seed, device=collect_device, compact=cfg.compact_obs)
+    elif cfg.sim_backend == "cpu":
+        envs = VecTerraria(cfg.num_envs, seed=env_seed,
+                           restart=archive.restart if archive is not None else None,
+                           workers=cfg.sim_workers, native_autoreset=cfg.native_autoreset,
+                           compact=cfg.compact_obs)
+    else:
+        raise ValueError(f"unknown sim_backend {cfg.sim_backend!r}")
     memory = None
     if cfg.memory_features:
         from terraria_lite.memory_features import PolicyFeatures
@@ -395,15 +485,29 @@ def train(cfg: Config, checkpoint_callback=None):
         from terraria_lite.predictive_aux import PredictiveAux
         aux = PredictiveAux(agent.actor.in_features).to(device)
     opt = torch.optim.Adam(list(agent.parameters()) + (list(aux.parameters()) if aux is not None else []),
-                           lr=cfg.lr, eps=1e-5)
+                           lr=cfg.lr, eps=1e-5, **({"fused": True} if cfg.fused_adam else {}))
     # Rollout policy: the learner itself, or a copy re-synchronised after every
     # update, so collection always samples from the current parameters.
     actor = agent if collect_device == device else copy.deepcopy(agent).to(collect_device)
+    if cfg.compile:
+        # In place, so state_dict keys (checkpoints, evaluation) are unchanged.
+        for model in {id(agent): agent, id(actor): actor}.values():
+            model.trunk.compile(dynamic=False)
+            model.actor.compile(dynamic=False)
+    # Compact observations: uint8 rows on the host, in transfer and in the
+    # rollout buffer; `expand` rebuilds the exact float32 policy input.
+    expand_collect = expand_learn = None
+    if cfg.compact_obs:
+        from terraria_lite.compact import RAW_BYTES, Expander
+        expand_collect, expand_learn = Expander(collect_device), Expander(device)
 
     T, N = cfg.rollout, cfg.num_envs
     # Rollout buffers live where they are written; the update moves them to the
     # learner once per iteration (a no-op when the devices coincide).
-    obs_b = torch.zeros((T, N, width), device=collect_device)
+    if cfg.compact_obs:
+        obs_b = torch.zeros((T, N, RAW_BYTES), dtype=torch.uint8, device=collect_device)
+    else:
+        obs_b = torch.zeros((T, N, width), device=collect_device)
     act_b = torch.zeros((T, N), dtype=torch.long, device=collect_device)
     logp_b = torch.zeros((T, N), device=collect_device)
     rew_b = torch.zeros((T, N), device=collect_device)
@@ -445,6 +549,8 @@ def train(cfg: Config, checkpoint_callback=None):
 
     current = policy_input(o0, m0)
     next_obs = torch.as_tensor(current, device=collect_device)
+    if cfg.compact_obs:
+        next_raw, next_obs = next_obs, expand_collect(next_obs)
     next_mask = torch.as_tensor(m0, device=collect_device)
     next_done = torch.zeros(N, device=collect_device)
     extrinsic_episodes = restored_episodes = 0
@@ -477,7 +583,7 @@ def train(cfg: Config, checkpoint_callback=None):
         if cfg.collect_threads:
             torch.set_num_threads(cfg.collect_threads)
         for t in range(T):
-            obs_b[t] = next_obs
+            obs_b[t] = next_raw if cfg.compact_obs else next_obs
             done_b[t] = next_done
             msk_b[t] = next_mask
             with torch.inference_mode():
@@ -504,11 +610,13 @@ def train(cfg: Config, checkpoint_callback=None):
             if archive is not None:
                 archive.observe(envs.envs, obs, cell_keys(obs))
             rew_b[t] = torch.as_tensor(r, device=collect_device)
-            _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device)
+            _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device, expand_collect)
 
             if memory is not None:
                 memory.reset(np.flatnonzero(ended))
             next_obs = torch.as_tensor(policy_input(obs, msk), device=collect_device)
+            if cfg.compact_obs:
+                next_raw, next_obs = next_obs, expand_collect(next_obs)
             next_mask = torch.as_tensor(msk, device=collect_device)
             # Autoreset makes both kinds episode boundaries. An explicitly
             # enabled external bootstrap was folded into rew_b above; using
@@ -548,7 +656,7 @@ def train(cfg: Config, checkpoint_callback=None):
                               cfg.gamma, cfg.gae_lambda)
             ret = adv + val_b
 
-        b_obs = obs_b.reshape(-1, width).to(device)
+        b_obs = obs_b.reshape(-1, obs_b.shape[-1]).to(device)
         b_act = act_b.reshape(-1).to(device)
         b_logp = logp_b.reshape(-1).to(device)
         b_adv = adv.reshape(-1).to(device)
@@ -570,8 +678,11 @@ def train(cfg: Config, checkpoint_callback=None):
             perm = torch.as_tensor(idx, device=device)
             for s in range(0, cfg.batch, cfg.minibatch):
                 mb = perm[s: s + cfg.minibatch]
-                _, newlogp, entropy, newval = agent.act(b_obs[mb], b_act[mb],
-                                                        mask=b_msk[mb])
+                x_mb = expand_learn(b_obs[mb]) if cfg.compact_obs else b_obs[mb]
+                if cfg.bf16:
+                    newlogp, entropy, newval = _score_bf16(agent, x_mb, b_act[mb], b_msk[mb])
+                else:
+                    _, newlogp, entropy, newval = agent.act(x_mb, b_act[mb], mask=b_msk[mb])
                 logratio = newlogp - b_logp[mb]
                 ratio = logratio.exp()
 

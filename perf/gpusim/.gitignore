@@ -1,0 +1,7 @@
+gs_main
+gs_main_ocml
+trigtest
+cpu_bench
+*.so
+*.tmp
+.inductor/

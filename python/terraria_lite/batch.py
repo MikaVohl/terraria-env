@@ -14,6 +14,10 @@ _lib.tl_batch_step.argtypes = [C.c_void_p, C.c_int, C.c_void_p, C.c_void_p,
                               C.c_void_p, C.c_void_p, C.c_void_p, C.c_int]
 _lib.tl_batch_step_flat.restype=None
 _lib.tl_batch_step_flat.argtypes=_lib.tl_batch_step.argtypes
+_lib.tl_batch_step_autoreset.restype = C.c_int
+_lib.tl_batch_step_autoreset.argtypes = [C.c_void_p, C.c_int, C.c_void_p, C.c_void_p, C.c_int,
+                                         C.c_void_p, C.c_void_p, C.c_void_p, C.c_void_p,
+                                         C.c_void_p, C.c_void_p, C.c_void_p, C.c_ulonglong, C.c_int]
 assert _lib.tl_obs_bytes() == C.sizeof(RawObs)
 
 class NativeBatch:
@@ -41,6 +45,10 @@ class NativeBatch:
         self.masks = np.zeros((self.n, SPEC.n_actions), np.uint8)
         self.rewards = np.zeros(self.n, np.float32)
         self.ends = np.zeros(self.n, np.int32)
+        # step_autoreset outputs: finished lanes and their pre-reset episode info.
+        self.lanes = np.zeros(self.n, np.int32)
+        self.info = np.zeros((self.n, 4), np.int32)       # steps, health, depth, achievement mask
+        self.info_return = np.zeros(self.n, np.float32)
 
     def step(self, actions, obs, mask):
         if any(not e._h for e in self.envs):
@@ -69,3 +77,33 @@ class NativeBatch:
         obs[:, SPEC.cells * (SPEC.tile_kinds + 1):] = self.status
         mask[:] = self.masks
         return self.rewards.copy(), self.ends == 1, self.ends == 2
+
+    def step_raw(self, actions, raw):
+        """Step into caller-owned compact rows: raw is (n, tl_obs_bytes()) uint8."""
+        actions = np.ascontiguousarray(actions, dtype=np.int32)
+        if raw.shape != (self.n, C.sizeof(RawObs)) or raw.dtype != np.uint8 or not raw.flags.c_contiguous:
+            raise ValueError("raw must be a contiguous (n, tl_obs_bytes()) uint8 batch")
+        _lib.tl_batch_step(self.handles, self.n, actions.ctypes.data, raw.ctypes.data,
+                           self.masks.ctypes.data, self.rewards.ctypes.data, self.ends.ctypes.data, self.workers)
+        return self.rewards.copy(), self.ends == 1, self.ends == 2
+
+    def step_autoreset(self, actions, obs, final, next_seed):
+        """Step all lanes, then reset finished lanes in C (lane order, seeds
+        next_seed, next_seed+1, ...), keeping their terminal rows in `final`.
+
+        obs/final are flat float32 (n, obs_size) or compact uint8 rows. Returns
+        the finished lanes; their pre-reset episode info is in self.info
+        (steps, health, depth, achievement mask) and self.info_return."""
+        actions = np.ascontiguousarray(actions, dtype=np.int32)
+        flat = obs.dtype == np.float32
+        width = SPEC.obs_size if flat else C.sizeof(RawObs)
+        for a in (obs, final):
+            if a.shape != (self.n, width) or not a.flags.c_contiguous or a.dtype != obs.dtype:
+                raise ValueError("obs/final must be matching contiguous flat float32 or compact uint8 batches")
+        count = _lib.tl_batch_step_autoreset(self.handles, self.n, actions.ctypes.data, obs.ctypes.data, int(flat),
+                                             self.masks.ctypes.data, self.rewards.ctypes.data, self.ends.ctypes.data,
+                                             final.ctypes.data, self.info.ctypes.data, self.info_return.ctypes.data,
+                                             self.lanes.ctypes.data, next_seed, self.workers)
+        if count < 0:
+            raise RuntimeError("tl_batch_step_autoreset rejected its arguments")
+        return self.lanes[:count]

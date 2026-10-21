@@ -114,7 +114,12 @@ static void invariants(void) {
    for(int k=0;k<MAX_MOBS;k++) if(a.mobs[k].kind) assert(in_bounds(a.mobs[k].x,a.mobs[k].y));
    for(int k=0;k<ITEM_COUNT;k++) assert(a.inv[k]>=0 && a.inv[k]<=999);
    b=a; env_obs(&a,&obs); assert(!memcmp(&a,&b,sizeof a));
-   light_reference(&b); assert(!memcmp(a.light,b.light,sizeof a.light)); b=a;
+   /* Live light is exact in the observation window; light_full is exact everywhere. */
+   light_reference(&b);
+   for(int vy=a.py-VIEW_H/2;vy<=a.py+VIEW_H/2;vy++) for(int vx=a.px-VIEW_W/2;vx<=a.px+VIEW_W/2;vx++)
+    if(in_bounds(vx,vy)) assert(a.light[vy][vx]==b.light[vy][vx]);
+   { Env c=a; light_full(&c); assert(!memcmp(c.light,b.light,sizeof c.light)); }
+   b=a;
    for(int k=0;k<OBS_STATUS;k++) assert(isfinite(obs.status[k]) && obs.status[k]>=0 && obs.status[k]<=1);
    for(int k=0;k<VIEW_CELLS;k++) assert(obs.tile[k]<=OBS_UNKNOWN && obs.light[k]<=LIGHT_MAX);
    if(a.terminated || a.truncated) break;
