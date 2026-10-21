@@ -95,6 +95,7 @@ class Config:
     # Exact (identical rollouts and updates):
     native_autoreset: bool = False    # reset finished lanes in C, not a Python loop
     compact_obs: bool = False         # move/store raw uint8 obs rows, one-hot on the learner device
+    sim_backend: str = "cpu"          # "gpu": simulate on the collect device (terraria_lite.gpusim)
     # Change floating-point rounding (see perf/REPORT.md for learning checks):
     compile: bool = False             # torch.compile the policy for sampling and the update
     bf16: bool = False                # bfloat16 autocast in the PPO update
@@ -452,10 +453,19 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.archive_start_prob:
         from terraria_lite.archive import StartArchive
         archive = StartArchive(cfg.archive_capacity, cfg.archive_start_prob, seed=cfg.seed)
-    envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed,
-                       restart=archive.restart if archive is not None else None,
-                       workers=cfg.sim_workers, native_autoreset=cfg.native_autoreset,
-                       compact=cfg.compact_obs)
+    env_seed = cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed
+    if cfg.sim_backend == "gpu":
+        if archive is not None:
+            raise ValueError("the GPU simulator backend does not support archive restarts")
+        from terraria_lite.gpusim import GpuVec
+        envs = GpuVec(cfg.num_envs, seed=env_seed, device=collect_device, compact=cfg.compact_obs)
+    elif cfg.sim_backend == "cpu":
+        envs = VecTerraria(cfg.num_envs, seed=env_seed,
+                           restart=archive.restart if archive is not None else None,
+                           workers=cfg.sim_workers, native_autoreset=cfg.native_autoreset,
+                           compact=cfg.compact_obs)
+    else:
+        raise ValueError(f"unknown sim_backend {cfg.sim_backend!r}")
     memory = None
     if cfg.memory_features:
         from terraria_lite.memory_features import PolicyFeatures

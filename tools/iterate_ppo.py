@@ -59,6 +59,8 @@ def main():
     p.add_argument("--compile", action="store_true", help="torch.compile the policy (changes rounding)")
     p.add_argument("--bf16", action="store_true", help="bfloat16 autocast in the PPO update (changes rounding)")
     p.add_argument("--fused-adam", action="store_true", help="fused Adam kernel (changes rounding)")
+    p.add_argument("--sim-backend", choices=["cpu", "gpu"], default="cpu",
+                   help="exact: gpu simulates on --collect-device (needs perf/gpusim/libgpusim.so)")
     a = p.parse_args()
     if a.out.exists():
         raise ValueError("Output exists; select a fresh directory")
@@ -91,7 +93,7 @@ def main():
                       novelty_coef=a.novelty, potential_coef=a.potential,
                       memory_features=a.memory_features, aux_coef=a.aux,
                       native_autoreset=a.native_autoreset, compact_obs=a.compact_obs,
-                      compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam)
+                      compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, sim_backend=a.sim_backend)
     elif a.architecture != "mlp":
         raise ValueError("This implementation does not support CNN")
     cfg = config_class(**kwargs)

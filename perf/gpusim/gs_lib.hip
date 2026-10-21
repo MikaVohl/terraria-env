@@ -52,6 +52,25 @@ API int gs_reset_from_pool(void *env, int n, const int *ends, const long long *s
     k_obs_mask_masked<<<nb(n, 64), 64, 0, s>>>((Env *)env, n, ends, (Obs *)obs, (uint8_t *)masks);
     return err();
 }
+/* Before a pool reset: for finished lanes, keep the terminal observation row
+   and the episode info (steps, health, depth, achievement mask; return) that
+   VecTerraria reports for them. */
+__global__ void k_capture(const Env *envs, int n, const int *ends, const Obs *obs, Obs *final_obs,
+                          int *info, float *info_return) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= n || !ends[i]) return;
+    const Env *e = &envs[i];
+    final_obs[i] = obs[i];
+    info[4 * i] = e->steps; info[4 * i + 1] = e->health; info[4 * i + 2] = e->py;
+    info[4 * i + 3] = (int)e->achievements;
+    info_return[i] = e->ep_return;
+}
+API int gs_capture(const void *env, int n, const int *ends, const void *obs, void *final_obs,
+                   int *info, float *info_return, void *stream) {
+    k_capture<<<nb(n, 128), 128, 0, (hipStream_t)stream>>>((const Env *)env, n, ends, (const Obs *)obs,
+                                                        (Obs *)final_obs, info, info_return);
+    return err();
+}
 API int gs_encode(const void *obs, long long n, float *flat, void *stream) {
     k_encode<<<nb(n * GS_FLAT, 256), 256, 0, (hipStream_t)stream>>>((const Obs *)obs, n, flat);
     return err();
