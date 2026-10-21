@@ -1,0 +1,7 @@
+label compile steady_sps collect_s_per_iter learn_s_per_iter   (1024 envs, single run, taskset N cores, sim_workers N, torch threads 1)
+cpus2 False 227342 0.281 0.292
+cpus2 True 284342 0.273 0.185
+cpus4 False 250141 0.237 0.283
+cpus4 True 297939 0.24 0.196
+cpus8 False 252361 0.233 0.284
+cpus8 True 305122 0.229 0.197
