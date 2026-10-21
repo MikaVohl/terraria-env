@@ -14,10 +14,10 @@ seed=${2:-23000001}
 tick=${3:-60}
 best=experiments/eg18/best
 case "$version" in
-  v7) policy=$best/v7_pot_e1024_seed1201_512M.pt
+  v7) policy=$best/v7_pot_e1024_seed1301_2B.pt
       lib=experiments/explore-v7-20261019/build/python/terraria_lite/libterraria.dylib
       viewer=experiments/v7-reward-20261017.sGYPqq/variants/v7/terraria-px ;;
-  v4) policy=$best/v4_pot_e1024_seed1201_416M.pt
+  v4) policy=$best/v4_pot_e1024_seed1301_2B.pt
       lib=python/terraria_lite/libterraria.dylib
       viewer=./terraria-px ;;
   *) echo "usage: $0 [v4|v7] [world-seed] [tick-ms]" >&2; exit 2 ;;
