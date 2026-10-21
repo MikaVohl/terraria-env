@@ -77,6 +77,10 @@ ARMS = {
                              "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
     "pot_e8192_lr2e3_mb128": ["--potential", "3", "--envs", "8192", "--minibatches", "128", "--lr", ".002",
                               "--collect-device", "cuda", "--sim-workers", "24", "--threads", "4"],
+    # Long-run default (1,024 envs, LR 3e-4) on the merged max-speed path (perf/REPORT.md).
+    "pot_e1024_max": ["--potential", "3", "--envs", "1024", "--minibatches", "16", "--collect-device", "cuda",
+                      "--sim-workers", "12", "--threads", "4",
+                      "--native-autoreset", "--compact-obs", "--compile", "--bf16", "--fused-adam"],
 }
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
