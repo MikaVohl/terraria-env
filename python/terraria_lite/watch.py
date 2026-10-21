@@ -187,6 +187,9 @@ def main(argv=None) -> int:
                    help="launch terraria-px on the tape when done")
     p.add_argument("--tick-ms", type=int, default=80, metavar="MS",
                    help="playback speed passed to terraria-px, 10..1000")
+    p.add_argument("--viewer", type=Path, default=None,
+                   help="terraria-px binary to use (e.g. a v7 build when "
+                        "$TERRARIA_LITE_LIB selects the v7 library)")
     a = p.parse_args(argv)
     if a.threads<1 or a.best_of<1:
         p.error("--threads and --best-of must be positive")
@@ -234,7 +237,7 @@ def main(argv=None) -> int:
         print(f"watch it with:  ./terraria-px --watch {a.out}")
         return 0
 
-    exe = _viewer()
+    exe = a.viewer.resolve() if a.viewer else _viewer()
     if exe is None:
         print("terraria-px is not built. Run `make terraria-px` (needs SDL2).",
               file=sys.stderr)
