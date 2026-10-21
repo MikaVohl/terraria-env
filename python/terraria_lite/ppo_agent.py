@@ -95,6 +95,10 @@ class Config:
     # Exact (identical rollouts and updates):
     native_autoreset: bool = False    # reset finished lanes in C, not a Python loop
     compact_obs: bool = False         # move/store raw uint8 obs rows, one-hot on the learner device
+    # Change floating-point rounding (see perf/REPORT.md for learning checks):
+    compile: bool = False             # torch.compile the policy for sampling and the update
+    bf16: bool = False                # bfloat16 autocast in the PPO update
+    fused_adam: bool = False          # single fused Adam kernel
 
     @property
     def batch(self) -> int:
@@ -388,6 +392,17 @@ def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device, e
     rewards[t, torch.as_tensor(cut, device=device)] += cfg.gamma * v
 
 
+def _score_bf16(agent, x, action, mask):
+    """agent.act's update-time outputs with the network under bfloat16
+    autocast; the masked distribution, log-probs and values stay float32."""
+    with torch.autocast(device_type=x.device.type, dtype=torch.bfloat16):
+        h = agent.trunk(x)
+        logits, value = agent.actor(h), agent.critic(h)
+    logits = logits.float().masked_fill(~mask, float("-inf"))
+    dist = Categorical(logits=logits)
+    return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
+
+
 def compute_gae(rewards, dones, values, next_value, next_done,
                 gamma: float, gae_lambda: float):
     """Generalized advantages for a (T,N) rollout.
@@ -460,10 +475,15 @@ def train(cfg: Config, checkpoint_callback=None):
         from terraria_lite.predictive_aux import PredictiveAux
         aux = PredictiveAux(agent.actor.in_features).to(device)
     opt = torch.optim.Adam(list(agent.parameters()) + (list(aux.parameters()) if aux is not None else []),
-                           lr=cfg.lr, eps=1e-5)
+                           lr=cfg.lr, eps=1e-5, **({"fused": True} if cfg.fused_adam else {}))
     # Rollout policy: the learner itself, or a copy re-synchronised after every
     # update, so collection always samples from the current parameters.
     actor = agent if collect_device == device else copy.deepcopy(agent).to(collect_device)
+    if cfg.compile:
+        # In place, so state_dict keys (checkpoints, evaluation) are unchanged.
+        for model in {id(agent): agent, id(actor): actor}.values():
+            model.trunk.compile(dynamic=False)
+            model.actor.compile(dynamic=False)
     # Compact observations: uint8 rows on the host, in transfer and in the
     # rollout buffer; `expand` rebuilds the exact float32 policy input.
     expand_collect = expand_learn = None
@@ -649,7 +669,10 @@ def train(cfg: Config, checkpoint_callback=None):
             for s in range(0, cfg.batch, cfg.minibatch):
                 mb = perm[s: s + cfg.minibatch]
                 x_mb = expand_learn(b_obs[mb]) if cfg.compact_obs else b_obs[mb]
-                _, newlogp, entropy, newval = agent.act(x_mb, b_act[mb], mask=b_msk[mb])
+                if cfg.bf16:
+                    newlogp, entropy, newval = _score_bf16(agent, x_mb, b_act[mb], b_msk[mb])
+                else:
+                    _, newlogp, entropy, newval = agent.act(x_mb, b_act[mb], mask=b_msk[mb])
                 logratio = newlogp - b_logp[mb]
                 ratio = logratio.exp()
 
