@@ -186,33 +186,37 @@ typedef struct {
  Env **envs; int n,workers; const int *actions; Obs *obs; float *flat;
  uint8_t *masks; float *rewards; int *ends;
 } BatchCall;
+#define FLAT_STRIDE (VIEW_CELLS*OBS_TILE_KINDS+VIEW_CELLS+OBS_STATUS)
+static void encode_flat(const Obs *o,float *out) {
+ const int terrain=VIEW_CELLS*OBS_TILE_KINDS;
+ memset(out,0,(size_t)terrain*sizeof(float));
+ for(int k=0;k<VIEW_CELLS;k++) {
+  out[k*OBS_TILE_KINDS+o->tile[k]]=1.f;
+  /* Double intermediate matches NumPy's uint8 / Python-float encoding. */
+  out[terrain+k]=(float)((double)o->light[k]/15.);
+ }
+ memcpy(out+terrain+VIEW_CELLS,o->status,sizeof o->status);
+}
 static void batch_lane(void *context,size_t worker) {
  BatchCall *b=context;
  for(int i=(int)worker;i<b->n;i+=b->workers) {
   Env *e=b->envs[i]; env_step(e,b->actions[i]);
   Obs local; Obs *o=b->obs?&b->obs[i]:&local; env_obs(e,o);
-  if(b->flat) {
-   const int terrain=VIEW_CELLS*OBS_TILE_KINDS,stride=terrain+VIEW_CELLS+OBS_STATUS;
-   float *out=b->flat+i*stride;
-   memset(out,0,(size_t)terrain*sizeof(float));
-   for(int k=0;k<VIEW_CELLS;k++) {
-    out[k*OBS_TILE_KINDS+o->tile[k]]=1.f;
-    /* Double intermediate matches NumPy's uint8 / Python-float encoding. */
-    out[terrain+k]=(float)((double)o->light[k]/15.);
-   }
-   memcpy(out+terrain+VIEW_CELLS,o->status,sizeof o->status);
-  }
-  env_action_mask(e,b->masks+i*ACT_COUNT); b->rewards[i]=e->reward;
+  if(b->flat) encode_flat(o,b->flat+(size_t)i*FLAT_STRIDE);
+  env_action_mask(e,b->masks+(size_t)i*ACT_COUNT); b->rewards[i]=e->reward;
   b->ends[i]=e->terminated?1:e->truncated?2:0;
  }
 }
 
-/* Run batch_lane(b, w) for every worker w. Lanes are independent and fixed per
-   worker, so results never depend on thread count or scheduling. */
+/* Run fn(ctx, w) for every worker w in [0, *workers). *workers is the lane
+   stride the context uses; it is lowered before dispatch if the pool cannot
+   provide that many threads. Lanes are independent and fixed per worker, so
+   results never depend on thread count or scheduling. */
+typedef void (*WorkerFn)(void*,size_t);
 #if defined(__APPLE__)
-static void run_batch(BatchCall *b) {
- if(b->workers>1) { dispatch_apply_f((size_t)b->workers,dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),b,batch_lane); return; }
- batch_lane(b,0);
+static void run_workers(WorkerFn fn,void *ctx,int *workers) {
+ if(*workers>1) { dispatch_apply_f((size_t)*workers,dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),ctx,fn); return; }
+ fn(ctx,0);
 }
 #elif defined(__unix__)
 /* Persistent pool, created lazily and grown on demand: spawning threads per
@@ -228,41 +232,44 @@ static void run_batch(BatchCall *b) {
 static pthread_mutex_t pool_call_mu=PTHREAD_MUTEX_INITIALIZER;
 static sem_t pool_wake[POOL_MAX+1],pool_done;
 static int pool_threads=-1;                /* -1: pool_done not initialised */
-static BatchCall *pool_call;
+static WorkerFn pool_fn;
+static void *pool_ctx;
 static atomic_int pool_pending;
 static void *pool_main(void *arg) {
  size_t id=(size_t)arg;
  for(;;) {
   while(sem_wait(&pool_wake[id])) {}          /* retry on EINTR */
-  batch_lane(pool_call,id);
+  pool_fn(pool_ctx,id);
   if(atomic_fetch_sub(&pool_pending,1)==1) sem_post(&pool_done);
  }
  return NULL;
 }
-static void run_batch(BatchCall *b) {
- if(b->workers>POOL_MAX+1) b->workers=POOL_MAX+1;
- if(b->workers<2) { batch_lane(b,0); return; }
+static void run_workers(WorkerFn fn,void *ctx,int *workers) {
+ if(*workers>POOL_MAX+1) *workers=POOL_MAX+1;
+ if(*workers<2) { fn(ctx,0); return; }
  pthread_mutex_lock(&pool_call_mu);
  if(pool_threads<0) { sem_init(&pool_done,0,0); pool_threads=0; }
- while(pool_threads<b->workers-1) {
+ while(pool_threads<*workers-1) {
   pthread_t t; size_t id=(size_t)pool_threads+1;
   sem_init(&pool_wake[id],0,0);
   if(pthread_create(&t,NULL,pool_main,(void*)id)) { sem_destroy(&pool_wake[id]); break; }
   pthread_detach(t); pool_threads++;
  }
- if(b->workers>pool_threads+1) b->workers=pool_threads+1;  /* creation failed: fewer workers */
- if(b->workers>1) {
+ if(*workers>pool_threads+1) *workers=pool_threads+1;  /* creation failed: fewer workers */
+ int w=*workers;
+ if(w>1) {
   /* sem_post/sem_wait order these writes before the workers read them. */
-  pool_call=b; atomic_store(&pool_pending,b->workers-1);
-  for(int k=1;k<b->workers;k++) sem_post(&pool_wake[k]);
+  pool_fn=fn; pool_ctx=ctx; atomic_store(&pool_pending,w-1);
+  for(int k=1;k<w;k++) sem_post(&pool_wake[k]);
  }
- batch_lane(b,0);
- if(b->workers>1) while(sem_wait(&pool_done)) {}
+ fn(ctx,0);
+ if(w>1) while(sem_wait(&pool_done)) {}
  pthread_mutex_unlock(&pool_call_mu);
 }
 #else
-static void run_batch(BatchCall *b) { for(int i=0;i<b->workers;i++) batch_lane(b,(size_t)i); }
+static void run_workers(WorkerFn fn,void *ctx,int *workers) { for(int i=0;i<*workers;i++) fn(ctx,(size_t)i); }
 #endif
+static void run_batch(BatchCall *b) { run_workers(batch_lane,b,&b->workers); }
 
 TL_API int tl_obs_bytes(void) { return sizeof(Obs); }
 TL_API void tl_batch_step(Env **envs,int n,const int *actions,Obs *obs,
@@ -282,4 +289,53 @@ TL_API void tl_batch_step_flat(Env **envs,int n,const int *actions,float *obs,
  if(workers>n) workers=n;
  BatchCall b={envs,n,workers,actions,NULL,obs,masks,rewards,ends};
  run_batch(&b);
+}
+
+/* ---- native autoreset ---------------------------------------------------
+   The Python VecTerraria contract, without a Python loop over finished lanes:
+   step every lane (as above), then, for each lane whose episode ended (lane
+   order), copy its terminal observation into final_obs, record its episode
+   info, and reset it with the next consecutive seed (next_seed + k for the
+   k-th finished lane), writing the fresh observation and mask in place.
+   Rows of final_obs for lanes that did not finish are left untouched.
+   obs/final_obs are float32 flat rows (flat=1) or raw Obs rows (flat=0).
+   info rows hold (steps, health, depth, achievement mask) as int32 and
+   info_return the episode return. Returns the number of lanes reset. */
+typedef struct {
+ Env **envs; const int *lanes; int count,workers,flat; unsigned long long next_seed;
+ void *obs,*final_obs; uint8_t *masks; int *info; float *info_return;
+} ResetCall;
+static void reset_lane(void *context,size_t worker) {
+ ResetCall *r=context;
+ const size_t row=r->flat?FLAT_STRIDE*sizeof(float):sizeof(Obs);
+ for(int k=(int)worker;k<r->count;k+=r->workers) {
+  int i=r->lanes[k]; Env *e=r->envs[i];
+  unsigned char *o=(unsigned char*)r->obs+(size_t)i*row;
+  memcpy((unsigned char*)r->final_obs+(size_t)i*row,o,row);
+  int *inf=r->info+(size_t)i*4;
+  inf[0]=e->steps; inf[1]=e->health; inf[2]=e->py; inf[3]=(int)e->achievements;
+  r->info_return[i]=e->ep_return;
+  env_reset(e,(uint64_t)(r->next_seed+(unsigned long long)k));
+  if(r->flat) { Obs tmp; env_obs(e,&tmp); encode_flat(&tmp,(float*)o); }
+  else env_obs(e,(Obs*)o);
+  env_action_mask(e,r->masks+(size_t)i*ACT_COUNT);
+ }
+}
+TL_API int tl_batch_step_autoreset(Env **envs,int n,const int *actions,void *obs,int flat,
+                                   uint8_t *masks,float *rewards,int *ends,void *final_obs,
+                                   int *info,float *info_return,int *lanes,
+                                   unsigned long long next_seed,int workers) {
+ if(n<=0 || !envs || !actions || !obs || !masks || !rewards || !ends || !final_obs
+    || !info || !info_return || !lanes) return -1;
+ if(workers<1) workers=1;
+ if(workers>n) workers=n;
+ BatchCall b={envs,n,workers,actions,flat?NULL:(Obs*)obs,flat?(float*)obs:NULL,masks,rewards,ends};
+ run_batch(&b);
+ int count=0;
+ for(int i=0;i<n;i++) if(ends[i]) lanes[count++]=i;
+ if(count) {
+  ResetCall r={envs,lanes,count,workers<count?workers:count,flat,next_seed,obs,final_obs,masks,info,info_return};
+  run_workers(reset_lane,&r,&r.workers);
+ }
+ return count;
 }

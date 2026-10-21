@@ -1,0 +1,1 @@
+OK: 1024 envs x 6000 steps, 9837 episode resets; native/compact/native+compact identical to the Python loop (obs, mask, reward, ends, final_obs, infos, seeds); torch expansion on cuda bit-identical

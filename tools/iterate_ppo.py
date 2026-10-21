@@ -53,6 +53,9 @@ def main():
     p.add_argument("--potential", type=float, default=0.0)
     p.add_argument("--memory-features", default="", help='policy feature sets, e.g. "stations_v1+craftable_v1"')
     p.add_argument("--aux", type=float, default=0.0, help="predictive inventory/unlock auxiliary loss weight")
+    # Performance options (perf/REPORT.md); exact ones leave results unchanged.
+    p.add_argument("--native-autoreset", action="store_true", help="exact: reset finished lanes in C")
+    p.add_argument("--compact-obs", action="store_true", help="exact: uint8 obs rows, one-hot on the GPU")
     a = p.parse_args()
     if a.out.exists():
         raise ValueError("Output exists; select a fresh directory")
@@ -83,7 +86,8 @@ def main():
                       archive_start_prob=a.archive_start_prob, archive_capacity=a.archive_capacity,
                       sil_minibatches=a.sil_minibatches, sil_value_coef=a.sil_value_coef,
                       novelty_coef=a.novelty, potential_coef=a.potential,
-                      memory_features=a.memory_features, aux_coef=a.aux)
+                      memory_features=a.memory_features, aux_coef=a.aux,
+                      native_autoreset=a.native_autoreset, compact_obs=a.compact_obs)
     elif a.architecture != "mlp":
         raise ValueError("This implementation does not support CNN")
     cfg = config_class(**kwargs)

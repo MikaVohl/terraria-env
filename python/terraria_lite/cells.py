@@ -11,12 +11,10 @@ from __future__ import annotations
 import numpy as np
 
 from terraria_lite import SPEC
+from terraria_lite.compact import fields, is_compact
 
 _TILES_END = SPEC.cells * SPEC.tile_kinds
 _STATUS0 = _TILES_END + SPEC.cells
-_INV0 = _STATUS0 + SPEC.status_inv0
-_ACH0 = _STATUS0 + SPEC.status_ach0
-_DEPTH = _STATUS0 + SPEC.status_depth
 STATION_TILES = tuple(SPEC.tile_names.index(n) for n in ("workbench", "furnace", "anvil"))
 # Generic count bins: 0 | 1-3 | 4-9 | 10-19 | 20+.
 BIN_EDGES = np.array([1, 4, 10, 20])
@@ -24,26 +22,36 @@ N_BINS = len(BIN_EDGES) + 1
 DEPTH_BANDS = 4
 
 
+def _status(obs: np.ndarray) -> np.ndarray:
+    """Status vector of flat float32 or compact uint8 observations (see compact)."""
+    if is_compact(obs):
+        return fields(obs)[2]
+    return obs[..., _STATUS0:]
+
+
 def inventory(obs: np.ndarray) -> np.ndarray:
     """Exact item counts (N, n_items); the C side encodes sqrt(count / clip)."""
-    enc = obs[..., _INV0:_INV0 + SPEC.n_items].astype(np.float64)
+    enc = _status(obs)[..., SPEC.status_inv0:SPEC.status_inv0 + SPEC.n_items].astype(np.float64)
     return np.rint(enc * enc * SPEC.inventory_clip).astype(np.int64)
 
 
 def achievements(obs: np.ndarray) -> np.ndarray:
     """Achievement bitmask (N,) as int64."""
-    bits = obs[..., _ACH0:_ACH0 + SPEC.n_achievements] > 0.5
+    bits = _status(obs)[..., SPEC.status_ach0:SPEC.status_ach0 + SPEC.n_achievements] > 0.5
     return (bits.astype(np.int64) << np.arange(SPEC.n_achievements, dtype=np.int64)).sum(-1)
 
 
 def stations_visible(obs: np.ndarray) -> np.ndarray:
     """(N, 3) bool: workbench / furnace / anvil tile anywhere in the view."""
+    if is_compact(obs):
+        tiles = obs[..., :SPEC.cells]
+        return np.stack([(tiles == t).any(-1) for t in STATION_TILES], -1)
     tiles = obs[..., :_TILES_END].reshape(*obs.shape[:-1], SPEC.cells, SPEC.tile_kinds)
     return np.stack([(tiles[..., t] > 0.5).any(-1) for t in STATION_TILES], -1)
 
 
 def depth_band(obs: np.ndarray) -> np.ndarray:
-    return np.minimum((obs[..., _DEPTH] * DEPTH_BANDS).astype(np.int64), DEPTH_BANDS - 1)
+    return np.minimum((_status(obs)[..., SPEC.status_depth] * DEPTH_BANDS).astype(np.int64), DEPTH_BANDS - 1)
 
 
 def cell_parts(obs: np.ndarray) -> dict[str, np.ndarray]:
