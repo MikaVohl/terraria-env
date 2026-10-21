@@ -57,7 +57,8 @@ LAYOUTS = {
     "cpu": ["--device", "cpu", "--collect-threads", "1", "--threads", "3"],
     "mps": ["--device", "mps", "--collect-device", "cpu", "--evaluation-device", "cpu", "--threads", "1"],
     # ROCm/CUDA learner, CPU rollouts; each run pinned to one GPU via --gpus.
-    "gpu": ["--device", "cuda", "--collect-device", "cpu", "--evaluation-device", "cpu", "--threads", "1"],
+    "gpu": ["--device", "cuda", "--collect-device", "cpu", "--evaluation-device", "cpu", "--threads", "1",
+            "--sim-workers", "1"],
 }
 PACKAGE = ["--architecture", "targets", "--gamma", ".999", "--gae-lambda", ".99", "--entropy", ".03",
            "--envs", "64", "--rollout", "128",
