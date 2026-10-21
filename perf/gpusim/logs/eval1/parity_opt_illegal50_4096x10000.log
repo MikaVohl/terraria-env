@@ -1,0 +1,12 @@
+cpu lib /home/mvohl/Projects/RL/python/terraria_lite/libterraria.so: env v4, state 38712 B, obs 2144 B | hip: state 38712 B, obs 2144 B
+step 1000: compared 7622656 lane-steps, episodes reset 13623, bad obs 0 mask 0 rew 0 end 0 state 0/8192 (6s)
+step 2000: compared 15814656 lane-steps, episodes reset 26387, bad obs 0 mask 0 rew 0 end 0 state 0/12288 (12s)
+step 3000: compared 24006656 lane-steps, episodes reset 37833, bad obs 0 mask 0 rew 0 end 0 state 0/16384 (17s)
+step 4000: compared 32198656 lane-steps, episodes reset 49433, bad obs 0 mask 0 rew 0 end 0 state 0/20480 (23s)
+step 5000: compared 40390656 lane-steps, episodes reset 61345, bad obs 0 mask 0 rew 0 end 0 state 0/24576 (28s)
+step 6000: compared 48582656 lane-steps, episodes reset 73136, bad obs 0 mask 0 rew 0 end 0 state 0/28672 (34s)
+step 7000: compared 56774656 lane-steps, episodes reset 84949, bad obs 0 mask 0 rew 0 end 0 state 0/32768 (39s)
+step 8000: compared 64966656 lane-steps, episodes reset 96958, bad obs 0 mask 0 rew 0 end 0 state 0/36864 (45s)
+step 9000: compared 73158656 lane-steps, episodes reset 108838, bad obs 0 mask 0 rew 0 end 0 state 0/40960 (50s)
+step 10000: compared 81350656 lane-steps, episodes reset 120659, bad obs 0 mask 0 rew 0 end 0 state 0/45056 (56s)
+PARITY OK: n=4096 steps=10000 illegal_pct=50 reset=cpu-blob lane_steps=40960000 episodes_reset=120659 obs_bad=0 mask_bad=0 rew_bad=0 end_bad=0 state_bad=0/49152
