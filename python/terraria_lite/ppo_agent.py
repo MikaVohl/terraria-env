@@ -89,6 +89,7 @@ class Config:
     sil_value_coef: float = 0.01
     novelty_coef: float = 0.0         # count-based progress-cell novelty
     potential_coef: float = 0.0       # potential-based recipe shaping (prior knowledge)
+    potential_mode: str = "mean"      # "frontier": average only over not-yet-earned recipes
     memory_features: str = ""         # "stations_v1": observed station memory inputs
     aux_coef: float = 0.0             # predictive inventory/unlock auxiliary loss
     # Performance options, all off by default (default training is unchanged).
@@ -536,7 +537,7 @@ def train(cfg: Config, checkpoint_callback=None):
         novelty = CellNovelty(o0)
     if cfg.potential_coef:
         from terraria_lite.potential import RecipePotential
-        potential = RecipePotential(o0, cfg.gamma, cfg.potential_coef)
+        potential = RecipePotential(o0, cfg.gamma, cfg.potential_coef, cfg.potential_mode)
     if cfg.sil_minibatches:
         from terraria_lite.self_imitation import SelfImitation
         sil = SelfImitation(N, cfg.gamma, device=device, value_coef=cfg.sil_value_coef, seed=cfg.seed)

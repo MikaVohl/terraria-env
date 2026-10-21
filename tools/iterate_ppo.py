@@ -51,6 +51,8 @@ def main():
     p.add_argument("--sil-value-coef", type=float, default=0.01)
     p.add_argument("--novelty", type=float, default=0.0)
     p.add_argument("--potential", type=float, default=0.0)
+    p.add_argument("--potential-mode", choices=["mean", "frontier"], default="mean",
+                   help="frontier: shaping averages only over recipes whose achievement is not yet earned")
     p.add_argument("--memory-features", default="", help='policy feature sets, e.g. "stations_v1+craftable_v1"')
     p.add_argument("--aux", type=float, default=0.0, help="predictive inventory/unlock auxiliary loss weight")
     # Performance options (perf/REPORT.md); exact ones leave results unchanged.
@@ -90,7 +92,7 @@ def main():
         kwargs.update(collect_device=a.collect_device, collect_threads=a.collect_threads, sim_workers=a.sim_workers,
                       archive_start_prob=a.archive_start_prob, archive_capacity=a.archive_capacity,
                       sil_minibatches=a.sil_minibatches, sil_value_coef=a.sil_value_coef,
-                      novelty_coef=a.novelty, potential_coef=a.potential,
+                      novelty_coef=a.novelty, potential_coef=a.potential, potential_mode=a.potential_mode,
                       memory_features=a.memory_features, aux_coef=a.aux,
                       native_autoreset=a.native_autoreset, compact_obs=a.compact_obs,
                       compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, sim_backend=a.sim_backend)

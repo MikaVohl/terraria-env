@@ -10,22 +10,44 @@ so the optimal policy of the original objective is unchanged. It is a disclosed
 prior-knowledge control, not a neutral learner improvement.
 
 Training-only: simulator rewards and evaluations stay extrinsic.
+
+mode="frontier" averages only over recipes whose achievement is not yet
+earned in the episode (read from the observed achievement bits). The plain
+mean dilutes each recipe's pull by the 19-recipe average, so late, large
+recipes (30-wood breastplate, 25-bar chainmail, pickaxes) contribute almost
+nothing; the frontier keeps the pull on what is still unearned. Phi is still a
+function of the state alone, so the shaping remains potential-based.
 """
 from __future__ import annotations
 
 import numpy as np
 
 from terraria_lite import SPEC
-from terraria_lite.cells import inventory, stations_visible, STATION_TILES
+from terraria_lite.cells import achievements, inventory, stations_visible, STATION_TILES
 from terraria_lite.rules import player_knowledge
 
 _STATION_INDEX = {SPEC.tile_names[t]: i for i, t in enumerate(STATION_TILES)}
+# Recipe -> achievement it unlocks (None: no achievement), by the game's names.
+_RECIPE_ACH = {"workbench": "craft workbench", "furnace": "craft furnace", "torch x3": None,
+               "campfire": None, "platform x2": None, "copper bar": "smelt copper", "iron bar": "smelt iron",
+               "silver bar": "smelt silver", "gold bar": "smelt gold", "anvil": "craft anvil",
+               "iron pickaxe": "craft iron pickaxe", "gold pickaxe": "craft gold pickaxe",
+               "wooden sword": "craft wooden sword", "copper sword": "craft metal sword",
+               "iron sword": "craft metal sword", "silver sword": "craft metal sword",
+               "gold sword": "craft metal sword", "wood breastplate": "craft wood breastplate",
+               "iron chainmail": "craft iron chainmail"}
 
 
 class RecipePotential:
-    def __init__(self, initial_obs: np.ndarray, gamma: float, coef: float = 1.0):
+    def __init__(self, initial_obs: np.ndarray, gamma: float, coef: float = 1.0, mode: str = "mean"):
+        if mode not in ("mean", "frontier"):
+            raise ValueError(f"unknown potential mode {mode!r}")
         recipes = player_knowledge()["recipes"]
-        self.gamma, self.coef = gamma, coef
+        self.gamma, self.coef, self.mode = gamma, coef, mode
+        if mode == "frontier":
+            # Every recipe name must be mapped, so a renamed recipe fails loudly.
+            self.ach = np.array([-1 if _RECIPE_ACH[r["name"]] is None
+                                 else SPEC.achievement_names.index(_RECIPE_ACH[r["name"]]) for r in recipes])
         self.need = np.zeros((len(recipes), SPEC.n_items), dtype=np.float64)
         self.terms = np.zeros(len(recipes))
         self.station = np.full(len(recipes), -1)
@@ -45,23 +67,28 @@ class RecipePotential:
         self._key = self._val = None
         self.previous = self.phi(initial_obs)
 
-    def _phi_rows(self, inv: np.ndarray, vis: np.ndarray) -> np.ndarray:
+    def _phi_rows(self, inv: np.ndarray, vis: np.ndarray, ach=None) -> np.ndarray:
         held = np.where(self.need > 0, np.minimum(inv[:, None, :] / np.maximum(self.need, 1), 1.0), 0.0).sum(-1)
         has_station = self.station >= 0
         held[:, has_station] += vis[:, self.station[has_station]]
-        return self.coef * (held / self.terms).mean(-1)
+        if self.mode == "mean":
+            return self.coef * (held / self.terms).mean(-1)
+        open_ = (self.ach >= 0) & ((ach[:, None] >> np.maximum(self.ach, 0)) & 1 == 0)
+        n = open_.sum(-1)
+        return self.coef * np.where(n > 0, ((held / self.terms) * open_).sum(-1) / np.maximum(n, 1), 0.0)
 
     def _inputs(self, obs: np.ndarray):
-        return inventory(obs).astype(np.float64), stations_visible(obs)
+        inputs = (inventory(obs).astype(np.float64), stations_visible(obs))
+        return inputs + ((achievements(obs),) if self.mode == "frontier" else ())
 
-    def _phi_from(self, inv: np.ndarray, vis: np.ndarray) -> np.ndarray:
-        key = np.concatenate((inv[:, self._items], vis), 1)
+    def _phi_from(self, inv: np.ndarray, vis: np.ndarray, ach=None) -> np.ndarray:
+        key = np.concatenate((inv[:, self._items], vis) + ((ach[:, None],) if ach is not None else ()), 1)
         if self._key is None or len(self._key) != len(key):
-            self._key, self._val = key, self._phi_rows(inv, vis)
+            self._key, self._val = key, self._phi_rows(inv, vis, ach)
             return self._val.copy()
         stale = np.flatnonzero((key != self._key).any(1))
         if len(stale):
-            self._val[stale] = self._phi_rows(inv[stale], vis[stale])
+            self._val[stale] = self._phi_rows(inv[stale], vis[stale], None if ach is None else ach[stale])
             self._key[stale] = key[stale]
         return self._val.copy()
 
@@ -71,14 +98,15 @@ class RecipePotential:
     def step(self, next_obs: np.ndarray, final_obs: np.ndarray, ended: np.ndarray) -> np.ndarray:
         """phi of each lane's reached state (the terminal observation where the
         episode ended), without materialising the mixed observation batch."""
-        inv, vis = self._inputs(next_obs)
+        inputs = self._inputs(next_obs)
         if ended.any():
-            reached_inv, reached_vis = inv.copy(), vis.copy()
-            reached_inv[ended], reached_vis[ended] = self._inputs(final_obs[ended])
-            reached = self._phi_from(reached_inv, reached_vis)
+            reached_inputs = tuple(x.copy() for x in inputs)
+            for x, f in zip(reached_inputs, self._inputs(final_obs[ended])):
+                x[ended] = f
+            reached = self._phi_from(*reached_inputs)
         else:
-            reached = self._phi_from(inv, vis)
+            reached = self._phi_from(*inputs)
         reached[ended] = 0.0
         shaping = self.gamma * reached - self.previous
-        self.previous = self._phi_from(inv, vis) if ended.any() else reached
+        self.previous = self._phi_from(*inputs) if ended.any() else reached
         return shaping.astype(np.float32)

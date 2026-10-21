@@ -86,7 +86,10 @@ ARMS = {
 # Later flags override pot_e1024_max's (argparse keeps the last value).
 for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall_ent05": ["--entropy", ".05"],
                       "wall_nov01": ["--novelty", ".01"],
-                      "wall_pot10_nov01": ["--potential", "10", "--novelty", ".01"]}.items():
+                      "wall_pot10_nov01": ["--potential", "10", "--novelty", ".01"],
+                      # Shaping pull only toward not-yet-earned recipes (potential.py mode="frontier").
+                      "wall_frontier": ["--potential-mode", "frontier"],
+                      "wall_frontier_nov01": ["--potential-mode", "frontier", "--novelty", ".01"]}.items():
     ARMS[_name] = ARMS["pot_e1024_max"] + _extra
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
