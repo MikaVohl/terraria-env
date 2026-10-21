@@ -35,6 +35,18 @@ ARMS = {
     "potential_hi": ["--potential", "10"],
     "craft_potential": ["--memory-features", "craftable_v1", "--potential", "3"],
     "craft_mem_potential": ["--memory-features", "stations_v1+craftable_v1", "--potential", "3"],
+    # eg18 batch-scale study (gpu layout): same objective, larger env batches on
+    # the GPU. Later flags override the 64-env package defaults.
+    "pot_e1024": ["--potential", "3", "--envs", "1024", "--minibatches", "16", "--collect-device", "cuda",
+                  "--sim-workers", "12", "--threads", "4"],
+    "pot_e4096": ["--potential", "3", "--envs", "4096", "--minibatches", "16", "--collect-device", "cuda",
+                  "--sim-workers", "16", "--threads", "4"],
+    "pot_e4096_r32": ["--potential", "3", "--envs", "4096", "--rollout", "32", "--minibatches", "4",
+                      "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    "pot_e4096_lr1e3": ["--potential", "3", "--envs", "4096", "--minibatches", "16", "--lr", ".001",
+                        "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    "ctl_e4096": ["--envs", "4096", "--minibatches", "16", "--collect-device", "cuda",
+                  "--sim-workers", "16", "--threads", "4"],
 }
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
@@ -44,6 +56,8 @@ ARMS = {
 LAYOUTS = {
     "cpu": ["--device", "cpu", "--collect-threads", "1", "--threads", "3"],
     "mps": ["--device", "mps", "--collect-device", "cpu", "--evaluation-device", "cpu", "--threads", "1"],
+    # ROCm/CUDA learner, CPU rollouts; each run pinned to one GPU via --gpus.
+    "gpu": ["--device", "cuda", "--collect-device", "cpu", "--evaluation-device", "cpu", "--threads", "1"],
 }
 PACKAGE = ["--architecture", "targets", "--gamma", ".999", "--gae-lambda", ".99", "--entropy", ".03",
            "--envs", "64", "--rollout", "128",
@@ -60,6 +74,7 @@ def main():
     p.add_argument("--interval", type=int, default=4_194_304)
     p.add_argument("--workers", type=int, default=6)
     p.add_argument("--layout", choices=list(LAYOUTS), default="cpu")
+    p.add_argument("--gpus", nargs="+", default=[], help="device ids; each run goes to the least-loaded one")
     a = p.parse_args()
     (a.out / "runs").mkdir(parents=True, exist_ok=True)
     (a.out / "logs").mkdir(exist_ok=True)
@@ -72,7 +87,8 @@ def main():
         "package": PACKAGE, "seed_layouts": layouts,
         "seeds": a.seeds, "steps": a.steps, "interval": a.interval, "workers": a.workers,
         "validation_worlds": [23000001, 23000128], "reserved_test_worlds_unused": [25000001, 25000128],
-        "environment": f"v{SPEC.version} ({os.environ.get('TERRARIA_LITE_LIB') or 'package library'}), unchanged mechanics"},
+        "environment": f"v{SPEC.version} ({os.environ.get('TERRARIA_LITE_LIB') or 'package library'}), unchanged mechanics",
+        "gpus": a.gpus},
         indent=2) + "\n")
     running = {}
     while jobs or running:
@@ -84,10 +100,16 @@ def main():
                 out.rename(out.with_name(f"{name}.interrupted-{int(time.time())}"))
             cmd = [sys.executable, str(ROOT / "tools/iterate_ppo.py"), "--out", str(out), "--seed", str(seed),
                    "--steps", str(a.steps), "--interval", str(a.interval), *PACKAGE, *LAYOUTS[a.layout], *ARMS[arm]]
+            env = dict(os.environ)
+            gpu = None
+            if a.gpus:
+                load = {g: sum(r[2] == g for r in running.values()) for g in a.gpus}
+                gpu = min(a.gpus, key=lambda g: (load[g], a.gpus.index(g)))
+                env["HIP_VISIBLE_DEVICES"] = gpu   # ROCm; also setting CUDA_VISIBLE_DEVICES would filter twice
             log = (a.out / "logs" / f"{name}.log").open("w")
-            running[name] = (subprocess.Popen(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT), log)
-            print("started", name, flush=True)
-        for name, (proc, log) in list(running.items()):
+            running[name] = (subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT), log, gpu)
+            print("started", name, f"gpu={gpu}" if gpu is not None else "", flush=True)
+        for name, (proc, log, _) in list(running.items()):
             if proc.poll() is not None:
                 log.close()
                 del running[name]
