@@ -24,6 +24,7 @@ def main():
     p.add_argument("--threads", type=int, default=6)
     p.add_argument("--architecture", choices=["mlp", "cnn", "tokens", "separate","targets","lstm","lstm_targets"], default="mlp")
     p.add_argument("--minibatches", type=int, default=4)
+    p.add_argument("--epochs", type=int, default=4)
     p.add_argument("--encoder", type=int, default=128)
     p.add_argument("--hidden", type=int, default=128)
     p.add_argument("--bootstrap-time-limit", action="store_true")
@@ -69,7 +70,7 @@ def main():
                   seed=a.seed, quiet=True, save="", gamma=a.gamma,
                   gae_lambda=a.gae_lambda, ent_coef=a.entropy, lr=a.lr,
                   anneal_lr=not a.constant_lr, device=a.device,
-                  minibatches=a.minibatches,bootstrap_time_limit=a.bootstrap_time_limit)
+                  minibatches=a.minibatches,epochs=a.epochs,bootstrap_time_limit=a.bootstrap_time_limit)
     if recurrent:
         kwargs.update(architecture=a.architecture,encoder=a.encoder,hidden=a.hidden)
     elif "architecture" in config_class.__dataclass_fields__:

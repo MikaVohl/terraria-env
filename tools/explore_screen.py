@@ -49,6 +49,27 @@ ARMS = {
                   "--sim-workers", "16", "--threads", "4"],
     "ctl_e1024": ["--envs", "1024", "--minibatches", "16", "--collect-device", "cuda",
                   "--sim-workers", "12", "--threads", "4"],
+    # Batch x learning-rate x update-count study (potential, v4). Minibatch size
+    # is held at 8,192 unless stated, so arms differ in envs/LR/gradient steps.
+    "pot_e256": ["--potential", "3", "--envs", "256", "--minibatches", "4", "--collect-device", "cuda",
+                 "--sim-workers", "4", "--threads", "2"],
+    "pot_e1024_lr1e4": ["--potential", "3", "--envs", "1024", "--minibatches", "16", "--lr", ".0001",
+                        "--collect-device", "cuda", "--sim-workers", "12", "--threads", "4"],
+    "pot_e1024_lr6e4": ["--potential", "3", "--envs", "1024", "--minibatches", "16", "--lr", ".0006",
+                        "--collect-device", "cuda", "--sim-workers", "12", "--threads", "4"],
+    "pot_e1024_lr1e3": ["--potential", "3", "--envs", "1024", "--minibatches", "16", "--lr", ".001",
+                        "--collect-device", "cuda", "--sim-workers", "12", "--threads", "4"],
+    "pot_e2048": ["--potential", "3", "--envs", "2048", "--minibatches", "32", "--collect-device", "cuda",
+                  "--sim-workers", "16", "--threads", "4"],
+    "pot_e2048_lr6e4": ["--potential", "3", "--envs", "2048", "--minibatches", "32", "--lr", ".0006",
+                        "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    # 4,096 envs with the 1,024-env minibatch size (8,192): 4x the gradient steps of pot_e4096.
+    "pot_e4096_mb64": ["--potential", "3", "--envs", "4096", "--minibatches", "64", "--collect-device", "cuda",
+                       "--sim-workers", "16", "--threads", "4"],
+    "pot_e4096_ep8": ["--potential", "3", "--envs", "4096", "--minibatches", "16", "--epochs", "8",
+                      "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
+    "pot_e4096_lr2e3": ["--potential", "3", "--envs", "4096", "--minibatches", "16", "--lr", ".002",
+                        "--collect-device", "cuda", "--sim-workers", "16", "--threads", "4"],
 }
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
