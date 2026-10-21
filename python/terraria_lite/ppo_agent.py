@@ -69,6 +69,10 @@ class Config:
     # Batch-N forwards are latency-bound; 1 is fastest for targets/cnn and
     # was bit-identical to the unchanged run at 4 and 6 threads (targets).
     collect_threads: int = 0
+    # sim_workers: C threads stepping the environment batch. Results never
+    # depend on it; pick it for throughput (more for large batches, 1 when
+    # many runs share the CPU).
+    sim_workers: int = 4
     quiet: bool = False              # suppress per-iteration lines when sweeping
     save: str = "ppo_terraria.pt"    # "" to skip, so parallel sweeps don't collide
     init: str = ""                    # optional actor/critic state_dict warm start
@@ -162,7 +166,7 @@ class VecTerraria:
         can bootstrap it; the benchmark's inherent action deadline does not.
     """
 
-    def __init__(self, n: int, seed: int = 1, restart=None):
+    def __init__(self, n: int, seed: int = 1, restart=None, workers: int = 4):
         self.envs = [TerrariaLite() for _ in range(n)]
         self.n = n
         self._next_seed = seed
@@ -174,7 +178,7 @@ class VecTerraria:
         self.restart = restart
         self.restored = np.zeros(n, dtype=bool)
         from terraria_lite.batch import NativeBatch
-        self.native = NativeBatch(self.envs)
+        self.native = NativeBatch(self.envs, workers=workers)
 
     def _fresh_seed(self) -> int:
         s = self._next_seed
@@ -370,7 +374,8 @@ def train(cfg: Config, checkpoint_callback=None):
         from terraria_lite.archive import StartArchive
         archive = StartArchive(cfg.archive_capacity, cfg.archive_start_prob, seed=cfg.seed)
     envs = VecTerraria(cfg.num_envs, seed=cfg.seed*10_000_000 if SPEC.version>=2 else cfg.seed,
-                       restart=archive.restart if archive is not None else None)
+                       restart=archive.restart if archive is not None else None,
+                       workers=cfg.sim_workers)
     memory = None
     if cfg.memory_features:
         from terraria_lite.memory_features import PolicyFeatures

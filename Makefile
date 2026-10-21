@@ -83,11 +83,14 @@ check-pixel: px-selftest
 # executables' objects so -fPIC never leaks into them.
 lib: $(LIB)
 
+# Non-Apple batch stepping uses a pthread pool (macOS uses libdispatch).
+LIB_THREADS := $(if $(filter Darwin,$(shell uname -s)),,-pthread)
+
 $(LIB): $(LIB_OBJ)
-	$(CC) -shared $^ -o $@ $(LDFLAGS)
+	$(CC) -shared $^ -o $@ $(LDFLAGS) $(LIB_THREADS)
 
 src/%.pic.o: src/%.c
-	$(CC) $(CFLAGS) $(DEPFLAGS) -fPIC -fvisibility=hidden -c $< -o $@
+	$(CC) $(CFLAGS) $(DEPFLAGS) $(LIB_THREADS) -fPIC -fvisibility=hidden -c $< -o $@
 
 clean:
 	rm -f $(GAME_OBJ) $(PX_OBJ) $(LIB_OBJ) tools/selftest.o $(DEPS) \

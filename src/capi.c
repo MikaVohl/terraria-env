@@ -206,6 +206,64 @@ static void batch_lane(void *context,size_t worker) {
   b->ends[i]=e->terminated?1:e->truncated?2:0;
  }
 }
+
+/* Run batch_lane(b, w) for every worker w. Lanes are independent and fixed per
+   worker, so results never depend on thread count or scheduling. */
+#if defined(__APPLE__)
+static void run_batch(BatchCall *b) {
+ if(b->workers>1) { dispatch_apply_f((size_t)b->workers,dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),b,batch_lane); return; }
+ batch_lane(b,0);
+}
+#elif defined(__unix__)
+/* Persistent pool, created lazily and grown on demand: spawning threads per
+   step would cost as much as stepping a small batch. The caller thread runs
+   worker 0; pool thread k runs worker k and is woken individually through its
+   own semaphore, so idle pool threads are never woken (a broadcast to a large
+   pool cost ~250 us per step). call_mu serialises concurrent callers (ctypes
+   releases the GIL), since the pool holds one call at a time. */
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdatomic.h>
+#define POOL_MAX 255
+static pthread_mutex_t pool_call_mu=PTHREAD_MUTEX_INITIALIZER;
+static sem_t pool_wake[POOL_MAX+1],pool_done;
+static int pool_threads=-1;                /* -1: pool_done not initialised */
+static BatchCall *pool_call;
+static atomic_int pool_pending;
+static void *pool_main(void *arg) {
+ size_t id=(size_t)arg;
+ for(;;) {
+  while(sem_wait(&pool_wake[id])) {}          /* retry on EINTR */
+  batch_lane(pool_call,id);
+  if(atomic_fetch_sub(&pool_pending,1)==1) sem_post(&pool_done);
+ }
+ return NULL;
+}
+static void run_batch(BatchCall *b) {
+ if(b->workers>POOL_MAX+1) b->workers=POOL_MAX+1;
+ if(b->workers<2) { batch_lane(b,0); return; }
+ pthread_mutex_lock(&pool_call_mu);
+ if(pool_threads<0) { sem_init(&pool_done,0,0); pool_threads=0; }
+ while(pool_threads<b->workers-1) {
+  pthread_t t; size_t id=(size_t)pool_threads+1;
+  sem_init(&pool_wake[id],0,0);
+  if(pthread_create(&t,NULL,pool_main,(void*)id)) { sem_destroy(&pool_wake[id]); break; }
+  pthread_detach(t); pool_threads++;
+ }
+ if(b->workers>pool_threads+1) b->workers=pool_threads+1;  /* creation failed: fewer workers */
+ if(b->workers>1) {
+  /* sem_post/sem_wait order these writes before the workers read them. */
+  pool_call=b; atomic_store(&pool_pending,b->workers-1);
+  for(int k=1;k<b->workers;k++) sem_post(&pool_wake[k]);
+ }
+ batch_lane(b,0);
+ if(b->workers>1) while(sem_wait(&pool_done)) {}
+ pthread_mutex_unlock(&pool_call_mu);
+}
+#else
+static void run_batch(BatchCall *b) { for(int i=0;i<b->workers;i++) batch_lane(b,(size_t)i); }
+#endif
+
 TL_API int tl_obs_bytes(void) { return sizeof(Obs); }
 TL_API void tl_batch_step(Env **envs,int n,const int *actions,Obs *obs,
                          uint8_t *masks,float *rewards,int *ends,int workers) {
@@ -213,10 +271,7 @@ TL_API void tl_batch_step(Env **envs,int n,const int *actions,Obs *obs,
  if(workers<1) workers=1;
  if(workers>n) workers=n;
  BatchCall b={envs,n,workers,actions,obs,NULL,masks,rewards,ends};
-#ifdef __APPLE__
- if(workers>1) { dispatch_apply_f((size_t)workers,dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),&b,batch_lane); return; }
-#endif
- for(int i=0;i<workers;i++) batch_lane(&b,(size_t)i);
+ run_batch(&b);
 }
 
 /* Equivalent encoded observations, written directly by independent C workers. */
@@ -226,8 +281,5 @@ TL_API void tl_batch_step_flat(Env **envs,int n,const int *actions,float *obs,
  if(workers<1) workers=1;
  if(workers>n) workers=n;
  BatchCall b={envs,n,workers,actions,NULL,obs,masks,rewards,ends};
-#ifdef __APPLE__
- if(workers>1) { dispatch_apply_f((size_t)workers,dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),&b,batch_lane); return; }
-#endif
- for(int i=0;i<workers;i++) batch_lane(&b,(size_t)i);
+ run_batch(&b);
 }

@@ -43,6 +43,7 @@ def main():
     p.add_argument("--test-seed-start",type=int,default=7_000_001 if SPEC.version>=4 else 3_000_001)
     p.add_argument("--collect-device", default="")
     p.add_argument("--collect-threads", type=int, default=0)
+    p.add_argument("--sim-workers", type=int, default=4, help="C threads stepping the env batch (results unchanged)")
     p.add_argument("--archive-start-prob", type=float, default=0.0)
     p.add_argument("--archive-capacity", type=int, default=4096)
     p.add_argument("--sil-minibatches", type=int, default=0)
@@ -77,7 +78,7 @@ def main():
         kwargs["curiosity_coef"] = a.curiosity
         kwargs["curiosity_balanced"] = a.balanced_curiosity
         kwargs["curiosity_anneal"] = not a.persistent_curiosity
-        kwargs.update(collect_device=a.collect_device, collect_threads=a.collect_threads,
+        kwargs.update(collect_device=a.collect_device, collect_threads=a.collect_threads, sim_workers=a.sim_workers,
                       archive_start_prob=a.archive_start_prob, archive_capacity=a.archive_capacity,
                       sil_minibatches=a.sil_minibatches, sil_value_coef=a.sil_value_coef,
                       novelty_coef=a.novelty, potential_coef=a.potential,
