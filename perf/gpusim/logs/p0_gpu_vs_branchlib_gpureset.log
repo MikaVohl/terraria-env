@@ -6,3 +6,7 @@ step 4000: compared 32133120 lane-steps, episodes reset 27470, bad obs 0 mask 0 
 step 5000: compared 40321024 lane-steps, episodes reset 34246, bad obs 0 mask 0 rew 0 end 0 state 0/24576 (140s)
 step 6000: compared 48513024 lane-steps, episodes reset 40830, bad obs 0 mask 0 rew 0 end 0 state 0/28672 (168s)
 step 7000: compared 56700928 lane-steps, episodes reset 47358, bad obs 0 mask 0 rew 0 end 0 state 0/32768 (196s)
+step 8000: compared 64888832 lane-steps, episodes reset 53921, bad obs 0 mask 0 rew 0 end 0 state 0/36864 (224s)
+step 9000: compared 73072640 lane-steps, episodes reset 60442, bad obs 0 mask 0 rew 0 end 0 state 0/40960 (253s)
+step 10000: compared 81264640 lane-steps, episodes reset 66975, bad obs 0 mask 0 rew 0 end 0 state 0/45056 (281s)
+PARITY OK: n=4096 steps=10000 illegal_pct=10 reset=gpu lane_steps=40960000 episodes_reset=66975 obs_bad=0 mask_bad=0 rew_bad=0 end_bad=0 state_bad=0/49152
