@@ -1,0 +1,151 @@
+{
+ "checkpoint": "short_r32 step-14680064 (best validation eval, 17.98/32)",
+ "seed_range": [
+  23000001,
+  23000128
+ ],
+ "sample_seed": 54321,
+ "device": "cpu (Mac)",
+ "checkpoint_sha256": "d19deb3a136addbcbadc673b5ad40fe7d339c9452549acdb8dacc36370b4efd7",
+ "inventory_peak": {
+  "wood": {
+   "mean": 11.890625,
+   "median": 11.0,
+   "max": 19
+  },
+  "stone": {
+   "mean": 120.6484375,
+   "median": 124.5,
+   "max": 306
+  },
+  "copper ore": {
+   "mean": 6.8359375,
+   "median": 4.5,
+   "max": 33
+  },
+  "iron ore": {
+   "mean": 8.3203125,
+   "median": 7.0,
+   "max": 28
+  },
+  "gold ore": {
+   "mean": 3.8359375,
+   "median": 2.0,
+   "max": 23
+  },
+  "copper bar": {
+   "mean": 0.15625,
+   "median": 0.0,
+   "max": 11
+  },
+  "iron bar": {
+   "mean": 0.03125,
+   "median": 0.0,
+   "max": 2
+  },
+  "gold bar": {
+   "mean": 0.0078125,
+   "median": 0.0,
+   "max": 1
+  },
+  "silver bar": {
+   "mean": 0.03125,
+   "median": 0.0,
+   "max": 2
+  }
+ },
+ "actions": {
+  "craft workbench": {
+   "legal_steps": 1030,
+   "chosen": 197,
+   "mean_probability_when_legal": 0.18773827776225235,
+   "episodes_with_opportunity": 128
+  },
+  "craft furnace": {
+   "legal_steps": 116,
+   "chosen": 5,
+   "mean_probability_when_legal": 0.10013691988695364,
+   "episodes_with_opportunity": 7
+  },
+  "craft torch": {
+   "legal_steps": 37593,
+   "chosen": 376,
+   "mean_probability_when_legal": 0.010049840841410964,
+   "episodes_with_opportunity": 117
+  },
+  "craft campfire": {
+   "legal_steps": 313,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0025796335352883753,
+   "episodes_with_opportunity": 67
+  },
+  "craft platforms": {
+   "legal_steps": 217854,
+   "chosen": 383,
+   "mean_probability_when_legal": 0.0016975518988342425,
+   "episodes_with_opportunity": 128
+  },
+  "craft anvil": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft iron pickaxe": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft gold pickaxe": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft wooden sword": {
+   "legal_steps": 280,
+   "chosen": 149,
+   "mean_probability_when_legal": 0.5183257915430919,
+   "episodes_with_opportunity": 107
+  },
+  "craft copper sword": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft iron sword": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft silver sword": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft gold sword": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft wood breastplate": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  },
+  "craft iron chainmail": {
+   "legal_steps": 0,
+   "chosen": 0,
+   "mean_probability_when_legal": 0.0,
+   "episodes_with_opportunity": 0
+  }
+ },
+ "episodes_wood_ge_30": 0,
+ "episodes_iron_bar_ge_10": 0
+}
