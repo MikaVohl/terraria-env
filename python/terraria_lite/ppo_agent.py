@@ -97,6 +97,9 @@ class Config:
     native_autoreset: bool = False    # reset finished lanes in C, not a Python loop
     compact_obs: bool = False         # move/store raw uint8 obs rows, one-hot on the learner device
     sim_backend: str = "cpu"          # "gpu": simulate on the collect device (terraria_lite.gpusim)
+    # Episode step limit for training lanes; 0 = the game's default (3000).
+    # Changes the task (and the status time fraction, steps / limit).
+    episode_steps: int = 0
     # Change floating-point rounding (see perf/REPORT.md for learning checks):
     compile: bool = False             # torch.compile the policy for sampling and the update
     bf16: bool = False                # bfloat16 autocast in the PPO update
@@ -188,8 +191,9 @@ class VecTerraria:
     """
 
     def __init__(self, n: int, seed: int = 1, restart=None, workers: int = 4,
-                 native_autoreset: bool = False, compact: bool = False, pin_memory: bool = False):
-        self.envs = [TerrariaLite() for _ in range(n)]
+                 native_autoreset: bool = False, compact: bool = False, pin_memory: bool = False,
+                 max_steps: int = 0):
+        self.envs = [TerrariaLite(max_steps=max_steps or None) for _ in range(n)]
         self.n = n
         self._next_seed = seed
         self.compact = compact
@@ -539,13 +543,16 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.sim_backend == "gpu":
         if archive is not None:
             raise ValueError("the GPU simulator backend does not support archive restarts")
+        if cfg.episode_steps:
+            raise ValueError("the GPU simulator backend uses the default episode limit")
         from terraria_lite.gpusim import GpuVec
         envs = GpuVec(cfg.num_envs, seed=env_seed, device=collect_device, compact=cfg.compact_obs)
     elif cfg.sim_backend == "cpu":
         envs = VecTerraria(cfg.num_envs, seed=env_seed,
                            restart=archive.restart if archive is not None else None,
                            workers=cfg.sim_workers, native_autoreset=cfg.native_autoreset,
-                           compact=cfg.compact_obs, pin_memory=collect_device.type == "cuda")
+                           compact=cfg.compact_obs, pin_memory=collect_device.type == "cuda",
+                           max_steps=cfg.episode_steps)
     else:
         raise ValueError(f"unknown sim_backend {cfg.sim_backend!r}")
     memory = None

@@ -48,21 +48,22 @@ def load_agent(path: str | Path, device: str = "cpu"):
     return agent
 
 def evaluate_checkpoint(path: str | Path, device: str, seeds: list[int], *, num_envs: int = 64,
-                        sample_seed: int = 12345, threads: int = 0) -> dict:
+                        sample_seed: int = 12345, threads: int = 0, max_steps: int = 0) -> dict:
     """evaluate(load_agent(path, device), ...) for a worker process; `threads`
     sets torch's intra-op threads first (the caller's count, so the CPU
     kernels and therefore the results are the same as evaluating in the
     caller)."""
     if threads:
         torch.set_num_threads(threads)
-    return evaluate(load_agent(path, device), seeds, num_envs=num_envs, sample_seed=sample_seed, device=device)
+    return evaluate(load_agent(path, device), seeds, num_envs=num_envs, sample_seed=sample_seed, device=device,
+                    max_steps=max_steps)
 
 
 
 @torch.no_grad()
 def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
              greedy: bool = False, sample_seed: int = 12345,
-             device: str = "cpu") -> dict:
+             device: str = "cpu", max_steps: int = 0) -> dict:
     """Evaluate exactly one episode per seed and return aggregate metrics.
 
     An agent with a `memory_features` attribute (set by load_agent from the
@@ -79,7 +80,7 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
     recurrent = hasattr(agent, "initial_state")
     for base in range(0, len(seeds), num_envs):
         batch_seeds = seeds[base:base + num_envs]
-        envs = [TerrariaLite() for _ in batch_seeds]
+        envs = [TerrariaLite(max_steps=max_steps or None) for _ in batch_seeds]
         try:
             obs = np.stack([e.reset(seed=s)[0] for e, s in zip(envs, batch_seeds)])
             mask = np.stack([e.action_mask() for e in envs])
@@ -184,11 +185,12 @@ def main() -> None:
     p.add_argument("--sample-seed", type=int, default=12345)
     p.add_argument("--greedy", action="store_true")
     p.add_argument("--device", default="cpu")
+    p.add_argument("--max-steps", type=int, default=0, help="episode step limit; 0 = game default")
     a = p.parse_args()
     seeds = list(range(a.seed_start, a.seed_start + a.episodes))
     agent = load_agent(a.checkpoint, a.device)
     result = evaluate(agent, seeds, num_envs=a.envs, greedy=a.greedy,
-                      sample_seed=a.sample_seed, device=a.device)
+                      sample_seed=a.sample_seed, device=a.device, max_steps=a.max_steps)
     print_report(result, Path(a.checkpoint).name, a.greedy)
 
 

@@ -104,6 +104,9 @@ for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall
 # passed). Not bit-comparable with pot_e1024_max runs: include a max2 control.
 ARMS["pot_e1024_max2"] = ARMS["pot_e1024_max"] + ["--async-evaluation", "--compile-all"]
 ARMS["max2_frontier_nov01"] = ARMS["pot_e1024_max2"] + ["--potential-mode", "frontier", "--novelty", ".01"]
+# Horizon test: same arms with 6,000-step episodes for training and validation.
+ARMS["max2_ep6000"] = ARMS["pot_e1024_max2"] + ["--episode-steps", "6000"]
+ARMS["max2_fn_ep6000"] = ARMS["max2_frontier_nov01"] + ["--episode-steps", "6000"]
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
 # bit-identical to the original CPU learner. (An earlier "MPS stall" reading

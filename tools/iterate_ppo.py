@@ -56,6 +56,8 @@ def main():
                         "frontier_surface: plus a climb-back goal after descending deep")
     p.add_argument("--memory-features", default="", help='policy feature sets, e.g. "stations_v1+craftable_v1"')
     p.add_argument("--aux", type=float, default=0.0, help="predictive inventory/unlock auxiliary loss weight")
+    p.add_argument("--episode-steps", type=int, default=0,
+                   help="episode step limit for training AND validation; 0 = game default (3000)")
     # Performance options (perf/REPORT.md); exact ones leave results unchanged.
     p.add_argument("--native-autoreset", action="store_true", help="exact: reset finished lanes in C")
     p.add_argument("--compact-obs", action="store_true", help="exact: uint8 obs rows, one-hot on the GPU")
@@ -105,10 +107,12 @@ def main():
                       memory_features=a.memory_features, aux_coef=a.aux,
                       native_autoreset=a.native_autoreset, compact_obs=a.compact_obs,
                       compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, compile_all=a.compile_all,
-                      sim_backend=a.sim_backend)
+                      sim_backend=a.sim_backend, episode_steps=a.episode_steps)
     elif a.architecture != "mlp":
         raise ValueError("This implementation does not support CNN")
     cfg = config_class(**kwargs)
+    if a.episode_steps and getattr(cfg, "episode_steps", 0) != a.episode_steps:
+        raise ValueError("--episode-steps is supported by the feed-forward PPO trainer only")
     actual = a.steps // cfg.batch * cfg.batch
     if actual < cfg.batch:
         raise ValueError("At least one complete batch required")
@@ -121,6 +125,7 @@ def main():
                 "driver_sha256":hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 "evaluation_device":evaluation_device, "async_evaluation": a.async_evaluation,
                 "environment_version": SPEC.version, "torch_threads": a.threads,
+                "episode_steps": a.episode_steps or SPEC.default_steps,
                 "validation_seeds": [a.validation_seed_start, a.validation_seed_start+a.validation_episodes-1],
                 "reserved_test_seeds": [a.test_seed_start,a.test_seed_start+127],
                 "sampler_seed": 54321, "reward": reward_spec(a.achievement_reward),
@@ -185,13 +190,15 @@ def main():
         if executor is not None:
             pending.append((steps, profile, time.perf_counter()-start,
                             executor.submit(evaluate_checkpoint, checkpoint, evaluation_device, seeds,
-                                            num_envs=64, sample_seed=54321, threads=a.threads)))
+                                            num_envs=64, sample_seed=54321, threads=a.threads,
+                                            max_steps=a.episode_steps)))
             return
         with torch.random.fork_rng():
             # Never move the live learner: that can invalidate optimizer tensor
             # references/state. Restore a separate frozen checkpoint copy.
             evaluation_agent=agent if evaluation_device==a.device else load_agent(checkpoint,evaluation_device)
-            result = evaluate(evaluation_agent, seeds, num_envs=64, sample_seed=54321, device=evaluation_device)
+            result = evaluate(evaluation_agent, seeds, num_envs=64, sample_seed=54321, device=evaluation_device,
+                              max_steps=a.episode_steps)
         record(steps, profile, result, None)
     summary = train_function(cfg, checkpoint_callback=callback)
     if executor is not None:

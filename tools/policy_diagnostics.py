@@ -11,13 +11,13 @@ from terraria_lite.ppo_eval import load_agent
 
 
 @torch.no_grad()
-def diagnose(agent, seeds, sample_seed=54321):
+def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
     torch.manual_seed(sample_seed)
     totals=np.zeros(SPEC.n_actions,np.int64); legal=np.zeros_like(totals)
     probability=np.zeros(SPEC.n_actions,np.float64); maxes=[]; records=[]
     inv0=SPEC.cells*(SPEC.tile_kinds+1)+SPEC.status_inv0
     for base in range(0,len(seeds),64):
-        cohort=seeds[base:base+64]; envs=[TerrariaLite() for _ in cohort]
+        cohort=seeds[base:base+64]; envs=[TerrariaLite(max_steps=max_steps or None) for _ in cohort]
         try:
             obs=np.stack([e.reset(seed=s)[0] for e,s in zip(envs,cohort)])
             mask=np.stack([e.action_mask() for e in envs]); active=np.ones(len(envs),bool)
@@ -28,7 +28,7 @@ def diagnose(agent, seeds, sample_seed=54321):
             if recurrent:
                 state=agent.initial_state(len(envs),"cpu")
                 done=torch.zeros(len(envs))
-            for t in range(SPEC.default_steps):
+            for t in range(max_steps or SPEC.default_steps):
                 inv=np.rint(obs[:,inv0:inv0+SPEC.n_items]**2*SPEC.inventory_clip).astype(np.int32)
                 peak[active]=np.maximum(peak[active],inv[active])
                 x=torch.from_numpy(obs); m=torch.from_numpy(mask)
@@ -67,8 +67,10 @@ def main():
     p=argparse.ArgumentParser(); p.add_argument("checkpoint",type=Path)
     p.add_argument("--out",type=Path,required=True); p.add_argument("--episodes",type=int,default=128)
     p.add_argument("--seed-start",type=int,default=2_000_001)
+    p.add_argument("--max-steps",type=int,default=0,help="episode step limit; 0 = game default")
     a=p.parse_args(); torch.set_num_threads(6)
-    result=diagnose(load_agent(a.checkpoint),list(range(a.seed_start,a.seed_start+a.episodes)))
+    result=diagnose(load_agent(a.checkpoint),list(range(a.seed_start,a.seed_start+a.episodes)),max_steps=a.max_steps)
+    result["max_steps"]=a.max_steps or SPEC.default_steps
     result["seed_range"]=[a.seed_start,a.seed_start+a.episodes-1]
     result["sample_seed"]=54321
     result["environment_version"]=SPEC.version
