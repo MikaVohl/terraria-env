@@ -99,6 +99,11 @@ for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall
                       "wall_fsn_p30": ["--potential-mode", "frontier_surface", "--novelty", ".01",
                                        "--potential", "30"]}.items():
     ARMS[_name] = ARMS["pot_e1024_max"] + _extra
+# Standard for new studies after perf round 2 (perf/REPORT.md section 7): max path plus
+# background evaluation (exact) and --compile-all (changes rounding, learning check
+# passed). Not bit-comparable with pot_e1024_max runs: include a max2 control.
+ARMS["pot_e1024_max2"] = ARMS["pot_e1024_max"] + ["--async-evaluation", "--compile-all"]
+ARMS["max2_frontier_nov01"] = ARMS["pot_e1024_max2"] + ["--potential-mode", "frontier", "--novelty", ".01"]
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
 # bit-identical to the original CPU learner. (An earlier "MPS stall" reading
