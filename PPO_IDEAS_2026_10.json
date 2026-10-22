@@ -1,0 +1,884 @@
+{
+ "study": "PPO_IDEAS_2026_10.md",
+ "environment": "v7 (perf/v7/build-lw, code-identical to the live library)",
+ "validation_worlds": [
+  23000001,
+  23000128
+ ],
+ "base_arm": "wall_frontier_nov01 (pot_e1024_max + --potential-mode frontier --novelty .01)",
+ "final_512M": [
+  {
+   "run": "idea_twohot-1501",
+   "steps": 536870912,
+   "score": 22.765625,
+   "worlds": {
+    "anvil": 20,
+    "metal sword": 4,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.837120532989502,
+   "peaks": {
+    "iron bar": {
+     "median": 2.0,
+     "mean": 2.3,
+     "max": 13
+    },
+    "gold bar": {
+     "median": 0.0,
+     "mean": 0.79,
+     "max": 4
+    },
+    "wood": {
+     "median": 13.0,
+     "mean": 13.41,
+     "max": 22
+    }
+   }
+  },
+  {
+   "run": "idea_twohot-1502",
+   "steps": 536870912,
+   "score": 24.3828125,
+   "worlds": {
+    "anvil": 35,
+    "metal sword": 8,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.820526361465454,
+   "peaks": {
+    "iron bar": {
+     "median": 4.0,
+     "mean": 3.96,
+     "max": 14
+    },
+    "gold bar": {
+     "median": 1.0,
+     "mean": 1.16,
+     "max": 5
+    },
+    "wood": {
+     "median": 14.0,
+     "mean": 14.82,
+     "max": 26
+    }
+   }
+  },
+  {
+   "run": "idea_unimix-1501",
+   "steps": 536870912,
+   "score": 25.4375,
+   "worlds": {
+    "anvil": 80,
+    "metal sword": 20,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.7907726764678955,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.72,
+     "max": 10
+    },
+    "gold bar": {
+     "median": 2.0,
+     "mean": 2.26,
+     "max": 7
+    },
+    "wood": {
+     "median": 15.0,
+     "mean": 15.39,
+     "max": 26
+    }
+   }
+  },
+  {
+   "run": "wall_ctl-1501",
+   "steps": 536870912,
+   "score": 25.0546875,
+   "worlds": {
+    "anvil": 65,
+    "metal sword": 10,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 1
+   },
+   "policy_entropy": 2.776028633117676,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.42,
+     "max": 12
+    },
+    "gold bar": {
+     "median": 2.0,
+     "mean": 2.14,
+     "max": 7
+    },
+    "wood": {
+     "median": 15.0,
+     "mean": 15.15,
+     "max": 26
+    }
+   }
+  },
+  {
+   "run": "wall_ctl-1502",
+   "steps": 536870912,
+   "score": 25.0703125,
+   "worlds": {
+    "anvil": 59,
+    "metal sword": 14,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.7910711765289307,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.24,
+     "max": 11
+    },
+    "gold bar": {
+     "median": 1.0,
+     "mean": 1.67,
+     "max": 7
+    },
+    "wood": {
+     "median": 13.0,
+     "mean": 12.52,
+     "max": 15
+    }
+   }
+  },
+  {
+   "run": "wall_ctl-1503",
+   "steps": 536870912,
+   "score": 24.9375,
+   "worlds": {
+    "anvil": 46,
+    "metal sword": 6,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.800553560256958,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.11,
+     "max": 13
+    },
+    "gold bar": {
+     "median": 2.0,
+     "mean": 1.68,
+     "max": 6
+    },
+    "wood": {
+     "median": 13.0,
+     "mean": 13.01,
+     "max": 19
+    }
+   }
+  },
+  {
+   "run": "wall_ctl-1504",
+   "steps": 536870912,
+   "score": 24.6875,
+   "worlds": {
+    "anvil": 55,
+    "metal sword": 11,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.7934961318969727,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.05,
+     "max": 9
+    },
+    "gold bar": {
+     "median": 1.0,
+     "mean": 1.5,
+     "max": 8
+    },
+    "wood": {
+     "median": 13.0,
+     "mean": 12.52,
+     "max": 17
+    }
+   }
+  },
+  {
+   "run": "wall_frontier_nov01-1501",
+   "steps": 536870912,
+   "score": 25.28125,
+   "worlds": {
+    "anvil": 73,
+    "metal sword": 26,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.7592859268188477,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.34,
+     "max": 11
+    },
+    "gold bar": {
+     "median": 2.0,
+     "mean": 1.77,
+     "max": 6
+    },
+    "wood": {
+     "median": 14.0,
+     "mean": 14.8,
+     "max": 25
+    }
+   }
+  },
+  {
+   "run": "wall_frontier_nov01-1502",
+   "steps": 536870912,
+   "score": 25.359375,
+   "worlds": {
+    "anvil": 73,
+    "metal sword": 17,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.793440580368042,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.38,
+     "max": 10
+    },
+    "gold bar": {
+     "median": 1.0,
+     "mean": 1.7,
+     "max": 7
+    },
+    "wood": {
+     "median": 15.0,
+     "mean": 15.89,
+     "max": 26
+    }
+   }
+  },
+  {
+   "run": "wall_frontier_nov01-1503",
+   "steps": 536870912,
+   "score": 24.9453125,
+   "worlds": {
+    "anvil": 63,
+    "metal sword": 15,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 1
+   },
+   "policy_entropy": 2.735912322998047,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.45,
+     "max": 11
+    },
+    "gold bar": {
+     "median": 2.0,
+     "mean": 1.73,
+     "max": 9
+    },
+    "wood": {
+     "median": 15.0,
+     "mean": 15.81,
+     "max": 26
+    }
+   }
+  },
+  {
+   "run": "wall_frontier_nov01-1504",
+   "steps": 536870912,
+   "score": 25.359375,
+   "worlds": {
+    "anvil": 76,
+    "metal sword": 19,
+    "iron pick": 0,
+    "gold pick": 0,
+    "chainmail": 0,
+    "breastplate": 0,
+    "surface": 0
+   },
+   "policy_entropy": 2.7610185146331787,
+   "peaks": {
+    "iron bar": {
+     "median": 5.0,
+     "mean": 4.45,
+     "max": 8
+    },
+    "gold bar": {
+     "median": 1.0,
+     "mean": 1.86,
+     "max": 8
+    },
+    "wood": {
+     "median": 15.0,
+     "mean": 15.54,
+     "max": 26
+    }
+   }
+  }
+ ],
+ "stopped_runs": {
+  "idea_all_e003-1501": [
+   {
+    "steps": 67108864,
+    "score": 15.921875,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.832505464553833,
+    "return_norm": {
+     "p5_ema": -0.3446800513509072,
+     "p95_ema": 5.676858457870088,
+     "scale": 6.021538509220995,
+     "adv_abs_mean": 0.01913381740450859,
+     "adv_std": 0.04267237335443497
+    }
+   },
+   {
+    "steps": 134217728,
+    "score": 15.9140625,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.844566822052002,
+    "return_norm": {
+     "p5_ema": -0.34567121091478964,
+     "p95_ema": 6.001630228398168,
+     "scale": 6.347301439312958,
+     "adv_abs_mean": 0.018309738487005234,
+     "adv_std": 0.03682095184922218
+    }
+   },
+   {
+    "steps": 201326592,
+    "score": 16.25,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.8474345207214355,
+    "return_norm": {
+     "p5_ema": -0.3531028157126721,
+     "p95_ema": 6.0689878122517005,
+     "scale": 6.422090627964373,
+     "adv_abs_mean": 0.01767612434923649,
+     "adv_std": 0.036533236503601074
+    }
+   }
+  ],
+  "idea_rn-1501": [
+   {
+    "steps": 67108864,
+    "score": 10.2265625,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.6361660957336426,
+    "return_norm": {
+     "p5_ema": -0.29381991960617343,
+     "p95_ema": 3.844836006656991,
+     "scale": 4.138655926263164,
+     "adv_abs_mean": 0.040653426200151443,
+     "adv_std": 0.07828196883201599
+    }
+   },
+   {
+    "steps": 134217728,
+    "score": 10.2734375,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.6541945934295654,
+    "return_norm": {
+     "p5_ema": -0.3044095703869122,
+     "p95_ema": 3.9087458507546797,
+     "scale": 4.213155421141592,
+     "adv_abs_mean": 0.042886413633823395,
+     "adv_std": 0.08711647987365723
+    }
+   }
+  ],
+  "idea_rn_e003-1501": [
+   {
+    "steps": 67108864,
+    "score": 16.578125,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.87947940826416,
+    "return_norm": {
+     "p5_ema": -0.37007642534459506,
+     "p95_ema": 6.35163410633431,
+     "scale": 6.721710531678905,
+     "adv_abs_mean": 0.01655258610844612,
+     "adv_std": 0.03082687221467495
+    }
+   },
+   {
+    "steps": 134217728,
+    "score": 17.1328125,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.855785846710205,
+    "return_norm": {
+     "p5_ema": -0.3926982827973973,
+     "p95_ema": 6.659684475055324,
+     "scale": 7.052382757852722,
+     "adv_abs_mean": 0.016334056854248047,
+     "adv_std": 0.033510610461235046
+    }
+   },
+   {
+    "steps": 201326592,
+    "score": 17.2109375,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.8492140769958496,
+    "return_norm": {
+     "p5_ema": -0.4022638608155567,
+     "p95_ema": 6.907540749599736,
+     "scale": 7.309804610415293,
+     "adv_abs_mean": 0.014890744350850582,
+     "adv_std": 0.03009898215532303
+    }
+   },
+   {
+    "steps": 268435456,
+    "score": 17.5859375,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.875326633453369,
+    "return_norm": {
+     "p5_ema": -0.4074657033002831,
+     "p95_ema": 6.835261713207153,
+     "scale": 7.242727416507436,
+     "adv_abs_mean": 0.01391851156949997,
+     "adv_std": 0.0265926755964756
+    }
+   },
+   {
+    "steps": 335544320,
+    "score": 17.171875,
+    "furnace_worlds": 0,
+    "anvil_worlds": 0,
+    "policy_entropy": 2.9089176654815674,
+    "return_norm": {
+     "p5_ema": -0.41062442546765693,
+     "p95_ema": 6.981169342729858,
+     "scale": 7.391793768197515,
+     "adv_abs_mean": 0.014245586469769478,
+     "adv_std": 0.028764858841896057
+    }
+   }
+  ],
+  "idea_unimix-1502": [
+   {
+    "steps": 67108864,
+    "score": 20.890625,
+    "furnace_worlds": 73,
+    "anvil_worlds": 5,
+    "policy_entropy": 2.638709545135498
+   },
+   {
+    "steps": 134217728,
+    "score": 23.6484375,
+    "furnace_worlds": 123,
+    "anvil_worlds": 32,
+    "policy_entropy": 2.6594576835632324
+   },
+   {
+    "steps": 201326592,
+    "score": 24.3515625,
+    "furnace_worlds": 125,
+    "anvil_worlds": 41,
+    "policy_entropy": 2.730513095855713
+   },
+   {
+    "steps": 268435456,
+    "score": 24.7734375,
+    "furnace_worlds": 125,
+    "anvil_worlds": 56,
+    "policy_entropy": 2.700761556625366
+   },
+   {
+    "steps": 335544320,
+    "score": 24.6171875,
+    "furnace_worlds": 124,
+    "anvil_worlds": 49,
+    "policy_entropy": 2.6672146320343018
+   }
+  ],
+  "idea_unimix-1504": [
+   {
+    "steps": 67108864,
+    "score": 22.0703125,
+    "furnace_worlds": 98,
+    "anvil_worlds": 13,
+    "policy_entropy": 2.7569522857666016
+   }
+  ]
+ },
+ "score_curves": {
+  "idea_all_e003-1501": [
+   [
+    67108864,
+    15.9219
+   ],
+   [
+    134217728,
+    15.9141
+   ],
+   [
+    201326592,
+    16.25
+   ]
+  ],
+  "idea_rn-1501": [
+   [
+    67108864,
+    10.2266
+   ],
+   [
+    134217728,
+    10.2734
+   ]
+  ],
+  "idea_rn_e003-1501": [
+   [
+    67108864,
+    16.5781
+   ],
+   [
+    134217728,
+    17.1328
+   ],
+   [
+    201326592,
+    17.2109
+   ],
+   [
+    268435456,
+    17.5859
+   ],
+   [
+    335544320,
+    17.1719
+   ]
+  ],
+  "idea_twohot-1501": [
+   [
+    67108864,
+    18.6484
+   ],
+   [
+    134217728,
+    19.1797
+   ],
+   [
+    201326592,
+    19.5625
+   ],
+   [
+    268435456,
+    19.8125
+   ],
+   [
+    335544320,
+    19.9219
+   ],
+   [
+    402653184,
+    20.4297
+   ],
+   [
+    469762048,
+    22.2578
+   ],
+   [
+    536870912,
+    22.7656
+   ]
+  ],
+  "idea_twohot-1502": [
+   [
+    67108864,
+    18.8906
+   ],
+   [
+    134217728,
+    20.2812
+   ],
+   [
+    201326592,
+    22.9453
+   ],
+   [
+    268435456,
+    23.4062
+   ],
+   [
+    335544320,
+    23.6406
+   ],
+   [
+    402653184,
+    23.875
+   ],
+   [
+    469762048,
+    24.5
+   ],
+   [
+    536870912,
+    24.3828
+   ]
+  ],
+  "idea_unimix-1501": [
+   [
+    67108864,
+    20.5
+   ],
+   [
+    134217728,
+    23.5312
+   ],
+   [
+    201326592,
+    24.0312
+   ],
+   [
+    268435456,
+    24.5703
+   ],
+   [
+    335544320,
+    25.0859
+   ],
+   [
+    402653184,
+    25.1328
+   ],
+   [
+    469762048,
+    25.2656
+   ],
+   [
+    536870912,
+    25.4375
+   ]
+  ],
+  "idea_unimix-1502": [
+   [
+    67108864,
+    20.8906
+   ],
+   [
+    134217728,
+    23.6484
+   ],
+   [
+    201326592,
+    24.3516
+   ],
+   [
+    268435456,
+    24.7734
+   ],
+   [
+    335544320,
+    24.6172
+   ]
+  ],
+  "idea_unimix-1504": [
+   [
+    67108864,
+    22.0703
+   ]
+  ],
+  "wall_frontier_nov01-1501": [
+   [
+    67108864,
+    21.5078
+   ],
+   [
+    134217728,
+    23.4375
+   ],
+   [
+    201326592,
+    24.25
+   ],
+   [
+    268435456,
+    24.5391
+   ],
+   [
+    335544320,
+    24.8047
+   ],
+   [
+    402653184,
+    24.8594
+   ],
+   [
+    469762048,
+    25.3594
+   ],
+   [
+    536870912,
+    25.2812
+   ]
+  ],
+  "wall_frontier_nov01-1502": [
+   [
+    67108864,
+    21.8125
+   ],
+   [
+    134217728,
+    23.7266
+   ],
+   [
+    201326592,
+    24.2266
+   ],
+   [
+    268435456,
+    24.8281
+   ],
+   [
+    335544320,
+    25.0547
+   ],
+   [
+    402653184,
+    25.2578
+   ],
+   [
+    469762048,
+    25.25
+   ],
+   [
+    536870912,
+    25.3594
+   ]
+  ],
+  "wall_frontier_nov01-1503": [
+   [
+    67108864,
+    21.9141
+   ],
+   [
+    134217728,
+    23.8281
+   ],
+   [
+    201326592,
+    24.3672
+   ],
+   [
+    268435456,
+    24.6484
+   ],
+   [
+    335544320,
+    25.2578
+   ],
+   [
+    402653184,
+    25.0156
+   ],
+   [
+    469762048,
+    25.1094
+   ],
+   [
+    536870912,
+    24.9453
+   ]
+  ],
+  "wall_frontier_nov01-1504": [
+   [
+    67108864,
+    19.9531
+   ],
+   [
+    134217728,
+    23.0781
+   ],
+   [
+    201326592,
+    24.3984
+   ],
+   [
+    268435456,
+    24.5078
+   ],
+   [
+    335544320,
+    24.9141
+   ],
+   [
+    402653184,
+    25.2188
+   ],
+   [
+    469762048,
+    25.4688
+   ],
+   [
+    536870912,
+    25.3594
+   ]
+  ]
+ },
+ "fingerprint": {
+  "bench": "perf/bench_trainer.py --envs 1024 --iters 6 (targets, potential 3, seed 901), eg18 GPU 5, v7 build-lw",
+  "identical_main_vs_branch": {
+   "default exact": "a18970ad67930ebb",
+   "native_autoreset+compact_obs+frontier+novelty .01": "9b00de160bd6436b",
+   "+bf16": "4ef99ff7b106da73",
+   "+bf16+fused_adam": "b02f2226b3a5124e"
+  },
+  "compile_nondeterministic": "compile path differs run-to-run on main itself (main x2: 5f037c8e6bc83391 / 87496cc9eb10306b; compile alone ca16b713194a44f8 / f9678ae53a3212f3), so it cannot be bit-compared",
+  "mac_cpu": {
+   "targets 64 envs x 3 iters, frontier potential 3 + novelty .01, seed 1501, +/- native_autoreset+compact_obs": "679164a7f96f0920 (main and branch)"
+  }
+ }
+}
