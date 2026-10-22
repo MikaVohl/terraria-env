@@ -1,0 +1,21 @@
+# perf/bench_trainer.py --envs 1024 --iters 6 (seed 901), v7 light-window library, GPU 0 eg18.
+# label  steady_sps  collect_s/iter  learn_s/iter  result_sha256[:16]  package
+# frontier + novelty .01, exact config (--set native_autoreset=1 compact_obs=1 potential_mode=frontier novelty_coef=.01)
+base_exact      208796 0.324 0.301 9b00de160bd6436b  main d397bda
+new_exact       229224 0.267 0.302 9b00de160bd6436b  C decode + vectorised novelty
+new_exact_cnov  246213 0.232 0.298 9b00de160bd6436b  + C novelty tables (687975b)
+new_noval       261313 0.224 0.275 9b00de160bd6436b  + validate_args=False (f14eef7)
+pinned_exact    264686 0.214 0.278 9b00de160bd6436b  + pinned uploads (ecc272c)
+gather_exact    275862 0.208 0.265 9b00de160bd6436b  + gather once per epoch (d2fbc23)
+off_exact       271854 0.210 0.269 9b00de160bd6436b  + _ppo_loss refactor, compile_all off (98bc7bf)
+# frontier_surface + novelty .1, exact config
+base_fs         191195 0.398 0.285 edc62c5e1595e4a4  main d397bda
+new_fs          238587 0.249 0.298 edc62c5e1595e4a4  687975b
+# no perf flags (default trainer)
+base_default    202446 0.345 0.300 a18970ad67930ebb  main d397bda
+new_default     213390 0.343 0.268 a18970ad67930ebb  f14eef7
+pinned_default  227891 0.300 0.272 a18970ad67930ebb  ecc272c
+gather_default  234070 0.292 0.265 a18970ad67930ebb  d2fbc23
+# max config (+ compile bf16 fused_adam) is not deterministic run to run on ROCm:
+base_max1       245866 0.321 0.210 0266f97560c8a6a9  main d397bda
+base_max2       244866 0.324 0.209 ee3d688f79710a16  main d397bda (same command)

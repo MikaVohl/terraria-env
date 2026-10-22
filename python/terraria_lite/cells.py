@@ -8,9 +8,11 @@ buckets are generic logarithmic bins applied to every item alike.
 """
 from __future__ import annotations
 
+import ctypes as C
+
 import numpy as np
 
-from terraria_lite import SPEC
+from terraria_lite import SPEC, _lib
 from terraria_lite.compact import fields, is_compact
 
 _TILES_END = SPEC.cells * SPEC.tile_kinds
@@ -69,6 +71,8 @@ def cell_parts(obs: np.ndarray) -> dict[str, np.ndarray]:
 def cell_keys(obs: np.ndarray) -> np.ndarray:
     """Stable int64 key per row; equal keys mean the same coarse progress cell."""
     obs = np.atleast_2d(obs)
+    if is_compact(obs):
+        return decode(obs, keys=True)["keys"]
     p = cell_parts(obs)
     # Polynomial hash over small integers; collisions are astronomically rare
     # at archive sizes and only merge two cells, never break correctness.
@@ -78,3 +82,43 @@ def cell_keys(obs: np.ndarray) -> np.ndarray:
                                p["depth"][:, None]), axis=1).T:
         h = (h * mult) ^ col.astype(np.uint64)
     return h.view(np.int64)
+
+
+_lib.tl_cells_decode.restype = None
+_lib.tl_cells_decode.argtypes = [C.c_void_p, C.c_int, C.c_void_p, C.c_int, C.c_void_p, C.c_int, C.c_int,
+                                 C.c_void_p, C.c_void_p, C.c_void_p, C.c_void_p, C.c_void_p, C.c_int]
+_STATION_TILES_C = np.array(STATION_TILES, dtype=np.int32)
+_BIN_EDGES_C = BIN_EDGES.astype(np.int64)
+# C threads per decode call (the simulator's worker pool; results never depend
+# on it). A 1,024-row decode is memory-bound: 300 us on 1 thread, 80 on 8.
+DECODE_WORKERS = 8
+
+
+def decode(obs: np.ndarray, keys: bool = False) -> dict[str, np.ndarray]:
+    """Every per-row feature the shaping aids read, in one pass: "inventory"
+    (N, n_items) int64, "stations" (N, 3) bool, "achievements" (N,) int64,
+    "depth_rows" (N,) int64 and, with keys=True, "keys" (cell_keys).
+
+    Compact rows are decoded by the library's tl_cells_decode, which equals the
+    NumPy definitions above bit for bit (perf/check_shaping.py); flat rows use
+    those definitions directly."""
+    obs = np.atleast_2d(obs)
+    if not is_compact(obs):
+        out = {"inventory": inventory(obs), "stations": stations_visible(obs),
+               "achievements": achievements(obs), "depth_rows": depth_rows(obs)}
+        if keys:
+            out["keys"] = cell_keys(obs)
+        return out
+    obs = np.ascontiguousarray(obs)
+    n = len(obs)
+    out = {"inventory": np.empty((n, SPEC.n_items), np.int64), "stations": np.empty((n, len(STATION_TILES)), bool),
+           "achievements": np.empty(n, np.int64), "depth_rows": np.empty(n, np.int64)}
+    if keys:
+        out["keys"] = np.empty(n, np.int64)
+    if n:
+        _lib.tl_cells_decode(obs.ctypes.data, n, _STATION_TILES_C.ctypes.data, len(_STATION_TILES_C),
+                             _BIN_EDGES_C.ctypes.data, len(_BIN_EDGES_C), DEPTH_BANDS,
+                             out["inventory"].ctypes.data, out["stations"].ctypes.data,
+                             out["achievements"].ctypes.data, out["depth_rows"].ctypes.data,
+                             out["keys"].ctypes.data if keys else None, min(DECODE_WORKERS, n // 128 + 1))
+    return out

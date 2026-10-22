@@ -10,7 +10,7 @@ import torch
 import terraria_lite
 from terraria_lite import SPEC
 from terraria_lite.ppo_agent import Config, train
-from terraria_lite.ppo_eval import evaluate, load_agent
+from terraria_lite.ppo_eval import evaluate, evaluate_checkpoint, load_agent
 
 
 def main():
@@ -62,11 +62,19 @@ def main():
     p.add_argument("--compile", action="store_true", help="torch.compile the policy (changes rounding)")
     p.add_argument("--bf16", action="store_true", help="bfloat16 autocast in the PPO update (changes rounding)")
     p.add_argument("--fused-adam", action="store_true", help="fused Adam kernel (changes rounding)")
+    p.add_argument("--compile-all", action="store_true",
+                   help="also torch.compile the whole sampling forward and minibatch loss (changes rounding)")
     p.add_argument("--sim-backend", choices=["cpu", "gpu"], default="cpu",
                    help="exact: gpu simulates on --collect-device (needs perf/gpusim/libgpusim.so)")
+    p.add_argument("--async-evaluation", action="store_true",
+                   help="exact: evaluate the checkpoint copies in a worker process while training continues "
+                        "(needs --evaluation-device other than --device)")
     a = p.parse_args()
     if a.out.exists():
         raise ValueError("Output exists; select a fresh directory")
+    evaluation_device = a.evaluation_device or a.device
+    if a.async_evaluation and evaluation_device == a.device:
+        raise ValueError("--async-evaluation evaluates checkpoint copies: set --evaluation-device != --device")
     torch.set_num_threads(a.threads)
     recurrent = a.architecture in ("lstm", "lstm_targets")
     config_class, train_function = Config, train
@@ -96,7 +104,8 @@ def main():
                       novelty_coef=a.novelty, potential_coef=a.potential, potential_mode=a.potential_mode,
                       memory_features=a.memory_features, aux_coef=a.aux,
                       native_autoreset=a.native_autoreset, compact_obs=a.compact_obs,
-                      compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, sim_backend=a.sim_backend)
+                      compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, compile_all=a.compile_all,
+                      sim_backend=a.sim_backend)
     elif a.architecture != "mlp":
         raise ValueError("This implementation does not support CNN")
     cfg = config_class(**kwargs)
@@ -110,7 +119,7 @@ def main():
     from terraria_lite.achievement_rewards import reward_spec
     protocol = {"config": asdict(cfg), "actual_steps": actual,
                 "driver_sha256":hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                "evaluation_device":a.evaluation_device or a.device,
+                "evaluation_device":evaluation_device, "async_evaluation": a.async_evaluation,
                 "environment_version": SPEC.version, "torch_threads": a.threads,
                 "validation_seeds": [a.validation_seed_start, a.validation_seed_start+a.validation_episodes-1],
                 "reserved_test_seeds": [a.test_seed_start,a.test_seed_start+127],
@@ -127,8 +136,38 @@ def main():
     snapshot=a.out/"implementation"; snapshot.mkdir()
     for source in sources: shutil.copy2(source,snapshot/source.name)
     curve = []; next_eval = a.interval; start = time.perf_counter()
+    seeds = list(range(a.validation_seed_start, a.validation_seed_start+a.validation_episodes))
+    # Asynchronous evaluation: the same evaluate(load_agent(checkpoint)) call
+    # with the same torch thread count, in one spawned worker; rows are
+    # recorded in checkpoint order as they complete.
+    executor = pending = None
+    if a.async_evaluation:
+        import multiprocessing
+        from concurrent.futures import ProcessPoolExecutor
+        executor, pending = ProcessPoolExecutor(1, mp_context=multiprocessing.get_context("spawn")), []
+
+    def record(steps, profile, result, checkpoint_seconds):
+        row = {"steps": steps, "elapsed_seconds": time.perf_counter()-start,
+               "profile": profile, "evaluation": result}
+        if executor is not None:
+            row["checkpoint_elapsed_seconds"] = checkpoint_seconds
+        curve.append(row)
+        (a.out / "curve.json").write_text(json.dumps(curve, indent=2)+"\n")
+        hits = result["hits"]
+        print(f"{a.out.name}: {steps:,} {result['mean_achievements']:.3f}/32 "
+              f"death={result['death_rate']:.1%} bench={hits.get('craft workbench',0)} "
+              f"stone={hits.get('collect stone',0)} furnace={hits.get('craft furnace',0)} "
+              f"peak-y={result['mean_peak_depth']:.1f} ({row['elapsed_seconds']:.1f}s)", flush=True)
+
+    def drain(wait):
+        while pending and (wait or pending[0][-1].done()):
+            steps, profile, checkpoint_seconds, future = pending.pop(0)
+            record(steps, profile, future.result(), checkpoint_seconds)
+
     def callback(agent, steps, profile):
         nonlocal next_eval
+        if pending:
+            drain(False)
         if steps < next_eval and steps != actual:
             return
         if a.device == "mps":
@@ -140,25 +179,24 @@ def main():
             data.update(memory_features=agent.memory_features, extra=agent.trunk.extra)
         if recurrent:
             data.update(encoder=cfg.encoder,hidden=cfg.hidden)
-        torch.save(data, a.out / f"step-{steps}.pt")
-        evaluation_device=a.evaluation_device or a.device
+        checkpoint = a.out / f"step-{steps}.pt"
+        torch.save(data, checkpoint)
+        next_eval += a.interval
+        if executor is not None:
+            pending.append((steps, profile, time.perf_counter()-start,
+                            executor.submit(evaluate_checkpoint, checkpoint, evaluation_device, seeds,
+                                            num_envs=64, sample_seed=54321, threads=a.threads)))
+            return
         with torch.random.fork_rng():
             # Never move the live learner: that can invalidate optimizer tensor
             # references/state. Restore a separate frozen checkpoint copy.
-            evaluation_agent=agent if evaluation_device==a.device else load_agent(a.out/f"step-{steps}.pt",evaluation_device)
-            result = evaluate(evaluation_agent, list(range(a.validation_seed_start, a.validation_seed_start+a.validation_episodes)),
-                              num_envs=64, sample_seed=54321, device=evaluation_device)
-        row = {"steps": steps, "elapsed_seconds": time.perf_counter()-start,
-               "profile": profile, "evaluation": result}
-        curve.append(row)
-        (a.out / "curve.json").write_text(json.dumps(curve, indent=2)+"\n")
-        hits = result["hits"]
-        print(f"{a.out.name}: {steps:,} {result['mean_achievements']:.3f}/32 "
-              f"death={result['death_rate']:.1%} bench={hits.get('craft workbench',0)} "
-              f"stone={hits.get('collect stone',0)} furnace={hits.get('craft furnace',0)} "
-              f"peak-y={result['mean_peak_depth']:.1f} ({row['elapsed_seconds']:.1f}s)", flush=True)
-        next_eval += a.interval
+            evaluation_agent=agent if evaluation_device==a.device else load_agent(checkpoint,evaluation_device)
+            result = evaluate(evaluation_agent, seeds, num_envs=64, sample_seed=54321, device=evaluation_device)
+        record(steps, profile, result, None)
     summary = train_function(cfg, checkpoint_callback=callback)
+    if executor is not None:
+        drain(True)
+        executor.shutdown()
     if a.device == "mps":
         torch.mps.synchronize()
     summary["wall_seconds_including_validation"] = time.perf_counter()-start

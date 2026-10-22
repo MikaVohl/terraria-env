@@ -26,7 +26,7 @@ from __future__ import annotations
 import numpy as np
 
 from terraria_lite import SPEC
-from terraria_lite.cells import achievements, depth_rows, inventory, stations_visible, STATION_TILES
+from terraria_lite.cells import decode, STATION_TILES
 from terraria_lite.rules import player_knowledge
 
 _STATION_INDEX = {SPEC.tile_names[t]: i for i, t in enumerate(STATION_TILES)}
@@ -70,8 +70,13 @@ class RecipePotential:
         # Remember both per lane with the value computed from them, and only
         # re-evaluate rows whose inputs changed (rare: most steps change
         # neither). Each row is still computed by the same dense formula, so
-        # every value is bit-identical to evaluating the whole batch.
+        # every value is bit-identical to evaluating the whole batch. The key
+        # drops what cannot change phi: counts above an item's largest need
+        # (every min(count / need, 1) term is already exactly 1) and, for
+        # frontier_surface, the row while the climb goal is not open (its
+        # term is then exactly 0).
         self._items = np.flatnonzero(self.need.any(0))
+        self._cap = self.need[:, self._items].max(0)
         self._key = self._val = None
         self.previous = self.phi(initial_obs)
 
@@ -95,15 +100,22 @@ class RecipePotential:
         return self.coef * np.where(n > 0, (prog * open_).sum(-1) / np.maximum(n, 1), 0.0)
 
     def _inputs(self, obs: np.ndarray):
-        inputs = (inventory(obs).astype(np.float64), stations_visible(obs))
+        d = decode(obs)
+        inputs = (d["inventory"].astype(np.float64), d["stations"])
         if self.mode != "mean":
-            inputs += (achievements(obs),)
+            inputs += (d["achievements"],)
         if self.mode == "frontier_surface":
-            inputs += (depth_rows(obs),)
+            inputs += (d["depth_rows"],)
         return inputs
 
     def _phi_from(self, inv: np.ndarray, vis: np.ndarray, *extra) -> np.ndarray:
-        key = np.concatenate((inv[:, self._items], vis) + tuple(x[:, None] for x in extra), 1)
+        if self.mode == "frontier_surface":
+            ach, y = extra
+            climbing = ((ach >> self._deep) & 1 == 1) & ((ach >> self._back) & 1 == 0)
+            memo = (ach, np.where(climbing, y, -1))
+        else:
+            memo = extra
+        key = np.concatenate((np.minimum(inv[:, self._items], self._cap), vis) + tuple(x[:, None] for x in memo), 1)
         if self._key is None or len(self._key) != len(key):
             self._key, self._val = key, self._phi_rows(inv, vis, *extra)
             return self._val.copy()

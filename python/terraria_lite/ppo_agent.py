@@ -101,6 +101,7 @@ class Config:
     compile: bool = False             # torch.compile the policy for sampling and the update
     bf16: bool = False                # bfloat16 autocast in the PPO update
     fused_adam: bool = False          # single fused Adam kernel
+    compile_all: bool = False         # torch.compile the whole sampling forward and minibatch loss too
 
     @property
     def batch(self) -> int:
@@ -159,7 +160,10 @@ class ActorCritic(nn.Module):
             # invalid actions, and their gradient is exactly zero too. The C side
             # guarantees at least `noop` survives, so no row is all -inf.
             logits = logits.masked_fill(~mask, float("-inf"))
-        dist = Categorical(logits=logits)
+        # validate_args=False: the checks only raise, and each costs a host
+        # sync on GPU (two per call). Non-finite losses are still caught in
+        # the update; outputs and the sampling stream are unchanged.
+        dist = Categorical(logits=logits, validate_args=False)
         if action is None:
             action = sample_categorical(dist,mask)
         return action, dist.log_prob(action), dist.entropy(), self.critic(h).squeeze(-1)
@@ -179,20 +183,25 @@ class VecTerraria:
     (tl_batch_step_autoreset) with the same seed order, final observations and
     infos as the Python loop below. compact=True keeps observations as raw C
     rows (terraria_lite.compact) instead of the float32 one-hot encoding.
+    pin_memory=True places the obs/mask arrays in page-locked memory, so they
+    can be copied to a GPU without staging or a host sync.
     """
 
     def __init__(self, n: int, seed: int = 1, restart=None, workers: int = 4,
-                 native_autoreset: bool = False, compact: bool = False):
+                 native_autoreset: bool = False, compact: bool = False, pin_memory: bool = False):
         self.envs = [TerrariaLite() for _ in range(n)]
         self.n = n
         self._next_seed = seed
         self.compact = compact
+
+        def host(shape, dtype):
+            return torch.zeros(shape, dtype=dtype, pin_memory=pin_memory).numpy()
         if compact:
             from terraria_lite.compact import RAW_BYTES
-            self.obs = np.zeros((n, RAW_BYTES), dtype=np.uint8)
+            self.obs = host((n, RAW_BYTES), torch.uint8)
         else:
-            self.obs = np.zeros((n, SPEC.obs_size), dtype=np.float32)
-        self.mask = np.zeros((n, SPEC.n_actions), dtype=bool)
+            self.obs = host((n, SPEC.obs_size), torch.float32)
+        self.mask = host((n, SPEC.n_actions), torch.bool)
         # Optional training-only start-state hook: restart(lane, env) returns
         # (obs, info) after restoring some state, or None for a fresh world.
         # `restored[i]` says whether lane i's current episode came from it.
@@ -373,6 +382,35 @@ class ProgressShaper:
 
 # ------------------------------------------------------------------ train ---
 
+class _Uploader:
+    """Host arrays -> persistent tensors on `device`, one per name, each
+    overwritten by that name's next upload (in stream order, so earlier
+    consumers of the previous value are unaffected). On a GPU the copies are
+    non-blocking from page-locked memory -- staged through a pinned buffer
+    unless the array already is pinned -- so they never stall the host the
+    way a pageable copy does. The caller must not rewrite a host array before
+    the copy ran: in the rollout loop every step's action fetch synchronises
+    the stream before the simulator writes again."""
+
+    def __init__(self, device):
+        self.device, self.gpu = device, device.type == "cuda"
+        self.host, self.dev = {}, {}
+
+    def __call__(self, name, array):
+        if not self.gpu or isinstance(array, torch.Tensor):
+            return torch.as_tensor(array, device=self.device)
+        src = torch.from_numpy(np.ascontiguousarray(array))
+        if not src.is_pinned():
+            staged = self.host.get(name)
+            if staged is None or staged.shape != src.shape or staged.dtype != src.dtype:
+                staged = self.host[name] = torch.empty_like(src, pin_memory=True)
+            src = staged.copy_(src)
+        out = self.dev.get(name)
+        if out is None or out.shape != src.shape or out.dtype != src.dtype:
+            out = self.dev[name] = torch.empty(src.shape, dtype=src.dtype, device=self.device)
+        return out.copy_(src, non_blocking=True)
+
+
 def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device, expand=None):
     """Bootstrap external truncations only, never the finite benchmark deadline.
 
@@ -401,8 +439,51 @@ def _score_bf16(agent, x, action, mask):
         h = agent.trunk(x)
         logits, value = agent.actor(h), agent.critic(h)
     logits = logits.float().masked_fill(~mask, float("-inf"))
-    dist = Categorical(logits=logits)
+    dist = Categorical(logits=logits, validate_args=False)   # see ActorCritic.act
     return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
+
+
+def _sample_heads(agent, x, mask, expand=None):
+    """Rollout-time policy heads (compile_all): normalised masked logits (as
+    Categorical stores them), their probabilities and the value."""
+    h = agent.trunk(expand(x) if expand is not None else x)
+    logits = agent.actor(h).masked_fill(~mask, float("-inf"))
+    logits = logits - logits.logsumexp(-1, keepdim=True)
+    return logits, logits.softmax(-1), agent.critic(h).squeeze(-1)
+
+
+def _ppo_loss(agent, obs, action, mask, old_logp, adv, ret, old_value, *, expand, bf16,
+              clip_coef, clip_vloss, ent_coef, vf_coef):
+    """One minibatch: clipped policy loss with per-minibatch advantage
+    normalisation, (clipped) value loss and entropy bonus. Returns the loss,
+    the approximate KL, the clip fraction and the per-sample entropy."""
+    x = expand(obs) if expand is not None else obs
+    if bf16:
+        newlogp, entropy, newval = _score_bf16(agent, x, action, mask)
+    else:
+        _, newlogp, entropy, newval = agent.act(x, action, mask=mask)
+    logratio = newlogp - old_logp
+    ratio = logratio.exp()
+
+    with torch.no_grad():
+        # Schulman's low-variance KL estimator; also the early-stop signal.
+        approx_kl = ((ratio - 1) - logratio).mean()
+        clipfrac = ((ratio - 1.0).abs() > clip_coef).float().mean()
+
+    # Normalise advantages per minibatch, not per batch.
+    adv = (adv - adv.mean()) / (adv.std() + 1e-8)
+
+    pg = torch.max(-adv * ratio, -adv * torch.clamp(ratio, 1 - clip_coef, 1 + clip_coef)).mean()
+
+    if clip_vloss:
+        v_unclipped = (newval - ret) ** 2
+        v_clipped = (old_value + torch.clamp(newval - old_value, -clip_coef, clip_coef) - ret) ** 2
+        v_loss = 0.5 * torch.max(v_unclipped, v_clipped).mean()
+    else:
+        v_loss = 0.5 * ((newval - ret) ** 2).mean()
+
+    loss = pg - ent_coef * entropy.mean() + vf_coef * v_loss
+    return loss, approx_kl, clipfrac, entropy
 
 
 def compute_gae(rewards, dones, values, next_value, next_done,
@@ -464,7 +545,7 @@ def train(cfg: Config, checkpoint_callback=None):
         envs = VecTerraria(cfg.num_envs, seed=env_seed,
                            restart=archive.restart if archive is not None else None,
                            workers=cfg.sim_workers, native_autoreset=cfg.native_autoreset,
-                           compact=cfg.compact_obs)
+                           compact=cfg.compact_obs, pin_memory=collect_device.type == "cuda")
     else:
         raise ValueError(f"unknown sim_backend {cfg.sim_backend!r}")
     memory = None
@@ -501,6 +582,10 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.compact_obs:
         from terraria_lite.compact import RAW_BYTES, Expander
         expand_collect, expand_learn = Expander(collect_device), Expander(device)
+    # compile_all: one graph each for the sampling forward (expansion through
+    # log-softmax and value; sampling itself stays eager) and the minibatch loss.
+    ppo_loss = torch.compile(_ppo_loss, dynamic=False) if cfg.compile_all else _ppo_loss
+    sample_heads = torch.compile(_sample_heads, dynamic=False) if cfg.compile_all else None
 
     T, N = cfg.rollout, cfg.num_envs
     # Rollout buffers live where they are written; the update moves them to the
@@ -548,11 +633,12 @@ def train(cfg: Config, checkpoint_callback=None):
         """Agent input for the obs the policy acts from (raw plus feature sets)."""
         return raw if memory is None else np.concatenate((raw, memory.update(raw, mask)), 1)
 
+    upload = _Uploader(collect_device)
     current = policy_input(o0, m0)
-    next_obs = torch.as_tensor(current, device=collect_device)
+    next_obs = upload("obs", current)
     if cfg.compact_obs:
         next_raw, next_obs = next_obs, expand_collect(next_obs)
-    next_mask = torch.as_tensor(m0, device=collect_device)
+    next_mask = upload("mask", m0)
     next_done = torch.zeros(N, device=collect_device)
     extrinsic_episodes = restored_episodes = 0
     sil_stats: dict = {}
@@ -588,7 +674,13 @@ def train(cfg: Config, checkpoint_callback=None):
             done_b[t] = next_done
             msk_b[t] = next_mask
             with torch.inference_mode():
-                a, logp, _, v = actor.act(next_obs, mask=next_mask)
+                if sample_heads is None:
+                    a, logp, _, v = actor.act(next_obs, mask=next_mask)
+                else:
+                    logits, probs, v = sample_heads(actor, next_raw if cfg.compact_obs else next_obs, next_mask,
+                                                    expand_collect)
+                    a = torch.multinomial(probs, 1, True).squeeze(-1)   # as Categorical.sample
+                    logp = logits.gather(-1, a[:, None]).squeeze(-1)
             act_b[t], logp_b[t], val_b[t] = a, logp, v
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
@@ -610,21 +702,23 @@ def train(cfg: Config, checkpoint_callback=None):
                 r = r + potential.step(obs, final, ended)
             if archive is not None:
                 archive.observe(envs.envs, obs, cell_keys(obs))
-            rew_b[t] = torch.as_tensor(r, device=collect_device)
+            rew_b[t] = upload("reward", r)
             _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device, expand_collect)
 
             if memory is not None:
                 memory.reset(np.flatnonzero(ended))
-            next_obs = torch.as_tensor(policy_input(obs, msk), device=collect_device)
+            next_obs = upload("obs", policy_input(obs, msk))
             if cfg.compact_obs:
-                next_raw, next_obs = next_obs, expand_collect(next_obs)
-            next_mask = torch.as_tensor(msk, device=collect_device)
+                # compile_all expands inside the sampling graph; the float
+                # rows are then only built for the bootstrap value below.
+                next_raw, next_obs = next_obs, expand_collect(next_obs) if sample_heads is None else None
+            next_mask = upload("mask", msk)
             # Autoreset makes both kinds episode boundaries. An explicitly
             # enabled external bootstrap was folded into rew_b above; using
             # only `term` here would add V(reset_obs) as well and carry GAE from
             # an unrelated fresh world across the boundary.
             boundary = np.logical_or(term, trunc)
-            next_done = torch.as_tensor(boundary.astype(np.float32), device=collect_device)
+            next_done = upload("done", boundary.astype(np.float32))
             step_count += N
 
             for _, info in finished:
@@ -651,6 +745,8 @@ def train(cfg: Config, checkpoint_callback=None):
             if cfg.curiosity_anneal:
                 scale*=max(0.,1.-2.*(it-1)/n_iters)
             rew_b+=scale*bonus.reshape(T,N).to(collect_device)
+        if next_obs is None:
+            next_obs = expand_collect(next_raw)
         with torch.no_grad():
             next_value = actor.value(next_obs)
             adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
@@ -675,45 +771,24 @@ def train(cfg: Config, checkpoint_callback=None):
         clipfracs, approx_kl = [], torch.tensor(0.0)
         for _ in range(cfg.epochs):
             np.random.shuffle(idx)
-            # One index upload per epoch, not one per gathered tensor.
+            # One index upload and one gather per tensor per epoch; minibatches
+            # are then contiguous slices (the same rows, values and layout as
+            # gathering each minibatch).
             perm = torch.as_tensor(idx, device=device)
+            e_obs, e_act, e_logp, e_adv, e_ret, e_val, e_msk = (
+                x[perm] for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
+            if aux is not None:
+                e_delta, e_unlock, e_valid = b_delta[perm], b_unlock[perm], b_valid[perm]
             for s in range(0, cfg.batch, cfg.minibatch):
-                mb = perm[s: s + cfg.minibatch]
-                x_mb = expand_learn(b_obs[mb]) if cfg.compact_obs else b_obs[mb]
-                if cfg.bf16:
-                    newlogp, entropy, newval = _score_bf16(agent, x_mb, b_act[mb], b_msk[mb])
-                else:
-                    _, newlogp, entropy, newval = agent.act(x_mb, b_act[mb], mask=b_msk[mb])
-                logratio = newlogp - b_logp[mb]
-                ratio = logratio.exp()
-
-                with torch.no_grad():
-                    # Schulman's low-variance KL estimator; also the early-stop signal.
-                    approx_kl = ((ratio - 1) - logratio).mean()
-                    clipfracs.append(
-                        ((ratio - 1.0).abs() > cfg.clip_coef).float().mean())
-
-                # Normalise advantages per minibatch, not per batch.
-                mb_adv = b_adv[mb]
-                mb_adv = (mb_adv - mb_adv.mean()) / (mb_adv.std() + 1e-8)
-
-                pg = torch.max(-mb_adv * ratio,
-                               -mb_adv * torch.clamp(ratio, 1 - cfg.clip_coef,
-                                                     1 + cfg.clip_coef)).mean()
-
-                if cfg.clip_vloss:
-                    v_unclipped = (newval - b_ret[mb]) ** 2
-                    v_clipped = (b_val[mb] + torch.clamp(
-                        newval - b_val[mb], -cfg.clip_coef, cfg.clip_coef)
-                        - b_ret[mb]) ** 2
-                    v_loss = 0.5 * torch.max(v_unclipped, v_clipped).mean()
-                else:
-                    v_loss = 0.5 * ((newval - b_ret[mb]) ** 2).mean()
-
-                loss = pg - cfg.ent_coef * entropy.mean() + cfg.vf_coef * v_loss
+                mb = slice(s, s + cfg.minibatch)
+                loss, approx_kl, clipfrac, entropy = ppo_loss(
+                    agent, e_obs[mb], e_act[mb], e_msk[mb], e_logp[mb], e_adv[mb], e_ret[mb], e_val[mb],
+                    expand=expand_learn, bf16=cfg.bf16, clip_coef=cfg.clip_coef, clip_vloss=cfg.clip_vloss,
+                    ent_coef=cfg.ent_coef, vf_coef=cfg.vf_coef)
+                clipfracs.append(clipfrac)
                 if aux is not None:
-                    loss = loss + cfg.aux_coef * aux.loss(agent, b_obs[mb], b_act[mb], b_delta[mb],
-                                                          b_unlock[mb], b_valid[mb])
+                    loss = loss + cfg.aux_coef * aux.loss(agent, e_obs[mb], e_act[mb], e_delta[mb],
+                                                          e_unlock[mb], e_valid[mb])
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss; preserve this run without retrying")
 
