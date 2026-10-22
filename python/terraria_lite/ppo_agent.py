@@ -182,20 +182,25 @@ class VecTerraria:
     (tl_batch_step_autoreset) with the same seed order, final observations and
     infos as the Python loop below. compact=True keeps observations as raw C
     rows (terraria_lite.compact) instead of the float32 one-hot encoding.
+    pin_memory=True places the obs/mask arrays in page-locked memory, so they
+    can be copied to a GPU without staging or a host sync.
     """
 
     def __init__(self, n: int, seed: int = 1, restart=None, workers: int = 4,
-                 native_autoreset: bool = False, compact: bool = False):
+                 native_autoreset: bool = False, compact: bool = False, pin_memory: bool = False):
         self.envs = [TerrariaLite() for _ in range(n)]
         self.n = n
         self._next_seed = seed
         self.compact = compact
+
+        def host(shape, dtype):
+            return torch.zeros(shape, dtype=dtype, pin_memory=pin_memory).numpy()
         if compact:
             from terraria_lite.compact import RAW_BYTES
-            self.obs = np.zeros((n, RAW_BYTES), dtype=np.uint8)
+            self.obs = host((n, RAW_BYTES), torch.uint8)
         else:
-            self.obs = np.zeros((n, SPEC.obs_size), dtype=np.float32)
-        self.mask = np.zeros((n, SPEC.n_actions), dtype=bool)
+            self.obs = host((n, SPEC.obs_size), torch.float32)
+        self.mask = host((n, SPEC.n_actions), torch.bool)
         # Optional training-only start-state hook: restart(lane, env) returns
         # (obs, info) after restoring some state, or None for a fresh world.
         # `restored[i]` says whether lane i's current episode came from it.
@@ -376,6 +381,35 @@ class ProgressShaper:
 
 # ------------------------------------------------------------------ train ---
 
+class _Uploader:
+    """Host arrays -> persistent tensors on `device`, one per name, each
+    overwritten by that name's next upload (in stream order, so earlier
+    consumers of the previous value are unaffected). On a GPU the copies are
+    non-blocking from page-locked memory -- staged through a pinned buffer
+    unless the array already is pinned -- so they never stall the host the
+    way a pageable copy does. The caller must not rewrite a host array before
+    the copy ran: in the rollout loop every step's action fetch synchronises
+    the stream before the simulator writes again."""
+
+    def __init__(self, device):
+        self.device, self.gpu = device, device.type == "cuda"
+        self.host, self.dev = {}, {}
+
+    def __call__(self, name, array):
+        if not self.gpu or isinstance(array, torch.Tensor):
+            return torch.as_tensor(array, device=self.device)
+        src = torch.from_numpy(np.ascontiguousarray(array))
+        if not src.is_pinned():
+            staged = self.host.get(name)
+            if staged is None or staged.shape != src.shape or staged.dtype != src.dtype:
+                staged = self.host[name] = torch.empty_like(src, pin_memory=True)
+            src = staged.copy_(src)
+        out = self.dev.get(name)
+        if out is None or out.shape != src.shape or out.dtype != src.dtype:
+            out = self.dev[name] = torch.empty(src.shape, dtype=src.dtype, device=self.device)
+        return out.copy_(src, non_blocking=True)
+
+
 def _absorb_truncation(cfg, agent, rewards, term, trunc, final_obs, t, device, expand=None):
     """Bootstrap external truncations only, never the finite benchmark deadline.
 
@@ -467,7 +501,7 @@ def train(cfg: Config, checkpoint_callback=None):
         envs = VecTerraria(cfg.num_envs, seed=env_seed,
                            restart=archive.restart if archive is not None else None,
                            workers=cfg.sim_workers, native_autoreset=cfg.native_autoreset,
-                           compact=cfg.compact_obs)
+                           compact=cfg.compact_obs, pin_memory=collect_device.type == "cuda")
     else:
         raise ValueError(f"unknown sim_backend {cfg.sim_backend!r}")
     memory = None
@@ -551,11 +585,12 @@ def train(cfg: Config, checkpoint_callback=None):
         """Agent input for the obs the policy acts from (raw plus feature sets)."""
         return raw if memory is None else np.concatenate((raw, memory.update(raw, mask)), 1)
 
+    upload = _Uploader(collect_device)
     current = policy_input(o0, m0)
-    next_obs = torch.as_tensor(current, device=collect_device)
+    next_obs = upload("obs", current)
     if cfg.compact_obs:
         next_raw, next_obs = next_obs, expand_collect(next_obs)
-    next_mask = torch.as_tensor(m0, device=collect_device)
+    next_mask = upload("mask", m0)
     next_done = torch.zeros(N, device=collect_device)
     extrinsic_episodes = restored_episodes = 0
     sil_stats: dict = {}
@@ -613,21 +648,21 @@ def train(cfg: Config, checkpoint_callback=None):
                 r = r + potential.step(obs, final, ended)
             if archive is not None:
                 archive.observe(envs.envs, obs, cell_keys(obs))
-            rew_b[t] = torch.as_tensor(r, device=collect_device)
+            rew_b[t] = upload("reward", r)
             _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device, expand_collect)
 
             if memory is not None:
                 memory.reset(np.flatnonzero(ended))
-            next_obs = torch.as_tensor(policy_input(obs, msk), device=collect_device)
+            next_obs = upload("obs", policy_input(obs, msk))
             if cfg.compact_obs:
                 next_raw, next_obs = next_obs, expand_collect(next_obs)
-            next_mask = torch.as_tensor(msk, device=collect_device)
+            next_mask = upload("mask", msk)
             # Autoreset makes both kinds episode boundaries. An explicitly
             # enabled external bootstrap was folded into rew_b above; using
             # only `term` here would add V(reset_obs) as well and carry GAE from
             # an unrelated fresh world across the boundary.
             boundary = np.logical_or(term, trunc)
-            next_done = torch.as_tensor(boundary.astype(np.float32), device=collect_device)
+            next_done = upload("done", boundary.astype(np.float32))
             step_count += N
 
             for _, info in finished:
