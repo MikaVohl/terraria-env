@@ -65,7 +65,7 @@ class Config:
     # performance
     bf16: bool = False
     compile: bool = False
-    cuda_graph: bool = False          # capture the whole update (world model + actor-critic) in one CUDA graph
+    compile_observe: bool = False     # compile the whole unrolled T-step filter instead of one step
 
 
 class Dreamer:
@@ -77,18 +77,18 @@ class Dreamer:
                              shaping=shaping).to(self.device)
         self.ac = ActorCritic(self.wm.feat_size, cfg.units, cfg.layers, unimix=cfg.unimix).to(self.device)
         self.expand = Expander(self.device)
-        # capturable: optimizer step counters stay on the device (graph replay).
-        opt = dict(capturable=cfg.cuda_graph)
-        self.wm_opt = torch.optim.Adam(self.wm.parameters(), lr=cfg.model_lr, eps=cfg.model_eps, **opt)
-        self.actor_opt = torch.optim.Adam(self.ac.actor.parameters(), lr=cfg.actor_lr, eps=cfg.ac_eps, **opt)
-        self.critic_opt = torch.optim.Adam(self.ac.critic.parameters(), lr=cfg.critic_lr, eps=cfg.ac_eps, **opt)
+        self.wm_opt = torch.optim.Adam(self.wm.parameters(), lr=cfg.model_lr, eps=cfg.model_eps)
+        self.actor_opt = torch.optim.Adam(self.ac.actor.parameters(), lr=cfg.actor_lr, eps=cfg.ac_eps)
+        self.critic_opt = torch.optim.Adam(self.ac.critic.parameters(), lr=cfg.critic_lr, eps=cfg.ac_eps)
         self.retnorm = torch.zeros((), device=self.device)   # EMA of the 5-95 percentile range
         self.updates = 0
         self._obs_step = self._img_step = None
-        self._graph = self._static_in = self._static_out = None
+        self._observe = None
         if cfg.compile:
             self._obs_step = torch.compile(self.obs_step)
             self._img_step = torch.compile(self.img_step)
+            if cfg.compile_observe:
+                self._observe, self._obs_step = torch.compile(self.observe), None
 
     # ------------------------------------------------------------ helpers ---
     def autocast(self):
@@ -110,31 +110,6 @@ class Dreamer:
         z = rssm.sample(rssm.prior(h))
         nfeat = torch.cat((h, z), -1)
         return a, h, z, self.wm.predicted_mask(nfeat)
-
-    def train_step(self, batch: dict) -> dict:
-        """update(batch), replayed from a captured CUDA graph when cfg.cuda_graph.
-        The graph is captured on the first call (after warm-up updates on a side
-        stream, which also train); later calls copy the batch into the static
-        inputs and replay. Metrics are cloned out of the static outputs."""
-        if not self.cfg.cuda_graph:
-            return self.update(batch)
-        if self._graph is None:
-            self._static_in = {k: v.clone() for k, v in batch.items()}
-            side = torch.cuda.Stream()
-            side.wait_stream(torch.cuda.current_stream())
-            with torch.cuda.stream(side):
-                for _ in range(3):
-                    self.update(self._static_in)
-            torch.cuda.current_stream().wait_stream(side)
-            self._graph = torch.cuda.CUDAGraph()
-            with torch.cuda.graph(self._graph):
-                self._static_out = self.update(self._static_in)
-            self.updates -= 1   # capture records the update without running it
-        for k, v in batch.items():
-            self._static_in[k].copy_(v)
-        self._graph.replay()
-        self.updates += 1
-        return {k: v.clone() for k, v in self._static_out.items()}
 
     def observe(self, embed, prev_action, first):
         T, B = first.shape
@@ -195,7 +170,7 @@ class Dreamer:
         with self.autocast():
             x = self.expand(raw.reshape(T * B, -1)).reshape(T, B, -1)
             embed = wm.encode(x)
-            h, z, post, prior = self.observe(embed, batch["act"], batch["first"])
+            h, z, post, prior = (self._observe or self.observe)(embed, batch["act"], batch["first"])
             feat = torch.cat((h, z), -1)
             tile, light, status = wm.decode_loss(feat, raw)
             mask_logits = wm.mask_logits(feat)
@@ -301,7 +276,7 @@ def load_dreamer(path, device="cpu", training: bool = False) -> Dreamer:
         raise ValueError(f"{path} is not a Dreamer checkpoint")
     if raw["environment_version"] != SPEC.version or raw["obs_size"] != SPEC.obs_size or raw["n_actions"] != SPEC.n_actions:
         raise ValueError("checkpoint was trained on a different environment version/interface")
-    cfg = Config(**{**raw["config"], "compile": False, "cuda_graph": False, "device": str(device)})
+    cfg = Config(**{**raw["config"], "compile": False, "compile_observe": False, "device": str(device)})
     agent = Dreamer(cfg, device)
     agent.wm.load_state_dict(raw["world_model"])
     agent.ac.load_state_dict(raw["actor_critic"])
@@ -366,7 +341,7 @@ def train(cfg: Config, callback=None, log_every: float = 60.0, log=print) -> dic
         if env_steps >= cfg.prefill * N and replay.ready(cfg.seq_len):
             while credit >= 1.0:
                 credit -= 1.0
-                m = agent.train_step(replay.sample(cfg.batch, cfg.seq_len))
+                m = agent.update(replay.sample(cfg.batch, cfg.seq_len))
                 for k, v in m.items():
                     metrics_sum[k] = metrics_sum.get(k, 0) + v
                 n_metrics += 1
