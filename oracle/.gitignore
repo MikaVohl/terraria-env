@@ -1,0 +1,4 @@
+oracle_v7
+*.dSYM/
+libterraria.*
+__pycache__/
