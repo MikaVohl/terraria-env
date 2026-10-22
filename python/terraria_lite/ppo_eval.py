@@ -43,6 +43,9 @@ def load_agent(path: str | Path, device: str = "cpu"):
     agent = build_agent(architecture,hidden,int(raw.get("extra",0))).to(device)
     if raw.get("memory_features") is not None:
         agent.memory_features = raw["memory_features"]   # read by evaluate()
+    if raw.get("value_head", "scalar") != "scalar":
+        from terraria_lite.dreamer_tricks import install_value_head
+        install_value_head(agent, raw["value_head"])
     agent.load_state_dict(state)
     agent.eval()
     return agent

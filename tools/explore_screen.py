@@ -99,6 +99,12 @@ for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall
                       "wall_fsn_p30": ["--potential-mode", "frontier_surface", "--novelty", ".01",
                                        "--potential", "30"]}.items():
     ARMS[_name] = ARMS["pot_e1024_max"] + _extra
+# DreamerV3-inspired PPO options (dreamer_tricks.py) on the best wall arm.
+for _name, _extra in {"idea_rn": ["--return-norm", "percentile"],
+                      "idea_twohot": ["--value-head", "twohot"],
+                      "idea_unimix": ["--unimix", ".01"],
+                      "idea_all": ["--return-norm", "percentile", "--value-head", "twohot", "--unimix", ".01"]}.items():
+    ARMS[_name] = ARMS["wall_frontier_nov01"] + _extra
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
 # bit-identical to the original CPU learner. (An earlier "MPS stall" reading

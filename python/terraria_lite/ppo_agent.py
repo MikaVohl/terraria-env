@@ -101,6 +101,10 @@ class Config:
     compile: bool = False             # torch.compile the policy for sampling and the update
     bf16: bool = False                # bfloat16 autocast in the PPO update
     fused_adam: bool = False          # single fused Adam kernel
+    # DreamerV3-inspired options (dreamer_tricks.py); training-only, off by default.
+    return_norm: str = ""             # "percentile": adv / max(1, EMA P95-P5 of returns), no standardisation
+    value_head: str = "scalar"        # "twohot": 255-bin symlog categorical critic, cross-entropy loss
+    unimix: float = 0.0               # mix this much uniform-over-legal into the policy (training only)
 
     @property
     def batch(self) -> int:
@@ -148,6 +152,8 @@ class ActorCritic(nn.Module):
         self.actor = layer_init(nn.Linear(hidden, n_actions), std=0.01)
         self.critic = layer_init(nn.Linear(hidden, 1), std=1.0)
 
+    unimix = 0.0   # training-only policy mixing (dreamer_tricks.unimix_logits)
+
     def value(self, x):
         return self.critic(self.trunk(x)).squeeze(-1)
 
@@ -159,6 +165,9 @@ class ActorCritic(nn.Module):
             # invalid actions, and their gradient is exactly zero too. The C side
             # guarantees at least `noop` survives, so no row is all -inf.
             logits = logits.masked_fill(~mask, float("-inf"))
+        if self.unimix:
+            from terraria_lite.dreamer_tricks import unimix_logits
+            logits = unimix_logits(logits, mask, self.unimix)
         dist = Categorical(logits=logits)
         if action is None:
             action = sample_categorical(dist,mask)
@@ -401,6 +410,9 @@ def _score_bf16(agent, x, action, mask):
         h = agent.trunk(x)
         logits, value = agent.actor(h), agent.critic(h)
     logits = logits.float().masked_fill(~mask, float("-inf"))
+    if agent.unimix:
+        from terraria_lite.dreamer_tricks import unimix_logits
+        logits = unimix_logits(logits, mask, agent.unimix)
     dist = Categorical(logits=logits)
     return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
 
@@ -445,6 +457,14 @@ def train(cfg: Config, checkpoint_callback=None):
         used = [k for k, v in unsupported.items() if v]
         if used:
             raise ValueError(f"compact_obs supports potential/novelty shaping only, not {', '.join(used)}")
+    if cfg.return_norm not in ("", "percentile"):
+        raise ValueError(f"unknown return_norm {cfg.return_norm!r}")
+    if cfg.value_head not in ("scalar", "twohot"):
+        raise ValueError(f"unknown value_head {cfg.value_head!r}")
+    if not 0.0 <= cfg.unimix < 1.0:
+        raise ValueError("unimix must be in [0, 1)")
+    if cfg.value_head == "twohot" and cfg.sil_minibatches:
+        raise ValueError("twohot value head does not support SIL (its value loss assumes a scalar head)")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
@@ -476,6 +496,11 @@ def train(cfg: Config, checkpoint_callback=None):
     agent = build_agent(cfg.architecture, extra=width - SPEC.obs_size).to(device)
     if memory is not None:
         agent.memory_features = cfg.memory_features
+    if cfg.value_head != "scalar":
+        from terraria_lite.dreamer_tricks import install_value_head
+        install_value_head(agent, cfg.value_head)
+    if cfg.unimix:
+        agent.unimix = cfg.unimix
     if cfg.init:
         raw = torch.load(cfg.init, map_location=device, weights_only=True)
         from terraria_lite.checkpoints import validate_checkpoint
@@ -521,6 +546,13 @@ def train(cfg: Config, checkpoint_callback=None):
     from terraria_lite.curiosity import RND
     curiosity=RND(SPEC.obs_size,device,balanced=cfg.curiosity_balanced) if cfg.curiosity_coef else None
     novelty_b=torch.empty((T, N, SPEC.obs_size), device=collect_device) if curiosity is not None else None
+    retnorm = None
+    if cfg.return_norm == "percentile":
+        from terraria_lite.dreamer_tricks import PercentileScale
+        retnorm = PercentileScale()
+    twohot = cfg.value_head == "twohot"
+    if twohot:
+        from terraria_lite.dreamer_tricks import score as score_twohot
 
     o0, m0 = envs.reset()
     achievement_rewards = None
@@ -669,6 +701,12 @@ def train(cfg: Config, checkpoint_callback=None):
             b_delta = delta.reshape(-1, SPEC.n_items).to(device)
             b_unlock = unlock.reshape(-1, SPEC.n_achievements).to(device)
             b_valid = valid.reshape(-1).to(device)
+        retnorm_stats = None
+        if retnorm is not None:
+            # Replaces the per-minibatch standardisation below (DreamerV3).
+            b_adv = b_adv / retnorm.update(b_ret)
+            retnorm_stats = {**retnorm.stats(), "adv_abs_mean": float(b_adv.abs().mean()),
+                             "adv_std": float(b_adv.std())}
 
         # ---- optimise ----------------------------------------------------
         idx = np.arange(cfg.batch)
@@ -680,7 +718,10 @@ def train(cfg: Config, checkpoint_callback=None):
             for s in range(0, cfg.batch, cfg.minibatch):
                 mb = perm[s: s + cfg.minibatch]
                 x_mb = expand_learn(b_obs[mb]) if cfg.compact_obs else b_obs[mb]
-                if cfg.bf16:
+                if twohot:
+                    newlogp, entropy, value_logits = score_twohot(agent, x_mb, b_act[mb], b_msk[mb],
+                                                                  bf16=cfg.bf16, unimix=cfg.unimix)
+                elif cfg.bf16:
                     newlogp, entropy, newval = _score_bf16(agent, x_mb, b_act[mb], b_msk[mb])
                 else:
                     _, newlogp, entropy, newval = agent.act(x_mb, b_act[mb], mask=b_msk[mb])
@@ -693,15 +734,19 @@ def train(cfg: Config, checkpoint_callback=None):
                     clipfracs.append(
                         ((ratio - 1.0).abs() > cfg.clip_coef).float().mean())
 
-                # Normalise advantages per minibatch, not per batch.
                 mb_adv = b_adv[mb]
-                mb_adv = (mb_adv - mb_adv.mean()) / (mb_adv.std() + 1e-8)
+                if retnorm is None:
+                    # Normalise advantages per minibatch, not per batch.
+                    mb_adv = (mb_adv - mb_adv.mean()) / (mb_adv.std() + 1e-8)
 
                 pg = torch.max(-mb_adv * ratio,
                                -mb_adv * torch.clamp(ratio, 1 - cfg.clip_coef,
                                                      1 + cfg.clip_coef)).mean()
 
-                if cfg.clip_vloss:
+                if twohot:
+                    # Cross-entropy on two-hot symlog targets; no value clipping.
+                    v_loss = agent.critic.loss(value_logits, b_ret[mb])
+                elif cfg.clip_vloss:
                     v_unclipped = (newval - b_ret[mb]) ** 2
                     v_clipped = (b_val[mb] + torch.clamp(
                         newval - b_val[mb], -cfg.clip_coef, cfg.clip_coef)
@@ -741,6 +786,7 @@ def train(cfg: Config, checkpoint_callback=None):
                 **({"archive": archive.stats()} if archive is not None else {}),
                 **(novelty.stats() if novelty is not None else {}),
                 **({"sil": sil_stats} if sil is not None else {}),
+                **({"return_norm": retnorm_stats} if retnorm_stats is not None else {}),
             })
         # ---- report ------------------------------------------------------
         y = ret.cpu().numpy().ravel()
@@ -815,7 +861,8 @@ def train(cfg: Config, checkpoint_callback=None):
                     "environment_version": SPEC.version,
                     "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions,
                     **({"memory_features": cfg.memory_features, "extra": width - SPEC.obs_size}
-                       if memory is not None else {})}, cfg.save)
+                       if memory is not None else {}),
+                    **({"value_head": cfg.value_head} if twohot else {})}, cfg.save)
         if not cfg.quiet:
             print(f"\nsaved {cfg.save}")
     return summary

@@ -64,6 +64,13 @@ def main():
     p.add_argument("--fused-adam", action="store_true", help="fused Adam kernel (changes rounding)")
     p.add_argument("--sim-backend", choices=["cpu", "gpu"], default="cpu",
                    help="exact: gpu simulates on --collect-device (needs perf/gpusim/libgpusim.so)")
+    # DreamerV3-inspired training options (terraria_lite/dreamer_tricks.py), off by default.
+    p.add_argument("--return-norm", choices=["", "percentile"], default="",
+                   help="percentile: advantages / max(1, EMA(P95-P5) of returns) instead of minibatch standardisation")
+    p.add_argument("--value-head", choices=["scalar", "twohot"], default="scalar",
+                   help="twohot: 255-bin symlog categorical critic trained by cross-entropy")
+    p.add_argument("--unimix", type=float, default=0.0,
+                   help="training-only: mix this much uniform-over-legal-actions into the policy")
     a = p.parse_args()
     if a.out.exists():
         raise ValueError("Output exists; select a fresh directory")
@@ -77,6 +84,8 @@ def main():
         config_class, train_function = RecurrentConfig, recurrent_train
         if a.curiosity or a.balanced_curiosity or a.persistent_curiosity:
             raise ValueError("Recurrent novelty is not part of this implementation")
+        if a.return_norm or a.value_head != "scalar" or a.unimix:
+            raise ValueError("--return-norm/--value-head/--unimix support feedforward PPO only")
     kwargs = dict(total_steps=a.steps, num_envs=a.envs, rollout=a.rollout,
                   seed=a.seed, quiet=True, save="", gamma=a.gamma,
                   gae_lambda=a.gae_lambda, ent_coef=a.entropy, lr=a.lr,
@@ -96,7 +105,8 @@ def main():
                       novelty_coef=a.novelty, potential_coef=a.potential, potential_mode=a.potential_mode,
                       memory_features=a.memory_features, aux_coef=a.aux,
                       native_autoreset=a.native_autoreset, compact_obs=a.compact_obs,
-                      compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, sim_backend=a.sim_backend)
+                      compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, sim_backend=a.sim_backend,
+                      return_norm=a.return_norm, value_head=a.value_head, unimix=a.unimix)
     elif a.architecture != "mlp":
         raise ValueError("This implementation does not support CNN")
     cfg = config_class(**kwargs)
@@ -138,6 +148,8 @@ def main():
                 "n_actions": SPEC.n_actions,"training_objective":protocol["training_objective"]}
         if getattr(agent, "memory_features", None):
             data.update(memory_features=agent.memory_features, extra=agent.trunk.extra)
+        if a.value_head != "scalar":
+            data["value_head"] = a.value_head
         if recurrent:
             data.update(encoder=cfg.encoder,hidden=cfg.hidden)
         torch.save(data, a.out / f"step-{steps}.pt")
