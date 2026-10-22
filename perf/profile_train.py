@@ -4,7 +4,7 @@ Runs iterate_ppo.main() unchanged (same argv as a production arm) with timing
 wrappers around the trainer's phases, and prints one JSON line with seconds
 per phase (totals and per PPO iteration, the first iteration excluded):
 
-  act         policy forward + sampling in collection (actor.act)
+  act         policy forward + sampling in collection (actor.act; in collect_rest with --compile-all)
   sim         VecTerraria.step (C batch step, autoreset, info dicts)
   potential   RecipePotential.step       novelty   CellNovelty.step
   expand      compact-obs expansion in collection (Expander on the collect device)
@@ -91,7 +91,11 @@ def main():
         sync()
         T["expand_update" if _in_update[0] else "expand"] += time.perf_counter() - t0
         return out
-    compact.Expander.__call__ = expand_wrapper
+    if "--compile-all" not in argv:
+        # Under --compile-all the expansion and heads run inside one compiled
+        # graph (a Python timer there would break it): act and expand are
+        # then part of collect_rest.
+        compact.Expander.__call__ = expand_wrapper
     torch.save = timed("checkpoint", torch.save)
     iterate_ppo.evaluate = timed("evaluate", iterate_ppo.evaluate)
     iterate_ppo.load_agent = timed("evaluate", iterate_ppo.load_agent)

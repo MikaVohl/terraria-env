@@ -1,0 +1,8 @@
+base wall 195.52 s
+new wall 154.26 s
+new_async wall 121.02 s
+new_all_async wall 92.10 s
+{"run": "base", "wall_s": 191.8, "collection_s": 93.3, "optimisation_s": 55.0, "validation": [15.672, 18.117, 18.641, 18.875]}
+{"run": "new", "wall_s": 150.6, "collection_s": 56.4, "optimisation_s": 55.2, "validation": [16.523, 17.922, 19.07, 19.008]}
+{"run": "new_async", "wall_s": 117.3, "collection_s": 53.0, "optimisation_s": 51.3, "validation": [10.297, 17.0, 17.75, 17.922]}
+{"run": "new_all_async", "wall_s": 88.4, "collection_s": 43.0, "optimisation_s": 33.8, "validation": [15.727, 18.32, 18.836, 19.164]}

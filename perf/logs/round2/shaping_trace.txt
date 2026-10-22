@@ -1,0 +1,15 @@
+# Shaping cost per step (ms), 1024 lanes, replaying a recorded trace of a trained v7 policy
+# (wall_frontier_nov01-1501 at 335M steps; perf/shaping_trace.py, 1000 steps incl. an episode-end wave).
+# Cold trace rows (each step's observations come from DRAM); 24 cores of eg18.
+module                      main d397bda   perf 687975b
+potential mean              0.633          0.362
+potential frontier          0.712          0.390
+potential frontier_surface  0.938          0.535
+novelty                     0.542-0.648    0.104
+cell_keys (NumPy)           0.369          -
+tl_cells_decode 1 thread    -              0.30 (0.12 hot)
+tl_cells_decode 8 threads   -              0.08
+# Trained policy: 159 lanes/step change progress cell, 109 lanes/step are paid a novelty bonus,
+# 167 (frontier) / 256 (frontier_surface) potential rows/step are recomputed.
+# Global (cross-lane) phi memo: 52% / 46% of recomputed rows hit, 80k / 138k distinct keys in
+# 1000 steps -> rejected (~0.07 ms/step for an unbounded dict).
