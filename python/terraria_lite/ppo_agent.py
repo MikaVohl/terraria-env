@@ -159,7 +159,10 @@ class ActorCritic(nn.Module):
             # invalid actions, and their gradient is exactly zero too. The C side
             # guarantees at least `noop` survives, so no row is all -inf.
             logits = logits.masked_fill(~mask, float("-inf"))
-        dist = Categorical(logits=logits)
+        # validate_args=False: the checks only raise, and each costs a host
+        # sync on GPU (two per call). Non-finite losses are still caught in
+        # the update; outputs and the sampling stream are unchanged.
+        dist = Categorical(logits=logits, validate_args=False)
         if action is None:
             action = sample_categorical(dist,mask)
         return action, dist.log_prob(action), dist.entropy(), self.critic(h).squeeze(-1)
@@ -401,7 +404,7 @@ def _score_bf16(agent, x, action, mask):
         h = agent.trunk(x)
         logits, value = agent.actor(h), agent.critic(h)
     logits = logits.float().masked_fill(~mask, float("-inf"))
-    dist = Categorical(logits=logits)
+    dist = Categorical(logits=logits, validate_args=False)   # see ActorCritic.act
     return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
 
 
