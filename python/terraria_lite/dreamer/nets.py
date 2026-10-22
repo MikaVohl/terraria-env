@@ -66,9 +66,14 @@ def head(inp: int, units: int, layers: int, out: int, scale: float = 1.0) -> nn.
     return net
 
 
+def onehot(idx, n: int):
+    """One-hot by comparison (no device sync; out-of-range ids, e.g. -1, give zeros)."""
+    return (idx[..., None] == torch.arange(n, device=idx.device)).float()
+
+
 def onehot_action(a, n: int = SPEC.n_actions):
     """One-hot previous actions; -1 (episode start) is the zero vector."""
-    return F.one_hot(a.long().clamp(min=0), n).float() * (a >= 0)[..., None].float()
+    return onehot(a.long(), n)
 
 
 def masked_policy(logits, mask, unimix: float):
@@ -132,9 +137,9 @@ class RSSM(nn.Module):
     def sample(self, logp):
         """Straight-through one-hot sample, flattened to (..., stoch*classes)."""
         idx = sample_logp(logp)
-        onehot = F.one_hot(idx, self.classes).float()
+        onehot_z = onehot(idx, self.classes)
         probs = logp.exp()
-        return (onehot + probs - probs.detach()).flatten(-2)
+        return (onehot_z + probs - probs.detach()).flatten(-2)
 
     def prior(self, h):
         return self.dist(self.prior_net(h))
