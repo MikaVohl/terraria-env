@@ -101,6 +101,7 @@ class Config:
     compile: bool = False             # torch.compile the policy for sampling and the update
     bf16: bool = False                # bfloat16 autocast in the PPO update
     fused_adam: bool = False          # single fused Adam kernel
+    compile_all: bool = False         # torch.compile the whole sampling forward and minibatch loss too
 
     @property
     def batch(self) -> int:
@@ -442,6 +443,49 @@ def _score_bf16(agent, x, action, mask):
     return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
 
 
+def _sample_heads(agent, x, mask, expand=None):
+    """Rollout-time policy heads (compile_all): normalised masked logits (as
+    Categorical stores them), their probabilities and the value."""
+    h = agent.trunk(expand(x) if expand is not None else x)
+    logits = agent.actor(h).masked_fill(~mask, float("-inf"))
+    logits = logits - logits.logsumexp(-1, keepdim=True)
+    return logits, logits.softmax(-1), agent.critic(h).squeeze(-1)
+
+
+def _ppo_loss(agent, obs, action, mask, old_logp, adv, ret, old_value, *, expand, bf16,
+              clip_coef, clip_vloss, ent_coef, vf_coef):
+    """One minibatch: clipped policy loss with per-minibatch advantage
+    normalisation, (clipped) value loss and entropy bonus. Returns the loss,
+    the approximate KL, the clip fraction and the per-sample entropy."""
+    x = expand(obs) if expand is not None else obs
+    if bf16:
+        newlogp, entropy, newval = _score_bf16(agent, x, action, mask)
+    else:
+        _, newlogp, entropy, newval = agent.act(x, action, mask=mask)
+    logratio = newlogp - old_logp
+    ratio = logratio.exp()
+
+    with torch.no_grad():
+        # Schulman's low-variance KL estimator; also the early-stop signal.
+        approx_kl = ((ratio - 1) - logratio).mean()
+        clipfrac = ((ratio - 1.0).abs() > clip_coef).float().mean()
+
+    # Normalise advantages per minibatch, not per batch.
+    adv = (adv - adv.mean()) / (adv.std() + 1e-8)
+
+    pg = torch.max(-adv * ratio, -adv * torch.clamp(ratio, 1 - clip_coef, 1 + clip_coef)).mean()
+
+    if clip_vloss:
+        v_unclipped = (newval - ret) ** 2
+        v_clipped = (old_value + torch.clamp(newval - old_value, -clip_coef, clip_coef) - ret) ** 2
+        v_loss = 0.5 * torch.max(v_unclipped, v_clipped).mean()
+    else:
+        v_loss = 0.5 * ((newval - ret) ** 2).mean()
+
+    loss = pg - ent_coef * entropy.mean() + vf_coef * v_loss
+    return loss, approx_kl, clipfrac, entropy
+
+
 def compute_gae(rewards, dones, values, next_value, next_done,
                 gamma: float, gae_lambda: float):
     """Generalized advantages for a (T,N) rollout.
@@ -538,6 +582,10 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.compact_obs:
         from terraria_lite.compact import RAW_BYTES, Expander
         expand_collect, expand_learn = Expander(collect_device), Expander(device)
+    # compile_all: one graph each for the sampling forward (expansion through
+    # log-softmax and value; sampling itself stays eager) and the minibatch loss.
+    ppo_loss = torch.compile(_ppo_loss, dynamic=False) if cfg.compile_all else _ppo_loss
+    sample_heads = torch.compile(_sample_heads, dynamic=False) if cfg.compile_all else None
 
     T, N = cfg.rollout, cfg.num_envs
     # Rollout buffers live where they are written; the update moves them to the
@@ -626,7 +674,13 @@ def train(cfg: Config, checkpoint_callback=None):
             done_b[t] = next_done
             msk_b[t] = next_mask
             with torch.inference_mode():
-                a, logp, _, v = actor.act(next_obs, mask=next_mask)
+                if sample_heads is None:
+                    a, logp, _, v = actor.act(next_obs, mask=next_mask)
+                else:
+                    logits, probs, v = sample_heads(actor, next_raw if cfg.compact_obs else next_obs, next_mask,
+                                                    expand_collect)
+                    a = torch.multinomial(probs, 1, True).squeeze(-1)   # as Categorical.sample
+                    logp = logits.gather(-1, a[:, None]).squeeze(-1)
             act_b[t], logp_b[t], val_b[t] = a, logp, v
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
@@ -655,7 +709,9 @@ def train(cfg: Config, checkpoint_callback=None):
                 memory.reset(np.flatnonzero(ended))
             next_obs = upload("obs", policy_input(obs, msk))
             if cfg.compact_obs:
-                next_raw, next_obs = next_obs, expand_collect(next_obs)
+                # compile_all expands inside the sampling graph; the float
+                # rows are then only built for the bootstrap value below.
+                next_raw, next_obs = next_obs, expand_collect(next_obs) if sample_heads is None else None
             next_mask = upload("mask", msk)
             # Autoreset makes both kinds episode boundaries. An explicitly
             # enabled external bootstrap was folded into rew_b above; using
@@ -689,6 +745,8 @@ def train(cfg: Config, checkpoint_callback=None):
             if cfg.curiosity_anneal:
                 scale*=max(0.,1.-2.*(it-1)/n_iters)
             rew_b+=scale*bonus.reshape(T,N).to(collect_device)
+        if next_obs is None:
+            next_obs = expand_collect(next_raw)
         with torch.no_grad():
             next_value = actor.value(next_obs)
             adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
@@ -723,38 +781,11 @@ def train(cfg: Config, checkpoint_callback=None):
                 e_delta, e_unlock, e_valid = b_delta[perm], b_unlock[perm], b_valid[perm]
             for s in range(0, cfg.batch, cfg.minibatch):
                 mb = slice(s, s + cfg.minibatch)
-                x_mb = expand_learn(e_obs[mb]) if cfg.compact_obs else e_obs[mb]
-                if cfg.bf16:
-                    newlogp, entropy, newval = _score_bf16(agent, x_mb, e_act[mb], e_msk[mb])
-                else:
-                    _, newlogp, entropy, newval = agent.act(x_mb, e_act[mb], mask=e_msk[mb])
-                logratio = newlogp - e_logp[mb]
-                ratio = logratio.exp()
-
-                with torch.no_grad():
-                    # Schulman's low-variance KL estimator; also the early-stop signal.
-                    approx_kl = ((ratio - 1) - logratio).mean()
-                    clipfracs.append(
-                        ((ratio - 1.0).abs() > cfg.clip_coef).float().mean())
-
-                # Normalise advantages per minibatch, not per batch.
-                mb_adv = e_adv[mb]
-                mb_adv = (mb_adv - mb_adv.mean()) / (mb_adv.std() + 1e-8)
-
-                pg = torch.max(-mb_adv * ratio,
-                               -mb_adv * torch.clamp(ratio, 1 - cfg.clip_coef,
-                                                     1 + cfg.clip_coef)).mean()
-
-                if cfg.clip_vloss:
-                    v_unclipped = (newval - e_ret[mb]) ** 2
-                    v_clipped = (e_val[mb] + torch.clamp(
-                        newval - e_val[mb], -cfg.clip_coef, cfg.clip_coef)
-                        - e_ret[mb]) ** 2
-                    v_loss = 0.5 * torch.max(v_unclipped, v_clipped).mean()
-                else:
-                    v_loss = 0.5 * ((newval - e_ret[mb]) ** 2).mean()
-
-                loss = pg - cfg.ent_coef * entropy.mean() + cfg.vf_coef * v_loss
+                loss, approx_kl, clipfrac, entropy = ppo_loss(
+                    agent, e_obs[mb], e_act[mb], e_msk[mb], e_logp[mb], e_adv[mb], e_ret[mb], e_val[mb],
+                    expand=expand_learn, bf16=cfg.bf16, clip_coef=cfg.clip_coef, clip_vloss=cfg.clip_vloss,
+                    ent_coef=cfg.ent_coef, vf_coef=cfg.vf_coef)
+                clipfracs.append(clipfrac)
                 if aux is not None:
                     loss = loss + cfg.aux_coef * aux.loss(agent, e_obs[mb], e_act[mb], e_delta[mb],
                                                           e_unlock[mb], e_valid[mb])

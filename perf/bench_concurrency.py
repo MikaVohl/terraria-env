@@ -8,6 +8,7 @@ import argparse, json, os, resource, subprocess, sys, time
 
 CONFIGS = {"exact": "native_autoreset=1 compact_obs=1",
            "max": "native_autoreset=1 compact_obs=1 compile=1 bf16=1 fused_adam=1",
+           "max-all": "native_autoreset=1 compact_obs=1 compile=1 bf16=1 fused_adam=1 compile_all=1",
            "gpu": "sim_backend=gpu compact_obs=1",
            "gpu-max": "sim_backend=gpu compact_obs=1 compile=1 bf16=1 fused_adam=1"}
 
