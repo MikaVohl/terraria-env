@@ -1,0 +1,1097 @@
+{
+ "h3000": {
+  "scores": {
+   "n": 128,
+   "mean": 31.969,
+   "median": 32.0,
+   "min": 31,
+   "max": 32,
+   "perfect": 124,
+   "died": 0,
+   "hist": {
+    "31": 4,
+    "32": 124
+   }
+  },
+  "achievements": {
+   "collect wood": {
+    "earned": 128,
+    "median": 98.5,
+    "max": 199
+   },
+   "collect stone": {
+    "earned": 128,
+    "median": 528.5,
+    "max": 918
+   },
+   "place block": {
+    "earned": 128,
+    "median": 3.0,
+    "max": 6
+   },
+   "craft workbench": {
+    "earned": 128,
+    "median": 377.0,
+    "max": 552
+   },
+   "craft furnace": {
+    "earned": 128,
+    "median": 747.0,
+    "max": 1267
+   },
+   "craft anvil": {
+    "earned": 128,
+    "median": 950.5,
+    "max": 1301
+   },
+   "place torch": {
+    "earned": 128,
+    "median": 622.5,
+    "max": 855
+   },
+   "place platform": {
+    "earned": 128,
+    "median": 384.5,
+    "max": 560
+   },
+   "collect copper": {
+    "earned": 128,
+    "median": 526.5,
+    "max": 1098
+   },
+   "collect iron": {
+    "earned": 128,
+    "median": 621.0,
+    "max": 1019
+   },
+   "collect silver": {
+    "earned": 128,
+    "median": 729.0,
+    "max": 1263
+   },
+   "collect gold": {
+    "earned": 128,
+    "median": 992.5,
+    "max": 1533
+   },
+   "smelt copper": {
+    "earned": 128,
+    "median": 754.5,
+    "max": 1270
+   },
+   "smelt iron": {
+    "earned": 128,
+    "median": 814.5,
+    "max": 1276
+   },
+   "smelt silver": {
+    "earned": 128,
+    "median": 875.5,
+    "max": 1340
+   },
+   "smelt gold": {
+    "earned": 128,
+    "median": 1169.5,
+    "max": 1625
+   },
+   "defeat Blue Slime": {
+    "earned": 128,
+    "median": 28.0,
+    "max": 376
+   },
+   "defeat Cave Bat": {
+    "earned": 128,
+    "median": 856.5,
+    "max": 2362
+   },
+   "open chest": {
+    "earned": 128,
+    "median": 651.0,
+    "max": 1692
+   },
+   "craft wooden sword": {
+    "earned": 128,
+    "median": 380.0,
+    "max": 555
+   },
+   "craft metal sword": {
+    "earned": 128,
+    "median": 978.0,
+    "max": 1605
+   },
+   "craft wood breastplate": {
+    "earned": 128,
+    "median": 431.0,
+    "max": 1405
+   },
+   "craft iron chainmail": {
+    "earned": 124,
+    "median": 2268.5,
+    "max": 2856
+   },
+   "heal with food or potion": {
+    "earned": 128,
+    "median": 18.0,
+    "max": 145
+   },
+   "use life crystal": {
+    "earned": 128,
+    "median": 683.0,
+    "max": 1708
+   },
+   "double jump": {
+    "earned": 128,
+    "median": 669.0,
+    "max": 1702
+   },
+   "descend deep": {
+    "earned": 128,
+    "median": 749.5,
+    "max": 1396
+   },
+   "return to surface": {
+    "earned": 128,
+    "median": 2391.0,
+    "max": 2931
+   },
+   "explore 30 columns": {
+    "earned": 128,
+    "median": 83.5,
+    "max": 159
+   },
+   "climb rope": {
+    "earned": 128,
+    "median": 664.0,
+    "max": 1695
+   },
+   "craft iron pickaxe": {
+    "earned": 128,
+    "median": 1296.5,
+    "max": 1820
+   },
+   "craft gold pickaxe": {
+    "earned": 128,
+    "median": 1924.5,
+    "max": 2556
+   }
+  }
+ },
+ "h6000": {
+  "scores": {
+   "n": 128,
+   "mean": 32,
+   "median": 32.0,
+   "min": 32,
+   "max": 32,
+   "perfect": 128,
+   "died": 0,
+   "hist": {
+    "32": 128
+   }
+  },
+  "achievements": {
+   "collect wood": {
+    "earned": 128,
+    "median": 98.5,
+    "max": 199
+   },
+   "collect stone": {
+    "earned": 128,
+    "median": 528.5,
+    "max": 918
+   },
+   "place block": {
+    "earned": 128,
+    "median": 3.0,
+    "max": 6
+   },
+   "craft workbench": {
+    "earned": 128,
+    "median": 377.0,
+    "max": 552
+   },
+   "craft furnace": {
+    "earned": 128,
+    "median": 747.0,
+    "max": 1267
+   },
+   "craft anvil": {
+    "earned": 128,
+    "median": 950.5,
+    "max": 1301
+   },
+   "place torch": {
+    "earned": 128,
+    "median": 622.5,
+    "max": 855
+   },
+   "place platform": {
+    "earned": 128,
+    "median": 384.5,
+    "max": 560
+   },
+   "collect copper": {
+    "earned": 128,
+    "median": 526.5,
+    "max": 1098
+   },
+   "collect iron": {
+    "earned": 128,
+    "median": 621.0,
+    "max": 1019
+   },
+   "collect silver": {
+    "earned": 128,
+    "median": 729.0,
+    "max": 1263
+   },
+   "collect gold": {
+    "earned": 128,
+    "median": 992.5,
+    "max": 1533
+   },
+   "smelt copper": {
+    "earned": 128,
+    "median": 754.5,
+    "max": 1270
+   },
+   "smelt iron": {
+    "earned": 128,
+    "median": 814.5,
+    "max": 1276
+   },
+   "smelt silver": {
+    "earned": 128,
+    "median": 875.5,
+    "max": 1340
+   },
+   "smelt gold": {
+    "earned": 128,
+    "median": 1169.5,
+    "max": 1625
+   },
+   "defeat Blue Slime": {
+    "earned": 128,
+    "median": 28.0,
+    "max": 376
+   },
+   "defeat Cave Bat": {
+    "earned": 128,
+    "median": 856.5,
+    "max": 2362
+   },
+   "open chest": {
+    "earned": 128,
+    "median": 651.0,
+    "max": 1692
+   },
+   "craft wooden sword": {
+    "earned": 128,
+    "median": 380.0,
+    "max": 555
+   },
+   "craft metal sword": {
+    "earned": 128,
+    "median": 978.0,
+    "max": 1605
+   },
+   "craft wood breastplate": {
+    "earned": 128,
+    "median": 431.0,
+    "max": 1405
+   },
+   "craft iron chainmail": {
+    "earned": 128,
+    "median": 2283.5,
+    "max": 3025
+   },
+   "heal with food or potion": {
+    "earned": 128,
+    "median": 18.0,
+    "max": 145
+   },
+   "use life crystal": {
+    "earned": 128,
+    "median": 683.0,
+    "max": 1708
+   },
+   "double jump": {
+    "earned": 128,
+    "median": 669.0,
+    "max": 1702
+   },
+   "descend deep": {
+    "earned": 128,
+    "median": 749.5,
+    "max": 1396
+   },
+   "return to surface": {
+    "earned": 128,
+    "median": 2391.0,
+    "max": 3075
+   },
+   "explore 30 columns": {
+    "earned": 128,
+    "median": 83.5,
+    "max": 159
+   },
+   "climb rope": {
+    "earned": 128,
+    "median": 664.0,
+    "max": 1695
+   },
+   "craft iron pickaxe": {
+    "earned": 128,
+    "median": 1296.5,
+    "max": 1820
+   },
+   "craft gold pickaxe": {
+    "earned": 128,
+    "median": 1924.5,
+    "max": 2556
+   }
+  }
+ },
+ "h12000": {
+  "scores": {
+   "n": 128,
+   "mean": 32,
+   "median": 32.0,
+   "min": 32,
+   "max": 32,
+   "perfect": 128,
+   "died": 0,
+   "hist": {
+    "32": 128
+   }
+  },
+  "achievements": {
+   "collect wood": {
+    "earned": 128,
+    "median": 98.5,
+    "max": 199
+   },
+   "collect stone": {
+    "earned": 128,
+    "median": 528.5,
+    "max": 918
+   },
+   "place block": {
+    "earned": 128,
+    "median": 3.0,
+    "max": 6
+   },
+   "craft workbench": {
+    "earned": 128,
+    "median": 377.0,
+    "max": 552
+   },
+   "craft furnace": {
+    "earned": 128,
+    "median": 747.0,
+    "max": 1267
+   },
+   "craft anvil": {
+    "earned": 128,
+    "median": 950.5,
+    "max": 1301
+   },
+   "place torch": {
+    "earned": 128,
+    "median": 622.5,
+    "max": 855
+   },
+   "place platform": {
+    "earned": 128,
+    "median": 384.5,
+    "max": 560
+   },
+   "collect copper": {
+    "earned": 128,
+    "median": 526.5,
+    "max": 1098
+   },
+   "collect iron": {
+    "earned": 128,
+    "median": 621.0,
+    "max": 1019
+   },
+   "collect silver": {
+    "earned": 128,
+    "median": 729.0,
+    "max": 1263
+   },
+   "collect gold": {
+    "earned": 128,
+    "median": 992.5,
+    "max": 1533
+   },
+   "smelt copper": {
+    "earned": 128,
+    "median": 754.5,
+    "max": 1270
+   },
+   "smelt iron": {
+    "earned": 128,
+    "median": 814.5,
+    "max": 1276
+   },
+   "smelt silver": {
+    "earned": 128,
+    "median": 875.5,
+    "max": 1340
+   },
+   "smelt gold": {
+    "earned": 128,
+    "median": 1169.5,
+    "max": 1625
+   },
+   "defeat Blue Slime": {
+    "earned": 128,
+    "median": 28.0,
+    "max": 376
+   },
+   "defeat Cave Bat": {
+    "earned": 128,
+    "median": 856.5,
+    "max": 2362
+   },
+   "open chest": {
+    "earned": 128,
+    "median": 651.0,
+    "max": 1692
+   },
+   "craft wooden sword": {
+    "earned": 128,
+    "median": 380.0,
+    "max": 555
+   },
+   "craft metal sword": {
+    "earned": 128,
+    "median": 978.0,
+    "max": 1605
+   },
+   "craft wood breastplate": {
+    "earned": 128,
+    "median": 431.0,
+    "max": 1405
+   },
+   "craft iron chainmail": {
+    "earned": 128,
+    "median": 2283.5,
+    "max": 3025
+   },
+   "heal with food or potion": {
+    "earned": 128,
+    "median": 18.0,
+    "max": 145
+   },
+   "use life crystal": {
+    "earned": 128,
+    "median": 683.0,
+    "max": 1708
+   },
+   "double jump": {
+    "earned": 128,
+    "median": 669.0,
+    "max": 1702
+   },
+   "descend deep": {
+    "earned": 128,
+    "median": 749.5,
+    "max": 1396
+   },
+   "return to surface": {
+    "earned": 128,
+    "median": 2391.0,
+    "max": 3075
+   },
+   "explore 30 columns": {
+    "earned": 128,
+    "median": 83.5,
+    "max": 159
+   },
+   "climb rope": {
+    "earned": 128,
+    "median": 664.0,
+    "max": 1695
+   },
+   "craft iron pickaxe": {
+    "earned": 128,
+    "median": 1296.5,
+    "max": 1820
+   },
+   "craft gold pickaxe": {
+    "earned": 128,
+    "median": 1924.5,
+    "max": 2556
+   }
+  }
+ },
+ "extra_h3000": {
+  "scores": {
+   "n": 256,
+   "mean": 31.938,
+   "median": 32.0,
+   "min": 30,
+   "max": 32,
+   "perfect": 241,
+   "died": 0,
+   "hist": {
+    "30": 1,
+    "31": 14,
+    "32": 241
+   }
+  },
+  "achievements": {
+   "collect wood": {
+    "earned": 256,
+    "median": 118.0,
+    "max": 212
+   },
+   "collect stone": {
+    "earned": 256,
+    "median": 539.0,
+    "max": 845
+   },
+   "place block": {
+    "earned": 256,
+    "median": 3.0,
+    "max": 9
+   },
+   "craft workbench": {
+    "earned": 256,
+    "median": 375.0,
+    "max": 590
+   },
+   "craft furnace": {
+    "earned": 256,
+    "median": 773.0,
+    "max": 1895
+   },
+   "craft anvil": {
+    "earned": 256,
+    "median": 938.0,
+    "max": 1942
+   },
+   "place torch": {
+    "earned": 256,
+    "median": 630.0,
+    "max": 965
+   },
+   "place platform": {
+    "earned": 256,
+    "median": 382.5,
+    "max": 598
+   },
+   "collect copper": {
+    "earned": 256,
+    "median": 544.0,
+    "max": 1149
+   },
+   "collect iron": {
+    "earned": 256,
+    "median": 634.5,
+    "max": 1144
+   },
+   "collect silver": {
+    "earned": 256,
+    "median": 713.5,
+    "max": 1503
+   },
+   "collect gold": {
+    "earned": 256,
+    "median": 970.5,
+    "max": 1687
+   },
+   "smelt copper": {
+    "earned": 256,
+    "median": 797.0,
+    "max": 1899
+   },
+   "smelt iron": {
+    "earned": 256,
+    "median": 812.5,
+    "max": 1905
+   },
+   "smelt silver": {
+    "earned": 256,
+    "median": 851.0,
+    "max": 1937
+   },
+   "smelt gold": {
+    "earned": 256,
+    "median": 1122.5,
+    "max": 1938
+   },
+   "defeat Blue Slime": {
+    "earned": 256,
+    "median": 30.0,
+    "max": 66
+   },
+   "defeat Cave Bat": {
+    "earned": 256,
+    "median": 858.0,
+    "max": 2341
+   },
+   "open chest": {
+    "earned": 256,
+    "median": 651.0,
+    "max": 1580
+   },
+   "craft wooden sword": {
+    "earned": 256,
+    "median": 378.0,
+    "max": 593
+   },
+   "craft metal sword": {
+    "earned": 256,
+    "median": 1004.0,
+    "max": 1946
+   },
+   "craft wood breastplate": {
+    "earned": 256,
+    "median": 511.5,
+    "max": 1387
+   },
+   "craft iron chainmail": {
+    "earned": 241,
+    "median": 2334,
+    "max": 2900
+   },
+   "heal with food or potion": {
+    "earned": 256,
+    "median": 19.0,
+    "max": 139
+   },
+   "use life crystal": {
+    "earned": 256,
+    "median": 675.0,
+    "max": 1602
+   },
+   "double jump": {
+    "earned": 256,
+    "median": 669.0,
+    "max": 1595
+   },
+   "descend deep": {
+    "earned": 256,
+    "median": 704.5,
+    "max": 1518
+   },
+   "return to surface": {
+    "earned": 256,
+    "median": 2470.0,
+    "max": 2954
+   },
+   "explore 30 columns": {
+    "earned": 256,
+    "median": 87.0,
+    "max": 160
+   },
+   "climb rope": {
+    "earned": 256,
+    "median": 669.0,
+    "max": 1586
+   },
+   "craft iron pickaxe": {
+    "earned": 256,
+    "median": 1323.0,
+    "max": 1945
+   },
+   "craft gold pickaxe": {
+    "earned": 255,
+    "median": 1915,
+    "max": 2723
+   }
+  }
+ },
+ "portfolio_h3000": {
+  "scores": {
+   "n": 128,
+   "mean": 31.992,
+   "median": 32.0,
+   "min": 31,
+   "max": 32,
+   "perfect": 127,
+   "died": 0,
+   "hist": {
+    "31": 1,
+    "32": 127
+   }
+  },
+  "achievements": {
+   "collect wood": {
+    "earned": 128,
+    "median": 98.5,
+    "max": 199
+   },
+   "collect stone": {
+    "earned": 128,
+    "median": 528.5,
+    "max": 918
+   },
+   "place block": {
+    "earned": 128,
+    "median": 3.0,
+    "max": 6
+   },
+   "craft workbench": {
+    "earned": 128,
+    "median": 377.0,
+    "max": 552
+   },
+   "craft furnace": {
+    "earned": 128,
+    "median": 746.0,
+    "max": 1263
+   },
+   "craft anvil": {
+    "earned": 128,
+    "median": 958.0,
+    "max": 1401
+   },
+   "place torch": {
+    "earned": 128,
+    "median": 622.5,
+    "max": 855
+   },
+   "place platform": {
+    "earned": 128,
+    "median": 384.5,
+    "max": 560
+   },
+   "collect copper": {
+    "earned": 128,
+    "median": 526.5,
+    "max": 1380
+   },
+   "collect iron": {
+    "earned": 128,
+    "median": 621.0,
+    "max": 1019
+   },
+   "collect silver": {
+    "earned": 128,
+    "median": 733.0,
+    "max": 1225
+   },
+   "collect gold": {
+    "earned": 128,
+    "median": 906.5,
+    "max": 1666
+   },
+   "smelt copper": {
+    "earned": 128,
+    "median": 751.5,
+    "max": 1387
+   },
+   "smelt iron": {
+    "earned": 128,
+    "median": 815.0,
+    "max": 1274
+   },
+   "smelt silver": {
+    "earned": 128,
+    "median": 862.5,
+    "max": 1345
+   },
+   "smelt gold": {
+    "earned": 128,
+    "median": 1005.0,
+    "max": 1696
+   },
+   "defeat Blue Slime": {
+    "earned": 128,
+    "median": 28.0,
+    "max": 376
+   },
+   "defeat Cave Bat": {
+    "earned": 128,
+    "median": 853.5,
+    "max": 1940
+   },
+   "open chest": {
+    "earned": 128,
+    "median": 651.0,
+    "max": 1650
+   },
+   "craft wooden sword": {
+    "earned": 128,
+    "median": 380.0,
+    "max": 555
+   },
+   "craft metal sword": {
+    "earned": 128,
+    "median": 1003.5,
+    "max": 1605
+   },
+   "craft wood breastplate": {
+    "earned": 128,
+    "median": 431.0,
+    "max": 1500
+   },
+   "craft iron chainmail": {
+    "earned": 127,
+    "median": 2204,
+    "max": 2814
+   },
+   "heal with food or potion": {
+    "earned": 128,
+    "median": 18.0,
+    "max": 145
+   },
+   "use life crystal": {
+    "earned": 128,
+    "median": 683.0,
+    "max": 1666
+   },
+   "double jump": {
+    "earned": 128,
+    "median": 669.0,
+    "max": 1660
+   },
+   "descend deep": {
+    "earned": 128,
+    "median": 744.5,
+    "max": 1396
+   },
+   "return to surface": {
+    "earned": 128,
+    "median": 2306.5,
+    "max": 2931
+   },
+   "explore 30 columns": {
+    "earned": 128,
+    "median": 83.5,
+    "max": 159
+   },
+   "climb rope": {
+    "earned": 128,
+    "median": 664.0,
+    "max": 1653
+   },
+   "craft iron pickaxe": {
+    "earned": 128,
+    "median": 1329.0,
+    "max": 2001
+   },
+   "craft gold pickaxe": {
+    "earned": 128,
+    "median": 1857.0,
+    "max": 2747
+   }
+  }
+ },
+ "hard": {
+  "craft anvil": {
+   "earned_3000": 128,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 112.0,
+   "lb_max": 112,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 0,
+   "steps_12000": {
+    "median": 950.5,
+    "p90": 1141,
+    "max": 1301
+   }
+  },
+  "craft metal sword": {
+   "earned_3000": 128,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 166.0,
+   "lb_max": 166,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 0,
+   "steps_12000": {
+    "median": 978.0,
+    "p90": 1182,
+    "max": 1605
+   }
+  },
+  "craft iron pickaxe": {
+   "earned_3000": 128,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 202.0,
+   "lb_max": 205,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 0,
+   "steps_12000": {
+    "median": 1296.5,
+    "p90": 1498,
+    "max": 1820
+   }
+  },
+  "craft gold pickaxe": {
+   "earned_3000": 128,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 232.0,
+   "lb_max": 285,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 0,
+   "steps_12000": {
+    "median": 1924.5,
+    "p90": 2395,
+    "max": 2556
+   }
+  },
+  "craft iron chainmail": {
+   "earned_3000": 124,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 293.0,
+   "lb_max": 297,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 4,
+   "steps_12000": {
+    "median": 2283.5,
+    "p90": 2687,
+    "max": 3025
+   }
+  },
+  "craft wood breastplate": {
+   "earned_3000": 128,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 47.0,
+   "lb_max": 62,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 0,
+   "steps_12000": {
+    "median": 431.0,
+    "p90": 755,
+    "max": 1405
+   }
+  },
+  "return to surface": {
+   "earned_3000": 128,
+   "earned_6000": 128,
+   "earned_12000": 128,
+   "lb_median": 60.0,
+   "lb_max": 65,
+   "fail_provably_infeasible": 0,
+   "fail_planner_ran_out": 0,
+   "steps_12000": {
+    "median": 2391.0,
+    "p90": 2792,
+    "max": 3075
+   }
+  }
+ },
+ "lower_bound_all_hard": {
+  "median": 451.0,
+  "max": 465,
+  "min": 363,
+  "worlds_over_3000": 0,
+  "violations_lb_above_achieved": 0
+ },
+ "completion_12000": {
+  "all32_median": 2391.0,
+  "all32_p90": 2792,
+  "all32_max": 3075,
+  "worlds_all32_within_3000": 124,
+  "hard7_median": 2391.0,
+  "hard7_max": 3075
+ },
+ "acts_h3000_median": {
+  "move": 751.0,
+  "mine_ore": 216.0,
+  "mine_other": 443.0,
+  "noop_cd": 434.0,
+  "noop_air": 203.5,
+  "noop_other": 9.0,
+  "place": 201.5,
+  "craft": 73.0,
+  "misc": 58.0
+ },
+ "world_resources": {
+  "iron": {
+   "min": 120,
+   "median": 122.0,
+   "max": 202
+  },
+  "gold": {
+   "min": 40,
+   "median": 52.0,
+   "max": 107
+  },
+  "copper": {
+   "min": 100,
+   "median": 198.0,
+   "max": 264
+  },
+  "silver": {
+   "min": 42,
+   "median": 100.5,
+   "max": 156
+  },
+  "wood": {
+   "min": 90,
+   "median": 117.0,
+   "max": 130
+  }
+ },
+ "h3000_failures": [
+  {
+   "seed": 23000068,
+   "score": 31,
+   "missing": [
+    "craft iron chainmail"
+   ],
+   "got": {
+    "iron": 113,
+    "gold": 40,
+    "copper": 46,
+    "silver": 10,
+    "wood": 72
+   }
+  },
+  {
+   "seed": 23000083,
+   "score": 31,
+   "missing": [
+    "craft iron chainmail"
+   ],
+   "got": {
+    "iron": 115,
+    "gold": 40,
+    "copper": 35,
+    "silver": 9,
+    "wood": 66
+   }
+  },
+  {
+   "seed": 23000113,
+   "score": 31,
+   "missing": [
+    "craft iron chainmail"
+   ],
+   "got": {
+    "iron": 119,
+    "gold": 40,
+    "copper": 27,
+    "silver": 14,
+    "wood": 62
+   }
+  },
+  {
+   "seed": 23000124,
+   "score": 31,
+   "missing": [
+    "craft iron chainmail"
+   ],
+   "got": {
+    "iron": 117,
+    "gold": 40,
+    "copper": 27,
+    "silver": 12,
+    "wood": 64
+   }
+  }
+ ]
+}
