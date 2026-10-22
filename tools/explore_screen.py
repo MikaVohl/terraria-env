@@ -91,7 +91,13 @@ for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall
                       "wall_frontier": ["--potential-mode", "frontier"],
                       "wall_frontier_nov01": ["--potential-mode", "frontier", "--novelty", ".01"],
                       # Frontier plus a climb-back goal after descending deep (return to surface).
-                      "wall_frontier_surface": ["--potential-mode", "frontier_surface"]}.items():
+                      "wall_frontier_surface": ["--potential-mode", "frontier_surface"],
+                      # Stockpiling study: the best policy never holds 10 iron bars / 30 wood
+                      # (craft never legal); does a stronger frontier pull make it hoard?
+                      "wall_fn_p10": ["--potential-mode", "frontier", "--novelty", ".01", "--potential", "10"],
+                      "wall_fn_p30": ["--potential-mode", "frontier", "--novelty", ".01", "--potential", "30"],
+                      "wall_fsn_p30": ["--potential-mode", "frontier_surface", "--novelty", ".01",
+                                       "--potential", "30"]}.items():
     ARMS[_name] = ARMS["pot_e1024_max"] + _extra
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
