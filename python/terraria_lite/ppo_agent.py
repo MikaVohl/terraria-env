@@ -713,16 +713,22 @@ def train(cfg: Config, checkpoint_callback=None):
         clipfracs, approx_kl = [], torch.tensor(0.0)
         for _ in range(cfg.epochs):
             np.random.shuffle(idx)
-            # One index upload per epoch, not one per gathered tensor.
+            # One index upload and one gather per tensor per epoch; minibatches
+            # are then contiguous slices (the same rows, values and layout as
+            # gathering each minibatch).
             perm = torch.as_tensor(idx, device=device)
+            e_obs, e_act, e_logp, e_adv, e_ret, e_val, e_msk = (
+                x[perm] for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
+            if aux is not None:
+                e_delta, e_unlock, e_valid = b_delta[perm], b_unlock[perm], b_valid[perm]
             for s in range(0, cfg.batch, cfg.minibatch):
-                mb = perm[s: s + cfg.minibatch]
-                x_mb = expand_learn(b_obs[mb]) if cfg.compact_obs else b_obs[mb]
+                mb = slice(s, s + cfg.minibatch)
+                x_mb = expand_learn(e_obs[mb]) if cfg.compact_obs else e_obs[mb]
                 if cfg.bf16:
-                    newlogp, entropy, newval = _score_bf16(agent, x_mb, b_act[mb], b_msk[mb])
+                    newlogp, entropy, newval = _score_bf16(agent, x_mb, e_act[mb], e_msk[mb])
                 else:
-                    _, newlogp, entropy, newval = agent.act(x_mb, b_act[mb], mask=b_msk[mb])
-                logratio = newlogp - b_logp[mb]
+                    _, newlogp, entropy, newval = agent.act(x_mb, e_act[mb], mask=e_msk[mb])
+                logratio = newlogp - e_logp[mb]
                 ratio = logratio.exp()
 
                 with torch.no_grad():
@@ -732,7 +738,7 @@ def train(cfg: Config, checkpoint_callback=None):
                         ((ratio - 1.0).abs() > cfg.clip_coef).float().mean())
 
                 # Normalise advantages per minibatch, not per batch.
-                mb_adv = b_adv[mb]
+                mb_adv = e_adv[mb]
                 mb_adv = (mb_adv - mb_adv.mean()) / (mb_adv.std() + 1e-8)
 
                 pg = torch.max(-mb_adv * ratio,
@@ -740,18 +746,18 @@ def train(cfg: Config, checkpoint_callback=None):
                                                      1 + cfg.clip_coef)).mean()
 
                 if cfg.clip_vloss:
-                    v_unclipped = (newval - b_ret[mb]) ** 2
-                    v_clipped = (b_val[mb] + torch.clamp(
-                        newval - b_val[mb], -cfg.clip_coef, cfg.clip_coef)
-                        - b_ret[mb]) ** 2
+                    v_unclipped = (newval - e_ret[mb]) ** 2
+                    v_clipped = (e_val[mb] + torch.clamp(
+                        newval - e_val[mb], -cfg.clip_coef, cfg.clip_coef)
+                        - e_ret[mb]) ** 2
                     v_loss = 0.5 * torch.max(v_unclipped, v_clipped).mean()
                 else:
-                    v_loss = 0.5 * ((newval - b_ret[mb]) ** 2).mean()
+                    v_loss = 0.5 * ((newval - e_ret[mb]) ** 2).mean()
 
                 loss = pg - cfg.ent_coef * entropy.mean() + cfg.vf_coef * v_loss
                 if aux is not None:
-                    loss = loss + cfg.aux_coef * aux.loss(agent, b_obs[mb], b_act[mb], b_delta[mb],
-                                                          b_unlock[mb], b_valid[mb])
+                    loss = loss + cfg.aux_coef * aux.loss(agent, e_obs[mb], e_act[mb], e_delta[mb],
+                                                          e_unlock[mb], e_valid[mb])
                 if not torch.isfinite(loss):
                     raise FloatingPointError("Non-finite PPO loss; preserve this run without retrying")
 

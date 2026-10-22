@@ -1,7 +1,8 @@
-"""K simultaneous trainer runs on one GPU (GPU 7), splitting 16 CPU threads
-(368-383) evenly: aggregate and per-run steady steps/s plus CPU time used.
+"""K simultaneous trainer runs on one GPU, splitting a CPU set evenly:
+aggregate and per-run steady steps/s plus CPU time used.
 
-    HIP_VISIBLE_DEVICES=7 python perf/bench_concurrency.py --envs 1024 --runs 1 2 4 --config exact
+    python perf/bench_concurrency.py --gpu 0 --cpus 72-95 --envs 1024 --runs 1 2 4 --config max \
+        [--set potential_mode=frontier novelty_coef=.01]
 """
 import argparse, json, os, resource, subprocess, sys, time
 
@@ -9,7 +10,6 @@ CONFIGS = {"exact": "native_autoreset=1 compact_obs=1",
            "max": "native_autoreset=1 compact_obs=1 compile=1 bf16=1 fused_adam=1",
            "gpu": "sim_backend=gpu compact_obs=1",
            "gpu-max": "sim_backend=gpu compact_obs=1 compile=1 bf16=1 fused_adam=1"}
-CPUS = list(range(368, 384))
 
 
 def main():
@@ -18,10 +18,15 @@ def main():
     p.add_argument("--runs", type=int, nargs="+", default=[1, 2, 4])
     p.add_argument("--config", choices=list(CONFIGS), default="exact")
     p.add_argument("--iters", type=int, default=6)
+    p.add_argument("--gpu", default="7")
+    p.add_argument("--cpus", default="368-383", help="first-last CPU ids, split evenly between runs")
+    p.add_argument("--set", nargs="*", default=[], help="extra Config fields for every run")
     a = p.parse_args()
+    lo, hi = map(int, a.cpus.split("-"))
+    CPUS = list(range(lo, hi + 1))
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     env = {**os.environ, "PYTHONPATH": os.path.join(root, "python"), "PYTHONDONTWRITEBYTECODE": "1",
-           "HIP_VISIBLE_DEVICES": "7", "TORCHINDUCTOR_CACHE_DIR": os.path.join(root, "perf", ".inductor")}
+           "HIP_VISIBLE_DEVICES": a.gpu, "TORCHINDUCTOR_CACHE_DIR": os.path.join(root, "perf", ".inductor")}
     for k in a.runs:
         share = len(CPUS) // k
         procs = []
@@ -32,7 +37,7 @@ def main():
             cmd = ["taskset", "-c", ",".join(map(str, cpus)), sys.executable, "perf/bench_trainer.py",
                    "--envs", str(a.envs), "--iters", str(a.iters), "--seed", str(901 + r),
                    "--threads", str(max(1, share // 4)), "--sim-workers", str(share),
-                   "--label", f"{a.config}-k{k}-r{r}", "--set", *CONFIGS[a.config].split()]
+                   "--label", f"{a.config}-k{k}-r{r}", "--set", *CONFIGS[a.config].split(), *a.set]
             procs.append(subprocess.Popen(cmd, cwd=root, env={**env, "OMP_NUM_THREADS": str(max(1, share // 4))},
                                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True))
         rows = []
