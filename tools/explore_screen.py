@@ -103,7 +103,13 @@ for _name, _extra in {"wall_ctl": [], "wall_pot10": ["--potential", "10"], "wall
 for _name, _extra in {"idea_rn": ["--return-norm", "percentile"],
                       "idea_twohot": ["--value-head", "twohot"],
                       "idea_unimix": ["--unimix", ".01"],
-                      "idea_all": ["--return-norm", "percentile", "--value-head", "twohot", "--unimix", ".01"]}.items():
+                      "idea_all": ["--return-norm", "percentile", "--value-head", "twohot", "--unimix", ".01"],
+                      # Percentile return norm leaves |adv| ~ .08 (scale ~4) instead of the standardised ~1,
+                      # so entropy .03 swamps the policy gradient (idea_rn: 10/32 flat). Rescale entropy by
+                      # that ratio (.03 x .08 ~ .003); DreamerV3 itself uses 3e-4 with normalised returns.
+                      "idea_rn_e003": ["--return-norm", "percentile", "--entropy", ".003"],
+                      "idea_all_e003": ["--return-norm", "percentile", "--value-head", "twohot", "--unimix", ".01",
+                                        "--entropy", ".003"]}.items():
     ARMS[_name] = ARMS["wall_frontier_nov01"] + _extra
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
