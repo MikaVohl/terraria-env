@@ -47,6 +47,17 @@ def load_agent(path: str | Path, device: str = "cpu"):
     agent.eval()
     return agent
 
+def evaluate_checkpoint(path: str | Path, device: str, seeds: list[int], *, num_envs: int = 64,
+                        sample_seed: int = 12345, threads: int = 0) -> dict:
+    """evaluate(load_agent(path, device), ...) for a worker process; `threads`
+    sets torch's intra-op threads first (the caller's count, so the CPU
+    kernels and therefore the results are the same as evaluating in the
+    caller)."""
+    if threads:
+        torch.set_num_threads(threads)
+    return evaluate(load_agent(path, device), seeds, num_envs=num_envs, sample_seed=sample_seed, device=device)
+
+
 
 @torch.no_grad()
 def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
