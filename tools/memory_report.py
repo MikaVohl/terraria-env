@@ -31,6 +31,7 @@ ITEMS = ["wood", "iron ore", "iron bar", "gold ore", "gold bar"]
 NEED = {"iron bar >= 10": ("iron bar", 10), "iron bar >= 25": ("iron bar", 25), "gold bar >= 10": ("gold bar", 10),
         "wood >= 30": ("wood", 30)}
 MATCHED = [2 ** 26, 2 ** 27, 2 ** 28, 3 * 2 ** 27, 2 ** 29, 2 ** 30, 2 ** 31]
+WALL_CLOCK = [600, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 16200]   # seconds since the run started
 
 
 def diagnostics(path: Path) -> dict:
@@ -104,6 +105,12 @@ def at(row, steps):
     return None
 
 
+def by_time(row, seconds):
+    """Score of the last checkpoint taken within `seconds` of the run's start."""
+    scores = [score for _, t, score in row["curve"] if t <= seconds]
+    return scores[-1] if scores else None
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("screens", nargs="+", help="SCREEN_DIR=LABEL")
@@ -141,6 +148,16 @@ def main():
         cells = []
         for s in MATCHED:
             v = [x for r in arms[arm] if (x := at(r, s)) is not None]
+            cells.append(f"{np.mean(v):.2f} [{len(v)}]" if v else "")
+        print(f"| {arm} | " + " | ".join(cells) + " |")
+
+    print("\nEqual wall-clock (score of the last checkpoint within the budget; only completed solo-comparable runs):\n")
+    print("| arm | " + " | ".join(f"{w / 60:.0f} min" for w in WALL_CLOCK) + " |")
+    print("|---|" + "---|" * len(WALL_CLOCK))
+    for arm in order:
+        cells = []
+        for w in WALL_CLOCK:
+            v = [x for r in arms[arm] if r["status"] == "completed" if (x := by_time(r, w)) is not None]
             cells.append(f"{np.mean(v):.2f} [{len(v)}]" if v else "")
         print(f"| {arm} | " + " | ".join(cells) + " |")
 
