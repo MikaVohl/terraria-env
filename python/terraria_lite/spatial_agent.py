@@ -43,15 +43,21 @@ class SpatialActorCritic(ActorCritic):
         self.critic=layer_init(nn.Linear(hidden,1),std=1.)
 
 
-def build_agent(architecture="mlp", hidden=None, extra=0):
-    """`extra` appends non-observation input features; only 'targets' supports it."""
+def build_agent(architecture="mlp", hidden=None, extra=0, depth=2, cell_width=32):
+    """`extra` appends non-observation input features; only 'targets' supports it.
+    `hidden` 0/None selects the architecture's default width; `depth` (global
+    trunk layers) applies to 'targets' and 'mlp', `cell_width` to 'targets'."""
     if architecture=="targets":
         from terraria_lite.target_agent import TargetActorCritic
-        return TargetActorCritic(hidden or 128,extra)
+        return TargetActorCritic(hidden or 128,extra,depth,cell_width)
     if extra:
         raise ValueError(f"Architecture {architecture} does not accept extra features")
+    if cell_width!=32:
+        raise ValueError(f"Architecture {architecture} has no cell_width")
     if architecture=="mlp":
-        return ActorCritic(SPEC.obs_size,SPEC.n_actions,hidden=hidden or 512)
+        return ActorCritic(SPEC.obs_size,SPEC.n_actions,hidden=hidden or 512,depth=depth)
+    if depth!=2:
+        raise ValueError(f"Architecture {architecture} has no depth option")
     if architecture=="tokens":
         from terraria_lite.token_agent import TokenActorCritic
         return TokenActorCritic(hidden or 256)
@@ -61,3 +67,17 @@ def build_agent(architecture="mlp", hidden=None, extra=0):
     if architecture!="cnn":
         raise ValueError(f"Unknown architecture: {architecture}")
     return SpatialActorCritic(hidden or 256)
+
+
+def agent_size(architecture, state):
+    """Size knobs (hidden, depth, cell_width) of a feed-forward state_dict, so
+    checkpoints of any size restore without extra metadata."""
+    size={"hidden":int(state["actor.weight"].shape[1])}
+    prefix={"targets":"trunk.global_features.","mlp":"trunk."}.get(architecture)
+    if prefix is not None:
+        size["depth"]=sum(1 for k in state if k.startswith(prefix) and k.endswith(".weight")
+                          and k[len(prefix):-len(".weight")].isdigit())
+    if architecture=="targets":
+        size["cell_width"]=int(state["trunk.cells.0.weight"].shape[0])
+    return size
+

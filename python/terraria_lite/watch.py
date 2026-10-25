@@ -80,9 +80,9 @@ def _load(path: Path):
     keys = set(sd)
 
     if any(k.startswith("actor.") for k in keys):
-        from terraria_lite.spatial_agent import build_agent
-        hidden = int(sd["actor.weight"].shape[1])
-        net = build_agent(raw.get("architecture","mlp"),hidden)
+        from terraria_lite.spatial_agent import agent_size, build_agent
+        architecture = raw.get("architecture","mlp")
+        net = build_agent(architecture, **agent_size(architecture, sd))
         net.load_state_dict(sd)
         net.eval()
 

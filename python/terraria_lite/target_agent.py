@@ -3,29 +3,33 @@
 `extra` > 0 appends that many non-observation features (e.g. memory_features)
 after the observation; they join only the global MLP input. extra=0 builds the
 exact original module, so pre-existing checkpoints load unchanged.
+
+Size knobs: `hidden` is the global trunk width, `depth` its number of Tanh
+layers and `cell_width` the per-cell MLP width. The defaults (128, 2, 32)
+create the same layers in the same order as the original network, so seeded
+initialisation and training are unchanged.
 """
 import torch
 from torch import nn
 from torch.nn import functional as F
 from terraria_lite import SPEC
-from terraria_lite.ppo_agent import ActorCritic, layer_init
+from terraria_lite.ppo_agent import ActorCritic, layer_init, tanh_mlp
 
 
 class TargetEncoder(nn.Module):
-    def __init__(self, hidden=128, extra=0):
+    def __init__(self, hidden=128, extra=0, depth=2, cell_width=32):
         super().__init__()
-        self.hidden=hidden;self.extra=extra
-        self.cells=nn.Sequential(layer_init(nn.Linear(SPEC.tile_kinds+5,32)),nn.ReLU(),
-                                 layer_init(nn.Linear(32,32)),nn.ReLU())
-        self.global_features=nn.Sequential(layer_init(nn.Linear(SPEC.cells*32+SPEC.status_entity0+extra,hidden)),nn.Tanh(),
-                                          layer_init(nn.Linear(hidden,hidden)),nn.Tanh())
+        self.hidden=hidden;self.extra=extra;self.cell_width=cell_width
+        self.cells=nn.Sequential(layer_init(nn.Linear(SPEC.tile_kinds+5,cell_width)),nn.ReLU(),
+                                 layer_init(nn.Linear(cell_width,cell_width)),nn.ReLU())
+        self.global_features=tanh_mlp(SPEC.cells*cell_width+SPEC.status_entity0+extra,hidden,depth)
         neighborhoods=[]
         for dx,dy in SPEC.reach_offsets:
             x,y=SPEC.view_w//2+dx,SPEC.view_h//2+dy
             assert 1<=x<SPEC.view_w-1 and 1<=y<SPEC.view_h-1
             neighborhoods.append([(y+oy)*SPEC.view_w+x+ox for oy in (-1,0,1) for ox in (-1,0,1)])
         self.register_buffer("neighborhoods",torch.tensor(neighborhoods,dtype=torch.long))
-        self.context=nn.Sequential(layer_init(nn.Linear(9*32,64)),nn.ReLU())
+        self.context=nn.Sequential(layer_init(nn.Linear(9*cell_width,64)),nn.ReLU())
 
     def forward(self,x):
         if self.extra:
@@ -37,7 +41,7 @@ class TargetEncoder(nn.Module):
         cells=self.cells(torch.cat((tiles,light,entities),dim=-1))
         scalars=(cells.flatten(1),status[:,:SPEC.status_entity0])+((memory,) if self.extra else ())
         global_features=self.global_features(torch.cat(scalars,dim=-1))
-        context=self.context(cells[:,self.neighborhoods,:].reshape(n,SPEC.reach_count,9*32))
+        context=self.context(cells[:,self.neighborhoods,:].reshape(n,SPEC.reach_count,9*self.cell_width))
         return torch.cat((global_features,context.flatten(1)),dim=-1)
 
 
@@ -73,8 +77,8 @@ class GlobalCritic(nn.Linear):
 
 
 class TargetActorCritic(ActorCritic):
-    def __init__(self,hidden=128,extra=0):
+    def __init__(self,hidden=128,extra=0,depth=2,cell_width=32):
         nn.Module.__init__(self)
-        self.trunk=TargetEncoder(hidden,extra)
+        self.trunk=TargetEncoder(hidden,extra,depth,cell_width)
         self.actor=TargetActor(hidden)
         self.critic=layer_init(GlobalCritic(hidden,1),std=1.)

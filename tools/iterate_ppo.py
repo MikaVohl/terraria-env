@@ -26,7 +26,10 @@ def main():
     p.add_argument("--minibatches", type=int, default=4)
     p.add_argument("--epochs", type=int, default=4)
     p.add_argument("--encoder", type=int, default=128)
-    p.add_argument("--hidden", type=int, default=128)
+    p.add_argument("--hidden", type=int, default=0,
+                   help="trunk width; 0 = architecture default (128 for lstm/lstm_targets)")
+    p.add_argument("--depth", type=int, default=2, help="global trunk layers (targets, mlp)")
+    p.add_argument("--cell-width", type=int, default=32, help="per-cell MLP width (targets)")
     p.add_argument("--bootstrap-time-limit", action="store_true")
     p.add_argument("--persistent-curiosity", action="store_true")
     p.add_argument("--gamma", type=float, default=.999)
@@ -93,9 +96,12 @@ def main():
                   anneal_lr=not a.constant_lr, device=a.device,
                   minibatches=a.minibatches,epochs=a.epochs,bootstrap_time_limit=a.bootstrap_time_limit)
     if recurrent:
-        kwargs.update(architecture=a.architecture,encoder=a.encoder,hidden=a.hidden)
+        kwargs.update(architecture=a.architecture,encoder=a.encoder,hidden=a.hidden or 128)
+        if a.depth != 2 or a.cell_width != 32:
+            raise ValueError("--depth/--cell-width are feed-forward size knobs")
     elif "architecture" in config_class.__dataclass_fields__:
         kwargs["architecture"] = a.architecture
+        kwargs.update(hidden=a.hidden, depth=a.depth, cell_width=a.cell_width)
         kwargs["achievement_reward"] = a.achievement_reward
         kwargs["curiosity_coef"] = a.curiosity
         kwargs["curiosity_balanced"] = a.balanced_curiosity
@@ -121,7 +127,19 @@ def main():
     # The library actually loaded ($TERRARIA_LITE_LIB may select another game version).
     sources = [*package.glob("*.py"), Path(terraria_lite._lib._name).resolve()]
     from terraria_lite.achievement_rewards import reward_spec
-    protocol = {"config": asdict(cfg), "actual_steps": actual,
+    if recurrent:
+        from terraria_lite.recurrent_ppo_agent import build_recurrent_agent
+        build = lambda: build_recurrent_agent(cfg.architecture, cfg.encoder, cfg.hidden)
+    else:
+        from terraria_lite.spatial_agent import build_agent
+        extra = 0
+        if a.memory_features:
+            from terraria_lite.memory_features import PolicyFeatures
+            extra = PolicyFeatures(a.memory_features, 1).N_FEATURES
+        build = lambda: build_agent(cfg.architecture, cfg.hidden, extra, depth=cfg.depth, cell_width=cfg.cell_width)
+    with torch.random.fork_rng(devices=[]):
+        parameters = sum(p.numel() for p in build().parameters())
+    protocol = {"config": asdict(cfg), "actual_steps": actual, "parameters": parameters,
                 "driver_sha256":hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 "evaluation_device":evaluation_device, "async_evaluation": a.async_evaluation,
                 "environment_version": SPEC.version, "torch_threads": a.threads,

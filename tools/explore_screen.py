@@ -107,6 +107,20 @@ ARMS["max2_frontier_nov01"] = ARMS["pot_e1024_max2"] + ["--potential-mode", "fro
 # Horizon test: same arms with 6,000-step episodes for training and validation.
 ARMS["max2_ep6000"] = ARMS["pot_e1024_max2"] + ["--episode-steps", "6000"]
 ARMS["max2_fn_ep6000"] = ARMS["max2_frontier_nov01"] + ["--episode-steps", "6000"]
+# Feed-forward model-size scaling (SCALE_FF_2026_10.md) on the max2 path:
+# ff_t{hidden}c{cell_width}d{depth} for targets, ff_m{hidden}d{depth} for the
+# flat MLP; suffix _lr1e4 lowers the LR from the default 3e-4.
+for _h in (32, 64, 128, 256, 512, 1024, 2048):
+    for _c in (32, 64, 128):
+        for _d in (2, 3, 4):
+            ARMS[f"ff_t{_h}c{_c}d{_d}"] = ARMS["pot_e1024_max2"] + [
+                "--hidden", str(_h), "--cell-width", str(_c), "--depth", str(_d)]
+for _h in (512, 1024, 2048):
+    for _d in (2, 3):
+        ARMS[f"ff_m{_h}d{_d}"] = ARMS["pot_e1024_max2"] + ["--architecture", "mlp", "--hidden", str(_h),
+                                                          "--depth", str(_d)]
+for _name in [k for k in ARMS if k.startswith("ff_")]:
+    ARMS[f"{_name}_lr1e4"] = ARMS[_name] + ["--lr", ".0001"]
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
 # bit-identical to the original CPU learner. (An earlier "MPS stall" reading
