@@ -105,6 +105,7 @@ class Config:
     bf16: bool = False                # bfloat16 autocast in the PPO update
     fused_adam: bool = False          # single fused Adam kernel
     compile_all: bool = False         # torch.compile the whole sampling forward and minibatch loss too
+                                      # (the loss only without bf16, see train())
 
     @property
     def batch(self) -> int:
@@ -591,7 +592,12 @@ def train(cfg: Config, checkpoint_callback=None):
         expand_collect, expand_learn = Expander(collect_device), Expander(device)
     # compile_all: one graph each for the sampling forward (expansion through
     # log-softmax and value; sampling itself stays eager) and the minibatch loss.
-    ppo_loss = torch.compile(_ppo_loss, dynamic=False) if cfg.compile_all else _ppo_loss
+    # Not the loss under bf16: on a GPU shared with another process, the
+    # compiled bf16 loss graph's backward intermittently yields one garbage
+    # value in d(loss)/d(log-prob) (grad-norm spikes up to inf, NaN deaths);
+    # the eager loss around compiled policy modules does not
+    # (docs/reports/GPU_SHARING_CORRUPTION_2026_10.md).
+    ppo_loss = torch.compile(_ppo_loss, dynamic=False) if cfg.compile_all and not cfg.bf16 else _ppo_loss
     sample_heads = torch.compile(_sample_heads, dynamic=False) if cfg.compile_all else None
 
     T, N = cfg.rollout, cfg.num_envs
