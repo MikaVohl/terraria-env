@@ -518,8 +518,8 @@ def _ppo_objective(newlogp, entropy, newval, old_logp, adv, ret, old_value, *,
 
 
 # Memory agents (memory_agent.py): the same objective, with the encoder, the
-# core and the heads as separate pieces so each can be compiled (the fused
-# RNN, split at episode starts, stays eager) and the core runs in float32.
+# core and the heads as separate pieces so each can be compiled (the packed
+# fused RNN stays eager) and the core runs in float32.
 
 def _memory_sample(agent, x, mask, state, done, expand=None):
     """_sample_heads for a memory agent, plus its next state."""
@@ -632,7 +632,7 @@ def train(cfg: Config, checkpoint_callback=None):
     width = SPEC.obs_size + (memory.N_FEATURES if memory is not None else 0)
     from terraria_lite.spatial_agent import build_agent
     if cfg.memory:
-        from terraria_lite.memory_agent import MemoryActorCritic
+        from terraria_lite.memory_agent import MemoryActorCritic, rnn_plan
         agent = MemoryActorCritic(cfg.memory, cfg.memory_size, cfg.memory_len, cfg.architecture, cfg.hidden,
                                   depth=cfg.depth, cell_width=cfg.cell_width).to(device)
     else:
@@ -672,7 +672,7 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.memory:
         # The rollout step (encoder, core, heads) is one graph under
         # compile_all; so is the update's transformer core. The fused RNN
-        # (split at episode starts) stays eager.
+        # (packed episode segments) stays eager.
         ppo_loss = None
         memory_sample = torch.compile(_memory_sample, dynamic=False) if cfg.compile_all else _memory_sample
         memory_encode = torch.compile(_memory_encode, dynamic=False) if cfg.compile_all else _memory_encode
@@ -892,6 +892,8 @@ def train(cfg: Config, checkpoint_callback=None):
             s_obs, s_act, s_logp, s_adv, s_ret, s_val, s_msk = (
                 x.view(T, N, *x.shape[1:]) for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
             s_done = done_b.to(device)
+            # RNN segment packing is planned on the host: one copy per iteration.
+            done_host = done_b.cpu().numpy() if cfg.memory != "transformer" else None
             snapshot = tuple(s.to(device) for s in snapshot)
         for _ in range(cfg.epochs):
             np.random.shuffle(idx)
@@ -900,7 +902,7 @@ def train(cfg: Config, checkpoint_callback=None):
             # gathering each minibatch).
             perm = torch.as_tensor(idx, device=device)
             if cfg.memory:
-                minibatches = [perm[s:s + lanes] for s in range(0, N, lanes)]
+                minibatches = [slice(s, s + lanes) for s in range(0, N, lanes)]
             else:
                 e_obs, e_act, e_logp, e_adv, e_ret, e_val, e_msk = (
                     x[perm] for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
@@ -909,8 +911,10 @@ def train(cfg: Config, checkpoint_callback=None):
                 minibatches = [slice(s, s + cfg.minibatch) for s in range(0, cfg.batch, cfg.minibatch)]
             for mb in minibatches:
                 if cfg.memory:
+                    plan = None if done_host is None else rnn_plan(done_host[:, idx[mb]], device)
+                    mb = perm[mb]
                     encoded = memory_encode(agent, s_obs[:, mb].reshape(T * lanes, -1), expand_learn, cfg.bf16)
-                    h = memory_recur(encoded, agent.select(snapshot, mb), s_done[:, mb])
+                    h = memory_recur(encoded, agent.select(snapshot, mb), s_done[:, mb], plan)
                     loss, approx_kl, clipfrac, entropy = memory_objective(
                         agent, h, s_act[:, mb].reshape(-1), s_msk[:, mb].reshape(-1, SPEC.n_actions),
                         s_logp[:, mb].reshape(-1), s_adv[:, mb].reshape(-1), s_ret[:, mb].reshape(-1),

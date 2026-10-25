@@ -12,7 +12,7 @@ Cores (`memory`):
                 with an explicit cell (compile-friendly, same weights); the
                 update runs the fused nn.GRU/nn.LSTM over each env's 128-step
                 sequence from the stored rollout-start state (truncated BPTT),
-                split only at timesteps where some lane starts an episode.
+                as one packed call over the lanes' episode segments.
   transformer   2 pre-LN causal self-attention layers (width `memory_size`,
                 64-wide heads) over the last `memory_len` steps of the current
                 episode. Rollouts keep a per-layer K/V ring buffer; a learned
@@ -36,9 +36,11 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 from terraria_lite import SPEC
 from terraria_lite.ppo_agent import layer_init
@@ -137,35 +139,64 @@ class MemoryActorCritic(nn.Module):
         use autocast/compilation independently of the core)."""
         return self.trunk(x)
 
-    def recur(self, encoded, snapshot, done):
-        """Core over time-major (T*B) encoder output; returns the heads input."""
+    def recur(self, encoded, snapshot, done, plan=None):
+        """Core over time-major (T*B) encoder output; returns the heads input.
+        `plan` (RNNs only): rnn_plan of `done`, precomputed host-side so the
+        update never waits on the device."""
         t, b = done.shape
         g = encoded[:, :self.width].float().reshape(t, b, self.width)
         if self.memory == "transformer":
             m = self.core.sequence(g, snapshot, done)
         else:
-            m = self._rnn_sequence(g, snapshot, done)
+            m = self._rnn_sequence(g, snapshot, plan if plan is not None else
+                                   rnn_plan(done.detach().cpu().numpy(), g.device))
         return self._join(encoded.float(), m.reshape(t * b, self.size))
 
     def sequence(self, x, snapshot, done):
         return self.recur(self.encode(x), snapshot, done)
 
-    def _rnn_sequence(self, g, state, done):
-        # Fused RNN between the (rare) steps where some lane starts an episode;
-        # reset just those lanes there. Same recurrence as core_step.
-        gru = self.memory == "gru"
-        pieces, start = [], 0
-        cuts = torch.nonzero(done.any(dim=1)).flatten().tolist()
-        for cut in cuts + [len(g)]:
-            if cut > start:
-                out, state = self.core(g[start:cut], state[0] if gru else state)
-                state = (state,) if gru else state
-                pieces.append(out)
-            if cut < len(g):
-                keep = (1.0 - done[cut])[None, :, None]
-                state = tuple(s * keep for s in state)
-                start = cut
-        return torch.cat(pieces, dim=0)
+    def _rnn_sequence(self, g, state, plan):
+        # Every lane's rollout splits into episode segments; all segments run
+        # as one packed fused-RNN call, each from its lane's snapshot state or,
+        # after an episode start, from zeros. Same recurrence as core_step.
+        t, b, width = g.shape
+        fwd, inv, lane, keep, lengths = plan
+        x = g.reshape(t * b, width)[fwd].reshape(t, len(lengths), width)
+        state = tuple(s[:, lane] * keep[None, :, None] for s in state)
+        out, _ = self.core(pack_padded_sequence(x, lengths), state[0] if self.memory == "gru" else state)
+        out = pad_packed_sequence(out, total_length=t)[0]
+        return out.reshape(-1, self.size)[inv].reshape(t, b, self.size)
+
+
+def rnn_plan(done: np.ndarray, device) -> tuple:
+    """Packing of a (T, B) rollout into episode segments for the fused RNN:
+    gather index into the flat (T*B) steps for the padded (T, S) segment
+    batch (segments longest first), the inverse index back, each segment's
+    lane, whether it continues the lane's snapshot state (else it starts an
+    episode, from zeros), and the segment lengths (on the host)."""
+    t, b = done.shape
+    start = done.astype(bool)
+    first = start.copy()
+    first[0] = True                                     # every lane's first segment starts at step 0
+    lane, step = np.nonzero(first.T)                    # segments by lane, then time
+    following = np.append(step[1:], t)
+    following[np.append(lane[1:] != lane[:-1], True)] = t
+    lengths = following - step
+    order = np.argsort(-lengths, kind="stable")
+    lane, step, lengths = lane[order], step[order], lengths[order]
+    s = len(lengths)
+    segment = np.repeat(np.arange(s), lengths)
+    offset = np.arange(t * b) - np.repeat(np.cumsum(lengths) - lengths, lengths)
+    source = (np.repeat(step, lengths) + offset) * b + np.repeat(lane, lengths)
+    padded = offset * s + segment
+    fwd = np.zeros(t * s, np.int64)
+    fwd[padded] = source
+    inv = np.empty(t * b, np.int64)
+    inv[source] = padded
+    keep = ~start[step, lane]
+    up = lambda a: torch.from_numpy(a).pin_memory().to(device, non_blocking=True) if device.type == "cuda" \
+        else torch.from_numpy(a).to(device)
+    return up(fwd), up(inv), up(lane.astype(np.int64)), up(keep.astype(np.float32)), torch.from_numpy(lengths)
 
 
 class CausalMemory(nn.Module):

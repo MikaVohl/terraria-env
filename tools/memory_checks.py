@@ -7,8 +7,9 @@
    rollout-start snapshot) reproduces the rollout's step-by-step outputs,
    across episode starts, for warm states and transformer windows shorter and
    longer than the rollout.
-3. --train: a short real training run records first-minibatch approx KL ~ 0
-   every iteration (update replays the rollout: ratio == 1 before any step),
+3. --train: a short real training run from a sharp random policy records
+   first-minibatch approx KL ~ 0 every iteration (the update replays the
+   rollout: ratio == 1 before any step),
    and the saved checkpoint round-trips through load_agent, evaluate and
    tools/policy_diagnostics.diagnose.
 """
@@ -96,8 +97,16 @@ def check_training(device):
     for memory, size, length in [("gru", 64, 0), ("lstm", 64, 0), ("transformer", 64, 16)]:
         kls = []
         with tempfile.TemporaryDirectory() as tmp:
-            path = str(Path(tmp) / "m.pt")
-            cfg = Config(total_steps=16 * 64 * 3, num_envs=16, rollout=64, minibatches=4, epochs=2,
+            path, init = str(Path(tmp) / "m.pt"), str(Path(tmp) / "init.pt")
+            # Start from a sharp policy with open memory branches, so a replay
+            # mismatch shows in the KL (a near-uniform initial policy hides it).
+            sharp = make_agent(memory, size, length, "cpu")
+            with torch.no_grad():
+                for p in sharp.actor.parameters():
+                    p.mul_(100.0)
+            torch.save({"model": sharp.state_dict(), "environment_version": SPEC.version,
+                        "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions}, init)
+            cfg = Config(init=init, total_steps=16 * 64 * 3, num_envs=16, rollout=64, minibatches=4, epochs=2,
                          architecture="targets", potential_coef=3.0, memory=memory, memory_size=size,
                          memory_len=length, device=device, collect_device=device, quiet=True, save=path,
                          native_autoreset=True, compact_obs=True, sim_workers=2, gamma=.999, gae_lambda=.99,
