@@ -1,7 +1,7 @@
 """Compact results for the memory-architecture study (MEMORY_ARCH_2026_10.md).
 
     PYTHONPATH=python python tools/memory_report.py experiments/memarch-v7-20261025=shared \
-        experiments/memarch-solo-v7-20261025=solo --stopped mem_lstm512-1901 ... --out MEMORY_ARCH_2026_10.json
+        experiments/memarch-solo-v7-20261025=solo --stopped shared/mem_lstm512-1901 ... --out MEMORY_ARCH_2026_10.json
 
 Each screen carries a label (here: whether runs shared their GPU). Runs named
 in --stopped were deliberately stopped and keep their partial curves.
@@ -57,7 +57,7 @@ def run_row(run: Path, label: str, stopped: set) -> dict | None:
     done = (run / "summary.json").exists()
     log = run.parent.parent / "logs" / f"{run.name}.log"
     died = not done and log.exists() and "FloatingPointError" in log.read_text()
-    halted = not (done or died) and run.name in stopped
+    halted = not (done or died) and f"{label}/{run.name}" in stopped
     if not (done or died or halted):
         return None                      # still running
     cfg = protocol["config"]
@@ -107,7 +107,7 @@ def at(row, steps):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("screens", nargs="+", help="SCREEN_DIR=LABEL")
-    p.add_argument("--stopped", nargs="*", default=[], help="run names stopped on purpose")
+    p.add_argument("--stopped", nargs="*", default=[], help="LABEL/RUN of runs stopped on purpose")
     p.add_argument("--out", type=Path, required=True)
     a = p.parse_args()
     rows = [r for screen in a.screens for s, label in [screen.split("=", 1)]
