@@ -77,27 +77,62 @@ def score_at(curve, steps):
     return rows[0] if rows else None
 
 
-def aggregate(runs):
+def score_by_time(curve, seconds):
+    """Score of the last checkpoint written within `seconds` of the run's start."""
+    rows = [score for _, t, score in curve if t <= seconds]
+    return rows[-1] if rows else None
+
+
+def mean(values):
+    values = [v for v in values if v is not None]
+    return statistics.mean(values) if values else None
+
+
+def aggregate(runs, wallclock):
+    """Per (study, arm): mean scores at matched steps and wall-clock, learner telemetry at matched
+    steps, and finished runs' final rates and diagnostics."""
     arms = {}
     for r in runs:
-        arms.setdefault(r["arm"], []).append(r)
+        arms.setdefault(f"{r['study']}/{r['arm']}", []).append(r)
     out = {}
-    for arm, rs in sorted(arms.items()):
-        entry = {"seeds": sorted(r["seed"] for r in rs), "parameters": rs[0]["parameters"],
-                 "architecture": rs[0]["architecture"], "hidden": rs[0]["hidden"], "depth": rs[0]["depth"],
-                 "cell_width": rs[0]["cell_width"], "lr": rs[0]["lr"], "at_steps": {}}
-        for steps in MATCHED:
+    for key, rs in sorted(arms.items()):
+        entry = {"seeds": sorted(r["seed"] for r in rs), "statuses": {r["seed"]: r["status"] for r in rs},
+                 "parameters": rs[0]["parameters"], "architecture": rs[0]["architecture"], "hidden": rs[0]["hidden"],
+                 "depth": rs[0]["depth"], "cell_width": rs[0]["cell_width"], "lr": rs[0]["lr"],
+                 "requested_steps": rs[0]["requested_steps"], "at_steps": {}, "at_seconds": {}, "learner_at_steps": {}}
+        for steps in sorted({s for r in rs for s, _, _ in r["curve"]} & set(MATCHED)):
             scores = [s for s in (score_at(r["curve"], steps) for r in rs) if s is not None]
+            entry["at_steps"][str(steps)] = {"n": len(scores), "mean": statistics.mean(scores), "scores": scores}
+        for seconds in wallclock:
+            scores = [score_by_time(r["curve"], seconds) for r in rs if r["curve"][-1][1] >= seconds or r["finished"]]
+            scores = [s for s in scores if s is not None]
             if scores:
-                entry["at_steps"][str(steps)] = {"n": len(scores), "mean": statistics.mean(scores),
-                                                 "scores": scores}
+                entry["at_seconds"][str(seconds)] = {"n": len(scores), "mean": statistics.mean(scores)}
+        for steps in (128 << 20, 256 << 20, 480 << 20, 1 << 30, 2 << 30):
+            rows = [row for r in rs for row in r["learner"] if row[0] == steps and row[1] is not None]
+            if rows:
+                entry["learner_at_steps"][str(steps)] = {
+                    "n": len(rows), **{k: mean(row[i] for row in rows) for i, k in
+                                       enumerate(("entropy", "approx_kl", "clip_fraction", "explained_variance"), 1)}}
         finished = [r for r in rs if r["finished"]]
         if finished:
             entry["finished_runs"] = len(finished)
-            entry["final_mean"] = statistics.mean(r["final"]["score"] for r in finished)
-            entry["mean_seconds_per_billion_steps"] = statistics.mean(
-                r["curve"][-1][1]/r["curve"][-1][0]*1e9 for r in finished)
-        out[arm] = entry
+            entry["final_mean"] = mean(r["final"]["score"] for r in finished)
+            entry["final_scores"] = [r["final"]["score"] for r in finished]
+            entry["final_death_rate"] = mean(r["final"]["death_rate"] for r in finished)
+            entry["final_idle_tail_steps"] = mean(r["final"]["idle_tail_steps"] for r in finished)
+            entry["final_rates"] = {k: mean(r["final"]["rates"][k] for r in finished) for k in ACHIEVEMENTS}
+            entry["seconds_per_billion_steps"] = mean(r["curve"][-1][1]/r["curve"][-1][0]*1e9 for r in finished)
+            diagnosed = [r["diagnostics"] for r in finished if "diagnostics" in r]
+            if diagnosed:
+                entry["diagnostics"] = {
+                    "runs": len(diagnosed),
+                    "peak_median": {i: mean(d["inventory_peak"][i]["median"] for d in diagnosed) for i in ITEMS},
+                    "peak_max": {i: max(d["inventory_peak"][i]["max"] for d in diagnosed) for i in ITEMS},
+                    "craft_opportunity_episodes": {c: sum(d["craft_opportunity_episodes"][c] for d in diagnosed)
+                                                   for c in CRAFTS},
+                    "episodes": sum(d["episodes"] for d in diagnosed)}
+        out[key] = entry
     return out
 
 
@@ -106,6 +141,8 @@ def main():
     p.add_argument("roots", nargs="+", type=Path, help="explore_screen runs/ directories")
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--extra", type=Path, help="JSON merged into the output (throughput, notes)")
+    p.add_argument("--wallclock", type=int, nargs="*", default=[600, 1200, 1800],
+                   help="seconds for the equal-wall-clock comparison")
     a = p.parse_args()
     runs = []
     for root in a.roots:
@@ -115,13 +152,13 @@ def main():
                 if record is not None:
                     record["study"] = root.parent.name
                     runs.append(record)
-    result = {"runs": runs, "arms": aggregate(runs)}
+    result = {"runs": runs, "arms": aggregate(runs, a.wallclock)}
     if a.extra:
         result.update(json.loads(a.extra.read_text()))
     a.out.write_text(json.dumps(result, indent=1)+"\n")
-    for arm, e in result["arms"].items():
+    for key, e in result["arms"].items():
         cells = " ".join(f"{int(s)>>20}M={v['mean']:.2f}(n{v['n']})" for s, v in e["at_steps"].items())
-        print(f"{arm:28s} p={e['parameters']:>10,} {cells}")
+        print(f"{key:36s} p={e['parameters']:>10,} {cells} final={e.get('final_mean') or 0:.2f}")
 
 
 if __name__ == "__main__":
