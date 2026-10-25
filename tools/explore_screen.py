@@ -162,11 +162,17 @@ def main():
     p.add_argument("--workers", type=int, default=6)
     p.add_argument("--layout", choices=list(LAYOUTS), default="cpu")
     p.add_argument("--gpus", nargs="+", default=[], help="device ids; each run goes to the least-loaded one")
+    p.add_argument("--pairs", nargs="+", default=[],
+                   help="explicit ARM:SEED jobs (in this order) instead of the arms x seeds grid")
     a = p.parse_args()
     (a.out / "runs").mkdir(parents=True, exist_ok=True)
     (a.out / "logs").mkdir(exist_ok=True)
-    jobs = [(arm, seed) for seed in a.seeds for arm in a.arms
-            if not (a.out / "runs" / f"{arm}-{seed}" / "summary.json").exists()]
+    if a.pairs:
+        jobs = [(arm, int(seed)) for arm, seed in (pair.rsplit(":", 1) for pair in a.pairs)]
+        a.arms, a.seeds = list(dict.fromkeys(j[0] for j in jobs)), sorted({j[1] for j in jobs})
+    else:
+        jobs = [(arm, seed) for seed in a.seeds for arm in a.arms]
+    jobs = [j for j in jobs if not (a.out / "runs" / f"{j[0]}-{j[1]}" / "summary.json").exists()]
     record = a.out / "screen.json"
     previous = json.loads(record.read_text()) if record.exists() else {}
     layouts = {**previous.get("seed_layouts", {}), **{str(s): LAYOUTS[a.layout] for s in a.seeds}}
@@ -183,6 +189,8 @@ def main():
             arm, seed = jobs.pop(0)
             name = f"{arm}-{seed}"
             out = a.out / "runs" / name
+            if (out / "summary.json").exists():   # finished meanwhile (e.g. by another launcher)
+                continue
             if out.exists():  # interrupted earlier: keep evidence, do not overwrite
                 out.rename(out.with_name(f"{name}.interrupted-{int(time.time())}"))
             cmd = [sys.executable, str(ROOT / "tools/iterate_ppo.py"), "--out", str(out), "--seed", str(seed),
