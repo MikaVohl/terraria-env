@@ -29,6 +29,9 @@ def run_record(directory):
         return None
     cfg = protocol["config"]
     finished = (directory/"summary.json").exists()
+    log = directory.parent.parent/"logs"/f"{directory.name}.log"
+    status = "finished" if finished else (
+        "non-finite loss" if log.exists() and "FloatingPointError" in log.read_text() else "stopped")
     last = curve[-1]["evaluation"]
     episodes = last["episodes"]
     record = {
@@ -36,9 +39,14 @@ def run_record(directory):
         "architecture": cfg["architecture"], "hidden": cfg.get("hidden", 0) or {"targets": 128, "mlp": 512}[cfg["architecture"]],
         "depth": cfg.get("depth", 2), "cell_width": cfg.get("cell_width", 32) if cfg["architecture"] == "targets" else None,
         "lr": cfg["lr"], "parameters": protocol.get("parameters"),
-        "requested_steps": protocol["actual_steps"], "finished": finished,
+        "requested_steps": protocol["actual_steps"], "finished": finished, "status": status,
         "curve": [[row["steps"], round(row.get("checkpoint_elapsed_seconds", row["elapsed_seconds"]), 1),
                    round(row["evaluation"]["mean_achievements"], 4)] for row in curve],
+        # Learner telemetry at each checkpoint (runs from cb73159 on): entropy, approx KL of
+        # the last minibatch, clip fraction, value explained variance.
+        "learner": [[row["steps"], *(round(row["profile"][k], 4) if row["profile"].get(k) is not None else None
+                                     for k in ("policy_entropy", "approx_kl", "clip_fraction", "explained_variance"))]
+                    for row in curve],
         "final": {"steps": curve[-1]["steps"], "score": last["mean_achievements"],
                   "death_rate": last["death_rate"],
                   "idle_tail_steps": last.get("mean_steps_after_last_achievement"),
