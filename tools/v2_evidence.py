@@ -14,7 +14,7 @@ def main():
     if SPEC.version!=2:
         raise ValueError("Historical v2 evidence requires the matching frozen v2 package. Use current iteration evidence for v3.")
     p=argparse.ArgumentParser(); p.add_argument("--study",type=Path,default=Path("experiments/v2-first-curves"))
-    p.add_argument("--out",type=Path,default=Path("V2_RESULTS.json"))
+    p.add_argument("--out",type=Path,default=Path("docs/reports/V2_RESULTS.json"))
     a=p.parse_args(); torch.set_num_threads(6); rows=[]
     for kind in ("mlp","lstm"):
         for seed in (101,202,303):

@@ -99,7 +99,7 @@ def report(study,repo):
         'frozen_sources_verified':frozen_verified,'reserved_test_claims':[str(x) for x in claims],
         'reserved_tests_not_consumed':not claims,'warnings':warnings,
         'note':'No official policy selection or additional test evaluation. Partial checkpoint curves are not independent seeds, not completed 16M runs, and retain the original 16M-ending LR schedule.'}
-    write(repo/'FOOTPRINT_LEARNING_PARTIAL_2026_10.json',result)
+    write(repo/'docs/reports/FOOTPRINT_LEARNING_PARTIAL_2026_10.json',result)
     lines=['# Time-limited v4/v5 learning evidence','','Status: **partial — user-requested wall budget**, not a completed five-seed study.',
         f"\nCompleted 16M runs: {result['completed_main_runs']}/30 ({complete_steps:,} transitions). Across completed and unfinished runs, at least {verified_steps:,} transitions are represented by valid recorded checkpoints.",
         '\nThe original frozen sources, budgets, LR schedules and queue were not changed. An external user-authorized deadline ended computation. Reserved tests remain unused unless claims are explicitly listed below.','',
@@ -115,7 +115,7 @@ def report(study,repo):
         f"\nReserved test claims: {result['reserved_test_claims']}. No test was invoked by this budget controller. No game/model defaults promoted.",
         f'\nArtifacts: `{study}`. Full partial evidence: `FOOTPRINT_LEARNING_PARTIAL_2026_10.json`.']
     if warnings:lines+=['\nAudit warnings:',*[f'- {w}' for w in warnings]]
-    (repo/'FOOTPRINT_LEARNING_PARTIAL_2026_10.md').write_text('\n'.join(lines)+'\n')
+    (repo/'docs/reports/FOOTPRINT_LEARNING_PARTIAL_2026_10.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({'completed_runs':result['completed_main_runs'],'verified_checkpoint_transitions':verified_steps,'paired_final_seeds':{m:len(x['complete_final_pairs']) for m,x in paired.items()},'warnings':warnings}),flush=True)
 
 def enforce(study,repo,pid,stop_epoch,deadline_epoch):

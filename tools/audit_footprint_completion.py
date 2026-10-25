@@ -56,13 +56,13 @@ def crafting_summary(d):
 def main():
     p = read(STUDY/'study-protocol.json')
     plan = read(STUDY/'completion-plan.json')
-    report = read(REPO/'FOOTPRINT_LEARNING_2026_10.json')
+    report = read(REPO/'docs/reports/FOOTPRINT_LEARNING_2026_10.json')
     old = Path(plan['original_study'])
     assert read(STUDY/'status.json')['stage'] == 'complete'
     assert sha(STUDY/'runner.py') == p['supervisor_sha256']
     assert sha(old/'runner.py') == plan['original_supervisor_sha256']
     assert sha(old/'study-protocol.json') == plan['original_protocol_sha256']
-    assert sha(REPO/'FOOTPRINT_LEARNING_PARTIAL_2026_10.json') == plan['original_partial_report_sha256']
+    assert sha(REPO/'docs/reports/FOOTPRINT_LEARNING_PARTIAL_2026_10.json') == plan['original_partial_report_sha256']
     op = read(old/'study-protocol.json')
     for key in op:
         if key not in ('study', 'supervisor_sha256'):
@@ -179,8 +179,8 @@ def main():
                 for d in ds:cnt.update(d[key])
                 agg[key] = dict(cnt)
             groups[f'{v}/{m}'] = crafting_summary(agg)
-    result = {'passed':True,'audit_date':'2026-10-12','report_sha256':sha(REPO/'FOOTPRINT_LEARNING_2026_10.json'),'protocol_sha256':sha(STUDY/'study-protocol.json'),'supervisor_sha256':sha(STUDY/'runner.py'),'original_supervisor_sha256':plan['original_supervisor_sha256'],'frozen_source_counts':source_count,'reused_artifact_file_counts':copied,'main_runs':30,'retained_main_runs':15,'new_main_runs':15,'main_transitions':503316480,'additional_main_transitions':251658240,'discarded_partial_checkpoint_transitions':12582912,'paired_comparisons':comparisons,'runs':runrows,'run_artifact_sha256':artifacts,'crafting_per_policy':diagnostics,'crafting_action_weighted_groups':groups,'selection_recomputed':selection,'selected_tests_and_replays':selected,'reserved_tests_evaluated_by_audit':False,'note':'Only saved artifacts read; no neural evaluations or training. Gate fractions overlap and are action-weighted descriptive associations, not causal interventions or extra independent seeds.'}
-    (REPO/'FOOTPRINT_LEARNING_2026_10.audit.json').write_text(json.dumps(result,indent=2)+'\n')
+    result = {'passed':True,'audit_date':'2026-10-12','report_sha256':sha(REPO/'docs/reports/FOOTPRINT_LEARNING_2026_10.json'),'protocol_sha256':sha(STUDY/'study-protocol.json'),'supervisor_sha256':sha(STUDY/'runner.py'),'original_supervisor_sha256':plan['original_supervisor_sha256'],'frozen_source_counts':source_count,'reused_artifact_file_counts':copied,'main_runs':30,'retained_main_runs':15,'new_main_runs':15,'main_transitions':503316480,'additional_main_transitions':251658240,'discarded_partial_checkpoint_transitions':12582912,'paired_comparisons':comparisons,'runs':runrows,'run_artifact_sha256':artifacts,'crafting_per_policy':diagnostics,'crafting_action_weighted_groups':groups,'selection_recomputed':selection,'selected_tests_and_replays':selected,'reserved_tests_evaluated_by_audit':False,'note':'Only saved artifacts read; no neural evaluations or training. Gate fractions overlap and are action-weighted descriptive associations, not causal interventions or extra independent seeds.'}
+    (REPO/'docs/reports/FOOTPRINT_LEARNING_2026_10.audit.json').write_text(json.dumps(result,indent=2)+'\n')
     lines = ['# Final-policy crafting diagnostics — 2026-10-12', '',
         'Reporting-only analysis of all 30 saved final-policy validation rollouts. No new neural evaluations. Full joint 16-code histograms, wood sinks and event records remain in each run’s `crafting.json`; per-policy derived metrics and hashes are in [the audit](FOOTPRINT_LEARNING_2026_10.audit.json).', '',
         'Missing fractions condition on pre-first-furnace actions with at least 20 stone. Wood means at least 4, torches at least 3, station means a nearby workbench. These are overlapping action-weighted descriptions, not independent seeds or causal attribution. Bench selection conditions on inventory ownership, not on placement-space availability. Acquired wood includes recoveries; sinks count actual consumed units, not unique resource supply.', '',
@@ -195,7 +195,7 @@ def main():
     lines += ['', 'Interpretation: the v5 targets/memory packages reach zero furnace opportunities across all five seeds each. They acquire roughly 16 wood/world, spend roughly 10 on platforms and 2.5–2.7 on torches, and almost never craft benches. On v4, the same packages acquire more wood and craft more benches, but still almost never coordinate all four furnace prerequisites. The successful v5 MLP seeds demonstrate that the enlarged-object game supports workshop progression; the two late MLP seeds remain near 11/32 with no furnaces. Missing furnace opportunity is not the same as inability to learn the furnace action.', '',
         'Bench space is available during more than 98% of owned-bench actions in every aggregate package/version group. This weakens a simple “cannot place the larger bench anywhere” explanation, but does not exclude harder placement during rare strategically useful moments. V5 MLP has more opportunities without more aggregate bench-selection frequency. Inventory friction, wood retention/reacquisition, station positioning and sparse long-term credit remain candidate intervention targets—not proven individual causes.', '',
         'These observations do not isolate object size, world generation, interaction reach, architecture, entropy or trace settings. No resource supply, recipe, mask, reward or controller was changed. See [the study report](FOOTPRINT_LEARNING_2026_10.md) for the five-independent-seed comparisons.']
-    (REPO/'FOOTPRINT_CRAFTING_2026_10.md').write_text('\n'.join(lines)+'\n')
+    (REPO/'docs/reports/FOOTPRINT_CRAFTING_2026_10.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({k:result[k] for k in ['passed','frozen_source_counts','main_runs','main_transitions','paired_comparisons','crafting_action_weighted_groups']},indent=2))
 
 

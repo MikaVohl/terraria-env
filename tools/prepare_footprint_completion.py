@@ -60,7 +60,7 @@ def prepare(study,original):
     plan={'date':'2026-10-12','authorization':'Run the rest of the runs',
         'original_study':str(original),'original_protocol_sha256':sha(original/'study-protocol.json'),
         'original_supervisor_sha256':sha(original/'runner.py'),
-        'original_partial_report_sha256':sha(original.parent.parent/'FOOTPRINT_LEARNING_PARTIAL_2026_10.json'),
+        'original_partial_report_sha256':sha(original.parent.parent/'docs/reports/FOOTPRINT_LEARNING_PARTIAL_2026_10.json'),
         'completed_main_runs_reused':sorted(reused),'interrupted_runs_restarted_from_scratch':sorted(interrupted),
         'previously_unstarted_runs':sorted(untouched),'additional_main_runs':15,
         'additional_main_transitions':15*p['steps_per_run'],

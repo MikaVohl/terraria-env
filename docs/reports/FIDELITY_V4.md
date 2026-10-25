@@ -29,7 +29,7 @@ and their JSON are preserved; cross-version scores are different tasks.
   geometric access, not a strategic action abstraction.
 
 Primary evidence: installed `Terraria.exe` constants were inspected using
-[tools/terraria_fidelity_audit.py](tools/terraria_fidelity_audit.py). The real
+[tools/terraria_fidelity_audit.py](../../tools/terraria_fidelity_audit.py). The real
 hitbox is **20×42 pixels**; a 2×3-tile envelope is our integer-grid approximation,
 not a claim that Terraria's hitbox is 32×48 pixels. Original Terraria sources
 also document [trees](https://terraria.wiki.gg/wiki/Tree),
@@ -188,7 +188,7 @@ was used before that correction. All headline timings/results use the final rule
   Old checkpoints/tapes require their frozen version, not dimension-only loading.
 - A fixed seed-9 sampled replay earns 11 achievements in 3000 actions; Python
   and SDL agree exactly on steps, HP, achievement mask and return. It was not
-  chosen by a best-of sweep. [tools/verify_replay.py](tools/verify_replay.py)
+  chosen by a best-of sweep. [tools/verify_replay.py](../../tools/verify_replay.py)
   records this check and the tape hash.
 - Compare speed only after exact parity, with unchanged samplers and isolated
   repeats. Treat a >15% same-task median slowdown as a profiling trigger, not a

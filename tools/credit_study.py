@@ -227,7 +227,7 @@ def run(study, root):
             command([python,str(frozen/"tools/verify_replay.py"),str(study/"selected-seed9.tape"),"--viewer",str(frozen/"terraria-px"),
                      "--checkpoint",str(study/"selected/model.pt"),"--out",str(study/"selected-replay-verification.json")],"selected-replay-verify.log")
         report(study,root)
-        stage="complete";status(report=str(root/"CREDIT_V4_2026_10.md"))
+        stage="complete";status(report=str(root/"docs/reports/CREDIT_V4_2026_10.md"))
         print("Study and one-shot test complete",flush=True)
     except BaseException as exc:
         status(error=f"{type(exc).__name__}: {exc}")
@@ -289,7 +289,7 @@ def report(study, root):
         "selection":manifest,"test":{k:v for k,v in test.items() if k!="records"},"extra_evidence":extras,
         "coarse_equal_wall_snapshots":{"budget_seconds":wall,"rows":wall_rows,
             "note":"Last recorded checkpoint at or before the shortest final scaling wall time. Coarse 4M intervals, contention/validation included; not exact equal-compute trials."}}
-    write(root/"CREDIT_V4_2026_10.json",result)
+    write(root/"docs/reports/CREDIT_V4_2026_10.json",result)
     lines=["# v4 deadline, credit, memory and exploration experiments","","Status: **complete**.","",
         f"Main training: **{total:,} transitions across {len(runs)} independent runs**, plus {protocol['calibration_transitions']:,} calibration transitions. Five paired training seeds. Unchanged v4 gameplay, primitive actions, legal masks, no demonstrations or prerequisite shaping.","",
         "Validation worlds: 8,000,001–8,000,128; one-shot reserved test: 9,000,001–9,000,128. Sampler 54321. The test split is now consumed.","",
@@ -314,7 +314,7 @@ def report(study, root):
         "- Five training seeds improve reliability estimates but do not prove a universal algorithm ranking. Equal-transition trials have different neural compute costs, and up to three jobs shared an active desktop. JSON includes phase timings and coarse same-wall snapshots, not an exact equal-FLOP comparison.",
         "- Ore-supply and tool-ownership limitations from the previous study remain. This study does not change the game to raise scores or claim all achievements are jointly feasible.","",
         f"Artifacts: `{study}`. All protocols, frozen source hashes, curves, checkpoint weights, audits and exactly verified replays are preserved. Numeric evidence: `CREDIT_V4_2026_10.json`."])
-    (root/"CREDIT_V4_2026_10.md").write_text("\n".join(lines)+"\n")
+    (root/"docs/reports/CREDIT_V4_2026_10.md").write_text("\n".join(lines)+"\n")
 
 
 def main():

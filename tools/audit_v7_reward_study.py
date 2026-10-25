@@ -84,7 +84,7 @@ def audit(study, amendment):
     result_path = study/'results.json'
     result = read(result_path)
     repo = Path(protocol['repository'])
-    assert sha(result_path) == sha(repo/'V7_REWARD_STUDY_2026_10_17.json')
+    assert sha(result_path) == sha(repo/'docs/reports/V7_REWARD_STUDY_2026_10_17.json')
     assert result['protocol'] == protocol and result['complete']
     assert result['reserved_tests_consumed'] is False
     assert protocol['main_transitions'] == result['main_transitions'] == 419430400

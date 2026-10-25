@@ -1,7 +1,7 @@
 """Run pinned upstream PPO with local logging only; do not change its algorithm.
 
 Use the separate environment in experiments/craftax-calibration/.venv.
-See V2.md for pinned sources/dependencies. Arguments after --out are forwarded.
+See docs/reports/V2.md for pinned sources/dependencies. Arguments after --out are forwarded.
 """
 import argparse
 import json
@@ -25,7 +25,7 @@ def main():
         os.environ[key]=val
     root=Path(__file__).resolve().parents[1]
     source=root/"experiments/craftax-calibration/upstream/ppo.py"
-    if not source.exists(): raise FileNotFoundError("Fetch the pinned upstream source first; see V2.md")
+    if not source.exists(): raise FileNotFoundError("Fetch the pinned upstream source first; see docs/reports/V2.md")
     import jax
     import wandb
     rows=[]; began=time.perf_counter(); original_init=wandb.init

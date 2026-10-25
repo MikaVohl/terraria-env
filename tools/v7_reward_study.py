@@ -83,7 +83,7 @@ def prepare(study):
     repo = Path(__file__).resolve().parents[1]
     if study.parent != repo / "experiments" or any(study.iterdir()):
         raise ValueError("Prepare requires an empty directory directly in repo/experiments")
-    prefix = "V7_REWARD_STUDY_2026_10_17"
+    prefix = "docs/reports/V7_REWARD_STUDY_2026_10_17"
     if any((repo / (prefix + suffix)).exists() for suffix in (".md", ".json")):
         raise FileExistsError("Report targets already exist; do not replace a prior study")
     source = Path(__file__).resolve()
@@ -97,9 +97,9 @@ def prepare(study):
         if version == "v7":
             relative = str(dest.relative_to(repo))
             subprocess.run(["git", "apply", "--check", "--directory=" + relative,
-                            str(repo / "CORE_V7.patch")], cwd=repo, check=True)
+                            str(repo / "patches" / "CORE_V7.patch")], cwd=repo, check=True)
             subprocess.run(["git", "apply", "--directory=" + relative,
-                            str(repo / "CORE_V7.patch")], cwd=repo, check=True)
+                            str(repo / "patches" / "CORE_V7.patch")], cwd=repo, check=True)
         with (study / f"build-{version}.log").open("x") as log:
             subprocess.run(["make", "-j4", "all", "lib", "terraria-px", "check", "check-pixel"],
                            cwd=dest, stdout=log, stderr=subprocess.STDOUT, check=True)

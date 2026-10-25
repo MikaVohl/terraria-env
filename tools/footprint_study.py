@@ -171,7 +171,7 @@ def run(study,repo):
             command(v,[python,'-m','terraria_lite.watch','--policy',str(study/f'selected/{v}/model.pt'),'--seed','9','--out',str(tape)],f'replay-{v}.log')
             command(v,[python,str(frozen/'tools/verify_replay.py'),str(tape),'--viewer',str(frozen/'terraria-px'),
                 '--checkpoint',str(study/f'selected/{v}/model.pt'),'--out',str(study/f'selected/{v}/replay-verification.json')],f'replay-verify-{v}.log')
-        report(study,repo);stage='complete';status(report=str(repo/'FOOTPRINT_LEARNING_2026_10.md'))
+        report(study,repo);stage='complete';status(report=str(repo/'docs/reports/FOOTPRINT_LEARNING_2026_10.md'))
         print('All 30 main trials, paired one-shot tests, diagnostics and exact replays complete',flush=True)
     except BaseException as exc:
         status(error=f'{type(exc).__name__}: {exc}');raise
@@ -221,7 +221,7 @@ def report(study,repo):
         assert replays[v]['tape_sha256']==sha(d/'seed9.tape') and replays[v]['policy_provenance']['checkpoint_sha256']==sha(d/'model.pt')
     result={'complete':True,'study':str(study),'protocol':p,'main_transitions':total,'groups':groups,'paired_comparisons':comparisons,
         'runs':runs,'selection':selection,'tests':tests,'replays':replays,'simulator_benchmarks':read(study/'isolated-benchmarks.json')}
-    write(repo/'FOOTPRINT_LEARNING_2026_10.json',result)
+    write(repo/'docs/reports/FOOTPRINT_LEARNING_2026_10.json',result)
     lines=['# Fresh paired v4/v5 footprint learning study','','Status: **complete**.',f'\n{total:,} main transitions across 30 fresh runs; five paired seeds per policy package. No defaults or game versions automatically promoted.','',
         '| Package | v4 final /32 | v5 final /32 | Paired v5−v4 | 95% interval | Furnace v4/v5 |',
         '| --- | ---: | ---: | ---: | --- | --- |']
@@ -234,7 +234,7 @@ def report(study,repo):
         '\nThe comparison is the footprint/worldgen/interaction package, not sprite scaling alone. Different game trajectories, five seeds, bundled policy settings and shared-desktop timings limit causal and efficiency claims.',
         '\nNo training controller, demonstrations, strategic masks, resource-floor or recipe changes. Diagnostic hidden-state reads never enter the policy. Full curves, gate telemetry, protocols, hashes and exact replays are preserved.',
         f'\nArtifacts: `{study}`. Numeric report: `FOOTPRINT_LEARNING_2026_10.json`.']
-    (repo/'FOOTPRINT_LEARNING_2026_10.md').write_text('\n'.join(lines)+'\n')
+    (repo/'docs/reports/FOOTPRINT_LEARNING_2026_10.md').write_text('\n'.join(lines)+'\n')
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--study',type=Path,required=True)

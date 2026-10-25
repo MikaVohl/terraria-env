@@ -1,6 +1,6 @@
 ## Exploration aids — October 18, 2026
 
-[Report](EXPLORATION_2026_10_18.md). New exact simulator snapshots
+[Report](docs/reports/EXPLORATION_2026_10_18.md). New exact simulator snapshots
 (`save_state`/`load_state`), Go-Explore start archive, self-imitation, cell-count
 novelty, observed station memory, crafting-menu input, potential-based recipe
 shaping and a predictive auxiliary loss, all off by default. Potential shaping
@@ -19,11 +19,11 @@ the 48M v7 potential policies.
 
 ## Completed PPO study — October 17, 2026
 
-The [v7 reward/discount study](V7_REWARD_STUDY_2026_10_17.md) and
-[independent artifact/statistical audit](V7_REWARD_STUDY_2026_10_17.audit.json)
+The [v7 reward/discount study](docs/reports/V7_REWARD_STUDY_2026_10_17.md) and
+[independent artifact/statistical audit](docs/reports/V7_REWARD_STUDY_2026_10_17.audit.json)
 are complete:25 full16M runs,100 checkpoints,419,430,400 main transitions,
 five paired seeds. Original protocol,81,920 excluded preflight transitions,
-source/probe hashes and [launch history](V7_REWARD_LAUNCH_2026_10_17.md) remain
+source/probe hashes and [launch history](docs/reports/V7_REWARD_LAUNCH_2026_10_17.md) remain
 preserved. All3,200 final crafting records exactly reproduce final validation.
 No reserved test consumption, policy selection, promotion or additional trials.
 
@@ -38,7 +38,7 @@ On stone-sufficient pre-furnace actions, v7 groups
 lack both wood and a nearby bench98.68–99.86% of the time. Neither discounting,
 weights nor neutral direct selection solved joint resource/station preparation.
 
-The [6:14p.m. concurrency-only amendment](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
+The [6:14p.m. concurrency-only amendment](docs/reports/V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
 finished at6:49p.m. Edmonton. Three adopted workers kept their original
 identities; the final trial launched once from scratch. All25 summaries, final
 diagnostics and original report completed. Original dispatcher, coordinator
@@ -54,15 +54,15 @@ from inconclusive five-seed intervals or count checkpoints as new seeds.
 
 ## LLM harness — October 17, 2026
 
-[Research/design review](LLM_BENCHMARK_RESEARCH_2026_10.md) and
-[harness guide](LLM_EVALUATION.md) are implemented: native scoring, local
+[Research/design review](docs/reports/LLM_BENCHMARK_RESEARCH_2026_10.md) and
+[harness guide](docs/reports/LLM_EVALUATION.md) are implemented: native scoring, local
 symbolic observations/public rules, explicit primitive/open-loop tracks,
 budget/failure accounting, immutable claims and exact replay. Offline mocked
-provider checks pass on v4/v7. The [initial Sol smoke](LLM_SMOKE_2026_10_17.md)
+provider checks pass on v4/v7. The [initial Sol smoke](docs/reports/LLM_SMOKE_2026_10_17.md)
 completed9/32 in256 actions for $0.282 actual reported cost.
 
 The user switched future calls to **Luna high**. A bounded
-[three-world development batch](LLM_LUNA_2026_10_17.md) is **completed and audited**
+[three-world development batch](docs/reports/LLM_LUNA_2026_10_17.md) is **completed and audited**
 under its shared $2 guard: $0.89574603 actual cost, scores20/19 before deaths,
 both with furnace/copper smelting; third world cost-censored at129 actions/5.
 All445 response model IDs/high request settings and three Python/SDL replays
@@ -73,14 +73,14 @@ comparison needs equal per-world budgets, explicit observation cadence and
 predeclared controls; no such follow-on is launched here.
 
 **Later October17 authorization:** the user granted **$3 additional API budget**
-for broad harness experiments. A separate [eight-attempt paired scaffold study](LUNA_HARNESS_STUDY_2026_10_17.md)
+for broad harness experiments. A separate [eight-attempt paired scaffold study](docs/reports/LUNA_HARNESS_STUDY_2026_10_17.md)
 is now **complete and independently audited**: full16/compact16/compact4/compact16_interrupt on two fresh
 worlds, $0.35 independent guards each ($2.80 total; no reallocation). The
-[predeclared protocol](LUNA_HARNESS_PROTOCOL_2026_10_17.md) fixes the new snapshot,
+[predeclared protocol](docs/reports/LUNA_HARNESS_PROTOCOL_2026_10_17.md) fixes the new snapshot,
 common model/high reasoning, native game, progression and censoring metrics.
 This supersedes the prior batch's stop-spending instruction only for these
 attempts. All8 outcomes,1,643 request/response pairs and exact Python/SDL replays
-pass the [audit](LUNA_HARNESS_STUDY_2026_10_17.audit.json); actual spend$1.45913,
+pass the [audit](docs/reports/LUNA_HARNESS_STUDY_2026_10_17.audit.json); actual spend$1.45913,
 conservative accounted$1.92040. Final means10.5/8.5/12.5/14.0 favor more feedback
 descriptively; interrupt illegal attempts fall to11.8% and one furnace appears.
 Five deaths and three alive cost stops mean no full3,000-action evaluation;
@@ -92,10 +92,10 @@ is also complete; all game/policy defaults unchanged.
 
 ## Historical plan and completed evidence
 
-Historical v1 plan. The combat/exploration contract is in [V2.md](V2.md);
-the v3 iteration is in [ITERATION_2026_10.md](ITERATION_2026_10.md).
-Current v4 fidelity changes and remeasurements are in [FIDELITY_V4.md](FIDELITY_V4.md).
-The earlier completed credit sequence is in [CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md):
+Historical v1 plan. The combat/exploration contract is in [V2.md](docs/reports/V2.md);
+the v3 iteration is in [ITERATION_2026_10.md](docs/reports/ITERATION_2026_10.md).
+Current v4 fidelity changes and remeasurements are in [FIDELITY_V4.md](docs/reports/FIDELITY_V4.md).
+The earlier completed credit sequence is in [CREDIT_V4_2026_10.md](docs/reports/CREDIT_V4_2026_10.md):
 356,515,840 main transitions across 55 runs with five paired training seeds.
 Memory stabilized early mining but did not materially separate from the target
 control at 16M (17.95 versus 17.79/32), and the selected policy's fresh test was
@@ -103,41 +103,41 @@ control at 16M (17.95 versus 17.79/32), and the selected policy's fresh test was
 progression. The finite-deadline objective correction is retained; no default
 architecture/checkpoint is promoted. Test worlds 9,000,001–9,000,128 are consumed.
 The earlier 247.5M sequence and its 20.79/32 policy remain preserved in
-[LEARNING_V4_2026_10.md](LEARNING_V4_2026_10.md).
+[LEARNING_V4_2026_10.md](docs/reports/LEARNING_V4_2026_10.md).
 
 Joint resource/station diagnostics and no-concurrent-RL footprint timings are
-now completed in [CRAFTING_BOTTLENECKS_2026_10.md](CRAFTING_BOTTLENECKS_2026_10.md).
+now completed in [CRAFTING_BOTTLENECKS_2026_10.md](docs/reports/CRAFTING_BOTTLENECKS_2026_10.md).
 The newer policy lacks both wood and a nearby bench on 96.1% of its
 stone-sufficient pre-furnace actions. The footprint simulator gate passes again.
 The original v4/v5 cohort was **stopped at the user deadline**, under
-[FOOTPRINT_LEARNING_PROTOCOL.md](FOOTPRINT_LEARNING_PROTOCOL.md): 30 runs,
+[FOOTPRINT_LEARNING_PROTOCOL.md](docs/reports/FOOTPRINT_LEARNING_PROTOCOL.md): 30 runs,
 503.3M planned main transitions, three packages, five paired seeds each.
 The user shortened completion to 7 p.m.; workers stopped at 6:52 p.m. Edmonton
-on 2026-10-11. [Audited partial results](FOOTPRINT_LEARNING_PARTIAL_2026_10.md)
+on 2026-10-11. [Audited partial results](docs/reports/FOOTPRINT_LEARNING_PARTIAL_2026_10.md)
 cover 15 complete runs, three interrupted and twelve unstarted. Plain PPO rose
 15.85→21.56/32 over three pairs; spatial/recurrent scores declined over two.
 Do not interpret the time-limited subset as the completed 30-run protocol or
 consume reserved tests for it. Frozen sources and trial order are unchanged.
 At that stop the five-seed protocol was unfinished; this partial history remains
-unchanged. The [v5 preview](OBJECT_SCALE_V5.md) is still not promoted.
+unchanged. The [v5 preview](docs/reports/OBJECT_SCALE_V5.md) is still not promoted.
 
 **2026-10-12 update:** the user authorized running the remaining trials.
-[Completion is audited](FOOTPRINT_LEARNING_COMPLETION.md) in a separate frozen
+[Completion is audited](docs/reports/FOOTPRINT_LEARNING_COMPLETION.md) in a separate frozen
 cohort: 15 completed results retained without retraining, three interrupted
 trials restarted from scratch, twelve unstarted trials trained under the same
 settings. No optimizer-state resume or warm start; old partial evidence stays
 preserved. The earlier time cutoff is superseded. Final selection/test/diagnostic
 stages executed after all 30 complete results were available. The
-[completed 503.3M report](FOOTPRINT_LEARNING_2026_10.md) finds MLP 13.79→17.32/32
+[completed 503.3M report](docs/reports/FOOTPRINT_LEARNING_2026_10.md) finds MLP 13.79→17.32/32
 and furnace 6.6%→38.8%, targets 17.68→17.07, memory 17.76→17.05. None supports
 the exploratory five-seed non-inferiority gate; all are inconclusive. The
 validation-selected paired memory seed scored 18.46 versus 17.02 on one-shot
 tests. Test worlds 11,000,001–11,000,128 are now consumed once per version.
 All 30 final-policy diagnostics and exact checkpoint/Python/SDL replays passed
-the [artifact audit](FOOTPRINT_LEARNING_2026_10.audit.json). No workers or new
+the [artifact audit](docs/reports/FOOTPRINT_LEARNING_2026_10.audit.json). No workers or new
 experiments run; follow-up paused and main v4/model defaults unchanged.
 
-[DESIGN_DIRECTION_2026_10.md](DESIGN_DIRECTION_2026_10.md) sets the working
+[DESIGN_DIRECTION_2026_10.md](docs/reports/DESIGN_DIRECTION_2026_10.md) sets the working
 priority: a fair learnable core, meaningful strategic diversity, learning
 efficiency, then detail-level fidelity. Neutral direct inventory selection is
 a proposed independent interface experiment; tool ownership and necessary
@@ -147,7 +147,7 @@ footprint comparison. Do not pool future game changes with frozen studies.
 
 Inspiration: [Craftax](https://craftaxenv.github.io/)
 
-**Authorized next steps, 2026-10-12:** [CORE_NEXT_2026_10.md](CORE_NEXT_2026_10.md)
+**Authorized next steps, 2026-10-12:** [CORE_NEXT_2026_10.md](docs/reports/CORE_NEXT_2026_10.md)
 records separate v6/v7 implementations, regression tests, simulator/CPU/MPS
 measurements, a completed 25.2M exploratory pilot and completed 16.8M follow-on
 spatial-target control (41.9M total). Initial MLP policies remain surface-bound; replay is

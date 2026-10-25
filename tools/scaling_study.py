@@ -68,7 +68,7 @@ def main():
         (out/'training.json').write_text(json.dumps(report,indent=2))
         return
     out.mkdir(parents=True,exist_ok=False)
-    root=Path.cwd();sources=[*root.glob('src/*.[ch]'),*root.glob('include/*.h'),*root.glob('tools/*.py'),*root.glob('tools/*.c'),*root.glob('python/terraria_lite/*.py'),root/'Makefile',root/'pyproject.toml',root/'uv.lock',root/'LARGE_SCALE_STUDY.md',root/'PERFORMANCE_EXPLORATION.md']
+    root=Path.cwd();sources=[*root.glob('src/*.[ch]'),*root.glob('include/*.h'),*root.glob('tools/*.py'),*root.glob('tools/*.c'),*root.glob('python/terraria_lite/*.py'),root/'Makefile',root/'pyproject.toml',root/'uv.lock',root/'docs/reports/LARGE_SCALE_STUDY.md',root/'docs/reports/PERFORMANCE_EXPLORATION.md']
     hashes={}
     for src in sources:
         rel=src.relative_to(root);dest=out/'source'/rel;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(src.read_bytes());hashes[str(rel)]=hashlib.sha256(src.read_bytes()).hexdigest()

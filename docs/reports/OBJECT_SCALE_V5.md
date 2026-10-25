@@ -117,7 +117,7 @@ Raw measurements: `experiments/object-scale-v5-20261011.44UmHy/benchmarks.json`.
 Local screenshots: `ui-fixture.png` and `placement-fixture.png` in that study
 directory. These are synthetic UI fixtures, not agent proficiency examples.
 
-The tracked [OBJECT_SCALE_V5.patch](OBJECT_SCALE_V5.patch) contains the code and
+The tracked [OBJECT_SCALE_V5.patch](../../patches/OBJECT_SCALE_V5.patch) contains the code and
 regression tests; `git apply --check OBJECT_SCALE_V5.patch` passes against the
 current checkout. It has **not** been applied to the main checkout. This preserves
 the completed v4 evidence and lets us review/keep the new task separately.

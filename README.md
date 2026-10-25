@@ -9,8 +9,8 @@ rope, platforms, Cloud in a Bottle, healing, Life Crystals, campfires, and four
 ordinary ores. It uses original Terraria art from your local installation.
 The mechanics remain intentionally simplified.
 
-**October 18 exploration study (v4, mechanics unchanged):** [results](EXPLORATION_2026_10_18.md),
-[numeric evidence](EXPLORATION_2026_10_18.json). Training-only aids and policy
+**October 18 exploration study (v4, mechanics unchanged):** [results](docs/reports/EXPLORATION_2026_10_18.md),
+[numeric evidence](docs/reports/EXPLORATION_2026_10_18.json). Training-only aids and policy
 inputs screened against a paired PPO control at 16M. **Potential-based recipe
 shaping** (disclosed prior knowledge) is the first change that reliably passes
 the furnace: five-seed paired +1.41/32 (95% [+0.17,+2.66], unadjusted), furnace
@@ -24,10 +24,10 @@ All defaults unchanged; reserved worlds 25,000,001–25,000,128 unused. On the
 16M seeds (95% [+1.34,+1.87]) and +1.45/+1.61 at 48M (19.05 vs 17.60/17.44):
 workbench 0→126–128/128 worlds, but v7 furnace rates stay 0–13/128 even at 48M.
 
-**October 17 PPO study complete:** [results and interpretation](V7_REWARD_STUDY_2026_10_17.md),
-[independent audit](V7_REWARD_STUDY_2026_10_17.audit.json),
-[frozen protocol](V7_REWARD_PROTOCOL_2026_10_17.md) and
-[historical launch](V7_REWARD_LAUNCH_2026_10_17.md). All25 fresh16M trials,
+**October 17 PPO study complete:** [results and interpretation](docs/reports/V7_REWARD_STUDY_2026_10_17.md),
+[independent audit](docs/reports/V7_REWARD_STUDY_2026_10_17.audit.json),
+[frozen protocol](docs/reports/V7_REWARD_PROTOCOL_2026_10_17.md) and
+[historical launch](docs/reports/V7_REWARD_LAUNCH_2026_10_17.md). All25 fresh16M trials,
 419.4M main transitions and100 checkpoints are verified. Five-seed means:
 v4equal/.999 **17.97/32**; v7equal/.999 **16.68**; v7equal/1.0 **15.90**;
 v7difficulty/.999 **16.33**; v7difficulty/1.0 **15.14**. Gamma1 lowers scores
@@ -35,16 +35,16 @@ by0.99 on average (four-primary-contrast-adjusted interval excludes zero).
 Weighting changes bench coverage but establishes no score improvement; no v7
 condition reaches a furnace at final validation. V7−v4 is negative in every seed but inconclusive
 under the adjusted interval. Resource/station coordination remains the gate.
-The [user-requested final four-way overlap](V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
+The [user-requested final four-way overlap](docs/reports/V7_REWARD_PARALLEL_AMENDMENT_2026_10_17.md)
 is separately timing-audited; all workers/coordinators are stopped, follow-up
 paused. Evaluation stays unweighted, reserved tests unused, v4/default policies
 unchanged; v5–v7 remain unpromoted previews. No follow-on experiment launched.
 
-**October 17 LLM harness:** [usage and replay](LLM_EVALUATION.md),
-[ARC/FLE/Craftax and broader benchmark research](LLM_BENCHMARK_RESEARCH_2026_10.md).
-The authorized [Sol smoke](LLM_SMOKE_2026_10_17.md) scored9/32 in256 actions
+**October 17 LLM harness:** [usage and replay](docs/reports/LLM_EVALUATION.md),
+[ARC/FLE/Craftax and broader benchmark research](docs/reports/LLM_BENCHMARK_RESEARCH_2026_10.md).
+The authorized [Sol smoke](docs/reports/LLM_SMOKE_2026_10_17.md) scored9/32 in256 actions
 for $0.282 reported cost, with exact native replay. Future development uses
-**Luna high**: the [three-world batch](LLM_LUNA_2026_10_17.md) is complete and
+**Luna high**: the [three-world batch](docs/reports/LLM_LUNA_2026_10_17.md) is complete and
 replay-audited for **$0.896 actual reported cost**. Scores20/19 end in death;
 both reach a furnace and copper smelting. The shared conservative $2 guard
 stops world3 at129 actions/5 achievements: not three full-budget episodes or
@@ -53,7 +53,7 @@ no more paid calls. The independent PPO study is also complete. These are public
 development checks, not leaderboard scores or matched-budget PPO results. Defaults unchanged.
 
 **Completed user-authorized Luna comparison:** [four harness packages on two paired
-worlds](LUNA_HARNESS_STUDY_2026_10_17.md), under [a frozen protocol](LUNA_HARNESS_PROTOCOL_2026_10_17.md).
+worlds](docs/reports/LUNA_HARNESS_STUDY_2026_10_17.md), under [a frozen protocol](docs/reports/LUNA_HARNESS_PROTOCOL_2026_10_17.md).
 All8 attempts and Python/SDL replays are audited; **$1.459 actual spend** of the
 newly authorized $3. Full16/compact16/compact4/interrupt means are10.5/8.5/12.5/14.0
 on two paired worlds. Interruption cuts illegal attempts46.2%→11.8% versus
@@ -62,23 +62,23 @@ before800 actions; this is not proof of full-budget survival. At512 common
 actions compact4 leads11.5 versus interrupt10.0. No robust ranking from two
 worlds. Luna follow-up paused; no further calls. PPO/game defaults unchanged.
 
-See [FOOTPRINT_LEARNING_2026_10.md](FOOTPRINT_LEARNING_2026_10.md) for the earlier
+See [FOOTPRINT_LEARNING_2026_10.md](docs/reports/FOOTPRINT_LEARNING_2026_10.md) for the earlier
 completed **503.3M-transition / 30-run** paired v4/v5 learning study, and
-[CREDIT_V4_2026_10.md](CREDIT_V4_2026_10.md) for the earlier completed
+[CREDIT_V4_2026_10.md](docs/reports/CREDIT_V4_2026_10.md) for the earlier completed
 356.5M-transition, five-seed deadline/credit/memory/exploration study and
-[CREDIT_V4_2026_10.json](CREDIT_V4_2026_10.json) for its numeric evidence.
+[CREDIT_V4_2026_10.json](docs/reports/CREDIT_V4_2026_10.json) for its numeric evidence.
 The earlier 247.5M-transition causal/learning study remains in
-[LEARNING_V4_2026_10.md](LEARNING_V4_2026_10.md) and
-[LEARNING_V4_2026_10.json](LEARNING_V4_2026_10.json).
-[FIDELITY_V4.md](FIDELITY_V4.md) documents current
+[LEARNING_V4_2026_10.md](docs/reports/LEARNING_V4_2026_10.md) and
+[LEARNING_V4_2026_10.json](docs/reports/LEARNING_V4_2026_10.json).
+[FIDELITY_V4.md](docs/reports/FIDELITY_V4.md) documents current
 mechanics, regression gates and the earlier 4M comparisons; numeric evidence is in
-[FIDELITY_V4.json](FIDELITY_V4.json). [ITERATION_2026_10.md](ITERATION_2026_10.md)
-and [ITERATION_2026_10.json](ITERATION_2026_10.json) preserve historical v3 results.
-[V2.md](V2.md) documents the underlying game contract/recipes/controls and
+[FIDELITY_V4.json](docs/reports/FIDELITY_V4.json). [ITERATION_2026_10.md](docs/reports/ITERATION_2026_10.md)
+and [ITERATION_2026_10.json](docs/reports/ITERATION_2026_10.json) preserve historical v3 results.
+[V2.md](docs/reports/V2.md) documents the underlying game contract/recipes/controls and
 historical evidence; its results are intentionally not relabeled as v3.
 
 The five-seed study completed **356,515,840 main transitions across 55 runs**,
-plus 294,912 calibration transitions, under [CREDIT_V4_PROTOCOL.md](CREDIT_V4_PROTOCOL.md).
+plus 294,912 calibration transitions, under [CREDIT_V4_PROTOCOL.md](docs/reports/CREDIT_V4_PROTOCOL.md).
 PPO uses zero future value at the inherent action deadline; the correction had
 positive but noisy paired effects. Generic recurrent memory made 4M mining
 more reliable, but at 16M its mean was **17.95/32** versus **17.79/32** for the
@@ -87,25 +87,25 @@ policy scored **18.83/32** on its one-shot test, with **no furnace in 128 worlds
 RND and longer-credit variants did not solve crafting. No architecture or
 checkpoint default was promoted; the earlier 20.79/32 policy is preserved.
 
-A separate playable [v5 object-scale preview](OBJECT_SCALE_V5.md) corrects chest,
+A separate playable [v5 object-scale preview](docs/reports/OBJECT_SCALE_V5.md) corrects chest,
 Life Crystal, furnace, campfire, bench and anvil footprints using original art.
 Its simulator cost gate passes; the completed paired learning study finds mixed
 package-dependent effects and inconclusive five-seed non-inferiority.
 The main checkout and completed PPO studies remain v4.
 
-The original [v4/v5 cohort](FOOTPRINT_LEARNING_PROTOCOL.md) was stopped at the user's
-revised 7 p.m. reporting deadline. The [audited partial report](FOOTPRINT_LEARNING_PARTIAL_2026_10.md)
+The original [v4/v5 cohort](docs/reports/FOOTPRINT_LEARNING_PROTOCOL.md) was stopped at the user's
+revised 7 p.m. reporting deadline. The [audited partial report](docs/reports/FOOTPRINT_LEARNING_PARTIAL_2026_10.md)
 covers **15 full runs / 251.7M transitions** plus preserved partial checkpoints.
 Plain PPO averaged **15.85/32 on v4 versus 21.56 on v5** over three paired seeds;
 furnaces rose 42/384→248/384. Spatial/recurrent packages declined over two pairs.
 This is not the completed planned 503M/30-run five-seed study. No-concurrent-RL
 timing confirmed a paired batch ratio of 0.9884. Those interrupted attempts and
 the partial report remain preserved; tests were unused at that historical stop.
-On 2026-10-12 the user authorized [completing the remaining trials](FOOTPRINT_LEARNING_COMPLETION.md).
+On 2026-10-12 the user authorized [completing the remaining trials](docs/reports/FOOTPRINT_LEARNING_COMPLETION.md).
 A separate frozen completion cohort retained the 15 verified full runs, restarted the
 three interrupted trials from scratch, and trained the twelve untouched trials:
 **251.7M additional main transitions**. It is now **complete and audited**:
-[full report](FOOTPRINT_LEARNING_2026_10.md), [audit](FOOTPRINT_LEARNING_2026_10.audit.json).
+[full report](docs/reports/FOOTPRINT_LEARNING_2026_10.md), [audit](docs/reports/FOOTPRINT_LEARNING_2026_10.audit.json).
 Final five-seed MLP means are **13.79→17.32/32**, furnace coverage **6.6%→38.8%**;
 targets **17.68→17.07**, memory **17.76→17.05**. All three predeclared learning
 non-inferiority gates are inconclusive, not proven success/failure. The frozen
@@ -113,17 +113,17 @@ paired memory selection scored **18.46/32 on v4 versus 17.02 on v5** on the
 one-shot reserved test. Worlds 11,000,001–11,000,128 are consumed once per
 version; exact checkpoint/Python/SDL replays passed. All workers are stopped,
 the follow-up is paused, and v4/default policies remain unchanged.
-[All 30 final-policy crafting diagnostics](FOOTPRINT_CRAFTING_2026_10.md) show
+[All 30 final-policy crafting diagnostics](docs/reports/FOOTPRINT_CRAFTING_2026_10.md) show
 v5 targets/memory almost never craft benches and never reach furnace
 prerequisites; successful MLP seeds demonstrate workshop learning is possible.
-[Joint crafting diagnostics](CRAFTING_BOTTLENECKS_2026_10.md) now identify
+[Joint crafting diagnostics](docs/reports/CRAFTING_BOTTLENECKS_2026_10.md) now identify
 simultaneous wood/station shortages rather than insufficient stone; the
-[design direction](DESIGN_DIRECTION_2026_10.md) prioritizes a fair, learnable
+[design direction](docs/reports/DESIGN_DIRECTION_2026_10.md) prioritizes a fair, learnable
 core and permits simplifying costly or unhelpful fidelity details.
 
 ## Build and verify
 
-**Next-step work (2026-10-12):** separate [v6/v7 previews and pilots](CORE_NEXT_2026_10.md)
+**Next-step work (2026-10-12):** separate [v6/v7 previews and pilots](docs/reports/CORE_NEXT_2026_10.md)
 fix independent pickaxe ownership/ore supply and test one-action direct inventory
 selection. Mechanics/original-art checks pass; the 25.2M two-seed PPO/replay pilot
 is complete, as is the separate 16.8M spatial-target control (**41.9M total**). Initial
@@ -232,7 +232,7 @@ and `experiments/credit-v4-20261011.naYwbC/selected-seed9.tape`. Its validation
 worlds were 8,000,001–8,000,128; test worlds **9,000,001–9,000,128 are consumed**.
 The completion audit verified all 55 summaries, frozen sources and 75 eligible
 checkpoint hashes without rerunning the test. See
-[CREDIT_V4_2026_10.audit.json](CREDIT_V4_2026_10.audit.json).
+[CREDIT_V4_2026_10.audit.json](docs/reports/CREDIT_V4_2026_10.audit.json).
 
 Earlier v4 4M means of **10.17/32** (plain) and **10.32/32** (separate actor/critic)
 were surface-bound; these are historical comparisons, not the current best.

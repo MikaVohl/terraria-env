@@ -69,7 +69,7 @@ def main():
         controls={'complete':control_complete,'status':control_status,'protocol':cp,'runs':cr}
     calibrations={str(f.parent.relative_to(STUDY)):read(f) for f in (STUDY/'calibration').glob('*/summary.json')}
     result={'complete':complete and bool(controls and controls['complete']),'initial_pilot_complete':complete,'status':status,'protocol':p,'source_hashes_verified':True,'reserved_tests_consumed':False,'runs':rows,'controls':controls,'calibrations':calibrations,'calibration_transitions_excluded':sum(x['steps'] for x in calibrations.values()),'simulator':read(STUDY/'simulator-v5-v7-optimized.json'),'learner_cpu':read(STUDY/'learner-cpu.json')}
-    (ROOT/'CORE_NEXT_2026_10.json').write_text(json.dumps(result,indent=2)+'\n')
+    (ROOT/'docs/reports/CORE_NEXT_2026_10.json').write_text(json.dumps(result,indent=2)+'\n')
     lines=['# Core/interface/replay pilot results — 2026-10-12','','Status: **'+('complete and artifact-audited' if complete else 'running; partial checkpoints only')+'**. See [implementation and protocol](CORE_NEXT_2026_10.md).','','| Version/method | Seed | Transitions | Final/latest score /32 | Death | Bench / stone / furnace / anvil worlds out of 32 |','| --- | ---: | ---: | ---: | ---: | --- |']
     for r in rows:lines.append(f"| {r['version']}/{r['method']} | {r['seed']} | {r['steps']:,} | {r['score']:.3f} | {r['death_rate']:.1%} | {r['bench']} / {r['stone']} / {r['furnace']} / {r['anvil']} |")
     if complete:
@@ -87,7 +87,7 @@ def main():
                 '', 'Control interpretation: targets reach stone in63/64 v6 worlds and64/64 v7 worlds, but craft zero benches/furnaces. Means are15.281 versus15.266/32 (paired score changes +.344/−.375). The interface alone does not address production of the first workshop station. Wood is below4 on >99.9% of stone-sufficient pre-furnace actions in every control policy, and a nearby bench is absent100%; those are overlapping descriptive fractions, not isolated causes.','',
                 'Next agent research should address prerequisite discovery/resource allocation with general representations and experience reuse/predictive learning, using the mining-reliable control. Do not scale a surface-bound4M-ending policy by extending an annealed-to-zero checkpoint. A new32M schedule is a different fresh-budget experiment; no such run was launched here. Uniform Double DQN’s poor pilot is not a verdict against replay or Dreamer. Tool/ore correctness fixes are useful independently of an immediate score gain.']
     else:lines+=['','Do not interpret unequal-step rows as final comparisons or pool checkpoints as independent seeds.']
-    (ROOT/'CORE_NEXT_RESULTS_2026_10.md').write_text('\n'.join(lines)+'\n')
+    (ROOT/'docs/reports/CORE_NEXT_RESULTS_2026_10.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({'complete':complete,'rows':rows},indent=2))
 
 if __name__=='__main__':main()

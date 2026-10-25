@@ -923,7 +923,7 @@ if __name__ == "__main__":
             "      short unshaped smoke run\n"
             "  --steps 4194304 --envs 64 --seed 101\n"
             "      sparse-reward baseline\n"
-            "See ITERATION_2026_10.md for current evidence.\n"
+            "See docs/reports/ITERATION_2026_10.md for current evidence.\n"
         ),
     )
     p.add_argument("--steps", type=int, default=Config.total_steps,

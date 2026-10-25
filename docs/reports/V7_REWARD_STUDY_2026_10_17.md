@@ -32,7 +32,7 @@ Study artifacts: `/Users/mikavohl/Projects/terraria-lite/experiments/v7-reward-2
 The original frozen reporter produced the tables above at **October17,6:49p.m.
 Edmonton** (2026-10-18T00:49:21UTC). A subsequent reporting-only
 [independent audit](V7_REWARD_STUDY_2026_10_17.audit.json), implemented in
-[tools/audit_v7_reward_study.py](tools/audit_v7_reward_study.py), verifies all25
+[tools/audit_v7_reward_study.py](../../tools/audit_v7_reward_study.py), verifies all25
 summaries,100 distinct checkpoint hashes and metadata,100 validation curve
 points/12,800 world records, both complete frozen source/binary manifests,
 probe and diagnostic hashes, reward/config metadata and exact counts. All3,200
