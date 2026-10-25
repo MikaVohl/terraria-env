@@ -826,12 +826,20 @@ def train(cfg: Config, checkpoint_callback=None):
             actor.load_state_dict(agent.state_dict())
 
         optimisation_seconds += time.perf_counter() - phase_start
+        y = ret.cpu().numpy().ravel()
+        yhat = val_b.cpu().numpy().ravel()
+        var = np.var(y)
+        ev = np.nan if var == 0 else 1 - np.var(y - yhat) / var
         if checkpoint_callback is not None:
             checkpoint_callback(agent, step_count, {
                 "collection_seconds": collection_seconds,
                 "optimisation_seconds": optimisation_seconds,
                 "novelty_error": novelty_error,
                 "policy_entropy": float(entropy.detach().mean()),
+                # Last minibatch's approx KL, the iteration's mean clip
+                # fraction and the rollout's value explained variance.
+                "approx_kl": float(approx_kl), "clip_fraction": float(torch.stack(clipfracs).mean()),
+                "explained_variance": float(ev),
                 "fresh_episodes": extrinsic_episodes,
                 "restored_episodes": restored_episodes,
                 **({"archive": archive.stats()} if archive is not None else {}),
@@ -839,10 +847,6 @@ def train(cfg: Config, checkpoint_callback=None):
                 **({"sil": sil_stats} if sil is not None else {}),
             })
         # ---- report ------------------------------------------------------
-        y = ret.cpu().numpy().ravel()
-        yhat = val_b.cpu().numpy().ravel()
-        var = np.var(y)
-        ev = np.nan if var == 0 else 1 - np.var(y - yhat) / var
         sps = step_count / (time.perf_counter() - start)
         w = slice(-50, None)          # trailing window of finished episodes
         if not cfg.quiet:

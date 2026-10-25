@@ -110,7 +110,7 @@ ARMS["max2_fn_ep6000"] = ARMS["max2_frontier_nov01"] + ["--episode-steps", "6000
 # Feed-forward model-size scaling (SCALE_FF_2026_10.md) on the max2 path:
 # ff_t{hidden}c{cell_width}d{depth} for targets, ff_m{hidden}d{depth} for the
 # flat MLP; suffix _lr1e4 lowers the LR from the default 3e-4.
-for _h in (128, 256, 512, 1024, 2048):
+for _h in (32, 64, 128, 256, 512, 1024, 2048):
     for _c in (32, 64, 128):
         for _d in (2, 3, 4):
             ARMS[f"ff_t{_h}c{_c}d{_d}"] = ARMS["pot_e1024_max2"] + [
