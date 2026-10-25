@@ -68,7 +68,8 @@ def main():
     p.add_argument("--bf16", action="store_true", help="bfloat16 autocast in the PPO update (changes rounding)")
     p.add_argument("--fused-adam", action="store_true", help="fused Adam kernel (changes rounding)")
     p.add_argument("--compile-all", action="store_true",
-                   help="also torch.compile the whole sampling forward and minibatch loss (changes rounding)")
+                   help="also torch.compile the whole sampling forward and minibatch loss (changes rounding; "
+                        "the loss only without --bf16, docs/reports/GPU_SHARING_CORRUPTION_2026_10.md)")
     p.add_argument("--sim-backend", choices=["cpu", "gpu"], default="cpu",
                    help="exact: gpu simulates on --collect-device (needs perf/gpusim/libgpusim.so)")
     p.add_argument("--async-evaluation", action="store_true",
