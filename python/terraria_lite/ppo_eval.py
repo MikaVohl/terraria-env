@@ -37,10 +37,9 @@ def load_agent(path: str | Path, device: str = "cpu"):
         agent.load_state_dict(state)
         agent.eval()
         return agent
-    from terraria_lite.spatial_agent import build_agent
+    from terraria_lite.spatial_agent import agent_size, build_agent
     architecture=raw.get("architecture","mlp")
-    hidden=int(state["actor.weight"].shape[1])
-    agent = build_agent(architecture,hidden,int(raw.get("extra",0))).to(device)
+    agent = build_agent(architecture,extra=int(raw.get("extra",0)),**agent_size(architecture,state)).to(device)
     if raw.get("memory_features") is not None:
         agent.memory_features = raw["memory_features"]   # read by evaluate()
     agent.load_state_dict(state)

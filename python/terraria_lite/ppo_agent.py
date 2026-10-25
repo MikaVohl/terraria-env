@@ -77,6 +77,12 @@ class Config:
     save: str = "ppo_terraria.pt"    # "" to skip, so parallel sweeps don't collide
     init: str = ""                    # optional actor/critic state_dict warm start
     architecture: str = "mlp"         # general spatial CNN is an optional control
+    # Model size (feed-forward): hidden 0 = the architecture's default width;
+    # depth = global trunk layers ('targets', 'mlp'); cell_width = per-cell
+    # MLP width ('targets'). Defaults build the original networks exactly.
+    hidden: int = 0
+    depth: int = 2
+    cell_width: int = 32
     curiosity_coef: float = 0.0       # generic learned novelty; extrinsic eval unchanged
     curiosity_anneal: bool = True
     curiosity_balanced: bool = False
@@ -136,6 +142,16 @@ def layer_init(layer: nn.Linear, std: float = np.sqrt(2), bias: float = 0.0):
     return layer
 
 
+def tanh_mlp(width: int, hidden: int, depth: int) -> nn.Sequential:
+    """`depth` Linear+Tanh layers, the first from `width` to `hidden`."""
+    if depth < 1:
+        raise ValueError("depth must be at least 1")
+    layers = []
+    for i in range(depth):
+        layers += [layer_init(nn.Linear(width if i == 0 else hidden, hidden)), nn.Tanh()]
+    return nn.Sequential(*layers)
+
+
 class ActorCritic(nn.Module):
     """Parameter-efficient baseline: shared features, separate policy/value heads.
 
@@ -143,12 +159,9 @@ class ActorCritic(nn.Module):
     want identical features. SeparateActorCritic tests that alternative.
     """
 
-    def __init__(self, obs_size: int, n_actions: int, hidden: int = 512):
+    def __init__(self, obs_size: int, n_actions: int, hidden: int = 512, depth: int = 2):
         super().__init__()
-        self.trunk = nn.Sequential(
-            layer_init(nn.Linear(obs_size, hidden)), nn.Tanh(),
-            layer_init(nn.Linear(hidden, hidden)), nn.Tanh(),
-        )
+        self.trunk = tanh_mlp(obs_size, hidden, depth)
         self.actor = layer_init(nn.Linear(hidden, n_actions), std=0.01)
         self.critic = layer_init(nn.Linear(hidden, 1), std=1.0)
 
@@ -561,7 +574,8 @@ def train(cfg: Config, checkpoint_callback=None):
         memory = PolicyFeatures(cfg.memory_features, cfg.num_envs)
     width = SPEC.obs_size + (memory.N_FEATURES if memory is not None else 0)
     from terraria_lite.spatial_agent import build_agent
-    agent = build_agent(cfg.architecture, extra=width - SPEC.obs_size).to(device)
+    agent = build_agent(cfg.architecture, cfg.hidden, width - SPEC.obs_size,
+                        depth=cfg.depth, cell_width=cfg.cell_width).to(device)
     if memory is not None:
         agent.memory_features = cfg.memory_features
     if cfg.init:
@@ -850,6 +864,8 @@ def train(cfg: Config, checkpoint_callback=None):
         "progress_anneal": cfg.progress_anneal,
         "lr": cfg.lr, "envs": cfg.num_envs, "steps": step_count,
         "architecture": cfg.architecture,"curiosity_coef": cfg.curiosity_coef,
+        "hidden": cfg.hidden, "depth": cfg.depth, "cell_width": cfg.cell_width,
+        "parameters": sum(p.numel() for p in agent.parameters()),
         "achievement_reward": cfg.achievement_reward,
         "requested_steps": cfg.total_steps,
         "collection_seconds": collection_seconds,
@@ -943,6 +959,12 @@ if __name__ == "__main__":
     p.add_argument("--bootstrap-time-limit",action="store_true",
                    help="legacy/external-truncation control; incompatible with the finite benchmark objective")
     p.add_argument("--architecture",choices=["mlp","cnn","tokens","separate","targets"],default=Config.architecture)
+    p.add_argument("--hidden", type=int, default=Config.hidden,
+                   help="global trunk width, 0 = architecture default")
+    p.add_argument("--depth", type=int, default=Config.depth,
+                   help="global trunk layers (targets, mlp)")
+    p.add_argument("--cell-width", type=int, default=Config.cell_width,
+                   help="per-cell MLP width (targets)")
     p.add_argument("--curiosity-coef",type=float,default=0.,help="optional learned novelty; experimental")
     p.add_argument("--balanced-curiosity",action="store_true")
     p.add_argument("--threads",type=int,default=6)
@@ -974,6 +996,7 @@ if __name__ == "__main__":
                      progress_anneal=a.progress_anneal, device=a.device,
                      collect_device=a.collect_device, collect_threads=a.collect_threads,
                      save=a.save, init=a.init, quiet=a.quiet,architecture=a.architecture,
+                     hidden=a.hidden, depth=a.depth, cell_width=a.cell_width,
                      gae_lambda=a.gae_lambda,bootstrap_time_limit=a.bootstrap_time_limit,curiosity_coef=a.curiosity_coef,
                      curiosity_balanced=a.balanced_curiosity))
     if a.json:
