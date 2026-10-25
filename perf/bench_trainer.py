@@ -46,10 +46,11 @@ def main():
     for k, v in list(extra.items()):
         if isinstance(v, int) and isinstance(getattr(Config, k, None), bool):
             extra[k] = bool(v)
-    cfg = Config(total_steps=a.envs * 128 * a.iters, num_envs=a.envs, rollout=128, epochs=a.epochs,
-                 minibatches=a.minibatches, gamma=.999, gae_lambda=.99, ent_coef=.03, seed=a.seed,
-                 device="cuda", collect_device="cuda", sim_workers=a.sim_workers or (12 if a.envs <= 1024 else 16),
-                 architecture="targets", potential_coef=a.potential, quiet=True, save="", **extra)
+    cfg = Config(**{"total_steps": a.envs * 128 * a.iters, "num_envs": a.envs, "rollout": 128, "epochs": a.epochs,
+                    "minibatches": a.minibatches, "gamma": .999, "gae_lambda": .99, "ent_coef": .03, "seed": a.seed,
+                    "device": "cuda", "collect_device": "cuda",
+                    "sim_workers": a.sim_workers or (12 if a.envs <= 1024 else 16),
+                    "architecture": "targets", "potential_coef": a.potential, "quiet": True, "save": "", **extra})
     marks = []
 
     def callback(agent, steps, profile):
@@ -66,7 +67,7 @@ def main():
     tel = {k: summary[k] for k in ("n_ep", "ach", "ret", "len", "died", "hits")}
     h.update(json.dumps(tel, sort_keys=True).encode())
     out = {"label": a.label, "package": os.path.dirname(terraria_lite.__file__), "envs": a.envs,
-           "iters_timed": len(marks) - 1, "flags": extra,
+           "iters_timed": len(marks) - 1, "flags": extra, "parameters": summary["parameters"],
            "steady_sps": round((sb - sa) / (tb - ta)),
            "collect_s_per_iter": round((cb - ca) / (len(marks) - 1), 3),
            "learn_s_per_iter": round((ob - oa) / (len(marks) - 1), 3),
