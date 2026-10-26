@@ -1,0 +1,4413 @@
+{
+ "runs": [
+  {
+   "arm": "mem_gru256",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "completed",
+   "memory": "gru",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 796814,
+   "steps": 536870912,
+   "train_seconds": 6398,
+   "sps": 83914,
+   "final": 24.765625,
+   "best": 24.765625,
+   "final_std": 1.3777493819178437,
+   "death_rate": 0.078125,
+   "idle_tail_steps": 1234.6328125,
+   "rates": {
+    "craft anvil": 0.375,
+    "craft metal sword": 0.0703125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9609375,
+    "collect gold": 0.9453125,
+    "smelt gold": 0.8671875
+   },
+   "curve": [
+    [
+     33554432,
+     391,
+     19.695
+    ],
+    [
+     67108864,
+     833,
+     22.312
+    ],
+    [
+     100663296,
+     1342,
+     22.547
+    ],
+    [
+     134217728,
+     1785,
+     22.664
+    ],
+    [
+     167772160,
+     2249,
+     23.016
+    ],
+    [
+     201326592,
+     2677,
+     23.242
+    ],
+    [
+     234881024,
+     3092,
+     23.344
+    ],
+    [
+     268435456,
+     3432,
+     23.711
+    ],
+    [
+     301989888,
+     3764,
+     23.766
+    ],
+    [
+     335544320,
+     4113,
+     24.273
+    ],
+    [
+     369098752,
+     4445,
+     24.297
+    ],
+    [
+     402653184,
+     4894,
+     24.523
+    ],
+    [
+     436207616,
+     5296,
+     24.383
+    ],
+    [
+     469762048,
+     5626,
+     24.312
+    ],
+    [
+     503316480,
+     6009,
+     24.25
+    ],
+    [
+     536870912,
+     6402,
+     24.766
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00010030703560914844,
+   "wall_seconds": 6419,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 14.0,
+     "iron ore": 6.0,
+     "iron bar": 4.0,
+     "gold ore": 5.0,
+     "gold bar": 2.0
+    },
+    "peak_mean": {
+     "wood": 14.6015625,
+     "iron ore": 6.609375,
+     "iron bar": 3.84375,
+     "gold ore": 5.34375,
+     "gold bar": 2.015625
+    },
+    "peak_max": {
+     "wood": 25,
+     "iron ore": 24,
+     "iron bar": 17,
+     "gold ore": 23,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 48,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 55,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_gru256",
+   "seed": 1902,
+   "screen": "shared",
+   "status": "died (non-finite loss)",
+   "memory": "gru",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 796814,
+   "steps": 369098752,
+   "train_seconds": 4734,
+   "sps": 77960,
+   "final": 24.4375,
+   "best": 24.4375,
+   "final_std": 1.3506364240608943,
+   "death_rate": 0.078125,
+   "idle_tail_steps": 1286.1328125,
+   "rates": {
+    "craft anvil": 0.390625,
+    "craft metal sword": 0.046875,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.921875,
+    "collect gold": 0.875,
+    "smelt gold": 0.6640625
+   },
+   "curve": [
+    [
+     33554432,
+     364,
+     19.516
+    ],
+    [
+     67108864,
+     803,
+     21.898
+    ],
+    [
+     100663296,
+     1326,
+     23.078
+    ],
+    [
+     134217728,
+     1710,
+     23.164
+    ],
+    [
+     167772160,
+     2173,
+     23.633
+    ],
+    [
+     201326592,
+     2626,
+     23.672
+    ],
+    [
+     234881024,
+     3057,
+     24.016
+    ],
+    [
+     268435456,
+     3425,
+     23.914
+    ],
+    [
+     301989888,
+     3814,
+     24.258
+    ],
+    [
+     335544320,
+     4219,
+     24.172
+    ],
+    [
+     369098752,
+     4738,
+     24.438
+    ]
+   ],
+   "first_minibatch_kl_max": 4.776582500198856e-05,
+   "diagnostics": {
+    "checkpoint_steps": 369098752,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 12.9765625,
+     "iron ore": 5.984375,
+     "iron bar": 3.6328125,
+     "gold ore": 4.5703125,
+     "gold bar": 1.2421875
+    },
+    "peak_max": {
+     "wood": 20,
+     "iron ore": 22,
+     "iron bar": 9,
+     "gold ore": 15,
+     "gold bar": 8
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 0,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 50,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 62,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm1024",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "stopped",
+   "memory": "lstm",
+   "memory_size": 1024,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 5310094,
+   "steps": 134217728,
+   "train_seconds": 1102,
+   "sps": 121813,
+   "final": 18.7578125,
+   "best": 19.515625,
+   "final_std": 2.1055955724791384,
+   "death_rate": 0.1796875,
+   "idle_tail_steps": 1046.96875,
+   "rates": {
+    "craft anvil": 0.0078125,
+    "craft metal sword": 0.0,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.921875,
+    "smelt iron": 0.1328125,
+    "collect gold": 0.546875,
+    "smelt gold": 0.0546875
+   },
+   "curve": [
+    [
+     33554432,
+     301,
+     18.141
+    ],
+    [
+     67108864,
+     566,
+     18.953
+    ],
+    [
+     100663296,
+     823,
+     19.516
+    ],
+    [
+     134217728,
+     1104,
+     18.758
+    ]
+   ],
+   "first_minibatch_kl_max": 6.924589979462326e-05
+  },
+  {
+   "arm": "mem_lstm256",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 895630,
+   "steps": 536870912,
+   "train_seconds": 4677,
+   "sps": 114791,
+   "final": 24.578125,
+   "best": 24.578125,
+   "final_std": 1.1497919309053268,
+   "death_rate": 0.125,
+   "idle_tail_steps": 1380.9140625,
+   "rates": {
+    "craft anvil": 0.3828125,
+    "craft metal sword": 0.0859375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.953125,
+    "collect gold": 0.9609375,
+    "smelt gold": 0.640625
+   },
+   "curve": [
+    [
+     33554432,
+     217,
+     19.562
+    ],
+    [
+     67108864,
+     427,
+     21.0
+    ],
+    [
+     100663296,
+     672,
+     21.266
+    ],
+    [
+     134217728,
+     1045,
+     23.414
+    ],
+    [
+     167772160,
+     1409,
+     23.156
+    ],
+    [
+     201326592,
+     1716,
+     23.836
+    ],
+    [
+     234881024,
+     1963,
+     23.836
+    ],
+    [
+     268435456,
+     2318,
+     23.695
+    ],
+    [
+     301989888,
+     2623,
+     23.844
+    ],
+    [
+     335544320,
+     2934,
+     23.773
+    ],
+    [
+     369098752,
+     3211,
+     24.227
+    ],
+    [
+     402653184,
+     3470,
+     23.969
+    ],
+    [
+     436207616,
+     3741,
+     24.195
+    ],
+    [
+     469762048,
+     3986,
+     24.25
+    ],
+    [
+     503316480,
+     4296,
+     24.359
+    ],
+    [
+     536870912,
+     4681,
+     24.578
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00010649173782439902,
+   "wall_seconds": 4698,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 15.0,
+     "iron ore": 7.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 15.3828125,
+     "iron ore": 8.3359375,
+     "iron bar": 3.8515625,
+     "gold ore": 5.1484375,
+     "gold bar": 1.2265625
+    },
+    "peak_max": {
+     "wood": 25,
+     "iron ore": 28,
+     "iron bar": 11,
+     "gold ore": 14,
+     "gold bar": 6
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 2,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 49,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 52,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256",
+   "seed": 1902,
+   "screen": "shared",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 895630,
+   "steps": 536870912,
+   "train_seconds": 4723,
+   "sps": 113674,
+   "final": 25.1171875,
+   "best": 25.1171875,
+   "final_std": 0.9651837078213401,
+   "death_rate": 0.03125,
+   "idle_tail_steps": 1417.71875,
+   "rates": {
+    "craft anvil": 0.4375,
+    "craft metal sword": 0.1328125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.984375,
+    "collect gold": 0.953125,
+    "smelt gold": 0.8046875
+   },
+   "curve": [
+    [
+     33554432,
+     374,
+     19.094
+    ],
+    [
+     67108864,
+     733,
+     20.391
+    ],
+    [
+     100663296,
+     1041,
+     21.844
+    ],
+    [
+     134217728,
+     1370,
+     23.016
+    ],
+    [
+     167772160,
+     1708,
+     23.172
+    ],
+    [
+     201326592,
+     1936,
+     23.961
+    ],
+    [
+     234881024,
+     2137,
+     24.102
+    ],
+    [
+     268435456,
+     2344,
+     24.289
+    ],
+    [
+     301989888,
+     2589,
+     24.477
+    ],
+    [
+     335544320,
+     2846,
+     24.633
+    ],
+    [
+     369098752,
+     3115,
+     24.969
+    ],
+    [
+     402653184,
+     3374,
+     24.914
+    ],
+    [
+     436207616,
+     3687,
+     24.625
+    ],
+    [
+     469762048,
+     4024,
+     24.922
+    ],
+    [
+     503316480,
+     4407,
+     24.969
+    ],
+    [
+     536870912,
+     4727,
+     25.117
+    ]
+   ],
+   "first_minibatch_kl_max": 9.024939936352894e-05,
+   "wall_seconds": 4744,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.0703125,
+     "iron ore": 5.484375,
+     "iron bar": 4.3671875,
+     "gold ore": 4.6328125,
+     "gold bar": 1.8828125
+    },
+    "peak_max": {
+     "wood": 22,
+     "iron ore": 22,
+     "iron bar": 13,
+     "gold ore": 12,
+     "gold bar": 8
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 3,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 56,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 65,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256_h256",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "stopped",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 256,
+   "parameters": 1507214,
+   "steps": 100663296,
+   "train_seconds": 1129,
+   "sps": 89134,
+   "final": 23.125,
+   "best": 23.125,
+   "final_std": 2.5617376914898995,
+   "death_rate": 0.125,
+   "idle_tail_steps": 1077.7109375,
+   "rates": {
+    "craft anvil": 0.265625,
+    "craft metal sword": 0.03125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9609375,
+    "smelt iron": 0.71875,
+    "collect gold": 0.8046875,
+    "smelt gold": 0.46875
+   },
+   "curve": [
+    [
+     33554432,
+     416,
+     19.445
+    ],
+    [
+     67108864,
+     802,
+     21.602
+    ],
+    [
+     100663296,
+     1131,
+     23.125
+    ]
+   ],
+   "first_minibatch_kl_max": 1.8226710380986333e-05
+  },
+  {
+   "arm": "mem_lstm512",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "stopped",
+   "memory": "lstm",
+   "memory_size": 512,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 1842830,
+   "steps": 100663296,
+   "train_seconds": 1078,
+   "sps": 93376,
+   "final": 20.421875,
+   "best": 20.421875,
+   "final_std": 2.370421161813866,
+   "death_rate": 0.0625,
+   "idle_tail_steps": 1333.875,
+   "rates": {
+    "craft anvil": 0.0390625,
+    "craft metal sword": 0.0078125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9453125,
+    "smelt iron": 0.34375,
+    "collect gold": 0.6484375,
+    "smelt gold": 0.140625
+   },
+   "curve": [
+    [
+     33554432,
+     384,
+     19.352
+    ],
+    [
+     67108864,
+     746,
+     19.859
+    ],
+    [
+     100663296,
+     1080,
+     20.422
+    ]
+   ],
+   "first_minibatch_kl_max": 9.208828123519197e-05
+  },
+  {
+   "arm": "mem_tf256l128",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "died (non-finite loss)",
+   "memory": "transformer",
+   "memory_size": 256,
+   "memory_len": 128,
+   "hidden": 128,
+   "parameters": 2114446,
+   "steps": 134217728,
+   "train_seconds": 609,
+   "sps": 220537,
+   "final": 22.6484375,
+   "best": 22.6484375,
+   "final_std": 2.6148310286888043,
+   "death_rate": 0.2265625,
+   "idle_tail_steps": 1029.5,
+   "rates": {
+    "craft anvil": 0.1796875,
+    "craft metal sword": 0.0234375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9609375,
+    "smelt iron": 0.625,
+    "collect gold": 0.890625,
+    "smelt gold": 0.5078125
+   },
+   "curve": [
+    [
+     33554432,
+     157,
+     18.453
+    ],
+    [
+     67108864,
+     307,
+     20.414
+    ],
+    [
+     100663296,
+     461,
+     20.703
+    ],
+    [
+     134217728,
+     611,
+     22.648
+    ]
+   ],
+   "first_minibatch_kl_max": 2.4434888473479077e-05,
+   "diagnostics": {
+    "checkpoint_steps": 134217728,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 6.0,
+     "iron bar": 2.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.1015625,
+     "iron ore": 7.7265625,
+     "iron bar": 2.3515625,
+     "gold ore": 5.046875,
+     "gold bar": 1.0234375
+    },
+    "peak_max": {
+     "wood": 21,
+     "iron ore": 32,
+     "iron bar": 10,
+     "gold ore": 22,
+     "gold bar": 5
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 23,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 25,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_tf256l128",
+   "seed": 1902,
+   "screen": "shared",
+   "status": "died (non-finite loss)",
+   "memory": "transformer",
+   "memory_size": 256,
+   "memory_len": 128,
+   "hidden": 128,
+   "parameters": 2114446,
+   "steps": 201326592,
+   "train_seconds": 933,
+   "sps": 215792,
+   "final": 22.5625,
+   "best": 22.84375,
+   "final_std": 2.426256117972709,
+   "death_rate": 0.1015625,
+   "idle_tail_steps": 1362.546875,
+   "rates": {
+    "craft anvil": 0.1484375,
+    "craft metal sword": 0.0078125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.96875,
+    "smelt iron": 0.6640625,
+    "collect gold": 0.828125,
+    "smelt gold": 0.4375
+   },
+   "curve": [
+    [
+     33554432,
+     156,
+     18.711
+    ],
+    [
+     67108864,
+     304,
+     19.781
+    ],
+    [
+     100663296,
+     459,
+     20.844
+    ],
+    [
+     134217728,
+     618,
+     22.844
+    ],
+    [
+     167772160,
+     777,
+     21.82
+    ],
+    [
+     201326592,
+     935,
+     22.562
+    ]
+   ],
+   "first_minibatch_kl_max": 2.9894559702370316e-05
+  },
+  {
+   "arm": "mem_tf256l64",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "died (non-finite loss)",
+   "memory": "transformer",
+   "memory_size": 256,
+   "memory_len": 64,
+   "hidden": 128,
+   "parameters": 2113934,
+   "steps": 301989888,
+   "train_seconds": 1275,
+   "sps": 236941,
+   "final": 22.65625,
+   "best": 22.65625,
+   "final_std": 2.5903592294313156,
+   "death_rate": 0.09375,
+   "idle_tail_steps": 1122.71875,
+   "rates": {
+    "craft anvil": 0.171875,
+    "craft metal sword": 0.046875,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9765625,
+    "smelt iron": 0.640625,
+    "collect gold": 0.78125,
+    "smelt gold": 0.484375
+   },
+   "curve": [
+    [
+     33554432,
+     142,
+     18.867
+    ],
+    [
+     67108864,
+     275,
+     19.742
+    ],
+    [
+     100663296,
+     414,
+     20.188
+    ],
+    [
+     134217728,
+     557,
+     21.062
+    ],
+    [
+     167772160,
+     702,
+     20.875
+    ],
+    [
+     201326592,
+     846,
+     22.078
+    ],
+    [
+     234881024,
+     988,
+     21.5
+    ],
+    [
+     268435456,
+     1132,
+     22.641
+    ],
+    [
+     301989888,
+     1277,
+     22.656
+    ]
+   ],
+   "first_minibatch_kl_max": 0.000448669889010489,
+   "diagnostics": {
+    "checkpoint_steps": 301989888,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 14.0,
+     "iron ore": 5.0,
+     "iron bar": 2.0,
+     "gold ore": 4.0,
+     "gold bar": 0.0
+    },
+    "peak_mean": {
+     "wood": 14.3359375,
+     "iron ore": 6.765625,
+     "iron bar": 2.234375,
+     "gold ore": 4.3984375,
+     "gold bar": 1.109375
+    },
+    "peak_max": {
+     "wood": 23,
+     "iron ore": 23,
+     "iron bar": 10,
+     "gold ore": 19,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 22,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 25,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_tf256l64",
+   "seed": 1902,
+   "screen": "shared",
+   "status": "died (non-finite loss)",
+   "memory": "transformer",
+   "memory_size": 256,
+   "memory_len": 64,
+   "hidden": 128,
+   "parameters": 2113934,
+   "steps": 301989888,
+   "train_seconds": 1287,
+   "sps": 234712,
+   "final": 22.1484375,
+   "best": 22.3984375,
+   "final_std": 2.589310489028643,
+   "death_rate": 0.125,
+   "idle_tail_steps": 1152.71875,
+   "rates": {
+    "craft anvil": 0.140625,
+    "craft metal sword": 0.0234375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.984375,
+    "smelt iron": 0.5859375,
+    "collect gold": 0.75,
+    "smelt gold": 0.296875
+   },
+   "curve": [
+    [
+     33554432,
+     146,
+     18.82
+    ],
+    [
+     67108864,
+     287,
+     19.641
+    ],
+    [
+     100663296,
+     428,
+     19.57
+    ],
+    [
+     134217728,
+     569,
+     19.758
+    ],
+    [
+     167772160,
+     709,
+     21.031
+    ],
+    [
+     201326592,
+     853,
+     20.953
+    ],
+    [
+     234881024,
+     996,
+     21.57
+    ],
+    [
+     268435456,
+     1142,
+     22.398
+    ],
+    [
+     301989888,
+     1289,
+     22.148
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00012731028255075216,
+   "diagnostics": {
+    "checkpoint_steps": 268435456,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 12.0,
+     "iron ore": 7.0,
+     "iron bar": 2.0,
+     "gold ore": 4.5,
+     "gold bar": 0.0
+    },
+    "peak_mean": {
+     "wood": 12.171875,
+     "iron ore": 7.4453125,
+     "iron bar": 2.234375,
+     "gold ore": 4.7734375,
+     "gold bar": 0.8359375
+    },
+    "peak_max": {
+     "wood": 19,
+     "iron ore": 24,
+     "iron bar": 8,
+     "gold ore": 15,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 0,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 21,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 24,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "pot_e1024_max2",
+   "seed": 1901,
+   "screen": "shared",
+   "status": "died (non-finite loss)",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 472718,
+   "steps": 234881024,
+   "train_seconds": 616,
+   "sps": 381577,
+   "final": 23.6484375,
+   "best": 23.6484375,
+   "final_std": 1.7923005631293403,
+   "death_rate": 0.1328125,
+   "idle_tail_steps": 1361.5,
+   "rates": {
+    "craft anvil": 0.2421875,
+    "craft metal sword": 0.046875,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9921875,
+    "smelt iron": 0.8125,
+    "collect gold": 0.8671875,
+    "smelt gold": 0.5078125
+   },
+   "curve": [
+    [
+     33554432,
+     89,
+     18.359
+    ],
+    [
+     67108864,
+     176,
+     20.516
+    ],
+    [
+     100663296,
+     264,
+     21.828
+    ],
+    [
+     134217728,
+     354,
+     22.508
+    ],
+    [
+     167772160,
+     443,
+     23.484
+    ],
+    [
+     201326592,
+     533,
+     23.039
+    ],
+    [
+     234881024,
+     618,
+     23.648
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "diagnostics": {
+    "checkpoint_steps": 234881024,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 14.0,
+     "iron ore": 5.0,
+     "iron bar": 3.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 14.6171875,
+     "iron ore": 6.3125,
+     "iron bar": 2.890625,
+     "gold ore": 4.7265625,
+     "gold bar": 1.0234375
+    },
+    "peak_max": {
+     "wood": 23,
+     "iron ore": 23,
+     "iron bar": 9,
+     "gold ore": 25,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 0,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 31,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 34,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "pot_e1024_max2",
+   "seed": 1902,
+   "screen": "shared",
+   "status": "completed",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 472718,
+   "steps": 536870912,
+   "train_seconds": 1351,
+   "sps": 397386,
+   "final": 25.109375,
+   "best": 25.171875,
+   "final_std": 1.0018293813694026,
+   "death_rate": 0.0703125,
+   "idle_tail_steps": 1416.4453125,
+   "rates": {
+    "craft anvil": 0.46875,
+    "craft metal sword": 0.0703125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 1.0,
+    "collect gold": 0.9609375,
+    "smelt gold": 0.859375
+   },
+   "curve": [
+    [
+     33554432,
+     91,
+     19.938
+    ],
+    [
+     67108864,
+     170,
+     21.484
+    ],
+    [
+     100663296,
+     253,
+     21.578
+    ],
+    [
+     134217728,
+     336,
+     22.891
+    ],
+    [
+     167772160,
+     420,
+     22.766
+    ],
+    [
+     201326592,
+     505,
+     23.867
+    ],
+    [
+     234881024,
+     593,
+     23.727
+    ],
+    [
+     268435456,
+     677,
+     23.961
+    ],
+    [
+     301989888,
+     760,
+     24.219
+    ],
+    [
+     335544320,
+     843,
+     24.602
+    ],
+    [
+     369098752,
+     927,
+     24.281
+    ],
+    [
+     402653184,
+     1011,
+     24.57
+    ],
+    [
+     436207616,
+     1096,
+     24.734
+    ],
+    [
+     469762048,
+     1180,
+     24.914
+    ],
+    [
+     503316480,
+     1268,
+     25.172
+    ],
+    [
+     536870912,
+     1355,
+     25.109
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "wall_seconds": 1367,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.515625,
+     "iron ore": 5.6875,
+     "iron bar": 4.71875,
+     "gold ore": 4.7578125,
+     "gold bar": 1.890625
+    },
+    "peak_max": {
+     "wood": 24,
+     "iron ore": 31,
+     "iron bar": 14,
+     "gold ore": 18,
+     "gold bar": 8
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 7,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 60,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 73,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "pot_e1024_max2",
+   "seed": 1903,
+   "screen": "shared",
+   "status": "stopped",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 472718,
+   "steps": 100663296,
+   "train_seconds": 293,
+   "sps": 343106,
+   "final": 22.4921875,
+   "best": 22.4921875,
+   "final_std": 2.4366860620202493,
+   "death_rate": 0.0859375,
+   "idle_tail_steps": 1284.9921875,
+   "rates": {
+    "craft anvil": 0.171875,
+    "craft metal sword": 0.0078125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.953125,
+    "smelt iron": 0.75,
+    "collect gold": 0.6875,
+    "smelt gold": 0.40625
+   },
+   "curve": [
+    [
+     33554432,
+     97,
+     19.758
+    ],
+    [
+     67108864,
+     196,
+     22.07
+    ],
+    [
+     100663296,
+     296,
+     22.492
+    ]
+   ],
+   "first_minibatch_kl_max": null
+  },
+  {
+   "arm": "ff_t256c32d2",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 256,
+   "parameters": 953230,
+   "steps": 536870912,
+   "train_seconds": 1293,
+   "sps": 415307,
+   "final": 24.8203125,
+   "best": 24.984375,
+   "final_std": 1.1952614368177994,
+   "death_rate": 0.0859375,
+   "idle_tail_steps": 1591.8671875,
+   "rates": {
+    "craft anvil": 0.484375,
+    "craft metal sword": 0.0546875,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9921875,
+    "smelt iron": 0.9453125,
+    "collect gold": 0.9765625,
+    "smelt gold": 0.7890625
+   },
+   "curve": [
+    [
+     33554432,
+     85,
+     19.562
+    ],
+    [
+     67108864,
+     166,
+     22.523
+    ],
+    [
+     100663296,
+     245,
+     23.016
+    ],
+    [
+     134217728,
+     321,
+     23.297
+    ],
+    [
+     167772160,
+     401,
+     24.312
+    ],
+    [
+     201326592,
+     483,
+     23.992
+    ],
+    [
+     234881024,
+     565,
+     24.547
+    ],
+    [
+     268435456,
+     647,
+     24.281
+    ],
+    [
+     301989888,
+     728,
+     24.82
+    ],
+    [
+     335544320,
+     809,
+     24.609
+    ],
+    [
+     369098752,
+     890,
+     24.812
+    ],
+    [
+     402653184,
+     971,
+     24.898
+    ],
+    [
+     436207616,
+     1053,
+     24.805
+    ],
+    [
+     469762048,
+     1134,
+     24.938
+    ],
+    [
+     503316480,
+     1215,
+     24.984
+    ],
+    [
+     536870912,
+     1297,
+     24.82
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "wall_seconds": 1312,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 12.0,
+     "iron ore": 6.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 2.0
+    },
+    "peak_mean": {
+     "wood": 12.5078125,
+     "iron ore": 6.4453125,
+     "iron bar": 4.046875,
+     "gold ore": 4.796875,
+     "gold bar": 1.8046875
+    },
+    "peak_max": {
+     "wood": 18,
+     "iron ore": 21,
+     "iron bar": 13,
+     "gold ore": 20,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 2,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 62,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 71,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "ff_t256c32d2",
+   "seed": 1902,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 256,
+   "parameters": 953230,
+   "steps": 536870912,
+   "train_seconds": 1290,
+   "sps": 416084,
+   "final": 24.7421875,
+   "best": 25.09375,
+   "final_std": 1.38206194320072,
+   "death_rate": 0.0703125,
+   "idle_tail_steps": 1468.1796875,
+   "rates": {
+    "craft anvil": 0.3984375,
+    "craft metal sword": 0.0859375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9453125,
+    "collect gold": 0.9453125,
+    "smelt gold": 0.7421875
+   },
+   "curve": [
+    [
+     33554432,
+     87,
+     19.664
+    ],
+    [
+     67108864,
+     171,
+     21.531
+    ],
+    [
+     100663296,
+     253,
+     22.508
+    ],
+    [
+     134217728,
+     333,
+     22.609
+    ],
+    [
+     167772160,
+     413,
+     23.547
+    ],
+    [
+     201326592,
+     494,
+     23.539
+    ],
+    [
+     234881024,
+     574,
+     24.242
+    ],
+    [
+     268435456,
+     654,
+     24.328
+    ],
+    [
+     301989888,
+     734,
+     24.539
+    ],
+    [
+     335544320,
+     812,
+     24.742
+    ],
+    [
+     369098752,
+     895,
+     24.75
+    ],
+    [
+     402653184,
+     976,
+     25.094
+    ],
+    [
+     436207616,
+     1054,
+     24.883
+    ],
+    [
+     469762048,
+     1134,
+     25.039
+    ],
+    [
+     503316480,
+     1214,
+     24.945
+    ],
+    [
+     536870912,
+     1294,
+     24.742
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "wall_seconds": 1308,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 12.0,
+     "iron ore": 4.0,
+     "iron bar": 4.5,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 12.65625,
+     "iron ore": 5.9921875,
+     "iron bar": 4.046875,
+     "gold ore": 4.3984375,
+     "gold bar": 1.6640625
+    },
+    "peak_max": {
+     "wood": 20,
+     "iron ore": 27,
+     "iron bar": 13,
+     "gold ore": 14,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 4,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 51,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 64,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_gru256",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "gru",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 796814,
+   "steps": 536870912,
+   "train_seconds": 5643,
+   "sps": 95145,
+   "final": 24.640625,
+   "best": 24.71875,
+   "final_std": 1.229420436374392,
+   "death_rate": 0.0703125,
+   "idle_tail_steps": 1447.2578125,
+   "rates": {
+    "craft anvil": 0.3828125,
+    "craft metal sword": 0.0703125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0078125,
+    "collect iron": 1.0,
+    "smelt iron": 0.9453125,
+    "collect gold": 0.8671875,
+    "smelt gold": 0.7265625
+   },
+   "curve": [
+    [
+     33554432,
+     342,
+     19.664
+    ],
+    [
+     67108864,
+     678,
+     21.477
+    ],
+    [
+     100663296,
+     1046,
+     22.5
+    ],
+    [
+     134217728,
+     1372,
+     23.062
+    ],
+    [
+     167772160,
+     1703,
+     23.523
+    ],
+    [
+     201326592,
+     2044,
+     24.289
+    ],
+    [
+     234881024,
+     2376,
+     24.336
+    ],
+    [
+     268435456,
+     2717,
+     24.359
+    ],
+    [
+     301989888,
+     3076,
+     24.109
+    ],
+    [
+     335544320,
+     3442,
+     24.633
+    ],
+    [
+     369098752,
+     3801,
+     24.5
+    ],
+    [
+     402653184,
+     4178,
+     24.664
+    ],
+    [
+     436207616,
+     4548,
+     24.422
+    ],
+    [
+     469762048,
+     4916,
+     24.633
+    ],
+    [
+     503316480,
+     5284,
+     24.719
+    ],
+    [
+     536870912,
+     5647,
+     24.641
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00012834877998102456,
+   "wall_seconds": 5662,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.0859375,
+     "iron ore": 5.78125,
+     "iron bar": 3.8984375,
+     "gold ore": 4.28125,
+     "gold bar": 1.3828125
+    },
+    "peak_max": {
+     "wood": 18,
+     "iron ore": 22,
+     "iron bar": 15,
+     "gold ore": 12,
+     "gold bar": 6
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 2,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 49,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 57,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 895630,
+   "steps": 536870912,
+   "train_seconds": 3981,
+   "sps": 134873,
+   "final": 24.90625,
+   "best": 24.90625,
+   "final_std": 1.3774835525333868,
+   "death_rate": 0.0625,
+   "idle_tail_steps": 1283.109375,
+   "rates": {
+    "craft anvil": 0.4921875,
+    "craft metal sword": 0.078125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.953125,
+    "collect gold": 0.953125,
+    "smelt gold": 0.796875
+   },
+   "curve": [
+    [
+     33554432,
+     257,
+     19.531
+    ],
+    [
+     67108864,
+     557,
+     21.672
+    ],
+    [
+     100663296,
+     772,
+     21.977
+    ],
+    [
+     134217728,
+     1001,
+     23.344
+    ],
+    [
+     167772160,
+     1249,
+     23.219
+    ],
+    [
+     201326592,
+     1473,
+     23.414
+    ],
+    [
+     234881024,
+     1710,
+     23.484
+    ],
+    [
+     268435456,
+     1938,
+     23.75
+    ],
+    [
+     301989888,
+     2190,
+     23.914
+    ],
+    [
+     335544320,
+     2452,
+     24.305
+    ],
+    [
+     369098752,
+     2714,
+     24.492
+    ],
+    [
+     402653184,
+     2964,
+     24.477
+    ],
+    [
+     436207616,
+     3227,
+     24.68
+    ],
+    [
+     469762048,
+     3473,
+     24.609
+    ],
+    [
+     503316480,
+     3726,
+     24.82
+    ],
+    [
+     536870912,
+     3985,
+     24.906
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00013397523434832692,
+   "wall_seconds": 4002,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 12.0,
+     "iron ore": 6.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.0234375,
+     "iron ore": 7.1953125,
+     "iron bar": 4.34375,
+     "gold ore": 4.6953125,
+     "gold bar": 1.7421875
+    },
+    "peak_max": {
+     "wood": 23,
+     "iron ore": 37,
+     "iron bar": 12,
+     "gold ore": 13,
+     "gold bar": 9
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 3,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 63,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 76,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256",
+   "seed": 1902,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 895630,
+   "steps": 536870912,
+   "train_seconds": 3850,
+   "sps": 139438,
+   "final": 24.9765625,
+   "best": 25.0,
+   "final_std": 1.289772531725556,
+   "death_rate": 0.1015625,
+   "idle_tail_steps": 1405.21875,
+   "rates": {
+    "craft anvil": 0.4453125,
+    "craft metal sword": 0.1015625,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9375,
+    "collect gold": 0.9765625,
+    "smelt gold": 0.8203125
+   },
+   "curve": [
+    [
+     33554432,
+     241,
+     19.062
+    ],
+    [
+     67108864,
+     543,
+     19.719
+    ],
+    [
+     100663296,
+     774,
+     20.523
+    ],
+    [
+     134217728,
+     1007,
+     21.516
+    ],
+    [
+     167772160,
+     1255,
+     22.102
+    ],
+    [
+     201326592,
+     1474,
+     23.102
+    ],
+    [
+     234881024,
+     1705,
+     23.047
+    ],
+    [
+     268435456,
+     1932,
+     23.039
+    ],
+    [
+     301989888,
+     2186,
+     23.406
+    ],
+    [
+     335544320,
+     2447,
+     23.422
+    ],
+    [
+     369098752,
+     2709,
+     23.867
+    ],
+    [
+     402653184,
+     2959,
+     24.398
+    ],
+    [
+     436207616,
+     3220,
+     24.742
+    ],
+    [
+     469762048,
+     3444,
+     24.82
+    ],
+    [
+     503316480,
+     3647,
+     25.0
+    ],
+    [
+     536870912,
+     3854,
+     24.977
+    ]
+   ],
+   "first_minibatch_kl_max": 3.676607593661174e-05,
+   "wall_seconds": 3871,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 14.0,
+     "iron ore": 5.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 15.015625,
+     "iron ore": 6.5859375,
+     "iron bar": 3.7109375,
+     "gold ore": 4.7421875,
+     "gold bar": 1.6953125
+    },
+    "peak_max": {
+     "wood": 26,
+     "iron ore": 40,
+     "iron bar": 7,
+     "gold ore": 23,
+     "gold bar": 9
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 0,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 57,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 68,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256_h256",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 256,
+   "parameters": 1507214,
+   "steps": 536870912,
+   "train_seconds": 3191,
+   "sps": 168250,
+   "final": 25.0,
+   "best": 25.0859375,
+   "final_std": 1.1524430571616109,
+   "death_rate": 0.0859375,
+   "idle_tail_steps": 1264.8359375,
+   "rates": {
+    "craft anvil": 0.4765625,
+    "craft metal sword": 0.140625,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.984375,
+    "smelt iron": 0.9375,
+    "collect gold": 0.953125,
+    "smelt gold": 0.8125
+   },
+   "curve": [
+    [
+     33554432,
+     200,
+     18.664
+    ],
+    [
+     67108864,
+     391,
+     21.289
+    ],
+    [
+     100663296,
+     584,
+     22.461
+    ],
+    [
+     134217728,
+     778,
+     22.688
+    ],
+    [
+     167772160,
+     973,
+     23.219
+    ],
+    [
+     201326592,
+     1170,
+     23.867
+    ],
+    [
+     234881024,
+     1372,
+     24.109
+    ],
+    [
+     268435456,
+     1564,
+     24.07
+    ],
+    [
+     301989888,
+     1784,
+     24.273
+    ],
+    [
+     335544320,
+     2006,
+     24.266
+    ],
+    [
+     369098752,
+     2204,
+     24.453
+    ],
+    [
+     402653184,
+     2401,
+     24.453
+    ],
+    [
+     436207616,
+     2598,
+     25.086
+    ],
+    [
+     469762048,
+     2797,
+     24.789
+    ],
+    [
+     503316480,
+     2998,
+     24.742
+    ],
+    [
+     536870912,
+     3195,
+     25.0
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00012204487575218081,
+   "wall_seconds": 3214,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 2.0
+    },
+    "peak_mean": {
+     "wood": 13.359375,
+     "iron ore": 5.890625,
+     "iron bar": 3.9375,
+     "gold ore": 4.90625,
+     "gold bar": 1.953125
+    },
+    "peak_max": {
+     "wood": 20,
+     "iron ore": 20,
+     "iron bar": 9,
+     "gold ore": 17,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 0,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 61,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 69,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256_h256",
+   "seed": 1902,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 256,
+   "parameters": 1507214,
+   "steps": 536870912,
+   "train_seconds": 3577,
+   "sps": 150087,
+   "final": 24.609375,
+   "best": 24.609375,
+   "final_std": 1.5064153176913064,
+   "death_rate": 0.1171875,
+   "idle_tail_steps": 1355.0546875,
+   "rates": {
+    "craft anvil": 0.3984375,
+    "craft metal sword": 0.0703125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.984375,
+    "smelt iron": 0.9453125,
+    "collect gold": 0.9453125,
+    "smelt gold": 0.640625
+   },
+   "curve": [
+    [
+     33554432,
+     256,
+     19.43
+    ],
+    [
+     67108864,
+     461,
+     20.203
+    ],
+    [
+     100663296,
+     656,
+     21.727
+    ],
+    [
+     134217728,
+     874,
+     22.227
+    ],
+    [
+     167772160,
+     1125,
+     22.766
+    ],
+    [
+     201326592,
+     1369,
+     23.102
+    ],
+    [
+     234881024,
+     1575,
+     23.289
+    ],
+    [
+     268435456,
+     1824,
+     23.469
+    ],
+    [
+     301989888,
+     2074,
+     23.539
+    ],
+    [
+     335544320,
+     2305,
+     24.18
+    ],
+    [
+     369098752,
+     2502,
+     24.086
+    ],
+    [
+     402653184,
+     2721,
+     24.414
+    ],
+    [
+     436207616,
+     2921,
+     24.25
+    ],
+    [
+     469762048,
+     3123,
+     24.508
+    ],
+    [
+     503316480,
+     3352,
+     24.523
+    ],
+    [
+     536870912,
+     3581,
+     24.609
+    ]
+   ],
+   "first_minibatch_kl_max": 5.795442848466337e-05,
+   "wall_seconds": 3600,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 8.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.6171875,
+     "iron ore": 9.1796875,
+     "iron bar": 3.984375,
+     "gold ore": 5.203125,
+     "gold bar": 1.2890625
+    },
+    "peak_max": {
+     "wood": 22,
+     "iron ore": 28,
+     "iron bar": 14,
+     "gold ore": 17,
+     "gold bar": 6
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 2,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 51,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 61,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256_h512",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 512,
+   "parameters": 2828686,
+   "steps": 536870912,
+   "train_seconds": 3821,
+   "sps": 140500,
+   "final": 22.953125,
+   "best": 23.0390625,
+   "final_std": 2.256446927001608,
+   "death_rate": 0.15625,
+   "idle_tail_steps": 1415.8984375,
+   "rates": {
+    "craft anvil": 0.1015625,
+    "craft metal sword": 0.015625,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9765625,
+    "smelt iron": 0.609375,
+    "collect gold": 0.8828125,
+    "smelt gold": 0.4921875
+   },
+   "curve": [
+    [
+     33554432,
+     219,
+     17.82
+    ],
+    [
+     67108864,
+     431,
+     20.188
+    ],
+    [
+     100663296,
+     628,
+     20.656
+    ],
+    [
+     134217728,
+     828,
+     21.273
+    ],
+    [
+     167772160,
+     1050,
+     21.891
+    ],
+    [
+     201326592,
+     1313,
+     22.25
+    ],
+    [
+     234881024,
+     1565,
+     22.219
+    ],
+    [
+     268435456,
+     1820,
+     22.57
+    ],
+    [
+     301989888,
+     2069,
+     22.461
+    ],
+    [
+     335544320,
+     2317,
+     22.867
+    ],
+    [
+     369098752,
+     2569,
+     22.875
+    ],
+    [
+     402653184,
+     2808,
+     22.883
+    ],
+    [
+     436207616,
+     3066,
+     22.703
+    ],
+    [
+     469762048,
+     3320,
+     23.039
+    ],
+    [
+     503316480,
+     3573,
+     22.516
+    ],
+    [
+     536870912,
+     3825,
+     22.953
+    ]
+   ],
+   "first_minibatch_kl_max": 6.399342964868993e-05,
+   "wall_seconds": 3848,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 14.0,
+     "iron ore": 5.5,
+     "iron bar": 2.0,
+     "gold ore": 4.0,
+     "gold bar": 0.0
+    },
+    "peak_mean": {
+     "wood": 13.921875,
+     "iron ore": 7.171875,
+     "iron bar": 2.140625,
+     "gold ore": 5.9375,
+     "gold bar": 0.953125
+    },
+    "peak_max": {
+     "wood": 23,
+     "iron ore": 40,
+     "iron bar": 9,
+     "gold ore": 26,
+     "gold bar": 5
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 0,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 13,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 13,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm512",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 512,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 1842830,
+   "steps": 536870912,
+   "train_seconds": 3614,
+   "sps": 148553,
+   "final": 24.7109375,
+   "best": 24.7109375,
+   "final_std": 1.0394736028845322,
+   "death_rate": 0.109375,
+   "idle_tail_steps": 1313.6875,
+   "rates": {
+    "craft anvil": 0.3984375,
+    "craft metal sword": 0.0625,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0078125,
+    "collect iron": 1.0,
+    "smelt iron": 0.984375,
+    "collect gold": 0.921875,
+    "smelt gold": 0.7421875
+   },
+   "curve": [
+    [
+     33554432,
+     233,
+     18.633
+    ],
+    [
+     67108864,
+     482,
+     19.867
+    ],
+    [
+     100663296,
+     738,
+     20.555
+    ],
+    [
+     134217728,
+     946,
+     21.547
+    ],
+    [
+     167772160,
+     1161,
+     22.188
+    ],
+    [
+     201326592,
+     1373,
+     22.828
+    ],
+    [
+     234881024,
+     1585,
+     22.742
+    ],
+    [
+     268435456,
+     1793,
+     23.43
+    ],
+    [
+     301989888,
+     2000,
+     23.805
+    ],
+    [
+     335544320,
+     2232,
+     23.945
+    ],
+    [
+     369098752,
+     2457,
+     23.977
+    ],
+    [
+     402653184,
+     2670,
+     23.977
+    ],
+    [
+     436207616,
+     2885,
+     24.172
+    ],
+    [
+     469762048,
+     3117,
+     24.617
+    ],
+    [
+     503316480,
+     3367,
+     24.617
+    ],
+    [
+     536870912,
+     3618,
+     24.711
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00020905438577756286,
+   "wall_seconds": 3637,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 15.0,
+     "iron ore": 5.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 15.2734375,
+     "iron ore": 5.859375,
+     "iron bar": 4.1171875,
+     "gold ore": 4.3125,
+     "gold bar": 1.46875
+    },
+    "peak_max": {
+     "wood": 26,
+     "iron ore": 27,
+     "iron bar": 11,
+     "gold ore": 14,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 3,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 51,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 59,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_tf256l128",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "transformer",
+   "memory_size": 256,
+   "memory_len": 128,
+   "hidden": 128,
+   "parameters": 2114446,
+   "steps": 536870912,
+   "train_seconds": 2358,
+   "sps": 227680,
+   "final": 24.765625,
+   "best": 24.875,
+   "final_std": 1.2715908773559992,
+   "death_rate": 0.171875,
+   "idle_tail_steps": 1226.6015625,
+   "rates": {
+    "craft anvil": 0.390625,
+    "craft metal sword": 0.109375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9921875,
+    "smelt iron": 0.921875,
+    "collect gold": 0.953125,
+    "smelt gold": 0.796875
+   },
+   "curve": [
+    [
+     33554432,
+     145,
+     19.336
+    ],
+    [
+     67108864,
+     286,
+     19.289
+    ],
+    [
+     100663296,
+     426,
+     20.445
+    ],
+    [
+     134217728,
+     565,
+     21.898
+    ],
+    [
+     167772160,
+     706,
+     21.727
+    ],
+    [
+     201326592,
+     848,
+     22.508
+    ],
+    [
+     234881024,
+     1001,
+     23.141
+    ],
+    [
+     268435456,
+     1156,
+     23.555
+    ],
+    [
+     301989888,
+     1308,
+     23.516
+    ],
+    [
+     335544320,
+     1458,
+     23.398
+    ],
+    [
+     369098752,
+     1608,
+     24.273
+    ],
+    [
+     402653184,
+     1760,
+     24.352
+    ],
+    [
+     436207616,
+     1910,
+     24.281
+    ],
+    [
+     469762048,
+     2059,
+     24.875
+    ],
+    [
+     503316480,
+     2210,
+     24.758
+    ],
+    [
+     536870912,
+     2362,
+     24.766
+    ]
+   ],
+   "first_minibatch_kl_max": 0.0005842768587172031,
+   "wall_seconds": 2394,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 15.5,
+     "iron ore": 5.0,
+     "iron bar": 4.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 16.046875,
+     "iron ore": 6.46875,
+     "iron bar": 3.6953125,
+     "gold ore": 5.21875,
+     "gold bar": 1.8046875
+    },
+    "peak_max": {
+     "wood": 27,
+     "iron ore": 43,
+     "iron bar": 11,
+     "gold ore": 26,
+     "gold bar": 6
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 2,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 50,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 59,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_tf256l128",
+   "seed": 1902,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "transformer",
+   "memory_size": 256,
+   "memory_len": 128,
+   "hidden": 128,
+   "parameters": 2114446,
+   "steps": 536870912,
+   "train_seconds": 2351,
+   "sps": 228314,
+   "final": 24.7109375,
+   "best": 24.75,
+   "final_std": 1.5469341844738418,
+   "death_rate": 0.140625,
+   "idle_tail_steps": 1342.578125,
+   "rates": {
+    "craft anvil": 0.4453125,
+    "craft metal sword": 0.09375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9609375,
+    "collect gold": 0.9453125,
+    "smelt gold": 0.796875
+   },
+   "curve": [
+    [
+     33554432,
+     150,
+     19.328
+    ],
+    [
+     67108864,
+     295,
+     19.336
+    ],
+    [
+     100663296,
+     439,
+     20.555
+    ],
+    [
+     134217728,
+     591,
+     21.375
+    ],
+    [
+     167772160,
+     743,
+     22.266
+    ],
+    [
+     201326592,
+     895,
+     23.164
+    ],
+    [
+     234881024,
+     1046,
+     23.898
+    ],
+    [
+     268435456,
+     1195,
+     24.039
+    ],
+    [
+     301989888,
+     1339,
+     24.109
+    ],
+    [
+     335544320,
+     1483,
+     24.023
+    ],
+    [
+     369098752,
+     1625,
+     24.531
+    ],
+    [
+     402653184,
+     1772,
+     24.289
+    ],
+    [
+     436207616,
+     1920,
+     24.336
+    ],
+    [
+     469762048,
+     2065,
+     24.391
+    ],
+    [
+     503316480,
+     2210,
+     24.75
+    ],
+    [
+     536870912,
+     2356,
+     24.711
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00039877029485069215,
+   "wall_seconds": 2388,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.4609375,
+     "iron ore": 6.0234375,
+     "iron bar": 3.9609375,
+     "gold ore": 4.859375,
+     "gold bar": 1.546875
+    },
+    "peak_max": {
+     "wood": 22,
+     "iron ore": 33,
+     "iron bar": 10,
+     "gold ore": 40,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 57,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 66,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "pot_e1024_max2",
+   "seed": 1901,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 472718,
+   "steps": 536870912,
+   "train_seconds": 1349,
+   "sps": 398120,
+   "final": 25.0234375,
+   "best": 25.1015625,
+   "final_std": 0.9719892919131106,
+   "death_rate": 0.09375,
+   "idle_tail_steps": 1434.265625,
+   "rates": {
+    "craft anvil": 0.4765625,
+    "craft metal sword": 0.0390625,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9765625,
+    "collect gold": 0.96875,
+    "smelt gold": 0.78125
+   },
+   "curve": [
+    [
+     33554432,
+     87,
+     20.266
+    ],
+    [
+     67108864,
+     171,
+     22.844
+    ],
+    [
+     100663296,
+     255,
+     22.352
+    ],
+    [
+     134217728,
+     339,
+     23.414
+    ],
+    [
+     167772160,
+     422,
+     23.773
+    ],
+    [
+     201326592,
+     505,
+     24.094
+    ],
+    [
+     234881024,
+     590,
+     24.18
+    ],
+    [
+     268435456,
+     675,
+     24.703
+    ],
+    [
+     301989888,
+     758,
+     24.531
+    ],
+    [
+     335544320,
+     841,
+     24.891
+    ],
+    [
+     369098752,
+     926,
+     24.492
+    ],
+    [
+     402653184,
+     1011,
+     25.102
+    ],
+    [
+     436207616,
+     1097,
+     25.047
+    ],
+    [
+     469762048,
+     1182,
+     24.922
+    ],
+    [
+     503316480,
+     1265,
+     25.047
+    ],
+    [
+     536870912,
+     1353,
+     25.023
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "wall_seconds": 1365,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 12.7421875,
+     "iron ore": 6.0625,
+     "iron bar": 4.15625,
+     "gold ore": 4.7890625,
+     "gold bar": 1.6796875
+    },
+    "peak_max": {
+     "wood": 19,
+     "iron ore": 25,
+     "iron bar": 14,
+     "gold ore": 17,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 61,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 86,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "pot_e1024_max2",
+   "seed": 1902,
+   "screen": "solo",
+   "status": "completed",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 472718,
+   "steps": 536870912,
+   "train_seconds": 1358,
+   "sps": 395339,
+   "final": 25.203125,
+   "best": 25.390625,
+   "final_std": 1.0559309799295595,
+   "death_rate": 0.0859375,
+   "idle_tail_steps": 1494.3125,
+   "rates": {
+    "craft anvil": 0.53125,
+    "craft metal sword": 0.078125,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 0.9921875,
+    "smelt iron": 0.984375,
+    "collect gold": 0.9609375,
+    "smelt gold": 0.84375
+   },
+   "curve": [
+    [
+     33554432,
+     88,
+     19.109
+    ],
+    [
+     67108864,
+     170,
+     21.703
+    ],
+    [
+     100663296,
+     255,
+     22.195
+    ],
+    [
+     134217728,
+     339,
+     22.641
+    ],
+    [
+     167772160,
+     422,
+     23.906
+    ],
+    [
+     201326592,
+     506,
+     24.148
+    ],
+    [
+     234881024,
+     590,
+     24.508
+    ],
+    [
+     268435456,
+     676,
+     24.328
+    ],
+    [
+     301989888,
+     762,
+     24.57
+    ],
+    [
+     335544320,
+     847,
+     24.961
+    ],
+    [
+     369098752,
+     933,
+     24.875
+    ],
+    [
+     402653184,
+     1017,
+     24.961
+    ],
+    [
+     436207616,
+     1100,
+     24.984
+    ],
+    [
+     469762048,
+     1188,
+     24.852
+    ],
+    [
+     503316480,
+     1275,
+     25.391
+    ],
+    [
+     536870912,
+     1362,
+     25.203
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "wall_seconds": 1376,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 13.109375,
+     "iron ore": 5.9609375,
+     "iron bar": 4.6875,
+     "gold ore": 5.15625,
+     "gold bar": 1.921875
+    },
+    "peak_max": {
+     "wood": 21,
+     "iron ore": 29,
+     "iron bar": 17,
+     "gold ore": 21,
+     "gold bar": 7
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 68,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 92,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "mem_lstm256",
+   "seed": 1901,
+   "screen": "solo-2B",
+   "status": "completed",
+   "memory": "lstm",
+   "memory_size": 256,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 895630,
+   "steps": 2147483648,
+   "train_seconds": 14835,
+   "sps": 144761,
+   "final": 25.1640625,
+   "best": 25.296875,
+   "final_std": 0.9166629675588243,
+   "death_rate": 0.109375,
+   "idle_tail_steps": 1402.875,
+   "rates": {
+    "craft anvil": 0.4765625,
+    "craft metal sword": 0.0859375,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9921875,
+    "collect gold": 0.9765625,
+    "smelt gold": 0.828125
+   },
+   "curve": [
+    [
+     33554432,
+     241,
+     19.227
+    ],
+    [
+     67108864,
+     462,
+     21.062
+    ],
+    [
+     100663296,
+     672,
+     21.75
+    ],
+    [
+     134217728,
+     895,
+     22.375
+    ],
+    [
+     167772160,
+     1141,
+     23.062
+    ],
+    [
+     201326592,
+     1390,
+     23.797
+    ],
+    [
+     234881024,
+     1631,
+     23.469
+    ],
+    [
+     268435456,
+     1839,
+     23.703
+    ],
+    [
+     301989888,
+     2057,
+     23.805
+    ],
+    [
+     335544320,
+     2263,
+     24.305
+    ],
+    [
+     369098752,
+     2471,
+     23.578
+    ],
+    [
+     402653184,
+     2703,
+     24.023
+    ],
+    [
+     436207616,
+     2967,
+     23.898
+    ],
+    [
+     469762048,
+     3227,
+     24.344
+    ],
+    [
+     503316480,
+     3486,
+     24.047
+    ],
+    [
+     536870912,
+     3742,
+     24.062
+    ],
+    [
+     570425344,
+     3986,
+     24.117
+    ],
+    [
+     603979776,
+     4240,
+     24.039
+    ],
+    [
+     637534208,
+     4507,
+     24.203
+    ],
+    [
+     671088640,
+     4766,
+     24.109
+    ],
+    [
+     704643072,
+     5024,
+     23.992
+    ],
+    [
+     738197504,
+     5283,
+     24.219
+    ],
+    [
+     771751936,
+     5523,
+     24.367
+    ],
+    [
+     805306368,
+     5778,
+     24.281
+    ],
+    [
+     838860800,
+     5993,
+     24.398
+    ],
+    [
+     872415232,
+     6201,
+     24.445
+    ],
+    [
+     905969664,
+     6448,
+     24.086
+    ],
+    [
+     939524096,
+     6706,
+     24.234
+    ],
+    [
+     973078528,
+     6944,
+     24.297
+    ],
+    [
+     1006632960,
+     7181,
+     24.07
+    ],
+    [
+     1040187392,
+     7438,
+     24.703
+    ],
+    [
+     1073741824,
+     7696,
+     24.5
+    ],
+    [
+     1107296256,
+     7910,
+     24.312
+    ],
+    [
+     1140850688,
+     8133,
+     24.445
+    ],
+    [
+     1174405120,
+     8354,
+     24.156
+    ],
+    [
+     1207959552,
+     8562,
+     24.789
+    ],
+    [
+     1241513984,
+     8793,
+     24.672
+    ],
+    [
+     1275068416,
+     9027,
+     24.609
+    ],
+    [
+     1308622848,
+     9247,
+     24.703
+    ],
+    [
+     1342177280,
+     9458,
+     24.836
+    ],
+    [
+     1375731712,
+     9669,
+     24.766
+    ],
+    [
+     1409286144,
+     9887,
+     24.836
+    ],
+    [
+     1442840576,
+     10112,
+     24.938
+    ],
+    [
+     1476395008,
+     10323,
+     24.844
+    ],
+    [
+     1509949440,
+     10532,
+     25.0
+    ],
+    [
+     1543503872,
+     10741,
+     24.922
+    ],
+    [
+     1577058304,
+     10949,
+     24.828
+    ],
+    [
+     1610612736,
+     11167,
+     25.133
+    ],
+    [
+     1644167168,
+     11380,
+     25.016
+    ],
+    [
+     1677721600,
+     11612,
+     25.133
+    ],
+    [
+     1711276032,
+     11848,
+     25.0
+    ],
+    [
+     1744830464,
+     12095,
+     25.141
+    ],
+    [
+     1778384896,
+     12338,
+     25.148
+    ],
+    [
+     1811939328,
+     12580,
+     25.055
+    ],
+    [
+     1845493760,
+     12823,
+     25.297
+    ],
+    [
+     1879048192,
+     13058,
+     25.125
+    ],
+    [
+     1912602624,
+     13296,
+     25.148
+    ],
+    [
+     1946157056,
+     13535,
+     24.969
+    ],
+    [
+     1979711488,
+     13778,
+     25.141
+    ],
+    [
+     2013265920,
+     14001,
+     25.25
+    ],
+    [
+     2046820352,
+     14212,
+     25.023
+    ],
+    [
+     2080374784,
+     14427,
+     25.273
+    ],
+    [
+     2113929216,
+     14639,
+     25.211
+    ],
+    [
+     2147483648,
+     14849,
+     25.164
+    ]
+   ],
+   "first_minibatch_kl_max": 0.00016328036144841462,
+   "wall_seconds": 14866,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 12.7265625,
+     "iron ore": 5.3671875,
+     "iron bar": 4.2109375,
+     "gold ore": 5.8671875,
+     "gold bar": 1.1796875
+    },
+    "peak_max": {
+     "wood": 20,
+     "iron ore": 11,
+     "iron bar": 13,
+     "gold ore": 23,
+     "gold bar": 3
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 1,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 61,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 74,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  },
+  {
+   "arm": "pot_e1024_max2",
+   "seed": 1901,
+   "screen": "solo-2B",
+   "status": "completed",
+   "memory": "",
+   "memory_size": 0,
+   "memory_len": 0,
+   "hidden": 128,
+   "parameters": 472718,
+   "steps": 2147483648,
+   "train_seconds": 5357,
+   "sps": 400900,
+   "final": 25.390625,
+   "best": 25.7109375,
+   "final_std": 0.9205498951034647,
+   "death_rate": 0.0859375,
+   "idle_tail_steps": 1491.765625,
+   "rates": {
+    "craft anvil": 0.640625,
+    "craft metal sword": 0.1171875,
+    "craft iron pickaxe": 0.0,
+    "craft gold pickaxe": 0.0,
+    "craft iron chainmail": 0.0,
+    "craft wood breastplate": 0.0,
+    "return to surface": 0.0,
+    "collect iron": 1.0,
+    "smelt iron": 0.9921875,
+    "collect gold": 0.953125,
+    "smelt gold": 0.8203125
+   },
+   "curve": [
+    [
+     33554432,
+     85,
+     19.039
+    ],
+    [
+     67108864,
+     170,
+     19.703
+    ],
+    [
+     100663296,
+     254,
+     21.055
+    ],
+    [
+     134217728,
+     340,
+     22.883
+    ],
+    [
+     167772160,
+     425,
+     23.617
+    ],
+    [
+     201326592,
+     510,
+     24.062
+    ],
+    [
+     234881024,
+     595,
+     24.578
+    ],
+    [
+     268435456,
+     680,
+     24.531
+    ],
+    [
+     301989888,
+     767,
+     24.703
+    ],
+    [
+     335544320,
+     851,
+     24.828
+    ],
+    [
+     369098752,
+     932,
+     24.844
+    ],
+    [
+     402653184,
+     1013,
+     24.32
+    ],
+    [
+     436207616,
+     1094,
+     24.992
+    ],
+    [
+     469762048,
+     1176,
+     24.438
+    ],
+    [
+     503316480,
+     1256,
+     24.523
+    ],
+    [
+     536870912,
+     1341,
+     24.328
+    ],
+    [
+     570425344,
+     1429,
+     24.461
+    ],
+    [
+     603979776,
+     1516,
+     25.227
+    ],
+    [
+     637534208,
+     1595,
+     24.828
+    ],
+    [
+     671088640,
+     1679,
+     24.969
+    ],
+    [
+     704643072,
+     1763,
+     24.711
+    ],
+    [
+     738197504,
+     1848,
+     24.828
+    ],
+    [
+     771751936,
+     1931,
+     24.914
+    ],
+    [
+     805306368,
+     2010,
+     25.148
+    ],
+    [
+     838860800,
+     2093,
+     25.156
+    ],
+    [
+     872415232,
+     2175,
+     25.023
+    ],
+    [
+     905969664,
+     2260,
+     25.195
+    ],
+    [
+     939524096,
+     2341,
+     24.953
+    ],
+    [
+     973078528,
+     2429,
+     25.25
+    ],
+    [
+     1006632960,
+     2515,
+     24.812
+    ],
+    [
+     1040187392,
+     2603,
+     25.047
+    ],
+    [
+     1073741824,
+     2691,
+     25.234
+    ],
+    [
+     1107296256,
+     2779,
+     25.117
+    ],
+    [
+     1140850688,
+     2866,
+     25.148
+    ],
+    [
+     1174405120,
+     2953,
+     25.18
+    ],
+    [
+     1207959552,
+     3040,
+     25.07
+    ],
+    [
+     1241513984,
+     3125,
+     25.039
+    ],
+    [
+     1275068416,
+     3211,
+     25.234
+    ],
+    [
+     1308622848,
+     3296,
+     25.148
+    ],
+    [
+     1342177280,
+     3383,
+     24.969
+    ],
+    [
+     1375731712,
+     3470,
+     25.219
+    ],
+    [
+     1409286144,
+     3553,
+     25.359
+    ],
+    [
+     1442840576,
+     3636,
+     25.18
+    ],
+    [
+     1476395008,
+     3719,
+     25.117
+    ],
+    [
+     1509949440,
+     3802,
+     25.094
+    ],
+    [
+     1543503872,
+     3884,
+     25.258
+    ],
+    [
+     1577058304,
+     3966,
+     25.453
+    ],
+    [
+     1610612736,
+     4051,
+     25.516
+    ],
+    [
+     1644167168,
+     4137,
+     25.383
+    ],
+    [
+     1677721600,
+     4220,
+     25.477
+    ],
+    [
+     1711276032,
+     4304,
+     25.586
+    ],
+    [
+     1744830464,
+     4386,
+     25.453
+    ],
+    [
+     1778384896,
+     4468,
+     25.469
+    ],
+    [
+     1811939328,
+     4550,
+     25.062
+    ],
+    [
+     1845493760,
+     4631,
+     25.453
+    ],
+    [
+     1879048192,
+     4713,
+     25.602
+    ],
+    [
+     1912602624,
+     4796,
+     25.242
+    ],
+    [
+     1946157056,
+     4879,
+     25.562
+    ],
+    [
+     1979711488,
+     4960,
+     25.711
+    ],
+    [
+     2013265920,
+     5042,
+     25.469
+    ],
+    [
+     2046820352,
+     5124,
+     25.508
+    ],
+    [
+     2080374784,
+     5207,
+     25.508
+    ],
+    [
+     2113929216,
+     5286,
+     25.531
+    ],
+    [
+     2147483648,
+     5371,
+     25.391
+    ]
+   ],
+   "first_minibatch_kl_max": null,
+   "wall_seconds": 5383,
+   "diagnostics": {
+    "checkpoint_steps": null,
+    "episodes": 128,
+    "peak_median": {
+     "wood": 13.0,
+     "iron ore": 5.0,
+     "iron bar": 5.0,
+     "gold ore": 4.0,
+     "gold bar": 1.0
+    },
+    "peak_mean": {
+     "wood": 12.7109375,
+     "iron ore": 6.0390625,
+     "iron bar": 4.8046875,
+     "gold ore": 4.875,
+     "gold bar": 1.7265625
+    },
+    "peak_max": {
+     "wood": 16,
+     "iron ore": 22,
+     "iron bar": 12,
+     "gold ore": 13,
+     "gold bar": 6
+    },
+    "episodes_reaching": {
+     "iron bar >= 10": 4,
+     "iron bar >= 25": 0,
+     "gold bar >= 10": 0,
+     "wood >= 30": 0
+    },
+    "craft_opportunity_episodes": {
+     "craft anvil": 82,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    },
+    "craft_chosen": {
+     "craft anvil": 98,
+     "craft iron pickaxe": 0,
+     "craft gold pickaxe": 0,
+     "craft iron chainmail": 0,
+     "craft wood breastplate": 0
+    }
+   }
+  }
+ ]
+}

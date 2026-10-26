@@ -121,6 +121,19 @@ for _h in (512, 1024, 2048):
                                                           "--depth", str(_d)]
 for _name in [k for k in ARMS if k.startswith("ff_")]:
     ARMS[f"{_name}_lr1e4"] = ARMS[_name] + ["--lr", ".0001"]
+# Learned memory (MEMORY_ARCH_2026_10.md, memory_agent.py) on the max2 path:
+# mem_{gru|lstm}{size} or mem_tf{size}l{context steps}, optionally _h{hidden}
+# for a wider targets encoder (ScaleFF's --hidden).
+for _size in (128, 256, 512, 1024):
+    for _h in (0, 256, 512):
+        _enc = ["--hidden", str(_h)] if _h else []
+        _sfx = f"_h{_h}" if _h else ""
+        for _m in ("gru", "lstm"):
+            ARMS[f"mem_{_m}{_size}{_sfx}"] = ARMS["pot_e1024_max2"] + ["--memory", _m, "--memory-size",
+                                                                     str(_size), *_enc]
+        for _len in (32, 64, 128, 256):
+            ARMS[f"mem_tf{_size}l{_len}{_sfx}"] = ARMS["pot_e1024_max2"] + [
+                "--memory", "transformer", "--memory-size", str(_size), "--memory-len", str(_len), *_enc]
 # Device layouts. Arms are only compared within one layout (seed blocks): the
 # MPS learner differs from CPU by float rounding. collect_threads=1 on CPU is
 # bit-identical to the original CPU learner. (An earlier "MPS stall" reading
@@ -149,11 +162,17 @@ def main():
     p.add_argument("--workers", type=int, default=6)
     p.add_argument("--layout", choices=list(LAYOUTS), default="cpu")
     p.add_argument("--gpus", nargs="+", default=[], help="device ids; each run goes to the least-loaded one")
+    p.add_argument("--pairs", nargs="+", default=[],
+                   help="explicit ARM:SEED jobs (in this order) instead of the arms x seeds grid")
     a = p.parse_args()
     (a.out / "runs").mkdir(parents=True, exist_ok=True)
     (a.out / "logs").mkdir(exist_ok=True)
-    jobs = [(arm, seed) for seed in a.seeds for arm in a.arms
-            if not (a.out / "runs" / f"{arm}-{seed}" / "summary.json").exists()]
+    if a.pairs:
+        jobs = [(arm, int(seed)) for arm, seed in (pair.rsplit(":", 1) for pair in a.pairs)]
+        a.arms, a.seeds = list(dict.fromkeys(j[0] for j in jobs)), sorted({j[1] for j in jobs})
+    else:
+        jobs = [(arm, seed) for seed in a.seeds for arm in a.arms]
+    jobs = [j for j in jobs if not (a.out / "runs" / f"{j[0]}-{j[1]}" / "summary.json").exists()]
     record = a.out / "screen.json"
     previous = json.loads(record.read_text()) if record.exists() else {}
     layouts = {**previous.get("seed_layouts", {}), **{str(s): LAYOUTS[a.layout] for s in a.seeds}}
@@ -170,6 +189,8 @@ def main():
             arm, seed = jobs.pop(0)
             name = f"{arm}-{seed}"
             out = a.out / "runs" / name
+            if (out / "summary.json").exists():   # finished meanwhile (e.g. by another launcher)
+                continue
             if out.exists():  # interrupted earlier: keep evidence, do not overwrite
                 out.rename(out.with_name(f"{name}.interrupted-{int(time.time())}"))
             cmd = [sys.executable, str(ROOT / "tools/iterate_ppo.py"), "--out", str(out), "--seed", str(seed),

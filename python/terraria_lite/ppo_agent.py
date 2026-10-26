@@ -112,6 +112,13 @@ class Config:
     fused_adam: bool = False          # single fused Adam kernel
     compile_all: bool = False         # torch.compile the whole sampling forward and minibatch loss too
                                       # (the loss only without bf16, see train())
+    # Learned memory (memory_agent.py), off by default: "gru", "lstm" or
+    # "transformer" core of width memory_size (0 = 256) over the encoder's
+    # global features; transformer attends over the last memory_len steps
+    # (0 = 64). Updates then use whole 128-step env sequences per minibatch.
+    memory: str = ""
+    memory_size: int = 0
+    memory_len: int = 0
 
     @property
     def batch(self) -> int:
@@ -480,6 +487,13 @@ def _ppo_loss(agent, obs, action, mask, old_logp, adv, ret, old_value, *, expand
         newlogp, entropy, newval = _score_bf16(agent, x, action, mask)
     else:
         _, newlogp, entropy, newval = agent.act(x, action, mask=mask)
+    return _ppo_objective(newlogp, entropy, newval, old_logp, adv, ret, old_value, clip_coef=clip_coef,
+                          clip_vloss=clip_vloss, ent_coef=ent_coef, vf_coef=vf_coef)
+
+
+def _ppo_objective(newlogp, entropy, newval, old_logp, adv, ret, old_value, *,
+                   clip_coef, clip_vloss, ent_coef, vf_coef):
+    """_ppo_loss's terms from the minibatch's new log-probs, entropies and values."""
     logratio = newlogp - old_logp
     ratio = logratio.exp()
 
@@ -502,6 +516,40 @@ def _ppo_loss(agent, obs, action, mask, old_logp, adv, ret, old_value, *, expand
 
     loss = pg - ent_coef * entropy.mean() + vf_coef * v_loss
     return loss, approx_kl, clipfrac, entropy
+
+
+# Memory agents (memory_agent.py): the same objective, with the encoder, the
+# core and the heads as separate pieces so each can be compiled (the packed
+# fused RNN stays eager) and the core runs in float32.
+
+def _memory_sample(agent, x, mask, state, done, expand=None):
+    """_sample_heads for a memory agent, plus its next state."""
+    h, state = agent.core_step(expand(x) if expand is not None else x, state, done)
+    logits = agent.actor(h).masked_fill(~mask, float("-inf"))
+    logits = logits - logits.logsumexp(-1, keepdim=True)
+    return logits, logits.softmax(-1), agent.critic(h).squeeze(-1), state
+
+
+def _memory_encode(agent, obs, expand, bf16):
+    x = expand(obs) if expand is not None else obs
+    if bf16:
+        with torch.autocast(device_type=x.device.type, dtype=torch.bfloat16):
+            return agent.encode(x)
+    return agent.encode(x)
+
+
+def _memory_objective(agent, h, action, mask, old_logp, adv, ret, old_value, *, bf16,
+                      clip_coef, clip_vloss, ent_coef, vf_coef):
+    if bf16:
+        with torch.autocast(device_type=h.device.type, dtype=torch.bfloat16):
+            logits, value = agent.actor(h), agent.critic(h)
+        logits, value = logits.float(), value.float()
+    else:
+        logits, value = agent.actor(h), agent.critic(h)
+    dist = Categorical(logits=logits.masked_fill(~mask, float("-inf")), validate_args=False)
+    return _ppo_objective(dist.log_prob(action), dist.entropy(), value.squeeze(-1), old_logp, adv, ret,
+                          old_value, clip_coef=clip_coef, clip_vloss=clip_vloss, ent_coef=ent_coef,
+                          vf_coef=vf_coef)
 
 
 def compute_gae(rewards, dones, values, next_value, next_done,
@@ -544,6 +592,15 @@ def train(cfg: Config, checkpoint_callback=None):
         used = [k for k, v in unsupported.items() if v]
         if used:
             raise ValueError(f"compact_obs supports potential/novelty shaping only, not {', '.join(used)}")
+    if cfg.memory:
+        unsupported = {"memory_features": cfg.memory_features, "sil_minibatches": cfg.sil_minibatches,
+                       "archive_start_prob": cfg.archive_start_prob, "aux_coef": cfg.aux_coef,
+                       "bootstrap_time_limit": cfg.bootstrap_time_limit}
+        used = [k for k, v in unsupported.items() if v]
+        if used:
+            raise ValueError(f"memory agents do not support {', '.join(used)}")
+        if cfg.num_envs % cfg.minibatches:
+            raise ValueError("memory minibatches are whole env sequences: envs must be divisible by minibatches")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     device = torch.device(cfg.device)
@@ -575,8 +632,13 @@ def train(cfg: Config, checkpoint_callback=None):
         memory = PolicyFeatures(cfg.memory_features, cfg.num_envs)
     width = SPEC.obs_size + (memory.N_FEATURES if memory is not None else 0)
     from terraria_lite.spatial_agent import build_agent
-    agent = build_agent(cfg.architecture, cfg.hidden, width - SPEC.obs_size,
-                        depth=cfg.depth, cell_width=cfg.cell_width).to(device)
+    if cfg.memory:
+        from terraria_lite.memory_agent import MemoryActorCritic, rnn_plan
+        agent = MemoryActorCritic(cfg.memory, cfg.memory_size, cfg.memory_len, cfg.architecture, cfg.hidden,
+                                  depth=cfg.depth, cell_width=cfg.cell_width).to(device)
+    else:
+        agent = build_agent(cfg.architecture, cfg.hidden, width - SPEC.obs_size,
+                            depth=cfg.depth, cell_width=cfg.cell_width).to(device)
     if memory is not None:
         agent.memory_features = cfg.memory_features
     if cfg.init:
@@ -613,6 +675,18 @@ def train(cfg: Config, checkpoint_callback=None):
     # (docs/reports/GPU_SHARING_CORRUPTION_2026_10.md).
     ppo_loss = torch.compile(_ppo_loss, dynamic=False) if cfg.compile_all and not cfg.bf16 else _ppo_loss
     sample_heads = torch.compile(_sample_heads, dynamic=False) if cfg.compile_all else None
+    if cfg.memory:
+        # The rollout step (encoder, core, heads) is one graph under
+        # compile_all; so is the update's transformer core. The fused RNN
+        # (packed episode segments) stays eager.
+        ppo_loss = None
+        memory_sample = torch.compile(_memory_sample, dynamic=False) if cfg.compile_all else _memory_sample
+        memory_encode = torch.compile(_memory_encode, dynamic=False) if cfg.compile_all else _memory_encode
+        memory_recur = (torch.compile(agent.recur, dynamic=False)
+                        if cfg.compile_all and cfg.memory == "transformer" else agent.recur)
+        # Same guard as ppo_loss: no compiled bf16 loss graph (GPU-sharing corruption).
+        memory_objective = (torch.compile(_memory_objective, dynamic=False)
+                            if cfg.compile_all and not cfg.bf16 else _memory_objective)
 
     T, N = cfg.rollout, cfg.num_envs
     # Rollout buffers live where they are written; the update moves them to the
@@ -669,6 +743,9 @@ def train(cfg: Config, checkpoint_callback=None):
     next_done = torch.zeros(N, device=collect_device)
     extrinsic_episodes = restored_episodes = 0
     sil_stats: dict = {}
+    if cfg.memory:
+        mem_state = actor.initial_state(N, collect_device)
+        first_kl = None   # first minibatch's approx KL per iteration: ~0 iff the update replays the rollout
 
     n_iters = cfg.total_steps // cfg.batch
     ep_returns, ep_achievements, ep_lengths, ep_deaths = [], [], [], []
@@ -696,12 +773,23 @@ def train(cfg: Config, checkpoint_callback=None):
         threads = torch.get_num_threads()
         if cfg.collect_threads:
             torch.set_num_threads(cfg.collect_threads)
+        if cfg.memory:
+            # What the update needs to replay this rollout from its start
+            # (truncated BPTT over the T steps).
+            with torch.no_grad():
+                snapshot = actor.snapshot(mem_state)
         for t in range(T):
             obs_b[t] = next_raw if cfg.compact_obs else next_obs
             done_b[t] = next_done
             msk_b[t] = next_mask
             with torch.inference_mode():
-                if sample_heads is None:
+                if cfg.memory:
+                    logits, probs, v, mem_state = memory_sample(
+                        actor, next_obs if next_obs is not None else next_raw, next_mask, mem_state, next_done,
+                        expand_collect if next_obs is None else None)
+                    a = torch.multinomial(probs, 1, True).squeeze(-1)   # as Categorical.sample
+                    logp = logits.gather(-1, a[:, None]).squeeze(-1)
+                elif sample_heads is None:
                     a, logp, _, v = actor.act(next_obs, mask=next_mask)
                 else:
                     logits, probs, v = sample_heads(actor, next_raw if cfg.compact_obs else next_obs, next_mask,
@@ -772,10 +860,18 @@ def train(cfg: Config, checkpoint_callback=None):
             if cfg.curiosity_anneal:
                 scale*=max(0.,1.-2.*(it-1)/n_iters)
             rew_b+=scale*bonus.reshape(T,N).to(collect_device)
-        if next_obs is None:
-            next_obs = expand_collect(next_raw)
+        if cfg.memory:
+            # Value of the next rollout's first step from the carried state
+            # (that state is not advanced; the step is replayed next rollout).
+            with torch.inference_mode():
+                next_value = memory_sample(actor, next_obs if next_obs is not None else next_raw, next_mask,
+                                           mem_state, next_done, expand_collect if next_obs is None else None)[2]
+        else:
+            if next_obs is None:
+                next_obs = expand_collect(next_raw)
+            with torch.no_grad():
+                next_value = actor.value(next_obs)
         with torch.no_grad():
-            next_value = actor.value(next_obs)
             adv = compute_gae(rew_b, done_b, val_b, next_value, next_done,
                               cfg.gamma, cfg.gae_lambda)
             ret = adv + val_b
@@ -794,24 +890,51 @@ def train(cfg: Config, checkpoint_callback=None):
             b_valid = valid.reshape(-1).to(device)
 
         # ---- optimise ----------------------------------------------------
-        idx = np.arange(cfg.batch)
+        idx = np.arange(N if cfg.memory else cfg.batch)
         clipfracs, approx_kl = [], torch.tensor(0.0)
+        if cfg.memory:
+            # Minibatches are whole env sequences (N/minibatches lanes x T
+            # steps, the same 8,192 rows at the default sizes), replayed from
+            # the rollout-start snapshot.
+            lanes = N // cfg.minibatches
+            s_obs, s_act, s_logp, s_adv, s_ret, s_val, s_msk = (
+                x.view(T, N, *x.shape[1:]) for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
+            s_done = done_b.to(device)
+            # RNN segment packing is planned on the host: one copy per iteration.
+            done_host = done_b.cpu().numpy() if cfg.memory != "transformer" else None
+            snapshot = tuple(s.to(device) for s in snapshot)
         for _ in range(cfg.epochs):
             np.random.shuffle(idx)
             # One index upload and one gather per tensor per epoch; minibatches
             # are then contiguous slices (the same rows, values and layout as
             # gathering each minibatch).
             perm = torch.as_tensor(idx, device=device)
-            e_obs, e_act, e_logp, e_adv, e_ret, e_val, e_msk = (
-                x[perm] for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
-            if aux is not None:
-                e_delta, e_unlock, e_valid = b_delta[perm], b_unlock[perm], b_valid[perm]
-            for s in range(0, cfg.batch, cfg.minibatch):
-                mb = slice(s, s + cfg.minibatch)
-                loss, approx_kl, clipfrac, entropy = ppo_loss(
-                    agent, e_obs[mb], e_act[mb], e_msk[mb], e_logp[mb], e_adv[mb], e_ret[mb], e_val[mb],
-                    expand=expand_learn, bf16=cfg.bf16, clip_coef=cfg.clip_coef, clip_vloss=cfg.clip_vloss,
-                    ent_coef=cfg.ent_coef, vf_coef=cfg.vf_coef)
+            if cfg.memory:
+                minibatches = [slice(s, s + lanes) for s in range(0, N, lanes)]
+            else:
+                e_obs, e_act, e_logp, e_adv, e_ret, e_val, e_msk = (
+                    x[perm] for x in (b_obs, b_act, b_logp, b_adv, b_ret, b_val, b_msk))
+                if aux is not None:
+                    e_delta, e_unlock, e_valid = b_delta[perm], b_unlock[perm], b_valid[perm]
+                minibatches = [slice(s, s + cfg.minibatch) for s in range(0, cfg.batch, cfg.minibatch)]
+            for mb in minibatches:
+                if cfg.memory:
+                    plan = None if done_host is None else rnn_plan(done_host[:, idx[mb]], device)
+                    mb = perm[mb]
+                    encoded = memory_encode(agent, s_obs[:, mb].reshape(T * lanes, -1), expand_learn, cfg.bf16)
+                    h = memory_recur(encoded, agent.select(snapshot, mb), s_done[:, mb], plan)
+                    loss, approx_kl, clipfrac, entropy = memory_objective(
+                        agent, h, s_act[:, mb].reshape(-1), s_msk[:, mb].reshape(-1, SPEC.n_actions),
+                        s_logp[:, mb].reshape(-1), s_adv[:, mb].reshape(-1), s_ret[:, mb].reshape(-1),
+                        s_val[:, mb].reshape(-1), bf16=cfg.bf16, clip_coef=cfg.clip_coef,
+                        clip_vloss=cfg.clip_vloss, ent_coef=cfg.ent_coef, vf_coef=cfg.vf_coef)
+                    if not clipfracs:
+                        first_kl = approx_kl
+                else:
+                    loss, approx_kl, clipfrac, entropy = ppo_loss(
+                        agent, e_obs[mb], e_act[mb], e_msk[mb], e_logp[mb], e_adv[mb], e_ret[mb], e_val[mb],
+                        expand=expand_learn, bf16=cfg.bf16, clip_coef=cfg.clip_coef, clip_vloss=cfg.clip_vloss,
+                        ent_coef=cfg.ent_coef, vf_coef=cfg.vf_coef)
                 clipfracs.append(clipfrac)
                 if aux is not None:
                     loss = loss + cfg.aux_coef * aux.loss(agent, e_obs[mb], e_act[mb], e_delta[mb],
@@ -848,6 +971,7 @@ def train(cfg: Config, checkpoint_callback=None):
                 "explained_variance": float(ev),
                 "fresh_episodes": extrinsic_episodes,
                 "restored_episodes": restored_episodes,
+                **({"first_minibatch_kl": float(first_kl)} if cfg.memory else {}),
                 **({"archive": archive.stats()} if archive is not None else {}),
                 **(novelty.stats() if novelty is not None else {}),
                 **({"sil": sil_stats} if sil is not None else {}),
@@ -876,6 +1000,7 @@ def train(cfg: Config, checkpoint_callback=None):
         "architecture": cfg.architecture,"curiosity_coef": cfg.curiosity_coef,
         "hidden": cfg.hidden, "depth": cfg.depth, "cell_width": cfg.cell_width,
         "parameters": sum(p.numel() for p in agent.parameters()),
+        **({"memory": cfg.memory, "memory_size": agent.size, "memory_len": agent.length} if cfg.memory else {}),
         "achievement_reward": cfg.achievement_reward,
         "requested_steps": cfg.total_steps,
         "collection_seconds": collection_seconds,
@@ -923,7 +1048,8 @@ def train(cfg: Config, checkpoint_callback=None):
                     "environment_version": SPEC.version,
                     "obs_size": SPEC.obs_size, "n_actions": SPEC.n_actions,
                     **({"memory_features": cfg.memory_features, "extra": width - SPEC.obs_size}
-                       if memory is not None else {})}, cfg.save)
+                       if memory is not None else {}),
+                    **(agent.memory_config if cfg.memory else {})}, cfg.save)
         if not cfg.quiet:
             print(f"\nsaved {cfg.save}")
     return summary
@@ -975,6 +1101,11 @@ if __name__ == "__main__":
                    help="global trunk layers (targets, mlp)")
     p.add_argument("--cell-width", type=int, default=Config.cell_width,
                    help="per-cell MLP width (targets)")
+    p.add_argument("--memory", choices=["", "gru", "lstm", "transformer"], default=Config.memory,
+                   help="learned memory core over the encoder's global features (memory_agent.py)")
+    p.add_argument("--memory-size", type=int, default=Config.memory_size, help="core width, 0 = 256")
+    p.add_argument("--memory-len", type=int, default=Config.memory_len,
+                   help="transformer context in steps, 0 = 64")
     p.add_argument("--curiosity-coef",type=float,default=0.,help="optional learned novelty; experimental")
     p.add_argument("--balanced-curiosity",action="store_true")
     p.add_argument("--threads",type=int,default=6)
@@ -1007,6 +1138,7 @@ if __name__ == "__main__":
                      collect_device=a.collect_device, collect_threads=a.collect_threads,
                      save=a.save, init=a.init, quiet=a.quiet,architecture=a.architecture,
                      hidden=a.hidden, depth=a.depth, cell_width=a.cell_width,
+                     memory=a.memory, memory_size=a.memory_size, memory_len=a.memory_len,
                      gae_lambda=a.gae_lambda,bootstrap_time_limit=a.bootstrap_time_limit,curiosity_coef=a.curiosity_coef,
                      curiosity_balanced=a.balanced_curiosity))
     if a.json:

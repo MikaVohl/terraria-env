@@ -30,6 +30,10 @@ def main():
                    help="trunk width; 0 = architecture default (128 for lstm/lstm_targets)")
     p.add_argument("--depth", type=int, default=2, help="global trunk layers (targets, mlp)")
     p.add_argument("--cell-width", type=int, default=32, help="per-cell MLP width (targets)")
+    p.add_argument("--memory", choices=["gru", "lstm", "transformer"], default="",
+                   help="learned memory core in the fast trainer (memory_agent.py)")
+    p.add_argument("--memory-size", type=int, default=0, help="memory core width, 0 = 256")
+    p.add_argument("--memory-len", type=int, default=0, help="transformer context in steps, 0 = 64")
     p.add_argument("--bootstrap-time-limit", action="store_true")
     p.add_argument("--persistent-curiosity", action="store_true")
     p.add_argument("--gamma", type=float, default=.999)
@@ -98,11 +102,14 @@ def main():
                   minibatches=a.minibatches,epochs=a.epochs,bootstrap_time_limit=a.bootstrap_time_limit)
     if recurrent:
         kwargs.update(architecture=a.architecture,encoder=a.encoder,hidden=a.hidden or 128)
+        if a.memory:
+            raise ValueError("--memory belongs to the fast trainer; lstm/lstm_targets are the old recurrent trainer")
         if a.depth != 2 or a.cell_width != 32:
             raise ValueError("--depth/--cell-width are feed-forward size knobs")
     elif "architecture" in config_class.__dataclass_fields__:
         kwargs["architecture"] = a.architecture
-        kwargs.update(hidden=a.hidden, depth=a.depth, cell_width=a.cell_width)
+        kwargs.update(hidden=a.hidden, depth=a.depth, cell_width=a.cell_width,
+                      memory=a.memory, memory_size=a.memory_size, memory_len=a.memory_len)
         kwargs["achievement_reward"] = a.achievement_reward
         kwargs["curiosity_coef"] = a.curiosity
         kwargs["curiosity_balanced"] = a.balanced_curiosity
@@ -138,6 +145,10 @@ def main():
             from terraria_lite.memory_features import PolicyFeatures
             extra = PolicyFeatures(a.memory_features, 1).N_FEATURES
         build = lambda: build_agent(cfg.architecture, cfg.hidden, extra, depth=cfg.depth, cell_width=cfg.cell_width)
+        if a.memory:
+            from terraria_lite.memory_agent import MemoryActorCritic
+            build = lambda: MemoryActorCritic(a.memory, a.memory_size, a.memory_len, cfg.architecture, cfg.hidden,
+                                              depth=cfg.depth, cell_width=cfg.cell_width)
     with torch.random.fork_rng(devices=[]):
         parameters = sum(p.numel() for p in build().parameters())
     protocol = {"config": asdict(cfg), "actual_steps": actual, "parameters": parameters,
@@ -203,6 +214,8 @@ def main():
             data.update(memory_features=agent.memory_features, extra=agent.trunk.extra)
         if recurrent:
             data.update(encoder=cfg.encoder,hidden=cfg.hidden)
+        if getattr(agent, "memory_config", None):
+            data.update(agent.memory_config)
         checkpoint = a.out / f"step-{steps}.pt"
         torch.save(data, checkpoint)
         next_eval += a.interval

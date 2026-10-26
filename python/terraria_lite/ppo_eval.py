@@ -37,6 +37,15 @@ def load_agent(path: str | Path, device: str = "cpu"):
         agent.load_state_dict(state)
         agent.eval()
         return agent
+    if raw.get("memory"):
+        from terraria_lite.memory_agent import MemoryActorCritic
+        agent = MemoryActorCritic(raw["memory"], int(raw["memory_size"]), int(raw["memory_len"]),
+                                  raw.get("architecture", "targets"), int(raw.get("hidden", 0)),
+                                  int(raw.get("extra", 0)), depth=int(raw.get("depth", 2)),
+                                  cell_width=int(raw.get("cell_width", 32))).to(device)
+        agent.load_state_dict(state)
+        agent.eval()
+        return agent
     from terraria_lite.spatial_agent import agent_size, build_agent
     architecture=raw.get("architecture","mlp")
     agent = build_agent(architecture,extra=int(raw.get("extra",0)),**agent_size(architecture,state)).to(device)
