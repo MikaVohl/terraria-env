@@ -19,6 +19,12 @@
 #ifndef TREE_HEIGHT_PCT
 #define TREE_HEIGHT_PCT 100
 #endif
+/* INV_LOG=1 adds ITEM_COUNT status entries log(1+count)/log(1+999) right after
+   the achievement bits (before the per-cell entity block), so mid-range counts
+   (5 vs 10 vs 25 bars) are legible; the sqrt encoding stays as it is. */
+#ifndef INV_LOG
+#define INV_LOG 0
+#endif
 #define SURFACE_BASE 30
 #define SURFACE_MIN 22
 #define SURFACE_MAX 38
@@ -133,7 +139,8 @@ _Static_assert(VIEW_W%2==1 && VIEW_H%2==1 && VIEW_W>=11 && VIEW_H>=9,"view is ce
 #define OBS_SEL_0 17
 #define OBS_INV_0 (OBS_SEL_0+PLACEABLE_COUNT)
 #define OBS_ACH_0 (OBS_INV_0+ITEM_COUNT)
-#define OBS_ENTITY_0 (OBS_ACH_0+ACH_COUNT)
+#define OBS_INVLOG_0 (OBS_ACH_0+ACH_COUNT)
+#define OBS_ENTITY_0 (OBS_INVLOG_0+(INV_LOG?ITEM_COUNT:0))
 /* Visible cells: slime presence, bat presence, health, movement phase. */
 #define OBS_STATUS (OBS_ENTITY_0+VIEW_CELLS*4)
 #define OBS_INV_CLIP 999

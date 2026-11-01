@@ -1,0 +1,209 @@
+[
+ {
+  "name": "w256_ctl-2001",
+  "lib": "build-v8-w256",
+  "arm": "pot_e1024_max2",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_unimix-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_unimix-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "real_unimix-2001",
+  "lib": "build-v8-real",
+  "arm": "max2_ep6000_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "real_unimix-2002",
+  "lib": "build-v8-real",
+  "arm": "max2_ep6000_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "o3t2inv-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "pot_e1024_max2",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2inv-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "pot_e1024_max2",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2inv_fn_unimix-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2inv_fn_unimix-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_ctl-2003",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "pot_e1024_max2",
+  "seed": 2003,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_ctl-2004",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "pot_e1024_max2",
+  "seed": 2004,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "real_fn_unimix-2001",
+  "lib": "build-v8-real",
+  "arm": "max2_fn_ep6000_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "real_fn_unimix-2002",
+  "lib": "build-v8-real",
+  "arm": "max2_fn_ep6000_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "o3t2_unimix-2003",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_unimix",
+  "seed": 2003,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_unimix-2004",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_unimix",
+  "seed": 2004,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2inv_fn_unimix-2003",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix",
+  "seed": 2003,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2inv_fn_unimix-2004",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix",
+  "seed": 2004,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "realinv_fn_unimix-2001",
+  "lib": "build-v8-real-inv",
+  "arm": "max2_fn_ep6000_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "realinv_fn_unimix-2002",
+  "lib": "build-v8-real-inv",
+  "arm": "max2_fn_ep6000_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "realinv_fn_unimix_h512-2001",
+  "lib": "build-v8-real-inv",
+  "arm": "max2_fn_ep6000_unimix_h512",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "realinv_fn_unimix_h512-2002",
+  "lib": "build-v8-real-inv",
+  "arm": "max2_fn_ep6000_unimix_h512",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "o3t2inv_fn_unimix_4B-2005",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix",
+  "seed": 2005,
+  "steps": 4294967296,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2inv_fn_unimix_4B-2006",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix",
+  "seed": 2006,
+  "steps": 4294967296,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]

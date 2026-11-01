@@ -107,6 +107,11 @@ ARMS["max2_frontier_nov01"] = ARMS["pot_e1024_max2"] + ["--potential-mode", "fro
 # Horizon test: same arms with 6,000-step episodes for training and validation.
 ARMS["max2_ep6000"] = ARMS["pot_e1024_max2"] + ["--episode-steps", "6000"]
 ARMS["max2_fn_ep6000"] = ARMS["max2_frontier_nov01"] + ["--episode-steps", "6000"]
+# Training-only 1% uniform-over-legal mixing (--unimix): lets never-tried legal
+# crafts (e.g. a craftable wood breastplate) get sampled at all.
+for _base in ("pot_e1024_max2", "max2_frontier_nov01", "max2_ep6000", "max2_fn_ep6000"):
+    ARMS[_base.replace("pot_e1024_max2", "max2") + "_unimix"] = ARMS[_base] + ["--unimix", ".01"]
+ARMS["max2_fn_ep6000_unimix_h512"] = ARMS["max2_fn_ep6000_unimix"] + ["--hidden", "512"]
 # Feed-forward model-size scaling (SCALE_FF_2026_10.md) on the max2 path:
 # ff_t{hidden}c{cell_width}d{depth} for targets, ff_m{hidden}d{depth} for the
 # flat MLP; suffix _lr1e4 lowers the LR from the default 3e-4.

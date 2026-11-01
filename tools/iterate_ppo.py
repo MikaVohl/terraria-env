@@ -74,6 +74,8 @@ def main():
     p.add_argument("--compile-all", action="store_true",
                    help="also torch.compile the whole sampling forward and minibatch loss (changes rounding; "
                         "the loss only without --bf16, docs/reports/GPU_SHARING_CORRUPTION_2026_10.md)")
+    p.add_argument("--unimix", type=float, default=0.0,
+                   help="training-only: mix this fraction of uniform-over-legal actions into the policy")
     p.add_argument("--sim-backend", choices=["cpu", "gpu"], default="cpu",
                    help="exact: gpu simulates on --collect-device (needs perf/gpusim/libgpusim.so)")
     p.add_argument("--async-evaluation", action="store_true",
@@ -121,7 +123,7 @@ def main():
                       memory_features=a.memory_features, aux_coef=a.aux,
                       native_autoreset=a.native_autoreset, compact_obs=a.compact_obs,
                       compile=a.compile, bf16=a.bf16, fused_adam=a.fused_adam, compile_all=a.compile_all,
-                      sim_backend=a.sim_backend, episode_steps=a.episode_steps)
+                      sim_backend=a.sim_backend, episode_steps=a.episode_steps, unimix=a.unimix)
     elif a.architecture != "mlp":
         raise ValueError("This implementation does not support CNN")
     cfg = config_class(**kwargs)

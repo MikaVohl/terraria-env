@@ -84,6 +84,10 @@ void env_obs(const Env *e, Obs *o)
 
     for (i = 0; i < ACH_COUNT; i++)
         o->status[OBS_ACH_0 + i] = has_ach(e, i) ? 1.0f : 0.0f;
+#if INV_LOG
+    for (i = 0; i < ITEM_COUNT; i++)
+        o->status[OBS_INVLOG_0 + i] = logf(1.0f + (float)e->inv[i]) / logf(1.0f + (float)OBS_INV_CLIP);
+#endif
     for(i=0;i<MAX_MOBS;i++) {
         const Mob *m=&e->mobs[i];
         int x=m->x-x0,y=m->y-y0;

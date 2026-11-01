@@ -119,6 +119,10 @@ class Config:
     memory: str = ""
     memory_size: int = 0
     memory_len: int = 0
+    # Training-only exploration: mix this fraction of uniform-over-LEGAL actions
+    # into the policy for sampling, log-probs and entropy (DreamerV3's "unimix").
+    # Evaluation and diagnostics always use the plain masked policy.
+    unimix: float = 0.0
 
     @property
     def batch(self) -> int:
@@ -160,6 +164,17 @@ def tanh_mlp(width: int, hidden: int, depth: int) -> nn.Sequential:
     return nn.Sequential(*layers)
 
 
+def masked_logits(logits, mask, eps: float = 0.0):
+    """-inf on illegal actions; with eps > 0, log of (1-eps)*softmax(logits) +
+    eps*uniform over the legal actions (computed in log space, float32)."""
+    logits = logits.masked_fill(~mask, float("-inf"))
+    if not eps:
+        return logits
+    logp = torch.log_softmax(logits.float(), -1)
+    uniform = (np.log(eps) - mask.sum(-1, keepdim=True).float().log()).expand_as(logp)
+    return torch.logaddexp(logp + np.log1p(-eps), uniform).masked_fill(~mask, float("-inf"))
+
+
 class ActorCritic(nn.Module):
     """Parameter-efficient baseline: shared features, separate policy/value heads.
 
@@ -183,7 +198,7 @@ class ActorCritic(nn.Module):
             # -inf, not a large negative: softmax then puts exactly zero mass on
             # invalid actions, and their gradient is exactly zero too. The C side
             # guarantees at least `noop` survives, so no row is all -inf.
-            logits = logits.masked_fill(~mask, float("-inf"))
+            logits = masked_logits(logits, mask, getattr(self, "unimix", 0.0))
         # validate_args=False: the checks only raise, and each costs a host
         # sync on GPU (two per call). Non-finite losses are still caught in
         # the update; outputs and the sampling stream are unchanged.
@@ -463,7 +478,7 @@ def _score_bf16(agent, x, action, mask):
     with torch.autocast(device_type=x.device.type, dtype=torch.bfloat16):
         h = agent.trunk(x)
         logits, value = agent.actor(h), agent.critic(h)
-    logits = logits.float().masked_fill(~mask, float("-inf"))
+    logits = masked_logits(logits.float(), mask, getattr(agent, "unimix", 0.0))
     dist = Categorical(logits=logits, validate_args=False)   # see ActorCritic.act
     return dist.log_prob(action), dist.entropy(), value.float().squeeze(-1)
 
@@ -472,7 +487,7 @@ def _sample_heads(agent, x, mask, expand=None):
     """Rollout-time policy heads (compile_all): normalised masked logits (as
     Categorical stores them), their probabilities and the value."""
     h = agent.trunk(expand(x) if expand is not None else x)
-    logits = agent.actor(h).masked_fill(~mask, float("-inf"))
+    logits = masked_logits(agent.actor(h), mask, getattr(agent, "unimix", 0.0))
     logits = logits - logits.logsumexp(-1, keepdim=True)
     return logits, logits.softmax(-1), agent.critic(h).squeeze(-1)
 
@@ -525,7 +540,7 @@ def _ppo_objective(newlogp, entropy, newval, old_logp, adv, ret, old_value, *,
 def _memory_sample(agent, x, mask, state, done, expand=None):
     """_sample_heads for a memory agent, plus its next state."""
     h, state = agent.core_step(expand(x) if expand is not None else x, state, done)
-    logits = agent.actor(h).masked_fill(~mask, float("-inf"))
+    logits = masked_logits(agent.actor(h), mask, getattr(agent, "unimix", 0.0))
     logits = logits - logits.logsumexp(-1, keepdim=True)
     return logits, logits.softmax(-1), agent.critic(h).squeeze(-1), state
 
@@ -546,7 +561,7 @@ def _memory_objective(agent, h, action, mask, old_logp, adv, ret, old_value, *, 
         logits, value = logits.float(), value.float()
     else:
         logits, value = agent.actor(h), agent.critic(h)
-    dist = Categorical(logits=logits.masked_fill(~mask, float("-inf")), validate_args=False)
+    dist = Categorical(logits=masked_logits(logits, mask, getattr(agent, "unimix", 0.0)), validate_args=False)
     return _ppo_objective(dist.log_prob(action), dist.entropy(), value.squeeze(-1), old_logp, adv, ret,
                           old_value, clip_coef=clip_coef, clip_vloss=clip_vloss, ent_coef=ent_coef,
                           vf_coef=vf_coef)
@@ -641,6 +656,10 @@ def train(cfg: Config, checkpoint_callback=None):
                             depth=cfg.depth, cell_width=cfg.cell_width).to(device)
     if memory is not None:
         agent.memory_features = cfg.memory_features
+    if not 0.0 <= cfg.unimix < 1.0:
+        raise ValueError("unimix must be in [0, 1)")
+    if cfg.unimix:
+        agent.unimix = cfg.unimix   # instance attribute: not in state_dict/checkpoints
     if cfg.init:
         raw = torch.load(cfg.init, map_location=device, weights_only=True)
         from terraria_lite.checkpoints import validate_checkpoint
