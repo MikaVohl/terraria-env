@@ -12,6 +12,10 @@ BUILD   ?= $(if $(filter 1,$(LIGHT_WINDOW)),build-lw,build)
 ROOT    := ../..
 CFLAGS  := -std=c11 -O2 -g -Wall -Wextra -Wno-unused-const-variable
 CORE    := sim.c worldgen.c light.c obs.c
+# Variant knobs for sources that define them (variants/v8), e.g.
+#   make -C perf/v7 V7=$PWD/variants/v8 LIGHT_WINDOW=1 BUILD=build-v8-ore300 VARIANT="-DORE_PCT=300"
+# Use one BUILD directory per VARIANT; the flags are recorded in $(BUILD)/variant.
+VARIANT ?=
 
 all: $(BUILD)/libterraria.so
 
@@ -19,10 +23,11 @@ $(BUILD)/stamp: $(addprefix $(V7)/src/,$(CORE)) $(wildcard $(V7)/include/*.h) li
 	rm -rf $(BUILD)/src $(BUILD)/include && mkdir -p $(BUILD)/src $(BUILD)/include
 	cp $(addprefix $(V7)/src/,$(CORE)) $(BUILD)/src/ && cp $(V7)/include/*.h $(BUILD)/include/
 	if [ "$(LIGHT_WINDOW)" = 1 ]; then patch -s -d $(BUILD) -p1 < light_window_v7.patch; fi
+	printf '%s\n' "$(VARIANT)" > $(BUILD)/variant
 	touch $@
 
 $(BUILD)/libterraria.so: $(BUILD)/stamp $(ROOT)/src/capi.c
-	gcc $(CFLAGS) -I$(BUILD)/include -I$(BUILD)/src -pthread -fPIC -fvisibility=hidden -shared \
+	gcc $(CFLAGS) $(VARIANT) -I$(BUILD)/include -I$(BUILD)/src -pthread -fPIC -fvisibility=hidden -shared \
 	  $(addprefix $(BUILD)/src/,$(CORE)) $(ROOT)/src/capi.c -o $@ -lm
 
 gpu: $(BUILD)/stamp
