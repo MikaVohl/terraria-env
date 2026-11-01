@@ -1,0 +1,20 @@
+[
+ {
+  "name": "gen_g9999-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix_g9999",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "gen_g9999-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix_g9999",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]

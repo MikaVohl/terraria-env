@@ -123,7 +123,7 @@ ARMS["max2_pot0_nov01_unimix"] = ARMS["max2_pot0"] + ["--novelty", ".01", "--uni
 ARMS["max2_pot0_nov01_h1024lr1e4"] = ARMS["max2_pot0"] + ["--novelty", ".01", "--hidden", "1024", "--lr", "1e-4"]
 # Discount horizon (is the pickaxe too far away for gamma .999?) and the
 # longer-budget larger-world / larger-view arms (6,000-step episodes).
-for _g in ("9995", "9998"):
+for _g in ("9995", "9998", "9999"):
     ARMS[f"max2_fn_unimix_g{_g}"] = _best + ["--gamma", f".{_g}"]
     ARMS[f"max2_pot0_nov01_unimix_g{_g}"] = ARMS["max2_pot0_nov01_unimix"] + ["--gamma", f".{_g}"]
 ARMS["max2_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix"] + ["--episode-steps", "6000"]
