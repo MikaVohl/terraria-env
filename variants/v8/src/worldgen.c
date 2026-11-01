@@ -115,7 +115,7 @@ static void carve_disc(Env *e, int cx, int cy, int r) {
 
 static void gen_caves(Env *e) {
     const int ymax = bedrock_top() - 2;
-    const int worms = rng_range(&e->rng, 14, 22);
+    const int worms = rng_range(&e->rng, 14, 22)*WORLD_W/128;   /* v8: per-area density */
 
     for (int w = 0; w < worms; ++w) {
         int sx = rng_range(&e->rng, 2, WORLD_W - 3);
@@ -198,21 +198,21 @@ static int weighted_row(Env *e, int lo, int hi, bool shallow_bias) {
 static void gen_ores(Env *e) {
     const int top = bedrock_top() - 1;
 
-    int copper = rng_range(&e->rng, 50, 60);
+    int copper = rng_range(&e->rng, 50, 60)*WORLD_W/128;
     for (int i = 0; i < copper; ++i) {
         int x = (int)rng_below(&e->rng, WORLD_W);
         int y = weighted_row(e, COPPER_MIN_Y, clampi(COPPER_MAX_Y, 0, top), true);
         grow_vein(e, x, y, TILE_COPPER_ORE, 0, WORLD_H - 1);
     }
 
-    int iron = rng_range(&e->rng, 30, 40);
+    int iron = rng_range(&e->rng, 30, 40)*WORLD_W/128;
     for (int i = 0; i < iron; ++i) {
         int x = (int)rng_below(&e->rng, WORLD_W);
         int y = weighted_row(e, IRON_MIN_Y, clampi(IRON_MAX_Y, 0, top), false);
         grow_vein(e, x, y, TILE_IRON_ORE, 0, WORLD_H - 1);
     }
 
-    for(int i=0;i<30;i++) {
+    for(int i=0;i<30*WORLD_W/128;i++) {
         int x=rng_range(&e->rng,2,WORLD_W-3);
         int y=weighted_row(e,52,top,false);
         grow_vein(e,x,y,TILE_SILVER_ORE,0,WORLD_H-1);
@@ -220,7 +220,7 @@ static void gen_ores(Env *e) {
 
     /* Gold last, overwriting other ores where bands overlap. Its distribution
        rewards deeper exploration, but the starter copper pick can mine it. */
-    int gold = rng_range(&e->rng, 12, 20);
+    int gold = rng_range(&e->rng, 12, 20)*WORLD_W/128;
     for (int i = 0; i < gold; ++i) {
         int x = (int)rng_below(&e->rng, WORLD_W);
         int y = weighted_row(e, GOLD_MIN_Y, clampi(GOLD_MAX_Y, 0, top), false);
@@ -352,7 +352,7 @@ void world_generate(Env *e) {
     e->chest_count=MAX_CHESTS;
     for(int i=0;i<MAX_CHESTS;i++) {
         Chest *c=&e->chests[i];
-        c->x=i<2?(i?WORLD_W-12:11):8+(i-2)*15+rng_range(&e->rng,0,5);
+        c->x=i<2?(i?WORLD_W-12:11):8+(i-2)*15*WORLD_W/128+rng_range(&e->rng,0,5);
         c->y=i<2?e->surface[c->x]-1:rng_range(&e->rng,45,89);
         if(i>=2) {
             for(int y=c->y-3;y<=c->y;y++) for(int x=c->x-3;x<=c->x+3;x++) e->tiles[y][x]=TILE_AIR;

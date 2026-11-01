@@ -5,7 +5,9 @@
 #include <stdint.h>
 #include "tiles.h"
 #define ENV_VERSION 7
-#define WORLD_W 128
+#ifndef WORLD_W
+#define WORLD_W 128   /* v8 knob: wider world (depth bands unchanged); vein, cave and room counts scale with width */
+#endif
 #define WORLD_H 96
 /* v8 preview knobs (compile-time; defaults reproduce v7 exactly). See
    variants/v8/README.md. ORE_PCT: iron and gold supply as a percentage of

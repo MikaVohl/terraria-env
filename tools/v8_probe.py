@@ -1,6 +1,6 @@
 import hashlib, numpy as np, sys, json
 from terraria_lite import TerrariaLite, SPEC
-h=hashlib.sha256(); W,H=128,96
+import os; h=hashlib.sha256(); W,H=int(os.environ.get("PROBE_WORLD_W","128")),96
 counts={'iron ore':[], 'gold ore':[], 'log':[], 'wood':[]}
 e=TerrariaLite()
 for s in list(range(256))+list(range(23000001,23000129)):
