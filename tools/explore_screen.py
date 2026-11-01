@@ -121,6 +121,16 @@ ARMS["max2_fn_unimix_h1024lr1e4"] = _best + ["--hidden", "1024", "--lr", "1e-4"]
 ARMS["max2_pot0"] = ARMS["pot_e1024_max2"] + ["--potential", "0"]
 ARMS["max2_pot0_nov01_unimix"] = ARMS["max2_pot0"] + ["--novelty", ".01", "--unimix", ".01"]
 ARMS["max2_pot0_nov01_h1024lr1e4"] = ARMS["max2_pot0"] + ["--novelty", ".01", "--hidden", "1024", "--lr", "1e-4"]
+# Discount horizon (is the pickaxe too far away for gamma .999?) and the
+# longer-budget larger-world / larger-view arms (6,000-step episodes).
+for _g in ("9995", "9998"):
+    ARMS[f"max2_fn_unimix_g{_g}"] = _best + ["--gamma", f".{_g}"]
+    ARMS[f"max2_pot0_nov01_unimix_g{_g}"] = ARMS["max2_pot0_nov01_unimix"] + ["--gamma", f".{_g}"]
+ARMS["max2_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix"] + ["--episode-steps", "6000"]
+ARMS["max2_fn_unimix_ep6000"] = _best + ["--episode-steps", "6000"]
+ARMS["max2_pot0_nov01_unimix_h512"] = ARMS["max2_pot0_nov01_unimix"] + ["--hidden", "512"]
+ARMS["mem_lstm256_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix_ep6000"] + [
+    "--memory", "lstm", "--memory-size", "256"]
 # Feed-forward model-size scaling (SCALE_FF_2026_10.md) on the max2 path:
 # ff_t{hidden}c{cell_width}d{depth} for targets, ff_m{hidden}d{depth} for the
 # flat MLP; suffix _lr1e4 lowers the LR from the default 3e-4.

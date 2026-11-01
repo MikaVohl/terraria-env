@@ -1,0 +1,47 @@
+[
+ {
+  "name": "w256_gen_ep6000_4B-2001",
+  "lib": "build-v8-w256",
+  "arm": "max2_pot0_nov01_unimix_ep6000",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 6000
+ },
+ {
+  "name": "w256_fn_ep6000_4B-2001",
+  "lib": "build-v8-w256",
+  "arm": "max2_fn_unimix_ep6000",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 6000
+ },
+ {
+  "name": "view21_gen_4B-2001",
+  "lib": "build-v8-view21",
+  "arm": "max2_pot0_nov01_unimix",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "view21_gen_h512_4B-2001",
+  "lib": "build-v8-view21",
+  "arm": "max2_pot0_nov01_unimix_h512",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "w256_lstm_gen_ep6000-2001",
+  "lib": "build-v8-w256",
+  "arm": "mem_lstm256_pot0_nov01_unimix_ep6000",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ }
+]
