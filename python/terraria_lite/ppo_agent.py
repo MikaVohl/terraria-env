@@ -245,9 +245,9 @@ class VecTerraria:
         # Optional training-only start-state hook: restart(lane, env) returns
         # (obs, info) after restoring some state, or None for a fresh world.
         # `restored[i]` says whether lane i's current episode came from it.
+        # With native autoreset the C side has already reset the lane to its
+        # fresh seed (keeping the seed sequence); a restart then overwrites it.
         self.restart = restart
-        if restart is not None and (native_autoreset or compact):
-            raise ValueError("start-state restarts need the Python reset loop with flat observations")
         self.native_autoreset = native_autoreset
         self.restored = np.zeros(n, dtype=bool)
         from terraria_lite.batch import NativeBatch
@@ -258,14 +258,18 @@ class VecTerraria:
         self._next_seed += 1
         return s
 
-    def _reset_lane(self, i: int, e) -> None:
-        flat = e.reset(seed=self._fresh_seed())[0]
+    def _write_lane(self, i: int, e) -> None:
+        """Copy env e's current observation into row i (after reset/load_state)."""
         if self.compact:
             from terraria_lite.compact import fields
             tile, light, status = fields(self.obs[i])
             tile[:], light[:], status[:] = e._tile, e._light, e._status
         else:
-            self.obs[i] = flat
+            self.obs[i] = e._obs
+
+    def _reset_lane(self, i: int, e) -> None:
+        e.reset(seed=self._fresh_seed())
+        self._write_lane(i, e)
 
     def reset(self) -> tuple[np.ndarray, np.ndarray]:
         for i, e in enumerate(self.envs):
@@ -300,7 +304,7 @@ class VecTerraria:
             started = self.restart(int(i), e) if self.restart is not None else None
             self.restored[i] = started is not None
             if started is not None:
-                self.obs[i] = started[0]
+                self._write_lane(int(i), e)
             else:
                 self._reset_lane(int(i), e)
             self.mask[i] = e.action_mask()
@@ -319,7 +323,11 @@ class VecTerraria:
             finished.append((i, {"steps": steps, "episode_return": float(self.native.info_return[i]),
                                  "health": health, "depth": depth, "achievements": bin(ach).count("1"),
                                  "achievement_mask": ach, "restored_start": bool(self.restored[i])}))
-            self.restored[i] = False
+            started = self.restart(i, self.envs[i]) if self.restart is not None else None
+            self.restored[i] = started is not None
+            if started is not None:
+                self._write_lane(i, self.envs[i])
+                self.mask[i] = self.envs[i].action_mask()
             self.envs[i]._seed = seed0 + k
         self._next_seed = seed0 + len(lanes)
         return self.obs, self.mask, self.native.rewards.copy(), ends == 1, ends == 2, final, finished
@@ -602,7 +610,7 @@ def train(cfg: Config, checkpoint_callback=None):
     if cfg.compact_obs:
         unsupported = {"memory_features": cfg.memory_features, "sil_minibatches": cfg.sil_minibatches,
                        "curiosity_coef": cfg.curiosity_coef, "progress_coef": cfg.progress_coef,
-                       "archive_start_prob": cfg.archive_start_prob, "aux_coef": cfg.aux_coef,
+                       "aux_coef": cfg.aux_coef,
                        "achievement_reward=difficulty": cfg.achievement_reward != "equal"}
         used = [k for k, v in unsupported.items() if v]
         if used:

@@ -131,6 +131,10 @@ ARMS["max2_fn_unimix_ep6000"] = _best + ["--episode-steps", "6000"]
 ARMS["max2_pot0_nov01_unimix_h512"] = ARMS["max2_pot0_nov01_unimix"] + ["--hidden", "512"]
 ARMS["mem_lstm256_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix_ep6000"] + [
     "--memory", "lstm", "--memory-size", "256"]
+# Go-Explore restarts from the policy's own archived states (archive.py), now
+# on the fast path: 20% of training episodes start from an archived cell.
+for _k in ("max2_pot0_nov01_unimix", "max2_frontier_nov01_unimix", "max2_pot0_nov01_unimix_ep6000"):
+    ARMS[_k + "_ge20"] = ARMS[_k] + ["--archive-start-prob", ".2"]
 # Feed-forward model-size scaling (SCALE_FF_2026_10.md) on the max2 path:
 # ff_t{hidden}c{cell_width}d{depth} for targets, ff_m{hidden}d{depth} for the
 # flat MLP; suffix _lr1e4 lowers the LR from the default 3e-4.

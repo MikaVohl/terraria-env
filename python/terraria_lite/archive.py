@@ -57,20 +57,20 @@ from __future__ import annotations
 import numpy as np
 
 from terraria_lite import SPEC
+from terraria_lite.cells import _status
 
 # status[OBS_TIME] = steps / max_steps (include/env.h); not exported in SPEC.
 _OBS_TIME = 7
-_TIME = SPEC.cells * SPEC.tile_kinds + SPEC.cells + _OBS_TIME
-_ACH0 = SPEC.cells * SPEC.tile_kinds + SPEC.cells + SPEC.status_ach0
 
 
 def from_obs_time(obs: np.ndarray) -> np.ndarray:
-    """Fraction of the episode horizon already spent, read from the observation."""
-    return obs[..., _TIME]
+    """Fraction of the episode horizon already spent, read from the observation
+    (flat float32 or compact uint8 rows; the status values are identical)."""
+    return _status(obs)[..., _OBS_TIME]
 
 
 def _achievement_counts(obs: np.ndarray) -> np.ndarray:
-    return (obs[..., _ACH0:_ACH0 + SPEC.n_achievements] > 0.5).sum(-1)
+    return (_status(obs)[..., SPEC.status_ach0:SPEC.status_ach0 + SPEC.n_achievements] > 0.5).sum(-1)
 
 
 class StartArchive:

@@ -1,0 +1,74 @@
+[
+ {
+  "name": "ge_gen_o3t2-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix_ge20",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "ge_best_o3t2inv-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix_ge20",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "ge_gen_w256_ep6000_4B-2001",
+  "lib": "build-v8-w256",
+  "arm": "max2_pot0_nov01_unimix_ep6000_ge20",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 6000
+ },
+ {
+  "name": "ge_gen_view21_4B-2001",
+  "lib": "build-v8-view21",
+  "arm": "max2_pot0_nov01_unimix_ge20",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "ge_gen_o3t2-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix_ge20",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "ge_best_o3t2inv-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_frontier_nov01_unimix_ge20",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "ge_gen_w256_ep6000_4B-2002",
+  "lib": "build-v8-w256",
+  "arm": "max2_pot0_nov01_unimix_ep6000_ge20",
+  "seed": 2002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 6000
+ },
+ {
+  "name": "ge_gen_view21_4B-2002",
+  "lib": "build-v8-view21",
+  "arm": "max2_pot0_nov01_unimix_ge20",
+  "seed": 2002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ }
+]
