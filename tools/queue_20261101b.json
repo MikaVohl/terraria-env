@@ -1,0 +1,128 @@
+[
+ {
+  "name": "best_p10-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_p10",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "best_p10-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_p10",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "best_fsurf-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fsn_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "best_fsurf-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fsn_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_pot0-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_pot0-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_pot0_nov_unimix-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_pot0_nov_unimix-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "best_h1024-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_h1024lr1e4",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "best_h1024-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_h1024lr1e4",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_pot0_nov_h1024-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_h1024lr1e4",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "o3t2_pot0_nov_h1024-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_h1024lr1e4",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "w256_ep6000-2001",
+  "lib": "build-v8-w256",
+  "arm": "max2_ep6000",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ },
+ {
+  "name": "w256o3t2_ep6000-2001",
+  "lib": "build-v8-w256-o3t2",
+  "arm": "max2_ep6000",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 134217728,
+  "max_steps": 6000
+ }
+]

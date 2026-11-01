@@ -112,6 +112,15 @@ ARMS["max2_fn_ep6000"] = ARMS["max2_frontier_nov01"] + ["--episode-steps", "6000
 for _base in ("pot_e1024_max2", "max2_frontier_nov01", "max2_ep6000", "max2_fn_ep6000"):
     ARMS[_base.replace("pot_e1024_max2", "max2") + "_unimix"] = ARMS[_base] + ["--unimix", ".01"]
 ARMS["max2_fn_ep6000_unimix_h512"] = ARMS["max2_fn_ep6000_unimix"] + ["--hidden", "512"]
+# Next-step arms on the v8 supply variants (variants/v8/README.md).
+_best = ARMS["max2_frontier_nov01_unimix"]
+ARMS["max2_fn_unimix_p10"] = _best + ["--potential", "10"]
+ARMS["max2_fsn_unimix"] = _best + ["--potential-mode", "frontier_surface"]
+ARMS["max2_fn_unimix_h1024lr1e4"] = _best + ["--hidden", "1024", "--lr", "1e-4"]
+# Bitter-lesson controls: no recipe-potential shaping at all.
+ARMS["max2_pot0"] = ARMS["pot_e1024_max2"] + ["--potential", "0"]
+ARMS["max2_pot0_nov01_unimix"] = ARMS["max2_pot0"] + ["--novelty", ".01", "--unimix", ".01"]
+ARMS["max2_pot0_nov01_h1024lr1e4"] = ARMS["max2_pot0"] + ["--novelty", ".01", "--hidden", "1024", "--lr", "1e-4"]
 # Feed-forward model-size scaling (SCALE_FF_2026_10.md) on the max2 path:
 # ff_t{hidden}c{cell_width}d{depth} for targets, ff_m{hidden}d{depth} for the
 # flat MLP; suffix _lr1e4 lowers the LR from the default 3e-4.
