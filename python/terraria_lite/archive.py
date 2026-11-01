@@ -74,6 +74,7 @@ def _achievement_counts(obs: np.ndarray) -> np.ndarray:
 
 
 class StartArchive:
+    DEAD_CAP = 4_000_000   # remembered evicted/rejected keys (~250 MB of Python ints at most)
     def __init__(self, capacity: int = 4096, start_prob: float = 0.25, seed: int = 0,
                  max_time_frac: float = 0.8, progress_base: float = 2.0):
         if capacity < 1:
@@ -93,27 +94,24 @@ class StartArchive:
         self._visits = np.zeros(capacity, np.int64)
         self._chosen = np.zeros(capacity, np.int64)
         self._blob: list[bytes | None] = [None] * capacity
-        # Sorted lookup index over live and dead keys; slot -1 marks dead.
-        self._ix_key = np.zeros(0, np.int64)
-        self._ix_slot = np.zeros(0, np.int64)
-        self._dead: list[int] = []
+        # Lookup index: live key -> slot, plus every evicted or rejected key
+        # (never re-admitted). Dict/set updates are O(1) per change; the old
+        # sorted index was rebuilt from all dead keys on every new cell, which
+        # grew without bound and stalled 1024-env runs.
+        self._slot_of: dict[int, int] = {}
+        self._dead: set[int] = set()
         self.snapshots = self.restarts = self.evicted = self.rejected = 0
 
     # -- bookkeeping ------------------------------------------------------
 
-    def _reindex(self) -> None:
-        keys = np.concatenate((self._key[:self.n], np.asarray(self._dead, np.int64)))
-        slots = np.concatenate((np.arange(self.n), np.full(len(self._dead), -1)))
-        order = np.argsort(keys, kind="stable")
-        self._ix_key, self._ix_slot = keys[order], slots[order]
-
     def _lookup(self, keys: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """(known, slot): known covers dead keys too; slot is -1 for dead."""
-        if not len(self._ix_key):
-            return np.zeros(len(keys), bool), np.full(len(keys), -1)
-        pos = np.minimum(np.searchsorted(self._ix_key, keys), len(self._ix_key) - 1)
-        known = self._ix_key[pos] == keys
-        return known, np.where(known, self._ix_slot[pos], -1)
+        ks = keys.tolist()
+        slot = np.fromiter((self._slot_of.get(k, -1) for k in ks), np.int64, len(ks))
+        known = slot >= 0
+        if self._dead:
+            known |= np.fromiter((k in self._dead for k in ks), bool, len(ks))
+        return known, slot
 
     def _victims(self) -> list[tuple[int, int]]:
         """(slot, key) of non-frontier cells, least promising first (fewest
@@ -126,15 +124,20 @@ class StartArchive:
 
     def _remove(self, slot: int) -> None:
         last = self.n - 1
-        self._dead.append(int(self._key[slot]))
+        key, moved = int(self._key[slot]), int(self._key[last])
+        self._dead.add(key)
         for a in (self._key, self._time, self._ach, self._visits, self._chosen):
             a[slot] = a[last]
         self._blob[slot], self._blob[last] = self._blob[last], None
+        del self._slot_of[key]
+        if slot != last:
+            self._slot_of[moved] = slot
         self.n = last
         self.evicted += 1
 
     def _store(self, slot: int, env, key: int, t: float, ach: int) -> None:
         self._key[slot], self._time[slot], self._ach[slot] = key, t, ach
+        self._slot_of[key] = slot
         self._blob[slot] = env.save_state()
         self.ach_max = max(self.ach_max, ach)   # monotone: frontier is never evicted
         self.snapshots += 1
@@ -182,7 +185,9 @@ class StartArchive:
                         v = s
                         break
                 if v is None or self._ach[v] > a:
-                    self._dead.append(int(keys[i]))
+                    self._dead.add(int(keys[i]))
+                    if len(self._dead) > self.DEAD_CAP:
+                        self._dead.clear()    # bound memory; at worst a rejected key is reconsidered later
                     self.rejected += 1
                     if v is not None:
                         victims.append((v, int(self._key[v])))
@@ -192,7 +197,6 @@ class StartArchive:
             self.n += 1
             self._visits[s], self._chosen[s] = 1, 0
             self._store(s, envs[i], int(keys[i]), float(t[i]), a)
-        self._reindex()
 
     def _weights(self) -> np.ndarray:
         n = self.n
