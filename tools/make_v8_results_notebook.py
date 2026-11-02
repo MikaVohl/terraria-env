@@ -19,6 +19,11 @@ All eg15 PPO runs on the v8 preview (frozen v7 core plus environment knobs, `var
 | long runs | Nov 1 10:00 EST | larger world (default ore) and view 21x15 at 4B, larger-world LSTM |
 | Go-Explore | Nov 1 13:35 EST | archive restarts from the policy's own states |
 | final 5 seeds | Nov 1 15:10 EST | seeds 2003-2005 for the final configurations (5 seeds each) |
+| gamma .9998 at 4B | Nov 1 17:25 EST | best shaped and generic arms at 4B (first iron pickaxe: best shaped, seed 2001) |
+| gamma .9999 | Nov 1 ~19:00 EST | generic arm at gamma .9999, 2B |
+
+The final configurations were also evaluated once on the reserved test worlds (25,000,001-25,000,128):
+`test.json` next to each run's `curve.json` (Part 3).
 
 Each run directory holds `curve.json` (validation at every checkpoint), `summary.json`, `protocol.json`
 (full training config) and `diag.json` (stockpiling diagnostic on the final checkpoint). All evaluations
@@ -54,6 +59,8 @@ STUDIES = {  # label -> directory under DATA; add new studies here
     "long runs": "eg15-long-v8-20261101c",
     "Go-Explore": "eg15-goexplore-v8-20261101e",
     "final 5 seeds": "eg15-final5-v8-20261101f",
+    "gamma .9998 at 4B": "eg15-4b-v8-20261101g",
+    "gamma .9999": "eg15-g9999-v8-20261101g",
 }
 # Environment knobs per library build (variants/v8/README.md). Defaults reproduce v7.
 LIBS = {
@@ -140,6 +147,9 @@ for study, sub in STUDIES.items():
                    crafter_score=crafter_score(ev["hits"], ev["episodes"]),
                    deaths=ev["death_rate"], idle_steps=ev["mean_steps_after_last_achievement"],
                    **{h: ev["hits"].get(h, 0) for h in HARD})
+        if (run / "test.json").exists():
+            test = json.loads((run / "test.json").read_text())
+            row.update(test_score=test["mean_achievements"], test_crafter_score=crafter_score(test["hits"], test["episodes"]))
         if (run / "diag.json").exists():
             diag = json.loads((run / "diag.json").read_text())
             peak, acts = diag["inventory_peak"], diag["actions"]
@@ -398,10 +408,14 @@ for name, mask in FINAL.items():
         continue
     lo, hi = boot_ci(g.score)
     clo, chi = boot_ci(g.crafter_score)
+    t = g.test_score.dropna() if "test_score" in g else pd.Series(dtype=float)
+    tlo, thi = boot_ci(t) if len(t) else (np.nan, np.nan)
     table.append(dict(config=name, seeds=len(g), scores=", ".join(f"{s:.2f}" for s in sorted(g.score)),
                       mean=g.score.mean(), IQM=iqm(g.score), ci_low=lo, ci_high=hi,
                       crafter_score=g.crafter_score.mean(), crafter_ci=f"[{clo:.1f}, {chi:.1f}]",
-                      surface_runs_over_100=int((g["return to surface"] > 100).sum())))
+                      surface_runs_over_100=int((g["return to surface"] > 100).sum()),
+                      test_seeds=len(t), test_IQM=iqm(t) if len(t) else np.nan, test_ci_low=tlo, test_ci_high=thi,
+                      test_crafter=g.test_crafter_score.mean() if "test_crafter_score" in g else np.nan))
 final_table = pd.DataFrame(table).set_index("config").round(2)
 final_table
 """),
