@@ -1,0 +1,83 @@
+[
+ {
+  "name": "best_g9998_6B-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2001,
+  "steps": 6442450944,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9998_4B-2003",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2003,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9998_4B-2004",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2004,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "gen_g9999_4B-2001",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix_g9999",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "gen_g9999_4B-2002",
+  "lib": "build-v8-ore300-tree200",
+  "arm": "max2_pot0_nov01_unimix_g9999",
+  "seed": 2002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9999_4B-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9999",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9999_4B-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9999",
+  "seed": 2002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fsn_g9998_4B-2001",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fsn_unimix_g9998",
+  "seed": 2001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fsn_g9998_4B-2002",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fsn_unimix_g9998",
+  "seed": 2002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ }
+]

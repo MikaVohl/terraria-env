@@ -125,6 +125,7 @@ ARMS["max2_pot0_nov01_h1024lr1e4"] = ARMS["max2_pot0"] + ["--novelty", ".01", "-
 # longer-budget larger-world / larger-view arms (6,000-step episodes).
 for _g in ("9995", "9998", "9999"):
     ARMS[f"max2_fn_unimix_g{_g}"] = _best + ["--gamma", f".{_g}"]
+    ARMS[f"max2_fsn_unimix_g{_g}"] = ARMS["max2_fsn_unimix"] + ["--gamma", f".{_g}"]
     ARMS[f"max2_pot0_nov01_unimix_g{_g}"] = ARMS["max2_pot0_nov01_unimix"] + ["--gamma", f".{_g}"]
 ARMS["max2_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix"] + ["--episode-steps", "6000"]
 ARMS["max2_fn_unimix_ep6000"] = _best + ["--episode-steps", "6000"]
