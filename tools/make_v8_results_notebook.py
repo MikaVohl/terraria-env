@@ -21,6 +21,7 @@ All eg15 PPO runs on the v8 preview (frozen v7 core plus environment knobs, `var
 | final 5 seeds | Nov 1 15:10 EST | seeds 2003-2005 for the final configurations (5 seeds each) |
 | gamma .9998 at 4B | Nov 1 17:25 EST | best shaped and generic arms at 4B (first iron pickaxe: best shaped, seed 2001) |
 | gamma .9999 | Nov 1 ~19:00 EST | generic arm at gamma .9999, 2B |
+| pickaxe follow-ups | Nov 3 17:43 EST | best shaped gamma .9998 at 6B and two more 4B seeds; both arms at gamma .9999, 4B; frontier-surface at gamma .9998, 4B |
 
 The final configurations were also evaluated once on the reserved test worlds (25,000,001-25,000,128):
 `test.json` next to each run's `curve.json` (Part 3).
@@ -61,6 +62,7 @@ STUDIES = {  # label -> directory under DATA; add new studies here
     "final 5 seeds": "eg15-final5-v8-20261101f",
     "gamma .9998 at 4B": "eg15-4b-v8-20261101g",
     "gamma .9999": "eg15-g9999-v8-20261101g",
+    "pickaxe follow-ups": "eg15-pickaxe-v8-20261103",
 }
 # Environment knobs per library build (variants/v8/README.md). Defaults reproduce v7.
 LIBS = {
