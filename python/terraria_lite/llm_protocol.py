@@ -58,7 +58,7 @@ class Session:
     def packet(self):
         n = SPEC.cells * SPEC.tile_kinds
         status = self.obs[n+SPEC.cells:]
-        entities = status[SPEC.status_entity0:].reshape(SPEC.cells, 4)
+        entities = status[SPEC.status_entity0:].reshape(SPEC.cells, SPEC.entity_channels)
         # Native inventory encoding is sqrt(count/999), NOT count/999.
         inventory = {name: int(round(float(status[SPEC.status_inv0+i])**2 * SPEC.inventory_clip))
                      for i, name in enumerate(SPEC.item_names)}
@@ -83,7 +83,10 @@ class Session:
                                   "selected_placeable_one_hot": [17, SPEC.status_inv0],
                                   "selected_placeable_order": ["stone", "dirt", "wood", "torch", "campfire", "workbench", "furnace", "anvil", "platform", "rope"],
                                   "inventory_offset": SPEC.status_inv0, "achievement_offset": SPEC.status_ach0,
-                                  "entity_features": ["blue_slime_presence", "cave_bat_presence", "health", "movement_phase"]},
+                                  "entity_features": ["blue_slime_presence", "cave_bat_presence", "health", "movement_phase"]
+                                  if SPEC.entity_channels == 4 else
+                                  ["blue_slime_presence", "cave_bat_presence", "zombie_presence", "demon_eye_presence",
+                                   "skeleton_presence", "eye_of_cthulhu_presence", "health", "movement_phase"]},
                 "tool_rules": "Independent iron/gold pick ownership; duplicates consume ingredients; strongest mining tier used automatically" if SPEC.version >= 6 else "Legacy tier ownership; crafting lower tiers after higher tiers is blocked",
                 "action_budget": self.max_steps,
                 "clock": "One tick per primitive action, no ticks during model thinking. No reset or undo.",

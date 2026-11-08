@@ -145,7 +145,7 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
         for i, name in enumerate(SPEC.achievement_names):
             if (bits >> i) & 1:
                 hits[name] += 1
-
+    from terraria_lite.scoring import score_masks
     return {
         "episodes": len(records),
         "mean_achievements": float(achievements.mean()),
@@ -162,6 +162,8 @@ def evaluate(agent: ActorCritic, seeds: list[int], *, num_envs: int = 64,
             for name in SPEC.achievement_names if (times:=[r["first_achievement_steps"][name] for r in records if name in r["first_achievement_steps"]])},
         "hits": {name: hits[name] for name in SPEC.achievement_names if hits[name]},
         "records": records,
+        # v9 only (empty for libraries without achievement tiers).
+        **score_masks(masks),
     }
 
 
@@ -176,6 +178,9 @@ def print_report(result: dict, label: str, greedy: bool) -> None:
     print(f"  return        {result['mean_return']:+.3f}")
     print(f"  episode       {result['mean_length']:.0f} steps")
     print(f"  died          {100 * result['death_rate']:.1f}%")
+    if "weighted_score" in result:
+        print(f"  score         {result['weighted_score']:.2f}% of {result['max_weighted_score']} "
+              f"(tiers {' '.join(f'{t}:{100*r:.1f}%' for t, r in result['tier_rates'].items())})")
     print("  achievement hit rate:")
     for name, count in result["hits"].items():
         print(f"    {name:<18} {100 * count / n:6.2f}% ({count}/{n})")

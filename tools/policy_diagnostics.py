@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from terraria_lite import SPEC, TerrariaLite
+from terraria_lite.scoring import score_masks
 from terraria_lite.batch import NativeBatch
 from terraria_lite.ppo_eval import load_agent
 
@@ -23,6 +24,7 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
             mask=np.stack([e.action_mask() for e in envs]); active=np.ones(len(envs),bool)
             peak=np.zeros((len(envs),SPEC.n_items),np.int32)
             opportunities=np.zeros((len(envs),SPEC.n_actions),np.int32)
+            layer_steps=np.zeros((len(envs),3),np.int64)   # v9: surface/underground/caverns
             native=NativeBatch(envs)
             recurrent=hasattr(agent,"initial_state")
             if recurrent:
@@ -42,13 +44,22 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
                 legal+=mask[active].sum(0); probability+=dist.probs.numpy()[active].sum(0)
                 totals+=np.bincount(actions[active],minlength=SPEC.n_actions)
                 opportunities[active]+=mask[active]
+                if SPEC.status_layer0 is not None:
+                    s0=SPEC.cells*(SPEC.tile_kinds+1)+SPEC.status_layer0
+                    layer_steps[active]+=(obs[active,s0:s0+3]>.5)
                 _,te,tr=native.step(actions,obs,mask)
                 # Include pickups/crafts on an episode's final action too.
                 inv=np.rint(obs[:,inv0:inv0+SPEC.n_items]**2*SPEC.inventory_clip).astype(np.int32)
                 peak[active]=np.maximum(peak[active],inv[active])
                 for i in np.flatnonzero(active & (te|tr)):
-                    records.append({"seed":cohort[i],"info":envs[i]._info(),
-                                    "inventory_peak":peak[i].tolist(),"legal_steps":opportunities[i].tolist()})
+                    rec={"seed":cohort[i],"info":envs[i]._info(),
+                         "inventory_peak":peak[i].tolist(),"legal_steps":opportunities[i].tolist()}
+                    if SPEC.status_night is not None:
+                        s=SPEC.cells*(SPEC.tile_kinds+1)
+                        rec.update(layer_steps=layer_steps[i].tolist(),
+                                   died_at_night=bool(te[i] and obs[i,s+SPEC.status_night]>.5),
+                                   boss_present_at_end=bool(obs[i,s+SPEC.status_boss]>.5))
+                    records.append(rec)
                     active[i]=False
                 if not active.any(): break
             maxes.extend(peak)
@@ -60,7 +71,13 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
             "actions":{name:{"legal_steps":int(legal[i]),"chosen":int(totals[i]),
                   "mean_probability_when_legal":float(probability[i]/max(1,legal[i])),
                   "episodes_with_opportunity":sum(r["legal_steps"][i]>0 for r in records)}
-                       for i,name in enumerate(SPEC.action_names)},"records":records}
+                       for i,name in enumerate(SPEC.action_names)},"records":records,
+            # v9: tiered score, night deaths and time per layer (absent before v9)
+            **({"score":score_masks([r["info"]["achievement_mask"] for r in records]),
+                "deaths_at_night":sum(r["died_at_night"] for r in records),
+                "layer_step_fraction":(lambda t:{k:float(v) for k,v in zip(("surface","underground","caverns"),t/max(1,t.sum()))})(
+                    np.sum([r["layer_steps"] for r in records],0))}
+               if SPEC.status_night is not None else {})}
 
 
 def main():
@@ -77,7 +94,8 @@ def main():
     result["checkpoint_sha256"]=hashlib.sha256(a.checkpoint.read_bytes()).hexdigest()
     result["diagnostic_source_sha256"]=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     a.out.write_text(json.dumps(result,indent=2)+"\n")
-    print(json.dumps({"wood":result["inventory_peak"]["wood"],"bench":result["actions"]["craft workbench"]}))
+    print(json.dumps({"wood":result["inventory_peak"]["wood"],"bench":result["actions"]["craft workbench"],
+                      **({"weighted_score":result["score"].get("weighted_score")} if "score" in result else {})}))
 
 
 if __name__=="__main__": main()

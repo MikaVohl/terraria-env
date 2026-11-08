@@ -96,6 +96,17 @@ class RefPotential:
             climb = np.where(deep, np.clip((DEEP_Y - y) / (DEEP_Y - SURFACE_BASE), 0.0, 1.0), 0.0)
             prog = np.concatenate((prog, climb[:, None]), 1)
             open_ = np.concatenate((open_, ((ach >> f._back) & 1 == 0)[:, None]), 1)
+        if f.boss:
+            # v9 boss-chain goals (potential.py docstring), straight from status.
+            from terraria_lite import SPEC
+            from terraria_lite.cells import _status
+            s = _status(np.atleast_2d(obs)).astype(np.float64)
+            night, present, hp = s[:, SPEC.status_night], s[:, SPEC.status_boss], s[:, SPEC.status_boss + 1]
+            summoned = (ach >> f._summon) & 1 == 1
+            summon = np.minimum(inv[:, f._eye], 1.0) * (0.5 + 0.5 * night)
+            defeat = np.where(summoned, present * (0.25 + 0.75 * (1.0 - hp)), 0.0)
+            prog = np.concatenate((prog, summon[:, None], defeat[:, None]), 1)
+            open_ = np.concatenate((open_, (~summoned)[:, None], ((ach >> f._defeat) & 1 == 0)[:, None]), 1)
         n = open_.sum(-1)
         return f.coef * np.where(n > 0, (prog * open_).sum(-1) / np.maximum(n, 1), 0.0)
 

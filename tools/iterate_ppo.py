@@ -191,7 +191,10 @@ def main():
         curve.append(row)
         (a.out / "curve.json").write_text(json.dumps(curve, indent=2)+"\n")
         hits = result["hits"]
-        print(f"{a.out.name}: {steps:,} {result['mean_achievements']:.3f}/32 "
+        score = (f" score={result['weighted_score']:.2f}% t1-4="
+                 + "/".join(f"{100*r:.0f}" for r in result["tier_rates"].values())
+                 if "weighted_score" in result else "")
+        print(f"{a.out.name}: {steps:,} {result['mean_achievements']:.3f}/{SPEC.n_achievements}{score} "
               f"death={result['death_rate']:.1%} bench={hits.get('craft workbench',0)} "
               f"stone={hits.get('collect stone',0)} furnace={hits.get('craft furnace',0)} "
               f"peak-y={result['mean_peak_depth']:.1f} ({row['elapsed_seconds']:.1f}s)", flush=True)
@@ -241,6 +244,10 @@ def main():
     if a.device == "mps":
         torch.mps.synchronize()
     summary["wall_seconds_including_validation"] = time.perf_counter()-start
+    if curve and "weighted_score" in curve[-1]["evaluation"]:
+        # v9: the final validation's tiered score next to the training telemetry.
+        summary["final_validation"] = {"steps": curve[-1]["steps"],
+                                       **{k: v for k, v in curve[-1]["evaluation"].items() if k != "records"}}
     (a.out / "summary.json").write_text(json.dumps(summary, indent=2)+"\n")
     print(f"Completed {a.out.name}: {summary['wall_seconds_including_validation']:.1f}s", flush=True)
 

@@ -17,7 +17,9 @@ from terraria_lite.compact import fields, is_compact
 
 _TILES_END = SPEC.cells * SPEC.tile_kinds
 _STATUS0 = _TILES_END + SPEC.cells
-STATION_TILES = tuple(SPEC.tile_names.index(n) for n in ("workbench", "furnace", "anvil"))
+# v9 adds the Demon Altar (Suspicious Looking Eye station) when the tile exists.
+STATION_TILES = tuple(SPEC.tile_names.index(n) for n in ("workbench", "furnace", "anvil", "demon altar")
+                      if n in SPEC.tile_names)
 # Generic count bins: 0 | 1-3 | 4-9 | 10-19 | 20+.
 BIN_EDGES = np.array([1, 4, 10, 20])
 N_BINS = len(BIN_EDGES) + 1
@@ -44,7 +46,7 @@ def achievements(obs: np.ndarray) -> np.ndarray:
 
 
 def stations_visible(obs: np.ndarray) -> np.ndarray:
-    """(N, 3) bool: workbench / furnace / anvil tile anywhere in the view."""
+    """(N, len(STATION_TILES)) bool: workbench / furnace / anvil (/ demon altar) tile in the view."""
     if is_compact(obs):
         tiles = obs[..., :SPEC.cells]
         return np.stack([(tiles == t).any(-1) for t in STATION_TILES], -1)
@@ -96,7 +98,7 @@ DECODE_WORKERS = 8
 
 def decode(obs: np.ndarray, keys: bool = False) -> dict[str, np.ndarray]:
     """Every per-row feature the shaping aids read, in one pass: "inventory"
-    (N, n_items) int64, "stations" (N, 3) bool, "achievements" (N,) int64,
+    (N, n_items) int64, "stations" (N, len(STATION_TILES)) bool, "achievements" (N,) int64,
     "depth_rows" (N,) int64 and, with keys=True, "keys" (cell_keys).
 
     Compact rows are decoded by the library's tl_cells_decode, which equals the

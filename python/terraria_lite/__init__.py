@@ -67,6 +67,22 @@ for _name in ("tl_view_w", "tl_view_h", "tl_view_cells", "tl_tile_kinds",
 for _name in ("tl_reach_dx","tl_reach_dy"):
     getattr(_lib,_name).restype=ctypes.c_int
     getattr(_lib,_name).argtypes=[ctypes.c_int]
+# Optional queries: newer libraries export them, older builds (v7/v8 built
+# before they existed) do not, so each is looked up with a fallback.
+def _optional_int(name, *args, default=None):
+    fn = getattr(_lib, name, None)
+    if fn is None:
+        return default
+    fn.restype = ctypes.c_int
+    fn.argtypes = [ctypes.c_int] * len(args)
+    return fn(*args)
+
+
+_ACH64 = getattr(_lib, "tl_achievements64", None)
+if _ACH64 is not None:
+    _ACH64.restype = ctypes.c_ulonglong
+    _ACH64.argtypes = [ctypes.c_void_p]
+
 
 _lib.tl_action_name.restype = ctypes.c_char_p
 _lib.tl_action_name.argtypes = [ctypes.c_int]
@@ -154,6 +170,31 @@ class _Spec:
                             for t in range(self.tile_kinds - 1)]
         self.tile_names = [lib.tl_tile_name(t).decode()
                            for t in range(self.tile_kinds - 1)]
+        # Per-cell entity features after status_entity0 (v7/v8: 4).
+        self.entity_channels = _optional_int("tl_entity_channels", default=4)
+        # Episode-info row width of the native autoreset call.
+        self.info_width = _optional_int("tl_info_width", default=4)
+        self.world_w = _optional_int("tl_world_w", default=128)
+        self.surface_base = _optional_int("tl_surface_base", default=30)
+        self.deep_row = _optional_int("tl_deep_row", default=70)
+        # v9 scoring: tier (1-4) and weight (1/3/5/8) per achievement; None
+        # for libraries without tiers.
+        if getattr(lib, "tl_ach_tier", None) is not None:
+            self.achievement_tiers = [_optional_int("tl_ach_tier", i) for i in range(self.n_achievements)]
+            self.achievement_weights = [_optional_int("tl_ach_weight", i) for i in range(self.n_achievements)]
+            self.max_weighted_score = sum(self.achievement_weights)
+        else:
+            self.achievement_tiers = self.achievement_weights = None
+            self.max_weighted_score = None
+        # v9 status indices (None before v9).
+        self.status_day_phase = _optional_int("tl_status_day_phase")
+        self.status_night = _optional_int("tl_status_night")
+        self.status_layer0 = _optional_int("tl_status_layer0")
+        self.status_boss = _optional_int("tl_status_boss")
+        self.status_map0 = _optional_int("tl_status_map0")
+        self.map_w = _optional_int("tl_map_w", default=0)
+        self.map_h = _optional_int("tl_map_h", default=0)
+        self.cavern_row = _optional_int("tl_cavern_row")
 
     def __repr__(self):
         return (f"<terraria-lite v{self.version} {self.view_w}x{self.view_h} window, "
@@ -230,7 +271,7 @@ class TerrariaLite:
         return self._obs
 
     def _info(self) -> dict:
-        mask = int(_lib.tl_achievements(self._h))
+        mask = int(_ACH64(self._h) if _ACH64 is not None else _lib.tl_achievements(self._h))
         return {
             "steps": _lib.tl_steps(self._h),
             "episode_return": _lib.tl_return(self._h),
@@ -306,8 +347,13 @@ class TerrariaLite:
             chars=[]
             for x,t in enumerate(row):
                 k=y*SPEC.view_w+x
-                mob=self._status[SPEC.status_entity0+k*4:SPEC.status_entity0+k*4+2]
-                chars.append("B" if mob[1] else "S" if mob[0] else
+                c=SPEC.status_entity0+k*SPEC.entity_channels
+                mob=self._status[c:c+SPEC.entity_channels-2]
+                # Bat before slime (v7/v8 precedence), then v9's zombie,
+                # demon eye, skeleton and Eye of Cthulhu.
+                glyph=next((g for i,g in ((1,"B"),(0,"S"),(2,"Z"),(3,"E"),(4,"K"),(5,"C"))
+                            if i<len(mob) and mob[i]),None)
+                chars.append(glyph if glyph else
                              " " if t==SPEC.unknown_tile else SPEC.tile_glyphs[t])
             out.append("".join(chars))
         return "\n".join(out)

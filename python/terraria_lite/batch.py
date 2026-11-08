@@ -47,7 +47,8 @@ class NativeBatch:
         self.ends = np.zeros(self.n, np.int32)
         # step_autoreset outputs: finished lanes and their pre-reset episode info.
         self.lanes = np.zeros(self.n, np.int32)
-        self.info = np.zeros((self.n, 4), np.int32)       # steps, health, depth, achievement mask
+        # steps, health, depth, achievement mask[, mask high 32 bits] (SPEC.info_width)
+        self.info = np.zeros((self.n, SPEC.info_width), np.int32)
         self.info_return = np.zeros(self.n, np.float32)
 
     def step(self, actions, obs, mask):

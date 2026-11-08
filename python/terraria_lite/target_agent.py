@@ -20,7 +20,7 @@ class TargetEncoder(nn.Module):
     def __init__(self, hidden=128, extra=0, depth=2, cell_width=32):
         super().__init__()
         self.hidden=hidden;self.extra=extra;self.cell_width=cell_width
-        self.cells=nn.Sequential(layer_init(nn.Linear(SPEC.tile_kinds+5,cell_width)),nn.ReLU(),
+        self.cells=nn.Sequential(layer_init(nn.Linear(SPEC.tile_kinds+1+SPEC.entity_channels,cell_width)),nn.ReLU(),
                                  layer_init(nn.Linear(cell_width,cell_width)),nn.ReLU())
         self.global_features=tanh_mlp(SPEC.cells*cell_width+SPEC.status_entity0+extra,hidden,depth)
         neighborhoods=[]
@@ -37,7 +37,7 @@ class TargetEncoder(nn.Module):
         n=x.shape[0];end=SPEC.cells*SPEC.tile_kinds;status=x[:,end+SPEC.cells:]
         tiles=x[:,:end].reshape(n,SPEC.cells,SPEC.tile_kinds)
         light=x[:,end:end+SPEC.cells].unsqueeze(-1)
-        entities=status[:,SPEC.status_entity0:].reshape(n,SPEC.cells,4)
+        entities=status[:,SPEC.status_entity0:].reshape(n,SPEC.cells,SPEC.entity_channels)
         cells=self.cells(torch.cat((tiles,light,entities),dim=-1))
         scalars=(cells.flatten(1),status[:,:SPEC.status_entity0])+((memory,) if self.extra else ())
         global_features=self.global_features(torch.cat(scalars,dim=-1))

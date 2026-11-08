@@ -132,6 +132,13 @@ ARMS["max2_fn_unimix_ep6000"] = _best + ["--episode-steps", "6000"]
 ARMS["max2_pot0_nov01_unimix_h512"] = ARMS["max2_pot0_nov01_unimix"] + ["--hidden", "512"]
 ARMS["mem_lstm256_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix_ep6000"] + [
     "--memory", "lstm", "--memory-size", "256"]
+# v9 pilots (docs/ENV_V9_DESIGN.md section 10; variants/v9/README.md). The game
+# comes from the library (TERRARIA_LITE_LIB / gpu_queue "lib"): build-v9 for the
+# v9_* arms, build-v9-map (MINIMAP=1, INV_LOG=1) for the v9map_* arms. Episodes
+# use the v9 default (10,000 steps); validation records carry weighted_score.
+for _prefix in ("v9", "v9map"):
+    ARMS[f"{_prefix}_gen_g9999"] = ARMS["max2_pot0_nov01_unimix_g9999"]       # generic (no recipe shaping)
+    ARMS[f"{_prefix}_shaped_g9999"] = ARMS["max2_fn_unimix_g9999"]            # frontier recipe/boss-chain potential
 # Go-Explore restarts from the policy's own archived states (archive.py), now
 # on the fast path: 20% of training episodes start from an archived cell.
 for _k in ("max2_pot0_nov01_unimix", "max2_frontier_nov01_unimix", "max2_pot0_nov01_unimix_ep6000"):

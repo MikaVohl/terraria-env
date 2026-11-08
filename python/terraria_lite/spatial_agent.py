@@ -9,7 +9,7 @@ class SpatialEncoder(nn.Module):
     def __init__(self, hidden=256):
         super().__init__()
         self.grid = nn.Sequential(
-            nn.Conv2d(SPEC.tile_kinds+5, 16, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(SPEC.tile_kinds+1+SPEC.entity_channels, 16, 3, padding=1), nn.ReLU(),
             nn.Conv2d(16, 32, 3, stride=2, padding=1), nn.ReLU(),
             nn.Conv2d(32, 32, 3, stride=2, padding=1), nn.ReLU(), nn.Flatten())
         cells = ((SPEC.view_h+3)//4)*((SPEC.view_w+3)//4)*32
@@ -27,7 +27,7 @@ class SpatialEncoder(nn.Module):
         tiles=x[:,:terrain_end].reshape(n,SPEC.view_h,SPEC.view_w,SPEC.tile_kinds).permute(0,3,1,2)
         light=x[:,terrain_end:status_start].reshape(n,1,SPEC.view_h,SPEC.view_w)
         status=x[:,status_start:]
-        entities=status[:,SPEC.status_entity0:].reshape(n,SPEC.view_h,SPEC.view_w,4).permute(0,3,1,2)
+        entities=status[:,SPEC.status_entity0:].reshape(n,SPEC.view_h,SPEC.view_w,SPEC.entity_channels).permute(0,3,1,2)
         # On macOS CPU, channels-last input selects slow dilated-convolution
         # backward kernels. Contiguous NCHW reaches the dense/GEMM path.
         grid=self.grid(torch.cat((tiles,light,entities),dim=1).contiguous())

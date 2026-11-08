@@ -318,8 +318,11 @@ class VecTerraria:
         ends = self.native.ends
         finished = []
         for k, i in enumerate(lanes.tolist()):
-            steps, health, depth, ach = self.native.info[i].tolist()
-            ach &= 0xFFFFFFFF
+            row = self.native.info[i].tolist()
+            steps, health, depth = row[:3]
+            ach = row[3] & 0xFFFFFFFF
+            if len(row) > 4:    # 64-bit achievement masks (v9)
+                ach |= (row[4] & 0xFFFFFFFF) << 32
             finished.append((i, {"steps": steps, "episode_return": float(self.native.info_return[i]),
                                  "health": health, "depth": depth, "achievements": bin(ach).count("1"),
                                  "achievement_mask": ach, "restored_start": bool(self.restored[i])}))
@@ -1047,6 +1050,10 @@ def train(cfg: Config, checkpoint_callback=None):
                         **(novelty.stats() if novelty is not None else {}),
                         **({"sil": sil_stats} if sil is not None else {})},
     }
+    from terraria_lite.scoring import score_masks
+    tail_score = score_masks(tail)
+    if tail_score:   # v9: tiered score over the same last-200-episode window as "hits"
+        summary["training_score"] = tail_score
 
     if ep_achievements and not cfg.quiet:
         print(f"\nfinal 50 episodes: {summary['ach']:.2f} / "
