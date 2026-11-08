@@ -48,7 +48,7 @@ class ReferenceTests(unittest.TestCase):
 
     def test_reference_mod_catalog_agrees(self):
         root = Path(__file__).resolve().parents[1]
-        source = (root/"mod/TerrariaBenchObserver/ReferenceMode.cs").read_text().split("return new Dictionary<string, bool> {")[1]
+        source = (root/"mod/TerrariaBenchObserver/ReferenceMode.cs").read_text().split("return new Dictionary<string, bool> {")[1].split("};")[0]
         self.assertEqual(set(re.findall(r'\["([a-z_0-9]+)"\]', source)), set(REFERENCE_LEVELS))
 
     def test_all_archived_published_scores(self):
