@@ -177,6 +177,11 @@ were dropped. Library: `build-v8fid-all`; seed 2001; 2,097,152 steps.
 | throughput | 10,089 steps/s, 208.5 s |
 | last-200-episode hits | defeat Blue Slime 154, heal 146, place block 200, workbench 14 |
 
+Reference run with identical settings on `build-v8-o3t2-inv`: 7.852/32 at 1M steps (57.0%
+deaths) and 8.867/32 at 2M (54.7% deaths), 208.8 s
+(`experiments/fidelity-v8fid-20261107/smoke_v8_g9998/`). That is one seed at 2M steps, so
+it shows the pipeline runs, not a learnability result.
+
 The pipeline (status length 526, new entity offset, novelty decode, native autoreset,
 validation, checkpoint) runs end to end. Run directory:
 `experiments/fidelity-v8fid-20261107/smoke_all_g9998/` (checkpoints stay local).
