@@ -24,8 +24,13 @@
 #define KB_MINE  "yuihknm,./!@#$%^&*()"
 #define KB_PLACE "YUIHKNM<>?ABCDEFGJLO"
 
-/* Nineteen recipes; the side panel labels the extended keyboard bindings. */
+/* Nineteen recipes (v4); v10's gold chainmail and Suspicious Looking Eye take
+   the quote and backquote keys. The side panel labels every binding. */
+#if ENV_VERSION >= 10
+#define KB_CRAFT "1234567890-=op[]gx\\'`"
+#else
 #define KB_CRAFT "1234567890-=op[]gx\\"
+#endif
 
 #define KB_LEFT   'a'
 #define KB_RIGHT  'd'

@@ -50,7 +50,7 @@
 #define ACH_Y0      (REC_Y0 + RECIPE_COUNT * REC_PITCH + 22)
 #define ACH_PITCH   16
 #define ACH_CELL    13
-#define ACH_COLS    8
+#define ACH_COLS    8                  /* v4; v10 lays out one row per tier */
 
 #define INV_X0      6
 #define INV_Y0      (HY + 29)
@@ -89,6 +89,28 @@ typedef struct {
     bool         masked;
 } TileArt;
 
+/* Body armor sheets, by Env.armor - 1 (wood breastplate, iron chainmail, and
+   v10's gold chainmail); NPC sheets by MobKind - 1. */
+#if PX_V10
+#define PX_ARMORS   ARMOR_LEVELS
+#define PX_MOBS     (MOB_KINDS - 1)
+#else
+#define PX_ARMORS   3
+#define PX_MOBS     2
+#endif
+static const char *const ARMOR_SHEET[PX_ARMORS - 1] = {
+    "Armor/Armor_32", "Armor/Armor_2",
+#if PX_V10
+    "Armor/Armor_4",
+#endif
+};
+static const char *const MOB_SHEET[PX_MOBS] = {
+    "NPC_1", "NPC_49",
+#if PX_V10
+    "NPC_3", "NPC_2", "NPC_21",
+#endif
+};
+
 struct PxUi {
     SDL_Window   *win;
     SDL_Renderer *ren;
@@ -99,8 +121,12 @@ struct PxUi {
     bool          item_owned[ITEM_COUNT];
     SDL_Texture  *font;
     SDL_Texture  *light;
-    SDL_Texture  *player[3];          /* unequipped, wood, iron; original armor */
-    SDL_Texture  *mob[2];             /* unmodified original NPC sprite strips */
+    SDL_Texture  *player[PX_ARMORS];  /* unequipped + each armor; original sheets */
+    SDL_Texture  *mob[PX_MOBS];       /* unmodified original NPC sprite strips */
+#if PX_V10
+    SDL_Texture  *obj[TILE_COUNT];    /* multi-cell objects at full size (w*16 x h*16) */
+    SDL_Texture  *boss;               /* NPC_4, Eye of Cthulhu */
+#endif
     SDL_Texture  *pick[3];            /* copper, iron, gold: original item sprites */
     SDL_Texture  *axe;                /* starter Copper Axe, original Item_3506 */
     int           real_tiles;         /* how many tiles came from real sheets */
@@ -404,6 +430,15 @@ static bool load_object(PxUi *ui, Tile t, const char *dir, const char *name,
 
     src[0][0] = 0; src[0][1] = 0; src[0][2] = obj.w; src[0][3] = obj.h;
     ok = load_fitted(ui, t, &obj, src, 1, true);
+#if PX_V10
+    /* v10 objects really occupy their Terraria footprint (object_part), so
+       the world draws the spliced frames at full size, one cell per frame;
+       the shrunk single-cell art stays for icons. */
+    if (ok && (tile_object_w(t) > 1 || tile_object_h(t) > 1)) {
+        ui->obj[t] = mk_tex(ui->ren, obj.px, obj.w, obj.h);
+        ok = ui->obj[t] != NULL;
+    }
+#endif
     sheet_free(&obj);
     return ok;
 }
@@ -597,7 +632,7 @@ static bool load_player(PxUi *ui, const char *dir)
 {
     static uint32_t atlas[2 * PL_CH][PL_FRAMES * PL_CW];
     uint32_t frm[PL_FW * PL_FH];
-    Sheet sh[PL_LAYERS],armor[2];
+    Sheet sh[PL_LAYERS],armor[PX_ARMORS-1];
     bool ok = true;
     int i, f, x, y;
 
@@ -605,11 +640,11 @@ static bool load_player(PxUi *ui, const char *dir)
        teardown below covers the whole array; sheet_fail keeps the first name. */
     for (i = 0; i < PL_LAYERS; i++)
         if (!sheet_load(ui, &sh[i], dir, PLAYER_LAYER[i].name)) ok = false;
-    if(!sheet_load(ui,&armor[0],dir,"Armor/Armor_32")) ok=false;
-    if(!sheet_load(ui,&armor[1],dir,"Armor/Armor_2")) ok=false;
+    for(i=0;i<PX_ARMORS-1;i++)
+        if(!sheet_load(ui,&armor[i],dir,ARMOR_SHEET[i])) ok=false;
 
     if (ok) {
-        for(int equipped=0;equipped<3;equipped++) {
+        for(int equipped=0;equipped<PX_ARMORS;equipped++) {
         memset(atlas, 0, sizeof atlas);
         for (f = 0; f < PL_FRAMES; f++) {
             player_compose(frm, sh, f);
@@ -635,7 +670,7 @@ static bool load_player(PxUi *ui, const char *dir)
     }
 
     for (i = 0; i < PL_LAYERS; i++) sheet_free(&sh[i]);
-    for(i=0;i<2;i++) sheet_free(&armor[i]);
+    for(i=0;i<PX_ARMORS-1;i++) sheet_free(&armor[i]);
     return ok;
 }
 
@@ -676,6 +711,10 @@ static bool load_terraria(PxUi *ui, const char *dir)
            load_object(ui, TILE_ANVIL,     dir, "Tiles_16", 0, 0, 2, 1) &&
            load_object(ui, TILE_WORKBENCH, dir, "Tiles_18", 0, 0, 2, 1) &&
            load_object(ui, TILE_FURNACE,   dir, "Tiles_17", 0, 0, 3, 2) &&
+#if PX_V10
+           /* Demon Altar: Tiles_26 style 0 (the Crimson altar is style 1). */
+           load_object(ui, TILE_DEMON_ALTAR, dir, "Tiles_26", 0, 0, 3, 2) &&
+#endif
 
            load_items(ui, dir) &&
            load_picks(ui,dir) &&
@@ -866,15 +905,30 @@ PxUi *px_init(int scale, const char *tex_dir)
         return NULL;
     }
     SDL_Rect usable;
+    int win_w = PX_WIN_W * scale, win_h = PX_WIN_H * scale;
+    Uint32 win_flags = SDL_WINDOW_ALLOW_HIGHDPI;
+#if PX_V10
+    /* The v10 window is taller (30-row view) and would drop to zoom 1 on a
+       laptop display. Fit the largest window, fractional zoom allowed, and
+       let the user resize it; the logical size keeps the layout fixed. */
+    if(SDL_GetDisplayUsableBounds(0,&usable)==0 &&
+       (win_w>usable.w || win_h+32>usable.h)) {
+        float f=fminf((float)usable.w/PX_WIN_W,(float)(usable.h-32)/PX_WIN_H);
+        if(f<1.0f) f=1.0f;
+        win_w=(int)(PX_WIN_W*f); win_h=(int)(PX_WIN_H*f);
+    }
+    win_flags|=SDL_WINDOW_RESIZABLE;
+#else
     if(SDL_GetDisplayUsableBounds(0,&usable)==0) {
         while(scale>1 && (PX_WIN_W*scale>usable.w || PX_WIN_H*scale+32>usable.h)) scale--;
     }
+    win_w = PX_WIN_W * scale; win_h = PX_WIN_H * scale;
+#endif
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");   /* crisp pixels by default */
 
-    ui.win = SDL_CreateWindow("terraria-lite",
+    ui.win = SDL_CreateWindow(PX_TITLE,
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              PX_WIN_W * scale, PX_WIN_H * scale,
-                              SDL_WINDOW_ALLOW_HIGHDPI);
+                              win_w, win_h, win_flags);
     if (!ui.win) {
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         px_shutdown(&ui);
@@ -889,6 +943,9 @@ PxUi *px_init(int scale, const char *tex_dir)
     }
     SDL_RenderSetLogicalSize(ui.ren, PX_WIN_W, PX_WIN_H);
     SDL_SetRenderDrawBlendMode(ui.ren, SDL_BLENDMODE_BLEND);
+#if PX_V10
+    SDL_RaiseWindow(ui.win);   /* launched from a shell, it would open behind it */
+#endif
 
     /* All or nothing, and the assignment order matters: mk_bg_real only runs
        once every tile is in, so `missing` always names the first casualty. */
@@ -904,12 +961,20 @@ PxUi *px_init(int scale, const char *tex_dir)
     }
 
     /* Original NPC strips; Blue Slime's color passes are applied when drawn. */
-    for(int k=0;k<2;k++) {
+    for(int k=0;k<PX_MOBS;k++) {
         Sheet s;
-        if(!sheet_load(&ui,&s,dir,k?"NPC_49":"NPC_1")) { px_shutdown(&ui); return NULL; }
+        if(!sheet_load(&ui,&s,dir,MOB_SHEET[k])) { complain(dir,MOB_SHEET[k]); px_shutdown(&ui); return NULL; }
         ui.mob[k]=mk_tex(ui.ren,s.px,s.w,s.h); sheet_free(&s);
         if(!ui.mob[k]) { px_shutdown(&ui); return NULL; }
     }
+#if PX_V10
+    {
+        Sheet s;
+        if(!sheet_load(&ui,&s,dir,"NPC_4")) { complain(dir,"NPC_4"); px_shutdown(&ui); return NULL; }
+        ui.boss=mk_tex(ui.ren,s.px,s.w,s.h); sheet_free(&s);
+        if(!ui.boss) { px_shutdown(&ui); return NULL; }
+    }
+#endif
 
     ui.font = mk_font(ui.ren);
     if (!ui.font) {
@@ -956,8 +1021,12 @@ void px_shutdown(PxUi *ui)
     if (ui->bg_stone) SDL_DestroyTexture(ui->bg_stone);
     if (ui->font)     SDL_DestroyTexture(ui->font);
     if (ui->light)    SDL_DestroyTexture(ui->light);
-    for(i=0;i<3;i++) if(ui->player[i]) SDL_DestroyTexture(ui->player[i]);
-    for(i=0;i<2;i++) if(ui->mob[i]) SDL_DestroyTexture(ui->mob[i]);
+    for(i=0;i<PX_ARMORS;i++) if(ui->player[i]) SDL_DestroyTexture(ui->player[i]);
+    for(i=0;i<PX_MOBS;i++) if(ui->mob[i]) SDL_DestroyTexture(ui->mob[i]);
+#if PX_V10
+    for(i=0;i<TILE_COUNT;i++) if(ui->obj[i]) SDL_DestroyTexture(ui->obj[i]);
+    if(ui->boss) SDL_DestroyTexture(ui->boss);
+#endif
     for(i=0;i<3;i++) if(ui->pick[i]) SDL_DestroyTexture(ui->pick[i]);
     if(ui->axe) SDL_DestroyTexture(ui->axe);
     if (ui->ren)      SDL_DestroyRenderer(ui->ren);
@@ -1010,6 +1079,31 @@ int px_recipe_at(int ax, int ay)
     return r;
 }
 
+#if PX_V10
+/* One achievement row per tier (13/12/8/7 cells, weights 1/3/5/8); the tiers
+   are contiguous in ACH_TIER. Colours: green, blue, purple, gold. */
+static const uint32_t TIER_COL[TIER_COUNT + 1] = {
+    0, 0xFF74CF5Cu, 0xFF5CA8E8u, 0xFFB57CE8u, 0xFFE8A94Eu
+};
+static int tier_first(int t)
+{
+    int i = 0;
+    while (i < ACH_COUNT && ACH_TIER[i] < t) i++;
+    return i;
+}
+#endif
+
+static void ach_cell(int i, int *x, int *y)
+{
+#if PX_V10
+    *x = ACH_X0 + (i - tier_first(ACH_TIER[i])) * ACH_PITCH;
+    *y = ACH_Y0 + (ACH_TIER[i] - 1) * ACH_PITCH;
+#else
+    *x = ACH_X0 + (i % ACH_COLS) * ACH_PITCH;
+    *y = ACH_Y0 + (i / ACH_COLS) * ACH_PITCH;
+#endif
+}
+
 int px_ach_at(int ax, int ay)
 {
     int gx = ax - ACH_X0, gy = ay - ACH_Y0, c, r;
@@ -1017,9 +1111,34 @@ int px_ach_at(int ax, int ay)
     c = gx / ACH_PITCH;
     r = gy / ACH_PITCH;
     if (gx % ACH_PITCH >= ACH_CELL || gy % ACH_PITCH >= ACH_CELL) return -1;
+#if PX_V10
+    if (r >= TIER_COUNT) return -1;
+    c += tier_first(r + 1);
+    return c < ACH_COUNT && ACH_TIER[c] == r + 1 ? c : -1;
+#else
     if (c >= ACH_COLS || r * ACH_COLS + c >= ACH_COUNT) return -1;
     return r * ACH_COLS + c;
+#endif
 }
+
+#if PX_V10
+/* Mirrors MOB_W / MOB_H in variants/v10/src/mobs.c (the real NPC sizes). */
+static const int MOB_BOX_W[MOB_KINDS] = {0, 24, 22, 18, 30, 18};
+static const int MOB_BOX_H[MOB_KINDS] = {0, 18, 18, 40, 32, 40};
+
+void px_mob_box(const Mob *m, float *x, float *y, int *w, int *h)
+{
+    *w = MOB_BOX_W[m->kind];
+    *h = MOB_BOX_H[m->kind];
+#if FID_MOBS
+    *x = (float)m->fx / FIX_ONE;
+    *y = (float)m->fy / FIX_ONE;
+#else
+    *x = (float)(m->x * PX_TILE + (PX_TILE - *w) / 2);
+    *y = (float)((m->y + 1) * PX_TILE - *h);
+#endif
+}
+#endif
 
 /* The inventory strip is one slot per *item*, but selection cycles over
    PLACEABLES, so a hit has to be translated back. Items with nothing to place
@@ -1066,10 +1185,17 @@ static float tile_bright(const Env *e, int x, int y)
     return powf(t, 0.72f);
 }
 
-static uint32_t sky_col(int y)
+static uint32_t sky_col(const Env *e, int y)
 {
     int t = y * 256 / (SURFACE_MAX + 8);
     if (t > 256) t = 256;
+#if PX_V10
+    /* The engine's sky light drops to NIGHT_SKY_LIGHT at once at dusk, so the
+       backdrop switches with it rather than fading on its own clock. */
+    if (is_night(e)) return mix(0xFF1A2860u, 0xFF4A64B0u, t); /* before the light pass dims it */
+#else
+    (void)e;
+#endif
     return mix(0xFF3E74C6u, 0xFFAEDAF4u, t);
 }
 
@@ -1133,7 +1259,13 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
                shaped grass tops, which showed through their transparent notches
                as a brown fringe against the sky. */
             if (bg_is_sky(e, tx, ty)) {
-                fill(ui, sx, sy, PX_TILE, PX_TILE, sky_col(ty));
+                fill(ui, sx, sy, PX_TILE, PX_TILE, sky_col(e, ty));
+#if PX_V10
+                if (is_night(e) && t == TILE_AIR && hash2(tx, ty, 0x57A2u) % 9u == 0u) {
+                    uint32_t h = hash2(tx, ty, 0xB71Eu);
+                    fill(ui, sx + (int)(h % 15u), sy + (int)(h / 15u % 15u), 1, 1, 0xFFFFFFFFu);
+                }
+#endif
             } else {
                 /* Rows [surface + 1, surface + DIRT_DEPTH] are the dirt worldgen
                    lays down; stone starts below them. */
@@ -1161,7 +1293,7 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
                     SDL_Rect wsrc = {l, u, PX_TILE - l - r, PX_TILE - u};
                     SDL_Rect wdst = {sx + l, sy + u, wsrc.w, wsrc.h};
 
-                    fill(ui, sx, sy, PX_TILE, PX_TILE, sky_col(ty));
+                    fill(ui, sx, sy, PX_TILE, PX_TILE, sky_col(e, ty));
                     SDL_RenderCopy(ui->ren, wall, &wsrc, &wdst);
                 } else {
                     SDL_RenderCopy(ui->ren, wall, NULL, &dst);
@@ -1171,6 +1303,15 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
             if (t == TILE_AIR) continue;
 
             a = &ui->art[t];
+#if PX_V10
+            /* A multi-cell object: this cell's frame of the full-size art. */
+            if (ui->obj[t]) {
+                int w = tile_object_w(t), part = e->object_part[ty][tx];
+                SDL_Rect osrc = {part % w * PX_TILE, part / w * PX_TILE, PX_TILE, PX_TILE};
+                SDL_RenderCopy(ui->ren, ui->obj[t], &osrc, &dst);
+                continue;
+            }
+#endif
             src.x = (int)(hash2(tx, ty, 0x5EEDu) % (uint32_t)a->nvar) * PX_TILE;
             src.y = a->masked ? tile_mask(e, tx, ty) * PX_TILE : 0;
             src.w = PX_TILE;
@@ -1188,6 +1329,25 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
             SDL_RenderCopy(ui->ren, a->tex, &src, &dst);
         }
 }
+
+#if PX_V10 && FID_MINING
+/* Accumulated pick damage (Terraria's HitTile cracks), darker with damage. */
+static void draw_dig(PxUi *ui, const Env *e, const PxView *v)
+{
+    int camx = cam_px(v->cam_x), camy = cam_px(v->cam_y);
+    for (int i = 0; i < HIT_SLOTS; i++) {
+        const HitSlot *h = &e->hits[i];
+        int d = h->damage > 100 ? 100 : h->damage;
+        if (d <= 0 || !in_bounds(h->x, h->y) || tile_at(e, h->x, h->y) == TILE_AIR) continue;
+        int sx = h->x * PX_TILE - camx, sy = h->y * PX_TILE - camy;
+        fill(ui, sx, sy, PX_TILE, PX_TILE, (uint32_t)(d * 150 / 100) << 24);
+        for (int k = 0; k < d / 20 + 1; k++) {
+            uint32_t r = hash2(h->x * 7 + k, h->y, 0xC4ACu);
+            fill(ui, sx + 2 + (int)(r % 12u), sy + 2 + (int)(r / 12u % 12u), 2, 1, 0xE0000000u);
+        }
+    }
+}
+#endif
 
 static void draw_light(PxUi *ui, const Env *e, const PxView *v)
 {
@@ -1339,11 +1499,39 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
     hearts=(e->max_health+19)/20;
     for(i=0;i<hearts&&i<20;i++) draw_heart(ui,6+(i%10)*9,HY+1+(i/10)*8,e->health>i*20);
 
+#if PX_V10 && FID_MINING
+    bool chopping=e->mining_tree && e->tool_time>0;
+#else
     bool chopping=e->mining_tree && e->mine_cd;
+#endif
     icon(ui,chopping?ui->axe:ui->pick[e->tool_tier-1],104,HY+2,16,255);
     text(ui, 123, HY + 5, UI_ACCENT,
          chopping?"Copper Axe":TIER_NAME[e->tool_tier < 4 ? e->tool_tier : 3]);
 
+#if PX_V10
+    {   /* Terraria's clock: day 4:30 AM - 7:30 PM, night until 4:30 AM. */
+        static const char *const LAYER[3] = {"surface", "underground", "caverns"};
+        int t = day_time(e), night = is_night(e), min;
+        min = night ? 19 * 60 + 30 + (t - DAY_STEPS) * 9 * 60 / NIGHT_STEPS
+                    : 4 * 60 + 30 + t * 15 * 60 / DAY_STEPS;
+        min %= 24 * 60;
+        snprintf(buf, sizeof buf, "%s  y%d", LAYER[player_layer(e)], e->py);
+        text_right(ui, PX_VIEW_W - 6, HY + 5, UI_DIM, buf);
+        {
+            char tb[48];
+            snprintf(tb, sizeof tb, "%s %d  %d:%02d %s", night ? "NIGHT" : "Day",
+                     e->steps / DAY_CYCLE + 1, (min / 60 + 11) % 12 + 1, min % 60,
+                     min < 12 * 60 ? "AM" : "PM");
+            text_right(ui, PX_VIEW_W - 6 - text_w(buf) - 10, HY + 5,
+                       night ? 0xFFA898FFu : 0xFFF2D35Bu, tb);
+        }
+    }
+    textf(ui,6,HY+17,UI_TEXT,"hp %d/%d  %s  def %d  heal cd %d",
+          e->health,e->max_health,ITEM_NAME[WEAPON_ITEM[e->weapon]],
+          ARMOR_DEFENSE[e->armor],e->heal_cd);
+    snprintf(buf, sizeof buf, "step %d/%d", e->steps, e->max_steps);
+    text_right(ui, PX_VIEW_W - 6, HY + 17, UI_DIM, buf);
+#else
     snprintf(buf, sizeof buf, "depth %d   step %d/%d   return %+.1f",
              e->py, e->steps, e->max_steps, (double)e->ep_return);
     text_right(ui, PX_VIEW_W - 6, HY + 5, UI_DIM, buf);
@@ -1351,6 +1539,7 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
     textf(ui,6,HY+17,UI_TEXT,"hp %d/%d  %s  def %d  attack %d  heal %d",
           e->health,e->max_health,ITEM_NAME[WEAPON_ITEM[e->weapon]],
           ARMOR_DEFENSE[e->armor],e->attack_cd,e->heal_cd);
+#endif
     text(ui,6,HY+98,e->msg[0]?UI_TEXT:UI_FAINT,e->msg[0]?e->msg:"-");
 
     /* Inventory: all 14 slots always, so the ladder you are climbing is
@@ -1391,11 +1580,22 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
     if(v->hover_item>=0 && v->hover_slot<0) {
         Item it=(Item)v->hover_item;
         const char *hint="crafting material";
+#if PX_V10
+        if(it==ITEM_LESSER_POTION) hint="[c]/click heal 50; shared cooldown 60";
+        else if(it==ITEM_MUSHROOM) hint="[v]/click heal 15; shared cooldown 60";
+        else if(it==ITEM_LIFE_CRYSTAL) hint="[b]/click +20 max life, up to " PX_STR(HEALTH_CAP);
+        else if(it==ITEM_SUSPICIOUS_EYE) hint="[enter]/click summon the Eye (night)";
+        else if(it==ITEM_LENS) hint=PX_STR(EYE_LENSES) " at a Demon Altar: [`] Suspicious Eye";
+        else if(it==ITEM_DEMONITE_ORE) hint="dropped by the Eye of Cthulhu";
+        else if(it==ITEM_IRON_PICK || it==ITEM_GOLD_PICK) hint="crafting upgrades your pickaxe";
+        else if(it==ITEM_WOOD_ARMOR || it==ITEM_IRON_ARMOR || it==ITEM_GOLD_ARMOR) hint="crafting equips torso armor";
+#else
         if(it==ITEM_LESSER_POTION) hint="[c] heal 50; shared cooldown 60";
         else if(it==ITEM_MUSHROOM) hint="[v] heal 15; shared cooldown 60";
         else if(it==ITEM_LIFE_CRYSTAL) hint="[b] +20 max life, up to 200";
-        else if(it==ITEM_CLOUD_BOTTLE) hint="[w] one extra airborne jump";
         else if(it==ITEM_WOOD_ARMOR || it==ITEM_IRON_ARMOR) hint="crafting equips torso armor";
+#endif
+        else if(it==ITEM_CLOUD_BOTTLE) hint="[w] one extra airborne jump";
         else for(int k=0;k<WEAPON_COUNT;k++) if(it==WEAPON_ITEM[k]) hint="[t] cycle owned weapons";
         textf(ui,6,HY+76,UI_TEXT,"%s x%d: %s",ITEM_NAME[it],e->inv[it],hint);
     } else if (v->hover_slot >= 0) {
@@ -1427,7 +1627,11 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
     }
 
     text(ui, 6, HY + 87, UI_FAINT,
+#if PX_V10
+         "f attack  z loot  c/v heal  b life  j/l rope  ; drop  t weapon  F1 help");
+#else
          "f attack  z loot  c/v heal  b life  j/l rope  ; drop  t weapon  F2 pause");
+#endif
 }
 
 /* ---- Sidebar ------------------------------------------------------------ */
@@ -1503,24 +1707,52 @@ static void draw_sidebar(PxUi *ui, const Env *e, const PxView *v)
     fill(ui, SX + 6, REC_Y0 + RECIPE_COUNT * REC_PITCH + 4, PX_SIDE_W - 12, 1, UI_LINE);
 
     for (i = 0; i < ACH_COUNT; i++) if (has_ach(e, i)) done++;
+#if PX_V10
+    {
+        int score = 0, max = 0;
+        for (i = 0; i < ACH_COUNT; i++) {
+            max += TIER_WEIGHT[ACH_TIER[i]];
+            if (has_ach(e, i)) score += TIER_WEIGHT[ACH_TIER[i]];
+        }
+        textf(ui, SX + 6, ACH_Y0 - 12, UI_ACCENT, "ACHIEVEMENTS %d/%d", done, ACH_COUNT);
+        snprintf(buf, sizeof buf, "score %d/%d %.1f%%", score, max, 100.0 * score / max);
+        text_right(ui, PX_WIN_W - 6, ACH_Y0 - 12, UI_GOOD, buf);
+    }
+    for (int t = 1; t <= TIER_COUNT; t++) {
+        snprintf(buf, sizeof buf, "x%d", TIER_WEIGHT[t]);
+        text_right(ui, PX_WIN_W - 6, ACH_Y0 + (t - 1) * ACH_PITCH + 3, TIER_COL[t], buf);
+    }
+#else
     textf(ui, SX + 6, ACH_Y0 - 12, UI_ACCENT, "ACHIEVEMENTS %d/%d", done, ACH_COUNT);
+#endif
 
     for (i = 0; i < ACH_COUNT; i++) {
-        int x = ACH_X0 + (i % ACH_COLS) * ACH_PITCH;
-        int y = ACH_Y0 + (i / ACH_COLS) * ACH_PITCH;
+        int x, y;
         bool got = has_ach(e, i);
-        fill(ui, x, y, ACH_CELL, ACH_CELL, got ? UI_GOOD : UI_BG2);
-        frame(ui, x, y, ACH_CELL, ACH_CELL, got ? mix(UI_GOOD, 0xFFFFFFFFu, 80) : UI_LINE);
+        uint32_t col = UI_GOOD;
+        ach_cell(i, &x, &y);
+#if PX_V10
+        col = TIER_COL[ACH_TIER[i]];
+#endif
+        fill(ui, x, y, ACH_CELL, ACH_CELL, got ? col : UI_BG2);
+        frame(ui, x, y, ACH_CELL, ACH_CELL, got ? mix(col, 0xFFFFFFFFu, 80)
+                                                : (PX_V10 ? dim_col(col, 45, 100) : UI_LINE));
         if (got) fill(ui, x + 3, y + 3, ACH_CELL - 6, ACH_CELL - 6,
-                      mix(UI_GOOD, 0xFFFFFFFFu, 120));
+                      mix(col, 0xFFFFFFFFu, 120));
         if (v->hover_ach == i) frame(ui, x - 1, y - 1, ACH_CELL + 2, ACH_CELL + 2, UI_ACCENT);
     }
 
     /* Hovering names one; otherwise name the next one still locked, which is
        the closest thing this game has to a quest log. */
     if (v->hover_ach >= 0) {
+#if PX_V10
+        textf(ui, SX + 6, ACH_Y0 + 4 * ACH_PITCH + 2,
+              has_ach(e, v->hover_ach) ? UI_GOOD : UI_DIM, "%s (T%d +%d)",
+              ACH_NAME[v->hover_ach], ACH_TIER[v->hover_ach], TIER_WEIGHT[ACH_TIER[v->hover_ach]]);
+#else
         text(ui, SX + 6, ACH_Y0 + 4 * ACH_PITCH + 2,
              has_ach(e, v->hover_ach) ? UI_GOOD : UI_DIM, ACH_NAME[v->hover_ach]);
+#endif
     } else {
         for (i = 0; i < ACH_COUNT && has_ach(e, i); i++) { }
         if (i < ACH_COUNT)
@@ -1575,21 +1807,219 @@ static void draw_gameover(PxUi *ui, const Env *e)
 
     text(ui, x + 16, y + 16, e->terminated ? UI_BAD : UI_ACCENT,
          e->terminated ? "YOU DIED" : "OUT OF TIME");
+#if PX_V10
+    text(ui, x + 16, y + 30, UI_FAINT,
+         e->terminated ? (e->msg[0] ? e->msg : "slain") : "the step budget ran out");
+#else
     text(ui, x + 16, y + 30, UI_FAINT,
          e->terminated ? "the fall got you, or the dark did"
                        : "the step budget ran out");
+#endif
 
     textf(ui, x + 16, y + 52,  UI_TEXT, "seed         %llu", (unsigned long long)e->seed);
     textf(ui, x + 16, y + 64,  UI_TEXT, "depth        %d", e->py);
     textf(ui, x + 16, y + 76,  UI_TEXT, "steps        %d / %d", e->steps, e->max_steps);
     textf(ui, x + 16, y + 88,  UI_TEXT, "return       %+.2f", (double)e->ep_return);
+#if PX_V10
+    {
+        int score = 0, max = 0;
+        for (i = 0; i < ACH_COUNT; i++) {
+            max += TIER_WEIGHT[ACH_TIER[i]];
+            if (has_ach(e, i)) score += TIER_WEIGHT[ACH_TIER[i]];
+        }
+        textf(ui, x + 16, y + 100, UI_TEXT, "achievements %d / %d   score %d / %d",
+              done, ACH_COUNT, score, max);
+    }
+#else
     textf(ui, x + 16, y + 100, UI_TEXT, "achievements %d / %d", done, ACH_COUNT);
+#endif
 
     text(ui, x + 16, y + h - 18, UI_ACCENT, "[r] new world      [q] quit");
 }
 
 /* ---- Frame -------------------------------------------------------------- */
 
+#if PX_V10
+/* Original strip frames by MobKind - 1: Blue Slime, Cave Bat, Zombie, Demon
+   Eye, Skeleton. All face left; the Eye of Cthulhu's NPC_4 frames point down. */
+static const int MOB_FW[PX_MOBS] = {32, 44, 38, 38, 40};
+static const int MOB_FH[PX_MOBS] = {26, 32, 48, 24, 56};
+#define EOC_FW 110
+#define EOC_FH 166
+
+static int mob_frame(const Mob *m, int i, const PxView *v)
+{
+#if FID_MOBS
+    bool air = m->vy != 0, walk = m->vx > FIXC(0.1) || m->vx < -FIXC(0.1);
+#else
+    bool air = false, walk = true;
+#endif
+    double c = v->clock + i * 0.37;
+    switch (m->kind) {
+    case MOB_BLUE_SLIME: return air ? 1 : (int)(c * 4.0) % 2;
+    case MOB_CAVE_BAT:   return (int)(c * 12.0) % 4;
+    case MOB_ZOMBIE:     return air ? 1 : walk ? (int)(c * 8.0) % 3 : 0;
+    case MOB_DEMON_EYE:  return (int)(c * 8.0) % 2;
+    case MOB_SKELETON:   return air ? 1 : walk ? 2 + (int)(c * 14.0) % 13 : 0;
+    default:             return 0;
+    }
+}
+
+/* One pass over the regular mobs. `alpha` < 255 is the after-light pass that
+   keeps a mob readable at night, as draw_player does for the player. */
+static void draw_mobs_v10(PxUi *ui, const Env *e, const PxView *v, int alpha)
+{
+    int camx = cam_px(v->cam_x), camy = cam_px(v->cam_y);
+    for (int i = 0; i < MAX_MOBS; i++) {
+        const Mob *m = &e->mobs[i];
+        if (!m->kind || !in_bounds(m->x, m->y) || e->light[m->y][m->x] < DARK_THRESHOLD) continue;
+        int k = m->kind - 1, fw = MOB_FW[k], fh = MOB_FH[k], w, h, face = m->dir;
+        float bx, by;
+        px_mob_box(m, &bx, &by, &w, &h);
+        bx = v->mob_x[i]; by = v->mob_y[i];
+        double angle = 0.0;
+        SDL_Rect src = {0, mob_frame(m, i, v) * fh, fw, fh};
+        /* NPC draw: centred on the hitbox, frame bottom 4 px below its feet. */
+        SDL_Rect dst = {(int)lroundf(bx) + w / 2 - fw / 2 - camx,
+                        (int)lroundf(by) + h - fh + 4 - camy, fw, fh};
+#if FID_MOBS
+        if (m->kind == MOB_ZOMBIE || m->kind == MOB_SKELETON) face = m->sdir ? m->sdir : m->dir;
+        if (m->kind == MOB_DEMON_EYE && (m->vx || m->vy)) {
+            /* AI_002 rotation: the left-facing eye turned along its velocity. */
+            angle = atan2((double)m->vy, (double)m->vx) * 180.0 / M_PI + 180.0;
+            face = -1;
+        }
+#endif
+        SDL_RendererFlip flip = face > 0 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+        SDL_Texture *t = ui->mob[k];
+        if (k == 0) {
+            /* NPC.SetDefaults(type=1): alpha 175, color (0,80,255,100); see v4. */
+            SDL_SetTextureColorMod(t, 80, 80, 80);
+            SDL_SetTextureAlphaMod(t, (Uint8)(80 * alpha / 255));
+            SDL_RenderCopyEx(ui->ren, t, &src, &dst, angle, NULL, flip);
+            SDL_SetTextureColorMod(t, 0, 80, 255);
+            SDL_SetTextureAlphaMod(t, (Uint8)(100 * alpha / 255));
+        } else {
+            SDL_SetTextureColorMod(t, 255, 255, 255);
+            SDL_SetTextureAlphaMod(t, (Uint8)alpha);
+        }
+        SDL_RenderCopyEx(ui->ren, t, &src, &dst, angle, NULL, flip);
+        SDL_SetTextureColorMod(t, 255, 255, 255);
+        SDL_SetTextureAlphaMod(t, 255);
+        if (alpha == 255) {
+            int cx = (int)lroundf(bx) + w / 2 - camx, top = (int)lroundf(by) - camy - 6;
+            fill(ui, cx - 8, top, 16, 2, UI_BG);
+            fill(ui, cx - 8, top, 16 * m->hp / mob_max_hp(m->kind), 2, UI_BAD);
+        }
+    }
+}
+
+/* Eye of Cthulhu: drawn after the light pass (bosses are never lost in the
+   dark), pupil towards the player while hovering, along the dash otherwise. */
+static void draw_boss(PxUi *ui, const Env *e, const PxView *v)
+{
+    const Boss *b = &e->boss;
+    if (!b->active) return;
+    float cx = v->boss_x + EOC_SIZE * PX_TILE / 2.0f, cy = v->boss_y + EOC_SIZE * PX_TILE / 2.0f;
+    float pcx = v->feet_x * PX_TILE + PLAYER_W * PX_TILE / 2.0f;
+    float pcy = (v->feet_y + 1.0f) * PX_TILE - PLAYER_PX_H / 2.0f;
+    double a = b->mode == BOSS_DASH && (b->vx || b->vy) ? atan2((double)b->vy, (double)b->vx)
+                                                         : atan2((double)(pcy - cy), (double)(pcx - cx));
+    bool p2 = 2 * b->hp <= EOC_HP;
+    SDL_Rect src = {0, ((p2 ? 3 : 0) + (int)(v->clock * 8.0) % 3) * EOC_FH, EOC_FW, EOC_FH};
+    SDL_Rect dst = {(int)lroundf(cx) - EOC_FW / 2 - cam_px(v->cam_x),
+                    (int)lroundf(cy) - EOC_FH / 2 - cam_px(v->cam_y), EOC_FW, EOC_FH};
+    SDL_RenderCopyEx(ui->ren, ui->boss, &src, &dst, a * 180.0 / M_PI - 90.0, NULL, SDL_FLIP_NONE);
+}
+
+static void draw_boss_bar(PxUi *ui, const Env *e)
+{
+    const Boss *b = &e->boss;
+    if (!b->active) return;
+    int w = 240, x = (PX_VIEW_W - w) / 2, y = PX_VIEW_H - 18, hp = b->hp < 0 ? 0 : b->hp;
+    fill(ui, x - 2, y - 13, w + 4, 22, 0xC0000000u);
+    textf(ui, x, y - 10, UI_TEXT, "Eye of Cthulhu  %d/%d%s", hp, EOC_HP,
+          2 * hp <= EOC_HP ? "  (phase 2)" : "");
+    fill(ui, x, y, w, 6, 0xFF3A1010u);
+    fill(ui, x, y, w * hp / EOC_HP, 6, 0xFFD0303Au);
+    frame(ui, x - 1, y - 1, w + 2, 8, UI_LINE);
+}
+
+/* A held item rotated about the player's hand; `deg` 0 is the sprite's own
+   up-right diagonal, positive clockwise; mirrored when facing left. */
+static void draw_held(PxUi *ui, const Env *e, const PxView *v, SDL_Texture *t, double deg, int reach)
+{
+    int s = 24;
+    int hx = (int)lroundf(v->feet_x * PX_TILE) - cam_px(v->cam_x) + PLAYER_W * PX_TILE / 2 + e->facing * 4;
+    int hy = (int)lroundf((v->feet_y + 1.0f) * PX_TILE) - cam_px(v->cam_y) - PLAYER_PX_H / 2 - 2;
+    if (!t) return;
+    SDL_Rect dst = {e->facing > 0 ? hx + reach : hx - s - reach, hy - s, s, s};
+    SDL_Point pivot = {e->facing > 0 ? 0 : s, s};
+    SDL_SetTextureColorMod(t, 255, 255, 255);
+    SDL_SetTextureAlphaMod(t, 255);
+    SDL_RenderCopyEx(ui->ren, t, NULL, &dst, e->facing > 0 ? deg : -deg, &pivot,
+                     e->facing > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
+}
+
+static void draw_tools(PxUi *ui, const Env *e, const PxView *v)
+{
+    double p = v->swing_len > 0.0 ? (v->clock - v->swing_t0) / v->swing_len : 1.0;
+    if (p >= 0.0 && p < 1.0) {
+        SDL_Texture *t = ui->item[WEAPON_ITEM[e->weapon]];
+        if (e->weapon == 0) draw_held(ui, e, v, t, 45.0, (int)(10.0 * sin(p * M_PI)) - 6);
+        else draw_held(ui, e, v, t, -110.0 + 180.0 * p, -6);
+        return;
+    }
+#if FID_MINING
+    if (e->tool_time > 0) {
+#else
+    if (e->mine_cd) {
+#endif
+        double q = fmod(v->clock * 3.0, 1.0);
+        draw_held(ui, e, v, e->mining_tree ? ui->axe : ui->pick[e->tool_tier - 1], -100.0 + 150.0 * q, -6);
+    }
+}
+
+static void draw_help(PxUi *ui)
+{
+    static const char *const L[] = {
+        "CONTROLS                          F1 toggles this help",
+        "",
+        "a d / arrows     run left / right (hold)",
+        "w / up / space   jump (hold for a higher jump)",
+        "j / l            climb rope up / down (hold)",
+        ";                drop through a platform",
+        "left click       mine the highlighted cell (hold)",
+        "right click      place the selected block there",
+        "e / wheel        cycle placeable;  click a hotbar slot",
+        "f                attack (hold to keep swinging)",
+        "t                cycle owned weapons",
+        "z                open an adjacent chest",
+        "c / v / b        potion / mushroom / life crystal",
+        "click an item    use it (potion, mushroom, crystal, eye)",
+        "1..0 - = o p [ ] g x \\ ' `    craft (or click a recipe)",
+        "` at a Demon Altar   craft Suspicious Looking Eye",
+        "enter            use the Eye at night: summon the boss",
+        "y u i h k n m , . /   mine reach cells; shift = place",
+        "F2 pause   r new world   q / esc quit",
+        "",
+        "Day 7.5 min, night 5 min of game time. Night spawns",
+        "Zombies and Demon Eyes (lenses); caverns (y>=64) have",
+        "Skeletons, bats and Demon Altars. 6 lenses at an altar",
+        "make the Eye; defeat the Eye of Cthulhu for demonite.",
+        "Score: achievement tiers weigh 1/3/5/8, max 145.",
+        "",
+        "press any key to play",
+    };
+    int n = (int)(sizeof L / sizeof *L), w = 340, h = n * 11 + 20;
+    int x = (PX_VIEW_W - w) / 2, y = (PX_VIEW_H - h) / 2;
+    fill(ui, 0, 0, PX_VIEW_W, PX_VIEW_H, 0x90000000u);
+    fill(ui, x, y, w, h, 0xF014131Au);
+    frame(ui, x, y, w, h, UI_ACCENT);
+    for (int i = 0; i < n; i++)
+        text(ui, x + 10, y + 10 + i * 11, i == 0 || i == n - 1 ? UI_ACCENT : UI_TEXT, L[i]);
+}
+#else
 static void draw_mobs(PxUi *ui,const Env *e,const PxView *v) {
     for(int i=0;i<MAX_MOBS;i++) {
         const Mob *m=&e->mobs[i];
@@ -1626,6 +2056,7 @@ static void draw_mobs(PxUi *ui,const Env *e,const PxView *v) {
     else if(e->mine_cd) icon(ui,e->mining_tree?ui->axe:ui->pick[e->tool_tier-1],
         held_x,held_y,20,255);
 }
+#endif
 
 bool px_screenshot(PxUi *ui,const char *path) {
     int w,h; SDL_GetRendererOutputSize(ui->ren,&w,&h);
@@ -1653,16 +2084,35 @@ void px_draw(PxUi *ui, const Env *env, const PxView *v)
 
     SDL_RenderSetClipRect(ui->ren, &view);
     draw_world(ui, e, v);
+#if PX_V10
+#if FID_MINING
+    draw_dig(ui, e, v);
+#endif
+    draw_mobs_v10(ui, e, v, 255);
+    draw_player(ui, e, v, 255);
+    draw_tools(ui, e, v);
+    draw_light(ui, e, v);
+    draw_mobs_v10(ui, e, v, 60);
+    draw_player(ui, e, v, 34);
+    draw_boss(ui, e, v);
+#else
     draw_mobs(ui,e,v);
     draw_player(ui, e, v, 255);
     draw_light(ui, e, v);
     /* After the light pass so the dark never swallows you completely: the
        engine grants PLAYER_LIGHT 3, which is deliberately almost nothing. */
     draw_player(ui, e, v, 34);
+#endif
     if (!over) draw_reach(ui, e, v);
     draw_hurt_vignette(ui, e, v);
+#if PX_V10
+    draw_boss_bar(ui, e);
+#endif
     draw_toast(ui, v);
     if (over) draw_gameover(ui, e);
+#if PX_V10
+    else if (v->help) draw_help(ui);
+#endif
     SDL_RenderSetClipRect(ui->ren, NULL);
 
     draw_hud(ui, e, v);

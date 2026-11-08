@@ -12,9 +12,19 @@
 
 #include "env.h"
 
+/* One frontend, two cores. The Makefile builds `terraria-px` against the v4
+   core in include/ and `terraria-px-v10` against variants/v10/include; the
+   v10 build adds the day/night sky, the Demon Altar, the night and cavern
+   mobs, the Eye of Cthulhu, multi-cell objects, fixed-point bodies and the
+   tiered achievement score. Everything v10-only is under PX_V10. */
+#define PX_V10      (ENV_VERSION >= 10)
+#define PX_STR_(x)  #x
+#define PX_STR(x)   PX_STR_(x)
+#define PX_TITLE    "terraria-lite v" PX_STR(ENV_VERSION)
+
 #define PX_TILE     16                        /* texture edge, art px */
 #define PX_VIEW_TW  30                        /* world viewport, tiles */
-#define PX_VIEW_TH  26
+#define PX_VIEW_TH  (PX_V10 ? 30 : 26)        /* v10: room for 21 recipes + 40 achievements */
 #define PX_VIEW_W   (PX_VIEW_TW * PX_TILE)
 #define PX_VIEW_H   (PX_VIEW_TH * PX_TILE)
 #define PX_SIDE_W   256                       /* crafting / achievement column */
@@ -44,7 +54,37 @@ typedef struct {
 
     const char *toast;        /* transient banner, or NULL */
     float  toast_a;           /* 0..1 opacity for the banner */
+#if PX_V10
+    /* Mobs and the boss move several tiles per action at 15 game ticks per
+       step, so they are interpolated like the player: world px, top-left of
+       the hitbox (mobs) or of the 3x3 body (boss). */
+    float  mob_x[MAX_MOBS], mob_y[MAX_MOBS];
+    float  boss_x, boss_y;
+    double swing_t0, swing_len; /* real-time melee swing, seconds on `clock` */
+    bool   help;               /* controls overlay */
+#endif
 } PxView;
+
+/* Interpolation anchor of the player, in tiles: the left column / feet row of
+   the 2x3 body the sprite is drawn on. With v10's FID_PHYSICS the 20x42 px
+   fixed-point hitbox moves freely, so the anchor is derived from it (sprite
+   centred on the hitbox, frame bottom on its bottom pixel). */
+static inline void px_feet(const Env *e, float *x, float *y)
+{
+#if PX_V10 && FID_PHYSICS
+    *x = ((float)e->pos_x / FIX_ONE + PLAYER_PX_W / 2.0f - PLAYER_W * PX_TILE / 2.0f) / PX_TILE;
+    *y = ((float)e->pos_y / FIX_ONE + PLAYER_PX_H - PX_TILE) / PX_TILE;
+#else
+    *x = (float)e->px;
+    *y = (float)e->py;
+#endif
+}
+
+#if PX_V10
+/* A mob's hitbox in world px (top-left, size): its fixed-point NPC body with
+   FID_MOBS, otherwise its grid cell. */
+void px_mob_box(const Mob *m, float *x, float *y, int *w, int *h);
+#endif
 
 typedef struct PxUi PxUi;
 

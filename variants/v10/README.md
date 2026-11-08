@@ -121,6 +121,21 @@ unlocks. Arms: `v10_gen_g9999` / `v10_shaped_g9999` in `tools/explore_screen.py`
 `MINIMAP` is carried over from v9 (default 0, not a v10 default). The GPU simulator
 backend (`--sim-backend gpu`) is v7-only.
 
+## Play
+
+`terraria-px-v10` is the SDL pixel frontend (`src/px_*.c`, built against this core with
+the default knobs; Terraria textures from the local Steam install, as `terraria-px`):
+
+    make terraria-px-v10 && ./terraria-px-v10            # seed 23000001 (first validation world)
+    ./terraria-px-v10 42                                  # or --seed 42; --tick-ms 250 is real time
+    make check-pixel-v10                                  # headless smoke, screenshots in /tmp
+
+F1 shows the controls (also at start). Beyond `terraria-px`'s scheme: Enter uses the
+Suspicious Looking Eye, a click on a potion / mushroom / life crystal / the Eye uses it,
+a hotbar click selects the slot directly, `'` and `` ` `` craft gold chainmail and the Eye,
+and j / l can be held on a rope. The HUD adds the clock and night, the layer, the tiered
+achievement panel with the weighted score, and the boss bar.
+
 ## Tests
 
     V=variants/v10

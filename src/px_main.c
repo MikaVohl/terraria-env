@@ -19,7 +19,16 @@
 #include "keymap.h"
 #include "px_render.h"
 
+#if PX_V10
+/* One v10 action is FID_TICKS = 15 game ticks = 1/4 s at Terraria's 60 Hz,
+   so 250 ms per step plays at real Terraria speed. */
+#define DEFAULT_TICK_MS 250
+/* First public validation world of the v10 evaluation (tools/explore_screen.py). */
+#define DEFAULT_SEED    23000001ULL
+#else
 #define DEFAULT_TICK_MS 80    /* 12.5 tiles/s walk speed at one tile per tick */
+#define DEFAULT_SEED    1ULL
+#endif
 #define MIN_TICK_MS     10
 #define MAX_TICK_MS     1000
 #define DEFAULT_SCALE   2
@@ -68,6 +77,10 @@ static int q_pop(Queue *q)
 /* Held state, refreshed from SDL events rather than polled per tick. */
 typedef struct {
     bool left, right, jump, attack;
+    bool climb_up, climb_down;   /* v10: held j / l on a rope */
+    /* v10: pressed since the last tick. At 250 ms per step a quick tap can
+       start and end between two ticks; it still counts as one step of input. */
+    bool tap_left, tap_right, tap_jump, tap_attack;
     bool lmb, rmb;
     int  mx, my;          /* window pixels */
 } Input;
@@ -170,15 +183,24 @@ static void usage(FILE *out, const char *prog)
 {
     int i;
     fprintf(out,
+#if PX_V10
+        "terraria-px-v10 -- the pixel frontend for terraria-lite v10\n"
+        "\n"
+        "usage: %s [SEED] [--seed N] [--steps N] [--tick-ms N] [--scale N]\n"
+        "          [--textures DIR] [--watch TAPE] [--help]\n"
+        "\n"
+        "  SEED, --seed N  world seed (default %llu, a public validation world)\n"
+#else
         "terraria-px -- the pixel frontend for terraria-lite\n"
         "\n"
         "usage: %s [--seed N] [--steps N] [--tick-ms N] [--scale N]\n"
         "          [--textures DIR] [--watch TAPE] [--help]\n"
         "\n"
-        "  --seed N        world seed (default 1)\n"
+        "  --seed N        world seed (default %llu)\n"
+#endif
         "  --steps N       episode step limit (default %d)\n"
         "  --tick-ms N     simulation tick length in ms (default %d)\n"
-        "  --scale N       integer pixel zoom, 1..%d (default %d)\n"
+        "  --scale N       pixel zoom, 1..%d (default %d; v10 fits the display)\n"
         "  --textures DIR  Terraria ExtractedTextures directory; without one\n"
         "                  the default Steam location is probed. A Terraria\n"
         "                  install is required -- there is no fallback art\n"
@@ -204,13 +226,18 @@ static void usage(FILE *out, const char *prog)
         "  c/v           potion/mushroom          b use life crystal\n"
         "  t             cycle weapons            j/l climb rope\n"
         "  ;             drop through platform    F2 pause/resume\n"
+#if PX_V10
+        "  enter         use the Suspicious Looking Eye (night): summon the boss\n"
+        "  click item    use a potion, mushroom, life crystal or the Eye\n"
+        "  F1            controls overlay (shown at start)\n"
+#endif
         "  y u i         mine up-left / up / up-right      (hold shift to place)\n"
         "  h   k         mine head-left / head-right\n"
         "  n   m         mine foot-left / foot-right\n"
         "  , . /         mine down-left / down / down-right\n"
         "  !@#$%%^&*()    extra mine targets; ABCDEFGJLO extra place targets\n"
         "                complete coordinates: ./terraria-lite --help\n",
-        prog, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS, MAX_SCALE, DEFAULT_SCALE);
+        prog, (unsigned long long)DEFAULT_SEED, DEFAULT_MAX_STEPS, DEFAULT_TICK_MS, MAX_SCALE, DEFAULT_SCALE);
     for (i = 0; i < RECIPE_COUNT; i++)
         fprintf(out, "  %c             craft %s\n", KB_CRAFT[i], RECIPES[i].name);
     fprintf(out,
@@ -247,6 +274,31 @@ static int key_recipe(SDL_Keycode k) { return kb_slot(KB_CRAFT, (int)k); }
    from the key queue, which is never filtered. */
 static int continuous_action(const Env *e, const PxView *v, const Input *in)
 {
+#if PX_V10
+    /* v10's mask is the authority on what a held input can do this step. With
+       FID_PHYSICS each action holds its input for 15 game ticks: a jump is
+       pressed from the ground, then left/right keep it held (running jumps)
+       and a lone held W keeps holding it. */
+    uint8_t mask[ACT_COUNT];
+#if FID_PHYSICS
+    bool ground = e->vel_y == 0;
+#else
+    bool ground = player_grounded(e);
+#endif
+    env_action_mask(e, mask);
+    bool left = in->left || in->tap_left, right = in->right || in->tap_right;
+    bool jump = in->jump || in->tap_jump;
+    if ((in->attack || in->tap_attack) && mask[ACT_ATTACK]) return ACT_ATTACK;
+    if (v->hover_reach >= 0) {
+        if (in->lmb && v->can_mine)  return ACT_MINE_FIRST + v->hover_reach;
+        if (in->rmb && v->can_place) return ACT_PLACE_FIRST + v->hover_reach;
+    }
+    if (in->climb_up != in->climb_down && mask[in->climb_up ? ACT_CLIMB_UP : ACT_CLIMB_DOWN])
+        return in->climb_up ? ACT_CLIMB_UP : ACT_CLIMB_DOWN;
+    if (jump && mask[ACT_JUMP] && (ground || left == right)) return ACT_JUMP;
+    if (left != right)  return left ? ACT_LEFT : ACT_RIGHT;
+    return -1;
+#else
     if(in->attack && !e->attack_cd) return ACT_ATTACK;
     if (v->hover_reach >= 0) {
         if (in->lmb && v->can_mine)  return ACT_MINE_FIRST + v->hover_reach;
@@ -255,8 +307,10 @@ static int continuous_action(const Env *e, const PxView *v, const Input *in)
     if (in->jump && player_grounded(e)) return ACT_JUMP;
     if (in->left != in->right)  return in->left ? ACT_LEFT : ACT_RIGHT;
     return -1;
+#endif
 }
 
+#if !PX_V10
 /* How many ACT_SELECT_NEXT presses it takes to land on `want`, or 0 when it
    cannot be reached.
 
@@ -285,6 +339,7 @@ static int select_presses(const Env *e, int want)
     }
     return 0;
 }
+#endif
 
 /* Where the cursor is pointing and what a click there would do. Recomputed
    every frame, before any tick consumes it, so a held mouse button follows the
@@ -334,9 +389,18 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
 
     {
         Tile t = tile_at(e, v->hover_x, v->hover_y);
+#if PX_V10
+        /* FID_MINING holds the tool on its target, so the mask (not a
+           cooldown) says whether holding the button there does anything. */
+        uint8_t mask[ACT_COUNT];
+        env_action_mask(e, mask);
+        v->can_mine  = mask[ACT_MINE_FIRST + best] && t != TILE_AIR;
+        v->can_place = mask[ACT_PLACE_FIRST + best];
+#else
         v->can_mine  = !e->mine_cd && t != TILE_AIR && tile_tier(t) != TIER_NEVER &&
                        e->tool_tier >= tile_tier(t);
         v->can_place = t == TILE_AIR && e->inv[PLACEABLES[e->selected].item] > 0;
+#endif
     }
 }
 
@@ -348,7 +412,7 @@ typedef struct {
 /* One env_step, plus catching whatever it unlocked for the banner. */
 static void apply(Env *e, int act, Toast *t, double clock)
 {
-    uint32_t before = e->achievements, gained;
+    uint64_t before = e->achievements, gained;
     int a;
 
     env_step(e, act);
@@ -356,9 +420,14 @@ static void apply(Env *e, int act, Toast *t, double clock)
     gained = e->achievements & ~before;
     for (a = 0; a < ACH_COUNT; a++)
         if ((gained >> a) & 1u) {
+#if PX_V10
+            snprintf(t->text, sizeof t->text, "unlocked: %s (tier %d, +%d)", ACH_NAME[a],
+                     ACH_TIER[a], TIER_WEIGHT[ACH_TIER[a]]);
+#else
             snprintf(t->text, sizeof t->text, "unlocked: %s", ACH_NAME[a]);
+#endif
             t->until = clock + TOAST_SECS;
-            break;   /* one per tick is all that ever fires */
+            break;   /* one banner per tick; the sidebar shows the rest */
         }
 }
 
@@ -366,8 +435,7 @@ static void snap_camera(PxView *v, const Env *e)
 {
     float mx = (float)(WORLD_W - PX_VIEW_TW), my = (float)(WORLD_H - PX_VIEW_TH);
 
-    v->feet_x = (float)e->px;
-    v->feet_y = (float)e->py;
+    px_feet(e, &v->feet_x, &v->feet_y);
     v->cam_x  = v->feet_x + PLAYER_W/2.0f - PX_VIEW_TW / 2.0f;
     v->cam_y  = v->feet_y + 1-PLAYER_H/2.0f - PX_VIEW_TH / 2.0f;
     if (v->cam_x < 0.0f) v->cam_x = 0.0f;
@@ -376,16 +444,65 @@ static void snap_camera(PxView *v, const Env *e)
     if (v->cam_y > my) v->cam_y = my;
 }
 
+/* What the last tick left on screen, so the frame loop can interpolate the
+   player -- and in v10 the mobs and the boss -- toward the current state. */
+typedef struct {
+    float fx, fy;                         /* px_feet, tiles */
+#if PX_V10
+    float mx[MAX_MOBS], my[MAX_MOBS];     /* px_mob_box top-left, world px */
+    uint8_t mk[MAX_MOBS];
+    float bx, by;                         /* boss body top-left, world px */
+    bool boss;
+#endif
+} Snap;
+
+static void snap_take(Snap *s, const Env *e)
+{
+    px_feet(e, &s->fx, &s->fy);
+#if PX_V10
+    for (int i = 0; i < MAX_MOBS; i++) {
+        int w, h;
+        s->mk[i] = e->mobs[i].kind;
+        if (s->mk[i]) px_mob_box(&e->mobs[i], &s->mx[i], &s->my[i], &w, &h);
+    }
+    s->boss = e->boss.active;
+    s->bx = (float)(e->boss.x * PX_TILE);
+    s->by = (float)(e->boss.y * PX_TILE);
+#endif
+}
+
+static float lerpf(float a, float b, float t) { return a + (b - a) * t; }
+
+static void snap_lerp(PxView *v, const Snap *p, const Env *e, float alpha)
+{
+    Snap c;
+    snap_take(&c, e);
+    v->feet_x = lerpf(p->fx, c.fx, alpha);
+    v->feet_y = lerpf(p->fy, c.fy, alpha);
+#if PX_V10
+    for (int i = 0; i < MAX_MOBS; i++) {
+        /* A new mob in the slot, or a jump of more than four tiles (spawn,
+           despawn and respawn), is drawn where it is, not slid there. */
+        bool same = c.mk[i] && p->mk[i] == c.mk[i] &&
+                    fabsf(c.mx[i] - p->mx[i]) + fabsf(c.my[i] - p->my[i]) < 4.0f * PX_TILE;
+        v->mob_x[i] = same ? lerpf(p->mx[i], c.mx[i], alpha) : c.mx[i];
+        v->mob_y[i] = same ? lerpf(p->my[i], c.my[i], alpha) : c.my[i];
+    }
+    v->boss_x = p->boss ? lerpf(p->bx, c.bx, alpha) : c.bx;
+    v->boss_y = p->boss ? lerpf(p->by, c.by, alpha) : c.by;
+#endif
+}
+
 int main(int argc, char **argv)
 {
-    const char *prog = argc > 0 && argv[0] ? argv[0] : "terraria-px";
+    const char *prog = argc > 0 && argv[0] ? argv[0] : (PX_V10 ? "terraria-px-v10" : "terraria-px");
     const char *tex_dir = NULL;
     const char *tape_path = NULL;
     const char *screenshot = NULL;
     Tape tape;
     bool watching = false, paused = false, verify = false;
     int  step_once = 0;
-    unsigned long long seed = 1;
+    unsigned long long seed = DEFAULT_SEED;
     unsigned long long steps = DEFAULT_MAX_STEPS;
     unsigned long long tick = DEFAULT_TICK_MS;
     unsigned long long scale = DEFAULT_SCALE;
@@ -397,8 +514,9 @@ int main(int argc, char **argv)
     Input in;
     Toast toast;
     uint64_t next_tick, last_frame, frame_epoch, frames = 0;
-    int prev_px, prev_py, last_act = ACT_NOOP;
-    bool running = true;
+    int last_act = ACT_NOOP;
+    Snap prev;
+    bool running = true, help = false;
     int i;
 
     memset(&tape, 0, sizeof tape);
@@ -410,6 +528,16 @@ int main(int argc, char **argv)
         if (!strcmp(a, "--help") || !strcmp(a, "-h")) { usage(stdout, prog); return 0; }
         if(!strcmp(a,"--verify")) { verify=true; continue; }
         if(!strcmp(a,"--screenshot") && i+1<argc) { screenshot=argv[++i]; continue; }
+#if PX_V10
+        /* A bare number is the seed: `terraria-px-v10 42`. */
+        if (a[0] >= '0' && a[0] <= '9') {
+            if (!parse_u64(a, &seed)) {
+                fprintf(stderr, "%s: '%s' is not a non-negative integer\n", prog, a);
+                return 2;
+            }
+            continue;
+        }
+#endif
         if (!strcmp(a, "--textures")) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "%s: '%s' needs a value\n", prog, a);
@@ -482,8 +610,8 @@ int main(int argc, char **argv)
     if(verify) {
         if(!watching) { fprintf(stderr,"--verify requires --watch TAPE\n"); free(e); return 2; }
         for(int n=0;n<tape.n;n++) env_step(e,tape.act[n]);
-        printf("{\"environment_version\":%d,\"steps\":%d,\"health\":%d,\"achievement_mask\":%u,\"episode_return\":%.1f}\n",
-            ENV_VERSION,e->steps,e->health,e->achievements,(double)e->ep_return);
+        printf("{\"environment_version\":%d,\"steps\":%d,\"health\":%d,\"achievement_mask\":%llu,\"episode_return\":%.1f}\n",
+            ENV_VERSION,e->steps,e->health,(unsigned long long)e->achievements,(double)e->ep_return);
         free(e); free(tape.act); return 0;
     }
 
@@ -497,8 +625,9 @@ int main(int argc, char **argv)
     memset(&view, 0, sizeof view);
     view.hover_recipe = view.hover_ach = view.hover_reach = view.hover_slot = view.hover_item = -1;
     snap_camera(&view, e);
-    prev_px = e->px;
-    prev_py = e->py;
+    snap_take(&prev, e);
+    /* v10 opens on the controls overlay; the clock waits until it closes. */
+    help = PX_V10 && !watching && !screenshot;
 
     next_tick   = SDL_GetTicks64() + tick;
     last_frame  = SDL_GetTicks64();
@@ -518,7 +647,7 @@ int main(int argc, char **argv)
             case SDL_WINDOWEVENT:
                 if(ev.window.event==SDL_WINDOWEVENT_FOCUS_LOST && !watching) {
                     paused=true; memset(&in,0,sizeof in); memset(&q,0,sizeof q);
-                    px_set_title(ui,"terraria-lite v4 -- PAUSED (F2 to resume)");
+                    px_set_title(ui,PX_TITLE " -- PAUSED (F2 to resume)");
                 }
                 break;
 
@@ -530,6 +659,7 @@ int main(int argc, char **argv)
                 bool down = (ev.type == SDL_MOUSEBUTTONDOWN);
                 in.mx = ev.button.x;
                 in.my = ev.button.y;
+                if (down && help) { help = false; break; }   /* a click closes the overlay */
                 if (ev.button.button == SDL_BUTTON_LEFT) {
                     int ax, ay, r, s;
                     px_to_art(ui, in.mx, in.my, &ax, &ay);
@@ -545,10 +675,26 @@ int main(int argc, char **argv)
                            whether it succeeds and says why when it does not. */
                         q_push(&q, RECIPE_FIRST_ACTION + r);
                     } else if (s >= 0) {
+#if PX_V10
+                        /* v10 has a direct select action per hotbar slot. */
+                        if (e->inv[PLACEABLES[s].item] > 0) q_push(&q, ACT_SELECT_FIRST + s);
+#else
                         /* Selection is a cycle in the action space, so a click
                            on a slot buys it the honest way: n real presses. */
                         int n = select_presses(e, s);
                         while (n-- > 0) q_push(&q, ACT_SELECT_NEXT);
+#endif
+#if PX_V10
+                    } else if (px_item_at(ax, ay) >= 0) {
+                        /* Clicking a usable item uses it; others do nothing. */
+                        switch (px_item_at(ax, ay)) {
+                        case ITEM_LESSER_POTION:   q_push(&q, ACT_HEAL_POTION); break;
+                        case ITEM_MUSHROOM:        q_push(&q, ACT_EAT_MUSHROOM); break;
+                        case ITEM_LIFE_CRYSTAL:    q_push(&q, ACT_USE_CRYSTAL); break;
+                        case ITEM_SUSPICIOUS_EYE:  q_push(&q, ACT_SUMMON); break;
+                        default: break;
+                        }
+#endif
                     } else {
                         in.lmb = true;
                     }
@@ -584,13 +730,23 @@ int main(int argc, char **argv)
                         env_reset(e, (uint64_t)seed);
                         toast.until = 0.0;
                         snap_camera(&view, e);
-                        prev_px = e->px;
-                        prev_py = e->py;
+                        snap_take(&prev, e);
                         last_act = ACT_NOOP;
                     }
                     break;
                 }
 
+#if PX_V10
+                if (down && !ev.key.repeat && (help || k2 == SDLK_F1)) {
+                    help = !help;       /* F1 toggles; any key closes */
+                    break;
+                }
+                /* Shift+J / Shift+L are place targets, so only bare j / l climb. */
+                if ((k2 == SDLK_j || k2 == SDLK_l) && (!down || !(ev.key.keysym.mod & KMOD_SHIFT))) {
+                    if (k2 == SDLK_j) in.climb_up = down; else in.climb_down = down;
+                    continue;
+                }
+#endif
                 /* Shifted reach actions take priority over held a/d/f and
                    one-shot e. Consume repeats and releases as well. */
                 if (ev.key.keysym.mod & KMOD_SHIFT) {
@@ -606,14 +762,14 @@ int main(int argc, char **argv)
                     }
                 }
                 switch (k2) {
-                case SDLK_f: in.attack=down; continue;
+                case SDLK_f: in.attack=down; in.tap_attack|=down; continue;
                 case SDLK_F2:
                     if(down && !ev.key.repeat) { paused=!paused;
-                        px_set_title(ui,paused?"terraria-lite v4 -- PAUSED (F2 to resume)":"terraria-lite v4"); }
+                        px_set_title(ui,paused?PX_TITLE " -- PAUSED (F2 to resume)":PX_TITLE); }
                     continue;
-                case SDLK_a: case SDLK_LEFT:  in.left  = down; continue;
-                case SDLK_d: case SDLK_RIGHT: in.right = down; continue;
-                case SDLK_w: case SDLK_UP: case SDLK_SPACE: in.jump = down; continue;
+                case SDLK_a: case SDLK_LEFT:  in.left  = down; in.tap_left  |= down; continue;
+                case SDLK_d: case SDLK_RIGHT: in.right = down; in.tap_right |= down; continue;
+                case SDLK_w: case SDLK_UP: case SDLK_SPACE: in.jump = down; in.tap_jump |= down; continue;
                 default: break;
                 }
                 if (!down || ev.key.repeat) break;   /* the rest are one-shots */
@@ -625,12 +781,14 @@ int main(int argc, char **argv)
                     memset(&q, 0, sizeof q);
                     toast.until = 0.0;
                     snap_camera(&view, e);
-                    prev_px = e->px;
-                    prev_py = e->py;
+                    snap_take(&prev, e);
                     last_act = ACT_NOOP;
                     break;
                 }
                 if (k2 == SDLK_e) { q_push(&q, ACT_SELECT_NEXT); break; }
+#if PX_V10
+                if (k2 == SDLK_RETURN || k2 == SDLK_KP_ENTER) { q_push(&q, ACT_SUMMON); break; }
+#endif
 
                 r = key_reach(k2);
                 if (r >= 0) {
@@ -671,13 +829,12 @@ int main(int argc, char **argv)
         if (over) {
             next_tick = now + tick;
             memset(&q, 0, sizeof q);
-            prev_px = e->px;
-            prev_py = e->py;
+            snap_take(&prev, e);
         }
 
         while (!over && now >= next_tick) {
             int act;
-            if(paused && step_once==0) { next_tick=now+tick; break; }
+            if((paused || help) && step_once==0) { next_tick=now+tick; break; }
 
             if (watching) {
                 /* Re-arm the deadline before bailing, or unpausing would cash
@@ -690,8 +847,8 @@ int main(int argc, char **argv)
                 if (act < 0) act = continuous_action(e, &view, &in);
             }
 
-            prev_px = e->px;
-            prev_py = e->py;
+            snap_take(&prev, e);
+            in.tap_left = in.tap_right = in.tap_jump = in.tap_attack = false;
 
             /* Nothing asked for and nothing in motion: the world is a fixed
                point, so an ACT_NOOP here would spend a step and change
@@ -702,6 +859,13 @@ int main(int argc, char **argv)
                 if (act < 0) act = ACT_NOOP;
                 apply(e, act, &toast, (double)now / 1000.0);
                 last_act = act;
+#if PX_V10 && FID_COMBAT
+                /* The swing lasts itemAnimationMax game ticks of real time. */
+                if (act == ACT_ATTACK && e->item_anim > 0) {
+                    view.swing_t0  = (double)now / 1000.0;
+                    view.swing_len = (double)e->item_anim_max * (double)tick / FID_TICKS / 1000.0;
+                }
+#endif
             }
 
             next_tick += tick;
@@ -715,8 +879,7 @@ int main(int argc, char **argv)
         alpha = (float)((double)(now + tick - next_tick) / (double)tick);
         if (alpha < 0.0f) alpha = 0.0f;
         if (alpha > 1.0f) alpha = 1.0f;
-        view.feet_x = (float)prev_px + ((float)e->px - (float)prev_px) * alpha;
-        view.feet_y = (float)prev_py + ((float)e->py - (float)prev_py) * alpha;
+        snap_lerp(&view, &prev, e, alpha);
 
         dt = (float)(now - last_frame) / 1000.0f;
         if (dt > 0.1f) dt = 0.1f;
@@ -735,8 +898,17 @@ int main(int argc, char **argv)
         view.cam_y += (tgt_y - view.cam_y) * k;
 
         view.clock    = (double)now / 1000.0;
+#if PX_V10 && FID_PHYSICS
+        /* The fixed-point body knows its own velocity (Q16 px per tick). */
+        view.walk_dir = e->vel_x > FIXC(0.2) ? 1 : (e->vel_x < -FIXC(0.2) ? -1 : 0);
+        view.airborne = e->vel_y != 0;
+#else
         view.walk_dir = (last_act == ACT_LEFT) ? -1 : (last_act == ACT_RIGHT ? 1 : 0);
         view.airborne = e->jump_left > 0 || !tile_solid(tile_at(e, e->px, e->py + 1));
+#endif
+#if PX_V10
+        view.help = help;
+#endif
 
         if (toast.until > view.clock) {
             double left = toast.until - view.clock;
