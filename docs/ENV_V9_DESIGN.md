@@ -29,7 +29,7 @@ v8 (ore 3× + trees 2×) is the starting point. It is *not* released separately.
 | D6 | World **128 wide × 128 deep** (v8: 128 × 96), three layers + bedrock | Progression is vertical; the 256-wide test cost 1–6 points | **[T]** depth 112–144; width stays 128 unless pilots say otherwise |
 | D7 | Episode length **10,000 steps** (v8: 3,000) | Room for a full day/night cycle plus the boss chain; matches Crafter/Craftax | **[T]** 6,000–10,000, by pilot learning curves |
 | D8 | Day/night cycle, start at dawn | Faithful; night spawns create risk and the summon window for the boss | **[T]** cycle length (draft: 1,800 day + 1,200 night steps) |
-| D9 | Observation: same 11×9 local view; status block extended (time of day, layer, boss state) | Larger views cost points in v8 | **[T]** a coarse explored-map channel is a prototype option (§7), off by default |
+| D9 | Observation: same 11×9 local view; status block extended (time of day, layer, boss state). **Minimap dropped** (2026-11-08: v9 minimap 45/54% vs 56% baseline at 1B; LSTM memory also no gain) | Larger views cost points in v8 | |
 | D10 | **Craftax-style score**: tier weights 1/3/5/8, headline = % of max weighted score | Familiar, deliberate weighting, room at the top | **[T]** weights after pilots, if they induce unwanted trade-offs |
 | D11 | **Evaluation is not the training reward.** Training may use any reward; entries disclose prior knowledge | Same separation we already use (recipe shaping vs generic) | |
 | D12 | No health term in the score; deaths reported separately | Keeps the score a pure progress measure | |
@@ -42,6 +42,10 @@ v8 (ore 3× + trees 2×) is the starting point. It is *not* released separately.
 | D19 | Build **tier by tier**, each through the sim-cost and learnability gates (§10) | Never ship a cliff | |
 | D20 | King Slime, bows/ranged, potions brewing, NPC housing, extra biomes: **not in v9** | Breadth without depth; keep the chain learnable | Candidates if the ceiling turns out too low |
 | D21 | Oracle achievability audit after everything else is decided | Most items are known reachable from v4–v8 | |
+| D22 | **Real-Terraria behaviour ports** (v10): enemy AI, combat, physics, mining, trees, each a knob, on by default | v8fid at 2B: enemy+combat ±0, trees +0.3, physics −0.5; faithful at measured cost (`FIDELITY_V8FID_2026_11.md`) | **[T]** per-port, by v10 pilots |
+| D23 | **15 game ticks per agent action** (`FID_TICKS=15`, about one pickaxe swing) | Real mining at 4 ticks starved resources (17.5/32, no furnace); at 15 ticks all ports scored 25.5/32 with furnaces | **[T]** tick count |
+| D24 | **Tier-4 stepping stones**: `find a Demon Altar`, `hold 6 lenses` (tier 4), real recipe kept (6 lenses at an altar) | v9: tier 4 stuck at the lens (0 eyes in 13 runs); with 3 lenses the eye is crafted, so lens collection is the gate. Gives a gradient without changing the game | **[T]** trigger definitions |
+| D25 | Iron pickaxe recipe and tier unchanged | Not gated by bar count (0% at 10 bars on v9); generic RL never learns it, shaping sometimes does: the benchmark's clearest bitter-lesson probe | |
 
 ## 3. World
 
