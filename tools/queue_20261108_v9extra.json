@@ -1,0 +1,38 @@
+[
+ {
+  "name": "v9_gen_g9999_1B-3004",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3004,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_1B-3005",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3005,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_1B-3004",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3004,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_1B-3005",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3005,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]
