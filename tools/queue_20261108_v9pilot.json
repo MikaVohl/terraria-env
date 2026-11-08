@@ -1,0 +1,146 @@
+[
+ {
+  "name": "v9_gen_g9999_4B-3001",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_4B-3002",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_4B-3001",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_4B-3002",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_1B-3001",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_1B-3002",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_1B-3003",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_1B-3001",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_1B-3002",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_1B-3003",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9map_gen_g9999_1B-3001",
+  "lib": "build-v9-map",
+  "arm": "v9map_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9map_gen_g9999_1B-3002",
+  "lib": "build-v9-map",
+  "arm": "v9map_gen_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_0p25B-3001",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3001,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_0p25B-3002",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999",
+  "seed": 3002,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_0p25B-3001",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3001,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_0p25B-3002",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999",
+  "seed": 3002,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ }
+]
