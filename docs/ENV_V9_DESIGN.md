@@ -325,3 +325,42 @@ Facts of `variants/v10/` (D22-D24). Knobs, defaults, build and test commands:
   validation episodes. Same settings on `build-v10-noport`: generic 6.97%, shaped 7.18%
   (99-100% deaths, stone collected in 0-1 of 128 episodes). One seed at 2M steps: a pipeline
   check, not a learnability result.
+- **[IMPL] Tree sprites (`TREE_LEAF_VISUAL`, default 1).** In Terraria the canopy and the
+  branch leaves are drawn by the tree (`TileDrawing.DrawTrees`: `Tree_Tops`,
+  `Tree_Branches`), not placed as blocks. Worldgen still reserves the canopy cells (same
+  RNG stream, every other cell identical to `TREE_LEAF_VISUAL=0`) and clears them before
+  the world is returned: the world holds no `TILE_LEAVES` (the id and its observation
+  channel stay, always empty), and felling clears no leaves. `terraria-px-v10` draws the
+  80x80 canopy on each trunk top and 40x40 leafy branches beside inner trunk tiles (2 in
+  10 per side, never two in a row, as `GrowTree`), chosen by a hash of the trunk cell;
+  runs under 5 tiles are stumps (no crown). Branch wood stays sampled at felling.
+- **[IMPL] Tile anchors (`SUPPORT_RULES`, default 1).** `TileObjectData` anchors without
+  walls (none exist here). Placement: torch needs a solid tile left, right or below; rope
+  a solid tile or rope above; platform a solid tile or platform beside it or a solid tile
+  below; workbench, furnace, anvil and campfire a solid tile under every bottom cell
+  (workbench: or platform). Blocks still need nothing (pillars and bridges stay legal).
+  Removing a cell re-checks its four neighbours (`WorldGen.TileFrame` -> `Check*`): torches,
+  rope (whole chains below a cut), mushrooms, stations, life crystals and looted chests that
+  lost every anchor break and drop their item into the inventory, recursively; light goes
+  through `env_object_remove` (incremental, exact) and `object_part` is cleared per cell.
+  Placed platforms do not break (Terraria). The block under an unopened chest cannot be
+  mined (mask and handler; Terraria forbids it for a non-empty chest); once looted the
+  chest breaks with its support and drops nothing (chests are not an item here). Masks:
+  a dark anchor cell counts as present, so the mask never reveals hidden terrain. Fixtures:
+  `test_support` (placement legality, cascades, rope chains, mushroom, crystal, chest,
+  light and object parts exact afterwards). With both knobs 0 a v10 build plays as before;
+  `build-v10-noport` adds them and still equals `build-v9` (400,000 steps, 16 lanes).
+- **[IMPL] Combat feedback (frontend only).** `ENV_FX` (default 0; the pixel frontend
+  builds with 1) adds `Env.fx`, an observational side channel written next to the events
+  and never read by the game: this step's hits (target, slot, damage, crit, game tick,
+  position), whether a swing started, and every body's hitbox per game tick. It is part
+  of `Env`, so snapshots carry it; obs, masks and rewards are unchanged (selftest
+  determinism and save/load with and without it). `terraria-px-v10` draws the useStyle 1
+  arc from the original item sprite (`itemRotation = (anim/max - 0.5) * -dir * 3.5 - dir *
+  0.3`, handle at `itemLocation` by thirds) over `itemAnimationMax` ticks, the copper
+  shortsword's stab projectile (2.1 px/tick, 16 ticks), pickaxe/axe swings per use time,
+  damage numbers (`CombatText` colours, crits larger), a red hit flash on mobs, the boss and
+  the player, the player's blink through its i-frames, and moves the player and mobs along
+  the per-tick path, so knockback reads as a jolt rather than a straight line per step.
+  Throughput (64 lanes, 5 x 20,000 steps, three interleaved runs): `build-v10` with both
+  rules on 0.95-1.03x the build before them (median 0.96x; run-to-run noise about +-3%).

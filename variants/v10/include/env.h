@@ -54,6 +54,38 @@
 #ifndef FID_TICKS
 #define FID_TICKS 15
 #endif
+/* ---- knobs: tile rules (v10 polish, 2026-11-08) -------------------------
+   Rule changes after the first v10 runs, also on by default; with both 0 a
+   v10 build plays exactly like before them (and build-v10-noport like v9).
+   TREE_LEAF_VISUAL  tree canopies and branch leaves are part of the tree
+                     sprite, as in Terraria (Tree_Tops / Tree_Branches): the
+                     world holds no TILE_LEAVES cells (the id and its
+                     observation channel stay, always empty) and felling
+                     clears none. Worldgen still reserves the canopy cells,
+                     so every other cell equals TREE_LEAF_VISUAL=0's world.
+   SUPPORT_RULES     tile anchors (TileObjectData; this world has no walls):
+                     torches need a solid tile left, right or below; rope
+                     hangs below a solid tile or rope; platforms need a solid
+                     tile or platform beside them or a solid tile below;
+                     furniture, stations, chests and life crystals need a
+                     solid tile under every bottom cell (a workbench also
+                     takes a platform); mushrooms a solid tile below.
+                     Removing an anchor breaks the dependants into the
+                     inventory (WorldGen.KillTile drops), rope chains and
+                     all; the block under an unopened chest cannot be mined. */
+#ifndef TREE_LEAF_VISUAL
+#define TREE_LEAF_VISUAL 1
+#endif
+#ifndef SUPPORT_RULES
+#define SUPPORT_RULES 1
+#endif
+/* ENV_FX: the observational side channel Env.fx (hits, swing start, bodies
+   per game tick) for the pixel frontend, which builds with ENV_FX=1. Never
+   read by the game, so it cannot change a result; off by default because
+   recording it costs training throughput (about 4%). */
+#ifndef ENV_FX
+#define ENV_FX 0
+#endif
 /* Fixed point: Q16.16 pixels (16 px per tile), as Terraria positions are px. */
 typedef int32_t fix_t;
 #define FIX_ONE 65536
@@ -513,6 +545,25 @@ typedef struct { int16_t x,y,damage,ttl; } HitSlot;
 typedef enum { BOSS_HOVER,BOSS_DASH,BOSS_PAUSE } BossMode;
 typedef struct { bool active; uint8_t mode,dashes_left; int x,y,hp,timer,vx,vy,immune; } Boss;
 typedef struct { int x,y; bool opened; int16_t loot[ITEM_COUNT]; } Chest;
+/* Observational side channel for frontends and tools (Env.fx, ENV_FX=1): what this
+   step's combat did and where the bodies were at every game tick. Cleared /
+   overwritten by each env_step, written next to the events, never read by
+   the simulation, the observation or the reward, so it cannot change a
+   result. Hits: damage numbers and hit flashes (x, y: world px of the top
+   centre of the struck body; tick: game tick within the step). path: hitbox
+   top-left in world px of every mob slot and the player (index FX_PLAYER)
+   before the first tick (row 0) and after each tick (FX_NONE: empty slot). */
+enum { FX_TARGET_MOB, FX_TARGET_BOSS, FX_TARGET_PLAYER };
+typedef struct { int16_t x,y,dmg; uint8_t tick,target,slot; bool crit; } FxHit;
+#define FX_HITS 16
+#define FX_PLAYER MAX_MOBS
+#define FX_NONE INT16_MIN
+typedef struct {
+ uint8_t tick,n_hits; bool swing; FxHit hit[FX_HITS];
+#if FID_TICKED
+ int16_t path[FID_TICKS+1][MAX_MOBS+1][2];
+#endif
+} EnvFx;
 typedef struct { int max_steps; } EnvConfig;
 typedef struct Env {
  uint8_t tiles[WORLD_H][WORLD_W],light[WORLD_H][WORLD_W],terrain_light[WORLD_H][WORLD_W];
@@ -551,7 +602,19 @@ typedef struct Env {
 #if FID_MINING
  int tool_time,dig_x,dig_y; HitSlot hits[HIT_SLOTS];
 #endif
+#if ENV_FX
+ EnvFx fx; /* observational side channel, see EnvFx */
+#endif
 } Env;
+/* Log one hit to the side channel (dropped once FX_HITS are taken). */
+static inline void env_fx_hit(Env *e,int target,int slot,int x,int y,int dmg,bool crit) {
+#if ENV_FX
+ if(e->fx.n_hits>=FX_HITS) return;
+ e->fx.hit[e->fx.n_hits++]=(FxHit){(int16_t)x,(int16_t)y,(int16_t)dmg,e->fx.tick,(uint8_t)target,(uint8_t)slot,crit};
+#else
+ (void)e;(void)target;(void)slot;(void)x;(void)y;(void)dmg;(void)crit;
+#endif
+}
 void env_init(Env*,EnvConfig);
 void env_reset(Env*,uint64_t);
 void env_step(Env*,int);

@@ -108,9 +108,9 @@ Do **not** pass `LIGHT_WINDOW=1` (`light.c` already has the window refresh).
 
     # default game (all ports, 15 ticks); INV_LOG=1 as in the v8/v9 training builds
     make -C perf/v7 V7=$PWD/variants/v10 BUILD=build-v10 VARIANT="-DINV_LOG=1"
-    # control: all ports off = v9's rules plus the D24 achievements
+    # control: all ports and tile rules off = v9's rules plus the D24 achievements
     make -C perf/v7 V7=$PWD/variants/v10 BUILD=build-v10-noport \
-        VARIANT="-DINV_LOG=1 -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0"
+        VARIANT="-DINV_LOG=1 -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 -DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0"
 
     TERRARIA_LITE_LIB=$PWD/perf/v7/build-v10/libterraria.so PYTHONPATH=python ...
 
@@ -124,7 +124,8 @@ backend (`--sim-backend gpu`) is v7-only.
 ## Play
 
 `terraria-px-v10` is the SDL pixel frontend (`src/px_*.c`, built against this core with
-the default knobs; Terraria textures from the local Steam install, as `terraria-px`):
+the default knobs plus `ENV_FX=1`; Terraria textures from the local Steam install, as
+`terraria-px`):
 
     make terraria-px-v10 && ./terraria-px-v10            # seed 23000001 (first validation world)
     ./terraria-px-v10 42                                  # or --seed 42; --tick-ms 250 is real time
@@ -135,6 +136,14 @@ Suspicious Looking Eye, a click on a potion / mushroom / life crystal / the Eye 
 a hotbar click selects the slot directly, `'` and `` ` `` craft gold chainmail and the Eye,
 and j / l can be held on a rope. The HUD adds the clock and night, the layer, the tiered
 achievement panel with the weighted score, and the boss bar.
+
+Combat feedback comes from `Env.fx` (hits, swing start, every body per game tick; never
+read by the game): broadswords swing the useStyle 1 overhead arc from the original item
+sprite over `itemAnimationMax` ticks, the copper shortsword thrusts its stab, pickaxe and
+axe swing per use time; damage numbers pop over the struck body (orange, crits larger, red
+on the player); mobs, the boss and the player flash red on a hit, the player blinks through
+its i-frames; the player and mobs follow their per-tick path, so knockback shows its real
+jolt. Trees draw `Tree_Tops` crowns and `Tree_Branches` leaves (`TREE_LEAF_VISUAL`).
 
 ## Tests
 
@@ -150,9 +159,10 @@ achievement panel with the weighted score, and the boss bar.
        perf/v7/build-v8-o3t2-inv/libterraria.so perf/v7/build-v9/libterraria.so \
        perf/v7/build-v10-noport/libterraria.so perf/v7/build-v10/libterraria.so
 
-Add the noport flags to the two `cc` lines to test the control build. The scripted boss
-fight is gated (>= 90%) for the two shipped rule sets (combat and physics both on, or
-both off); mixed ablation builds only report it.
+Add `-DENV_FX=1` to the first `cc` line for the side-channel fixture (`test_fx`). Add the
+noport flags (including `-DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0`) to the two `cc` lines to
+test the control build. The scripted boss fight is gated (>= 90%) for the two shipped rule
+sets (combat and physics both on, or both off); mixed ablation builds only report it.
 
 ## Knobs
 
@@ -163,6 +173,9 @@ All compile-time (`VARIANT="-DNAME=value"`). v9's knobs keep their meaning
 |---|---|---|
 | `FID_MOBS`, `FID_COMBAT`, `FID_PHYSICS`, `FID_MINING`, `FID_TREES` | 1 | behaviour ports (above) |
 | `FID_TICKS` | 15 | game ticks per action (D23) |
+| `TREE_LEAF_VISUAL` | 1 | canopies and branch leaves are tree sprites (frontend), no `TILE_LEAVES` cells (below) |
+| `SUPPORT_RULES` | 1 | tile anchors for placement and breaking (below) |
+| `ENV_FX` | 0 | observational side channel `Env.fx` for the pixel frontend (built with 1); never read by the game |
 | `SLIME_HP/DMG/DEF` | 25 / 7 / 2 | Blue Slime |
 | `BAT_HP/DMG/DEF` | 16 / 13 / 2 | Cave Bat (v9 damage 12 without mob/combat ports) |
 | `ZOMBIE_HP/DMG/DEF` | 45 / 14 / 6 | Zombie (v9: 30 / 10) |
@@ -175,6 +188,30 @@ All compile-time (`VARIANT="-DNAME=value"`). v9's knobs keep their meaning
 
 Mob stats default to the real `NPC.SetDefaults` values whenever `FID_MOBS` or `FID_COMBAT`
 is on, otherwise to v9's; defense acts only through `FID_COMBAT`.
+
+## Tile rules (after the first v10 runs)
+
+Rule changes found in play, each a knob (default on); with both 0 a v10 build plays as
+before them, and `build-v10-noport` sets both 0 to stay v9.
+
+- **`TREE_LEAF_VISUAL`**: as in Terraria, the canopy (`Tree_Tops`) and the branch leaves
+  (`Tree_Branches`) belong to the tree sprite. Worldgen still reserves the canopy cells
+  (every other cell equals the `TREE_LEAF_VISUAL=0` world) and clears them before
+  returning: no `TILE_LEAVES` (id and observation channel kept, always empty); felling
+  clears none. `terraria-px-v10` draws crowns on trunk tops and leafy branches along
+  trunks, chosen from the trunk cell; trunks under 5 tiles are stumps.
+- **`SUPPORT_RULES`** (no walls exist, so blocks are the anchors):
+  - torch: a solid tile left, right or below; rope: a solid tile or rope above; platform: a
+    solid tile or platform left/right, or a solid tile below;
+  - workbench, furnace, anvil, campfire: a solid tile under every bottom cell (workbench:
+    or a platform). Blocks need nothing (pillars and bridges stay legal);
+  - when a cell is removed its neighbours are re-checked: torches, rope (the whole chain
+    below), mushrooms, stations, life crystals and looted chests without an anchor break
+    and drop their item into the inventory (a looted chest drops nothing), recursively,
+    with exact incremental light and `object_part`; placed platforms stay;
+  - the block under an unopened chest cannot be mined;
+  - the placement and mining masks follow; a dark anchor cell counts as present (no
+    hidden-terrain leak).
 
 ## Contract summary
 

@@ -74,14 +74,16 @@ endif
 # The same pixel frontend against the v10 core (variants/v10/README.md:
 # all behaviour ports on, 15 game ticks per action). Every translation unit
 # sees v10's env.h, so the objects live in their own directory and the v10
-# include path comes first.
+# include path comes first. ENV_FX=1 adds the core's observational side
+# channel (hits, per-tick bodies) the combat feedback is drawn from.
+PX10_FLAGS := -I$(V10_DIR)/include -DENV_FX=1
 $(PX10_CORE_OBJ): $(PX10_DIR)/%.o: $(V10_DIR)/src/%.c
 	@mkdir -p $(@D)
-	$(CC) -I$(V10_DIR)/include $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+	$(CC) $(PX10_FLAGS) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(PX10_OBJ) $(PX10_DIR)/tools/px_smoke_v10.o: $(PX10_DIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -I$(V10_DIR)/include $(CFLAGS) $(DEPFLAGS) -Ithird_party $(SDL_CFLAGS) -c $< -o $@
+	$(CC) $(PX10_FLAGS) $(CFLAGS) $(DEPFLAGS) -Ithird_party $(SDL_CFLAGS) -c $< -o $@
 
 # Headless v10 smoke: every v10 entity rendered, screenshots per scene.
 px-v10-selftest: $(PX10_CORE_OBJ) $(PX10_DIR)/src/px_render.o $(PX10_DIR)/tools/px_smoke_v10.o

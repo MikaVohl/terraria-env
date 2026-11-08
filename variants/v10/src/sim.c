@@ -61,6 +61,17 @@ void env_give(Env *e, int item, int qty) {
 }
 #define give env_give
 
+/* Side channel (EnvFx, ENV_FX=1): FX_SET(...) writes it, compiled out
+   otherwise; fx_player_hit logs damage taken at the top centre of the hitbox. */
+#if ENV_FX
+#define FX_SET(...) do { __VA_ARGS__; } while (0)
+#else
+#define FX_SET(...) ((void)0)
+#endif
+static void fx_player_hit(Env *e, int dmg) {
+    env_fx_hit(e, FX_TARGET_PLAYER, 0, (int)(player_fx(e) >> 16) + PLAYER_PX_W / 2, (int)(player_fy(e) >> 16), dmg, false);
+}
+
 #if FID_COMBAT
 /* Main.DamageVar: dmg * (1 + rand.Next(-15, 16) / 100), Math.Round (half to
    even), computed exactly in integers. */
@@ -83,6 +94,7 @@ void env_hurt(Env *e, int raw, int dir, const char *who) {
     int dmg = (2 * env_damage_var(e, raw) - ARMOR_DEFENSE[e->armor]) / 2;
     if (dmg < 1) dmg = 1;
     e->health -= dmg;
+    fx_player_hit(e, dmg);
     e->immune_ticks = dmg == 1 ? 20 : 40;
     e->safe_ticks = 0;
     if (dir) {
@@ -103,6 +115,7 @@ void env_hurt(Env *e, int raw, int dir, const char *who) {
     int damage = raw - (ARMOR_DEFENSE[e->armor] + 1) / 2;
     if (damage < 1) damage = 1;
     e->health -= damage;
+    fx_player_hit(e, damage);
     e->hurt_cd = 8; e->safe_ticks = 0;
     SAY(e, "%s hit you (-%d hp)", who, damage);
 }
@@ -220,6 +233,89 @@ static void hit_prune(Env *e) {
 }
 #endif
 
+#if SUPPORT_RULES
+/* ---- tile anchors (SUPPORT_RULES) ----------------------------------------
+   TileObjectData anchors, without walls (this world has none). Placement
+   needs them; WorldGen.TileFrame's Check* calls break a tile that lost them
+   and WorldGen.KillTile drops its item, here straight into the inventory as
+   every mined drop. */
+
+/* A solid tile (or a platform where `platform`) anchors. In `mask` mode a
+   dark cell may hold anything and counts as an anchor, so the action mask
+   never reveals hidden terrain. */
+static bool anchor(const Env *e, int x, int y, bool mask, bool platform) {
+    if (mask && in_bounds(x, y) && e->light[y][x] < DARK_THRESHOLD) return true;
+    Tile t = tile_at(e, x, y);
+    return tile_solid(t) || (platform && t == TILE_PLATFORM);
+}
+
+/* Does `t` with its bottom-left cell at (left, bottom) have an anchor? Torch:
+   solid left, right or below. Rope: solid tile or rope above. Platform: solid
+   tile or platform beside it, or a solid tile below. Mushroom: solid below.
+   Furniture, stations, chests, life crystals: solid under every bottom cell
+   (the workbench also stands on platforms). Blocks need nothing. */
+static bool supported(const Env *e, Tile t, int left, int bottom, bool mask) {
+    switch (t) {
+    case TILE_TORCH:
+        return anchor(e, left - 1, bottom, mask, false) || anchor(e, left + 1, bottom, mask, false)
+            || anchor(e, left, bottom + 1, mask, false);
+    case TILE_ROPE:
+        return anchor(e, left, bottom - 1, mask, false) || tile_at(e, left, bottom - 1) == TILE_ROPE;
+    case TILE_PLATFORM:
+        return anchor(e, left - 1, bottom, mask, true) || anchor(e, left + 1, bottom, mask, true)
+            || anchor(e, left, bottom + 1, mask, false);
+    case TILE_MUSHROOM:
+        return anchor(e, left, bottom + 1, mask, false);
+    case TILE_WORKBENCH: case TILE_FURNACE: case TILE_ANVIL: case TILE_CAMPFIRE:
+    case TILE_CHEST: case TILE_CHEST_OPEN: case TILE_LIFE_CRYSTAL:
+        for (int c = 0; c < tile_object_w(t); c++)
+            if (!anchor(e, left + c, bottom + 1, mask, t == TILE_WORKBENCH)) return false;
+        return true;
+    default:
+        return true;
+    }
+}
+
+static const char *support_need(Tile t) {
+    switch (t) {
+    case TILE_TORCH:    return "a solid block beside or below";
+    case TILE_ROPE:     return "a solid block or rope above";
+    case TILE_PLATFORM: return "a block or platform beside, or a block below";
+    default:            return "solid ground under it";
+    }
+}
+
+/* What breaks when unanchored. Placed platforms stay (as in Terraria); an
+   unopened chest never loses its support (its block cannot be mined). */
+static bool breaks_unsupported(Tile t) {
+    return t == TILE_TORCH || t == TILE_ROPE || t == TILE_MUSHROOM || t == TILE_WORKBENCH
+        || t == TILE_FURNACE || t == TILE_ANVIL || t == TILE_CAMPFIRE || t == TILE_CHEST_OPEN
+        || t == TILE_LIFE_CRYSTAL;
+}
+
+static void support_lost(Env *e, int x, int y);
+
+/* Break the object covering (x, y) if it lost its anchor; then whatever it
+   anchored in turn (rope chains). */
+static void support_check(Env *e, int x, int y) {
+    if (!in_bounds(x, y)) return;
+    Tile t = tile_at(e, x, y);
+    if (!breaks_unsupported(t)) return;
+    int w = tile_object_w(t), h = tile_object_h(t), part = e->object_part[y][x];
+    int left = x - part % w, bottom = y - part / w + h - 1;
+    if (supported(e, t, left, bottom, false)) return;
+    env_object_remove(e, x, y);
+    if (tile_drop(t) >= 0) give(e, tile_drop(t), 1);
+    for (int r = 0; r < h; r++) for (int c = 0; c < w; c++) support_lost(e, left + c, bottom - r);
+}
+
+/* Cell (x, y) no longer holds what it held: re-check its four neighbours. */
+static void support_lost(Env *e, int x, int y) {
+    support_check(e, x - 1, y); support_check(e, x + 1, y);
+    support_check(e, x, y - 1); support_check(e, x, y + 1);
+}
+#endif
+
 /* ---- phase 1: actions --------------------------------------------------- */
 
 #if !FID_PHYSICS
@@ -294,6 +390,11 @@ static bool do_mine(Env *e, int r) {
     if(tile_solid(t)&&tile_at(e,tx,ty-1)==TILE_LOG) {
         SAY(e,"chop the tree before mining its ground"); return false;
     }
+#if SUPPORT_RULES
+    if(tile_solid(t)&&tile_at(e,tx,ty-1)==TILE_CHEST) {
+        SAY(e,"the chest above is not empty"); return false;
+    }
+#endif
 
 #if FID_MINING
     e->dig_x = tx; e->dig_y = ty;
@@ -320,12 +421,14 @@ static bool do_mine(Env *e, int r) {
         for(int y=top;y<=ty;y++) {
             e->tiles[y][tx]=TILE_AIR; light_tile_changed(e,tx,y,TILE_LOG); wood++;
         }
+#if !TREE_LEAF_VISUAL
         /* Radius-two canopies cannot overlap another generated tree trunk. */
         for(int y=top-2;y<=top;y++) for(int x=tx-2;x<=tx+2;x++) {
             if(in_bounds(x,y) && e->tiles[y][x]==TILE_LEAVES) {
                 e->tiles[y][x]=TILE_AIR; light_tile_changed(e,x,y,TILE_LEAVES);
             }
         }
+#endif
 #if FID_TREES
         /* WorldGen.KillTile_GetTreeDrops: each tree tile drops one wood, plus
            one if genRand.Next(100) < axe (Copper Axe: 7) or rand.Next(3) == 0.
@@ -350,7 +453,14 @@ static bool do_mine(Env *e, int r) {
         give(e,ITEM_WOOD,wood);
         harvested_wood=wood;
     } else {
+        int ow = tile_object_w(t), oh = tile_object_h(t), part = e->object_part[ty][tx];
+        int left = tx - part % ow, top = ty - part / ow;
         env_object_remove(e,tx,ty);
+#if SUPPORT_RULES
+        for (int r = 0; r < oh; r++) for (int c = 0; c < ow; c++) support_lost(e, left + c, top + r);
+#else
+        (void)left; (void)top; (void)oh;
+#endif
     }
     e->light_dirty = true;
 #if FID_MINING
@@ -374,8 +484,9 @@ static bool do_mine(Env *e, int r) {
     return true;
 }
 
-/* Placement needs no supporting neighbour on purpose: pillar-jumping upward and
-   bridging across a chasm are both intended traversal tools. */
+/* Blocks need no supporting neighbour on purpose: pillar-jumping upward and
+   bridging across a chasm are both intended traversal tools. With
+   SUPPORT_RULES torches, rope, platforms and furniture need their anchors. */
 static bool do_place(Env *e, int r) {
     Placeable p = PLACEABLES[e->selected];
     int tx = e->px + REACH_DX[r];
@@ -396,6 +507,9 @@ static bool do_place(Env *e, int r) {
         if(t!=TILE_AIR) { SAY(e,"%s is in the way",TILE_INFO[t].name);return false; }
         if(tile_solid(p.tile)&&is_body(e,x,y)) { SAY(e,"you are standing there");return false; }
     }
+#if SUPPORT_RULES
+    if(!supported(e,p.tile,tx,ty,false)) { SAY(e,"%s needs %s",TILE_INFO[p.tile].name,support_need(p.tile));return false; }
+#endif
     env_object_write(e,p.tile,tx,ty);
     e->inv[p.item]--;
     e->light_dirty = true;
@@ -507,6 +621,9 @@ static bool can_mine(const Env *e, int r) {
     if (t == TILE_AIR) return false;
     if (tile_tier(t) == TIER_NEVER) return false;
     if(tile_solid(t)&&tile_at(e,tx,ty-1)==TILE_LOG) return false;
+#if SUPPORT_RULES
+    if(tile_solid(t)&&ty>0&&tile_at(e,tx,ty-1)==TILE_CHEST&&e->light[ty-1][tx]>=DARK_THRESHOLD) return false;
+#endif
     return tile_tier(t) <= e->tool_tier;
 }
 
@@ -524,7 +641,11 @@ static bool can_place(const Env *e, int r) {
         if(e->light[y][x]>=DARK_THRESHOLD&&tile_at(e,x,y)!=TILE_AIR) return false;
         if(tile_solid(p.tile)&&is_body(e,x,y)) return false;
     }
+#if SUPPORT_RULES
+    return supported(e,p.tile,tx,ty,true);
+#else
     return true;
+#endif
 }
 
 /* Cycling only means something when a slot other than the current one holds
@@ -642,6 +763,7 @@ static void apply_fall(Env *e, int dist) {
     dmg-=(ARMOR_DEFENSE[e->armor]+1)/2; if(dmg<1) dmg=1;
 #endif
     e->health -= dmg;
+    fx_player_hit(e, dmg);
     e->safe_ticks=0;
     e->reward += FALL_REWARD_PER_HP * (float)dmg;
     SAY(e, "fell %d tiles (-%d hp)", dist, dmg);
@@ -864,7 +986,7 @@ static void player_tick(Env *e) {
    body's rows. Regular mobs additionally need a clear line (mobs.c). */
 static void do_attack(Env *e) {
     if(e->attack_cd) return;
-    e->attack_cd=3;
+    e->attack_cd=3; FX_SET(e->fx.swing=true);
     int x0=e->facing>0?e->px:e->px-2, x1=e->facing>0?e->px+PLAYER_W+1:e->px+PLAYER_W-1;
     int y0=e->py-PLAYER_H+1, y1=e->py, damage=WEAPON_DAMAGE[e->weapon];
     mobs_attack(e,x0,y0,x1,y1,damage);
@@ -886,6 +1008,7 @@ static const fix_t FID_KNOCKBACK[WEAPON_COUNT] = {FIXC(4), FIXC(5), FIXC(5.5), F
 static void attack_start(Env *e) {
     if (e->item_anim > 0) return;
     e->item_anim = e->item_anim_max = FID_USE_ANIM[e->weapon];
+    FX_SET(e->fx.swing = true);
     if (e->weapon == 0) { e->stab_tick = 1; e->stab_dir = e->facing; e->stab_hits = 0; }
 }
 
@@ -1009,6 +1132,25 @@ static bool fid_tick(Env *e, int mine_r) {
 #endif
     return edited;
 }
+
+/* Side channel (EnvFx.path): every body's hitbox top-left after `row` ticks. */
+static void fx_path(Env *e, int row) {
+#if !ENV_FX
+    (void)e; (void)row;
+#else
+    int16_t (*p)[2] = e->fx.path[row];
+    for (int i = 0; i < MAX_MOBS; i++) {
+        const Mob *m = &e->mobs[i];
+        if (!m->kind) { p[i][0] = p[i][1] = FX_NONE; continue; }
+#if FID_MOBS
+        p[i][0] = (int16_t)(m->fx >> 16); p[i][1] = (int16_t)(m->fy >> 16);
+#else
+        p[i][0] = (int16_t)(m->x * 16); p[i][1] = (int16_t)(m->y * 16);
+#endif
+    }
+    p[FX_PLAYER][0] = (int16_t)(player_fx(e) >> 16); p[FX_PLAYER][1] = (int16_t)(player_fy(e) >> 16);
+#endif
+}
 #endif
 
 void env_init(Env *e, EnvConfig cfg) {
@@ -1073,6 +1215,7 @@ void env_step(Env *e, int action) {
     e->reward = 0.0f;
     if (e->terminated || e->truncated) return;
     e->msg[0] = '\0';
+    FX_SET(e->fx.tick = 0; e->fx.n_hits = 0; e->fx.swing = false);
 
     if (action < 0 || action >= ACT_COUNT) action = ACT_NOOP;
 
@@ -1172,7 +1315,12 @@ void env_step(Env *e, int action) {
     mobs_tick(e);
     boss_tick(e);
 #if FID_TICKED
-    for (int t = 0; t < FID_TICKS; t++) edited |= fid_tick(e, mine_r);
+    fx_path(e, 0);
+    for (int t = 0; t < FID_TICKS; t++) {
+        FX_SET(e->fx.tick = (uint8_t)t);
+        edited |= fid_tick(e, mine_r);
+        fx_path(e, t + 1);
+    }
 #else
     (void)mine_r;
 #endif

@@ -32,6 +32,15 @@
 #define PX_WIN_W    (PX_VIEW_W + PX_SIDE_W)
 #define PX_WIN_H    (PX_VIEW_H + PX_HUD_H)
 
+#if PX_V10
+#if !ENV_FX
+#error "the v10 frontend draws from the core's Env.fx side channel: build with -DENV_FX=1 (Makefile PX10_FLAGS)"
+#endif
+/* A damage number (Terraria CombatText): world px where it pops, when. */
+#define PX_POPS 32
+typedef struct { float x, y; double t0; int dmg; uint8_t target; bool crit; } PxPop;
+#endif
+
 /* Everything the drawing code needs that Env does not carry: the sub-tick
    interpolation state and where the pointer is. Positions are in tiles and
    fractional -- decoupling the 60 Hz frame from the fixed sim tick is the
@@ -61,6 +70,14 @@ typedef struct {
     float  mob_x[MAX_MOBS], mob_y[MAX_MOBS];
     float  boss_x, boss_y;
     double swing_t0, swing_len; /* real-time melee swing, seconds on `clock` */
+    int    swing_weapon;        /* WEAPON_ITEM index of that swing */
+    double tick_s;              /* real seconds per game tick */
+    /* Combat feedback from the core's observational side channel (Env.fx),
+       in seconds on `clock`: when each body was last hit (flash), when the
+       player's i-frames end (blink), and the damage numbers in flight. */
+    double mob_hit_t[MAX_MOBS], boss_hit_t, player_hit_t, immune_end;
+    PxPop  pop[PX_POPS];
+    int    pop_next;
     bool   help;               /* controls overlay */
 #endif
 } PxView;
@@ -84,6 +101,10 @@ static inline void px_feet(const Env *e, float *x, float *y)
 /* A mob's hitbox in world px (top-left, size): its fixed-point NPC body with
    FID_MOBS, otherwise its grid cell. */
 void px_mob_box(const Mob *m, float *x, float *y, int *w, int *h);
+/* After an env_step applied at `t0` (seconds on `clock`) with `tick_s`
+   seconds per game tick: start the swing, the hit flashes, the i-frame blink
+   and the damage numbers the step's Env.fx reports, each at its game tick. */
+void px_fx_step(PxView *v, const Env *e, double t0, double tick_s);
 #endif
 
 typedef struct PxUi PxUi;

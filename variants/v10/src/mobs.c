@@ -484,6 +484,7 @@ void mobs_attack(Env *e,int x0,int y0,int x1,int y1,int damage) {
             for(int s=1;s<abs(dx);s++) if(solid_at(e,edge+s*e->facing,m->y)) blocked=true;
         if(blocked) continue;
         m->hp-=damage;
+        env_fx_hit(e,FX_TARGET_MOB,i,m->x*16+8,m->y*16,damage,false);
         if(m->hp<=0) {
             killed(e,m);
             SAY(e,"%s defeated",MOB_NAME[m->kind]);
@@ -527,6 +528,8 @@ static void mob_strike(Env *e, Mob *m, int base, fix_t kb, int dir) {
     if (crit) twice *= 2;
     int dmg = twice / 2;
     m->hp -= dmg;
+    { fix_t hx, hy; int hw, hh; mob_rect(m, &hx, &hy, &hw, &hh);
+      env_fx_hit(e, FX_TARGET_MOB, (int)(m - e->mobs), (int)(hx >> 16) + hw / 2, (int)(hy >> 16), dmg, crit); }
 #if FID_MOBS
     const fix_t resist = MOB_KB_RESIST[m->kind];
     fix_t k = fmul(kb, resist);

@@ -473,7 +473,11 @@ static void snap_take(Snap *s, const Env *e)
 
 static float lerpf(float a, float b, float t) { return a + (b - a) * t; }
 
-static void snap_lerp(PxView *v, const Snap *p, const Env *e, float alpha)
+/* `path`: the last tick ran an env_step, so Env.fx.path holds this step's
+   bodies at every game tick (v10): the player and the mobs follow it, which
+   keeps hops, falls and knockback in their real shape instead of one
+   straight line per step. Otherwise (step skipped) the two snapshots. */
+static void snap_lerp(PxView *v, const Snap *p, const Env *e, float alpha, bool path)
 {
     Snap c;
     snap_take(&c, e);
@@ -490,7 +494,25 @@ static void snap_lerp(PxView *v, const Snap *p, const Env *e, float alpha)
     }
     v->boss_x = p->boss ? lerpf(p->bx, c.bx, alpha) : c.bx;
     v->boss_y = p->boss ? lerpf(p->by, c.by, alpha) : c.by;
+#if FID_TICKED
+    if (path) {
+        float f = alpha * FID_TICKS, u;
+        int k = (int)f;
+        if (k >= FID_TICKS) k = FID_TICKS - 1;
+        u = f - (float)k;
+        const int16_t (*a)[2] = e->fx.path[k], (*b)[2] = e->fx.path[k + 1];
+        float x = lerpf(a[FX_PLAYER][0], b[FX_PLAYER][0], u), y = lerpf(a[FX_PLAYER][1], b[FX_PLAYER][1], u);
+        v->feet_x = (x + PLAYER_PX_W / 2.0f - PLAYER_W * PX_TILE / 2.0f) / PX_TILE;
+        v->feet_y = (y + PLAYER_PX_H - PX_TILE) / PX_TILE;
+        for (int i = 0; i < MAX_MOBS; i++)
+            if (c.mk[i] && a[i][0] != FX_NONE && b[i][0] != FX_NONE) {
+                v->mob_x[i] = lerpf(a[i][0], b[i][0], u);
+                v->mob_y[i] = lerpf(a[i][1], b[i][1], u);
+            }
+    }
 #endif
+#endif
+    (void)path;
 }
 
 int main(int argc, char **argv)
@@ -516,7 +538,7 @@ int main(int argc, char **argv)
     uint64_t next_tick, last_frame, frame_epoch, frames = 0;
     int last_act = ACT_NOOP;
     Snap prev;
-    bool running = true, help = false;
+    bool running = true, help = false, path_ok = false;
     int i;
 
     memset(&tape, 0, sizeof tape);
@@ -730,7 +752,7 @@ int main(int argc, char **argv)
                         env_reset(e, (uint64_t)seed);
                         toast.until = 0.0;
                         snap_camera(&view, e);
-                        snap_take(&prev, e);
+                        snap_take(&prev, e); path_ok = false;
                         last_act = ACT_NOOP;
                     }
                     break;
@@ -781,7 +803,7 @@ int main(int argc, char **argv)
                     memset(&q, 0, sizeof q);
                     toast.until = 0.0;
                     snap_camera(&view, e);
-                    snap_take(&prev, e);
+                    snap_take(&prev, e); path_ok = false;
                     last_act = ACT_NOOP;
                     break;
                 }
@@ -829,7 +851,7 @@ int main(int argc, char **argv)
         if (over) {
             next_tick = now + tick;
             memset(&q, 0, sizeof q);
-            snap_take(&prev, e);
+            snap_take(&prev, e); path_ok = false;
         }
 
         while (!over && now >= next_tick) {
@@ -855,16 +877,17 @@ int main(int argc, char **argv)
                nothing. Skip the tick and keep rendering. */
             if (act < 0 && at_rest(e)) {
                 last_act = ACT_NOOP;
+                path_ok = false;
             } else {
                 if (act < 0) act = ACT_NOOP;
                 apply(e, act, &toast, (double)now / 1000.0);
                 last_act = act;
-#if PX_V10 && FID_COMBAT
-                /* The swing lasts itemAnimationMax game ticks of real time. */
-                if (act == ACT_ATTACK && e->item_anim > 0) {
-                    view.swing_t0  = (double)now / 1000.0;
-                    view.swing_len = (double)e->item_anim_max * (double)tick / FID_TICKS / 1000.0;
-                }
+                path_ok = true;
+#if PX_V10
+                /* Swing, hit flashes, blink and damage numbers at their game
+                   ticks: the frame loop shows game tick k of this step at
+                   next_tick + k * tick / FID_TICKS (see alpha below). */
+                px_fx_step(&view, e, (double)next_tick / 1000.0, (double)tick / FID_TICKS / 1000.0);
 #endif
             }
 
@@ -879,7 +902,7 @@ int main(int argc, char **argv)
         alpha = (float)((double)(now + tick - next_tick) / (double)tick);
         if (alpha < 0.0f) alpha = 0.0f;
         if (alpha > 1.0f) alpha = 1.0f;
-        snap_lerp(&view, &prev, e, alpha);
+        snap_lerp(&view, &prev, e, alpha, path_ok);
 
         dt = (float)(now - last_frame) / 1000.0f;
         if (dt > 0.1f) dt = 0.1f;

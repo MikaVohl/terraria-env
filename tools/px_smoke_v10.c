@@ -170,9 +170,51 @@ int main(int argc, char **argv)
         shot(ui, &e, &v, prefix, "altar");
     }
 
+    /* 5. Trees: canopies and branches are sprites, the world has no leaf cells
+       (TREE_LEAF_VISUAL). The camera centres on the first full-grown trunk. */
+    env_reset(&e, SEED);
+    {
+        int leaves = 0, tx = -1, ty = -1;
+        for (int y = 0; y < WORLD_H; y++)
+            for (int x = 0; x < WORLD_W; x++) {
+                leaves += e.tiles[y][x] == TILE_LEAVES;
+                if (tx < 0 && e.tiles[y][x] == TILE_LOG && tile_at(&e, x, y + 4) == TILE_LOG) { tx = x; ty = y; }
+            }
+        assert(leaves == 0 || !TREE_LEAF_VISUAL);
+        assert(tx >= 0);
+        sync(&v, &e);
+        centre(&v, (float)tx, (float)ty + 3.0f);
+        shot(ui, &e, &v, prefix, "trees");
+    }
+
+    /* 6. Combat: a broadsword swing mid-arc over a Zombie it just hit, its
+       damage number and hit flash, the player blinking after a hit taken. */
+    env_reset(&e, SEED);
+    for (int i = 0; i < MAX_MOBS; i++) e.mobs[i].kind = MOB_NONE;
+    e.inv[ITEM_GOLD_SWORD] = 1; e.weapon = 5; e.facing = 1;
+    {
+        int hits = 0;
+        double t0 = 10.0, tick_s = 0.25 / FID_TICKS;
+        memset(&v, 0, sizeof v);
+        v.hover_reach = v.hover_recipe = v.hover_ach = v.hover_slot = v.hover_item = -1;
+        for (int s = 0; s < 8 && !hits; s++, t0 += 0.25) {
+            mob_place(&e.mobs[0], MOB_ZOMBIE, ZOMBIE_HP, e.px + 2, e.py);
+            env_action_mask(&e, mask);
+            env_step(&e, mask[ACT_ATTACK] ? ACT_ATTACK : ACT_NOOP);
+            px_fx_step(&v, &e, t0, tick_s);
+            hits = e.fx.n_hits;
+        }
+        assert(hits > 0);
+        sync(&v, &e);
+        v.swing_t0 = t0 - 0.25; v.swing_len = 20 * tick_s;   /* a swing in progress */
+        v.clock = v.pop[0].t0 + 0.05;                          /* number rising, flash on */
+        v.immune_end = v.clock + 0.5; v.player_hit_t = v.clock - 0.01;
+        shot(ui, &e, &v, prefix, "combat");
+    }
+
     for (int k = 1; k < MOB_KINDS; k++) assert(drawn[k] == 1);
     assert(boss_frames > 0);
     px_shutdown(ui);
-    puts("v10 pixel fixtures passed: steps, all 5 mob kinds, Demon Altar, Eye of Cthulhu (both phases), help, tiered achievements");
+    puts("v10 pixel fixtures passed: steps, all 5 mob kinds, Demon Altar, Eye of Cthulhu (both phases), help, tiered achievements, tree sprites, combat feedback");
     return 0;
 }

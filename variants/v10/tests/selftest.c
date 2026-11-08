@@ -6,7 +6,8 @@
 
      cc -std=c11 -O2 -Ivariants/v10/include variants/v10/src/{sim,worldgen,light,obs,mobs,boss}.c \
         src/capi.c variants/v10/tests/selftest.c -o /tmp/v10-selftest -lm && /tmp/v10-selftest [worlds]
-   (add -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 for the noport build)
+   (add -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 -DTREE_LEAF_VISUAL=0
+    -DSUPPORT_RULES=0 for the noport build; -DENV_FX=1 for the side-channel fixture)
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -517,6 +518,226 @@ static void test_worldgen(int worlds) {
     free(e);
 }
 
+/* ---- tile rules (TREE_LEAF_VISUAL, SUPPORT_RULES) and the fx channel ---- */
+
+#if SUPPORT_RULES || ENV_FX
+static bool mask_of(const Env *e, int act) { uint8_t m[ACT_COUNT]; env_action_mask(e, m); return m[act]; }
+#endif
+
+#if SUPPORT_RULES
+static void relight(Env *e) { e->terrain_dirty = true; light_full(e); }
+
+/* Incremental terrain light still equals the uncached reference. */
+static bool light_exact(const Env *e) {
+    static Env ref;
+    memcpy(&ref, e, sizeof ref);
+    ref.px = ref.py = -10; light_reference(&ref);
+    return memcmp(ref.light, e->terrain_light, sizeof e->light) == 0;
+}
+
+/* Every air cell has object_part 0 and every object cell its own frame. */
+static bool parts_exact(const Env *e) {
+    for (int y = 0; y < WORLD_H; y++) for (int x = 0; x < WORLD_W; x++) {
+        Tile t = (Tile)e->tiles[y][x];
+        if (e->object_part[y][x] >= tile_object_w(t) * tile_object_h(t)) return false;
+    }
+    return true;
+}
+
+static int reach_to(const Env *e, int x, int y) {
+    for (int r = 0; r < REACH_COUNT; r++) if (e->px + REACH_DX[r] == x && e->py + REACH_DY[r] == y) return r;
+    return -1;
+}
+
+/* Hold the mine action on (x, y) for up to 12 steps; true once it is air. */
+static bool mine_cell(Env *e, int x, int y) {
+    int r = reach_to(e, x, y);
+    for (int t = 0; t < 12 && r >= 0 && tile_at(e, x, y) != TILE_AIR; t++) env_step(e, ACT_MINE_FIRST + r);
+    return tile_at(e, x, y) == TILE_AIR;
+}
+
+/* Select placeable slot `slot` (PLACEABLES), stock it, report mask and result. */
+static bool place_at(Env *e, int slot, int x, int y, bool *legal) {
+    int r = reach_to(e, x, y);
+    e->selected = (uint8_t)slot; e->inv[PLACEABLES[slot].item] = 5;
+    *legal = mask_of(e, ACT_PLACE_FIRST + r);
+    env_step(e, ACT_PLACE_FIRST + r);
+    return tile_at(e, x, y) == PLACEABLES[slot].tile;
+}
+
+enum { SLOT_TORCH = 3, SLOT_WORKBENCH = 5, SLOT_FURNACE = 6, SLOT_PLATFORM = 8, SLOT_ROPE = 9 };
+#endif
+
+static void test_support(void) {
+#if SUPPORT_RULES
+    Env *e = new_env(1000000);
+    const int X = 62, F = FLOOR;   /* the column right of the body; F is the stone floor row */
+    bool legal, ok;
+
+    /* Torch: mid-air illegal (mask and handler agree); on the floor legal. */
+    arena(e, 0);
+    ok = place_at(e, SLOT_TORCH, X, F - 4, &legal);
+    CHECK(!legal && !ok && e->inv[ITEM_TORCH] == 5, "torch in mid-air: mask %d placed %d", legal, ok);
+    ok = place_at(e, SLOT_TORCH, X, F - 1, &legal);
+    CHECK(legal && ok, "torch on the floor: mask %d placed %d", legal, ok);
+    /* Anchored only below: mining the block drops the torch into the pack. */
+    arena(e, 0);
+    e->tiles[F - 3][X] = TILE_STONE; relight(e);
+    ok = place_at(e, SLOT_TORCH, X, F - 4, &legal);
+    CHECK(legal && ok, "torch on a block: mask %d placed %d", legal, ok);
+    int torches = e->inv[ITEM_TORCH], stone = e->inv[ITEM_STONE];
+    CHECK(mine_cell(e, X, F - 3), "mine the torch's block");
+    CHECK(tile_at(e, X, F - 4) == TILE_AIR && e->inv[ITEM_TORCH] == torches + 1 && e->inv[ITEM_STONE] == stone + 1,
+          "unanchored torch breaks and drops (tile %d, torches %d->%d)", tile_at(e, X, F - 4), torches, e->inv[ITEM_TORCH]);
+    CHECK(light_exact(e) && parts_exact(e), "light/object parts exact after the torch broke");
+    /* A second anchor (block to the left) keeps it. */
+    arena(e, 0);
+    e->tiles[F - 3][X] = TILE_STONE; e->tiles[F - 4][X - 1] = TILE_STONE; relight(e);
+    ok = place_at(e, SLOT_TORCH, X, F - 4, &legal);
+    CHECK(ok && mine_cell(e, X, F - 3) && tile_at(e, X, F - 4) == TILE_TORCH, "torch with a side anchor stays");
+
+    /* Rope: hangs below a block or rope; the chain falls with its anchor. */
+    arena(e, 0);
+    ok = place_at(e, SLOT_ROPE, X, F - 3, &legal);
+    CHECK(!legal && !ok, "rope in mid-air: mask %d placed %d", legal, ok);
+    e->tiles[F - 4][X] = TILE_STONE; relight(e);
+    bool l1, l2, l3;
+    ok = place_at(e, SLOT_ROPE, X, F - 3, &l1) && place_at(e, SLOT_ROPE, X, F - 2, &l2) && place_at(e, SLOT_ROPE, X, F - 1, &l3);
+    CHECK(ok && l1 && l2 && l3, "rope chain below a block");
+    int ropes = e->inv[ITEM_ROPE];
+    CHECK(mine_cell(e, X, F - 2), "mine the middle rope");
+    CHECK(tile_at(e, X, F - 3) == TILE_ROPE && tile_at(e, X, F - 1) == TILE_AIR && e->inv[ITEM_ROPE] == ropes + 2,
+          "rope below the cut falls (ropes %d->%d)", ropes, e->inv[ITEM_ROPE]);
+    ok = place_at(e, SLOT_ROPE, X, F - 2, &l1) && place_at(e, SLOT_ROPE, X, F - 1, &l2);
+    ropes = e->inv[ITEM_ROPE];
+    CHECK(ok && mine_cell(e, X, F - 4), "mine the rope's anchor");
+    CHECK(tile_at(e, X, F - 3) == TILE_AIR && tile_at(e, X, F - 2) == TILE_AIR && tile_at(e, X, F - 1) == TILE_AIR
+          && e->inv[ITEM_ROPE] == ropes + 3, "whole rope chain falls (ropes %d->%d)", ropes, e->inv[ITEM_ROPE]);
+    CHECK(light_exact(e) && parts_exact(e), "light/object parts exact after the rope fell");
+
+    /* Platform: beside a platform or block, or on a block; not in mid-air. */
+    arena(e, 0);
+    ok = place_at(e, SLOT_PLATFORM, X, F - 3, &legal);
+    CHECK(!legal && !ok, "platform in mid-air: mask %d placed %d", legal, ok);
+    ok = place_at(e, SLOT_PLATFORM, X, F - 1, &legal);
+    CHECK(legal && ok, "platform on the floor");
+    ok = place_at(e, SLOT_PLATFORM, X, F - 2, &legal);
+    CHECK(!legal && !ok, "platform on a platform needs a side anchor: mask %d placed %d", legal, ok);
+    e->tiles[F - 3][X + 1] = TILE_PLATFORM; relight(e);
+    ok = place_at(e, SLOT_PLATFORM, X, F - 3, &legal);
+    CHECK(legal && ok, "platform beside a platform");
+
+    /* Furniture: solid under every bottom cell; a workbench also on platforms. */
+    arena(e, 0);
+    ok = place_at(e, SLOT_WORKBENCH, X, F - 2, &legal);
+    CHECK(!legal && !ok, "workbench in mid-air: mask %d placed %d", legal, ok);
+    for (int x = X; x < X + 3; x++) e->tiles[F - 2][x] = TILE_PLATFORM;
+    relight(e);
+    ok = place_at(e, SLOT_FURNACE, X, F - 3, &legal);
+    CHECK(!legal && !ok, "furnace on platforms: mask %d placed %d", legal, ok);
+    ok = place_at(e, SLOT_WORKBENCH, X, F - 3, &legal);
+    CHECK(legal && ok, "workbench on platforms: mask %d placed %d", legal, ok);
+    arena(e, 0);
+    e->tiles[F][X + 1] = TILE_AIR; relight(e);
+    ok = place_at(e, SLOT_WORKBENCH, X, F - 1, &legal);
+    CHECK(!legal && !ok, "workbench over a hole: mask %d placed %d", legal, ok);
+    arena(e, 0);
+    ok = place_at(e, SLOT_WORKBENCH, X, F - 1, &legal);
+    CHECK(legal && ok, "workbench on the floor");
+    int benches = e->inv[ITEM_WORKBENCH];
+    CHECK(mine_cell(e, X, F), "mine under the workbench");
+    CHECK(tile_at(e, X, F - 1) == TILE_AIR && tile_at(e, X + 1, F - 1) == TILE_AIR && e->inv[ITEM_WORKBENCH] == benches + 1,
+          "unsupported workbench breaks and drops");
+    CHECK(light_exact(e) && parts_exact(e), "light/object parts exact after the workbench broke");
+    /* Campfire (an emitter): the light map loses it exactly. */
+    arena(e, 0);
+    env_object_write(e, TILE_CAMPFIRE, X, F - 1); relight(e);
+    CHECK(mine_cell(e, X, F) && tile_at(e, X + 1, F - 2) == TILE_AIR && e->inv[ITEM_CAMPFIRE] == 1, "campfire breaks");
+    CHECK(light_exact(e) && parts_exact(e), "light exact after the campfire broke");
+
+    /* Mushroom and life crystal break with their ground and drop. */
+    arena(e, 0);
+    e->tiles[F - 1][X] = TILE_MUSHROOM; relight(e);
+    CHECK(mine_cell(e, X, F) && tile_at(e, X, F - 1) == TILE_AIR && e->inv[ITEM_MUSHROOM] == 1, "mushroom breaks with its ground");
+    arena(e, 0);
+    e->tool_tier = TIER_COPPER_PICK;
+    env_object_write(e, TILE_LIFE_CRYSTAL, X, F - 1); relight(e);
+    CHECK(mine_cell(e, X, F) && tile_at(e, X + 1, F - 2) == TILE_AIR && e->inv[ITEM_LIFE_CRYSTAL] == 1, "life crystal breaks and drops");
+    CHECK(light_exact(e) && parts_exact(e), "light/object parts exact after the crystal broke");
+
+    /* Chest: the block under an unopened chest cannot be mined; once looted
+       the empty chest breaks with it (no item: chests are not craftable). */
+    arena(e, 0);
+    env_object_write(e, TILE_CHEST, X, F - 1);
+    e->chests[0] = (Chest){X, F - 1, false, {0}}; e->chests[0].loot[ITEM_TORCH] = 3; e->chest_count = 1;
+    relight(e);
+    int r = reach_to(e, X, F);
+    CHECK(!mask_of(e, ACT_MINE_FIRST + r), "mask forbids mining under an unopened chest");
+    CHECK(!mine_cell(e, X, F) && tile_at(e, X, F - 1) == TILE_CHEST, "block under an unopened chest holds");
+    CHECK(mask_of(e, ACT_INTERACT), "chest in reach");
+    env_step(e, ACT_INTERACT);
+    CHECK(tile_at(e, X, F - 1) == TILE_CHEST_OPEN && mask_of(e, ACT_MINE_FIRST + r), "looted chest's block minable");
+    CHECK(mine_cell(e, X, F) && tile_at(e, X, F - 1) == TILE_AIR && tile_at(e, X + 1, F - 2) == TILE_AIR, "empty chest breaks");
+    CHECK(light_exact(e) && parts_exact(e), "light/object parts exact after the chest broke");
+    free(e);
+#else
+    printf("support rules: SUPPORT_RULES=0, fixtures skipped\n");
+#endif
+}
+
+/* TREE_LEAF_VISUAL: no leaf cells in any world, trees still stand. */
+static void test_tree_leaves(void) {
+    Env *e = new_env(0);
+    int leaves = 0, logs = 0;
+    for (int s = 0; s < 16; s++) {
+        env_reset(e, 23000001 + s);
+        for (int y = 0; y < WORLD_H; y++) for (int x = 0; x < WORLD_W; x++) {
+            leaves += e->tiles[y][x] == TILE_LEAVES; logs += e->tiles[y][x] == TILE_LOG;
+        }
+    }
+#if TREE_LEAF_VISUAL
+    CHECK(leaves == 0 && logs > 0, "TREE_LEAF_VISUAL worlds: %d leaf cells, %d trunk cells", leaves, logs);
+#else
+    CHECK(leaves > 0 && logs > 0, "leaf cells %d, trunk cells %d", leaves, logs);
+#endif
+    free(e);
+}
+
+/* ENV_FX=1: the side channel reports this step's hits and per-tick bodies. */
+static void test_fx(void) {
+#if !ENV_FX
+    printf("fx side channel: ENV_FX=0, fixture skipped\n");
+#else
+    Env *e = new_env(1000000);
+    arena(e, 0);
+    e->inv[ITEM_GOLD_SWORD] = 1; e->weapon = 5;
+    mob_place(&e->mobs[0], MOB_ZOMBIE, ZOMBIE_HP, e->px + 2, e->py);
+    int hp = e->mobs[0].hp, seen = 0, swings = 0;
+    for (int t = 0; t < 20 && e->mobs[0].hp == hp; t++) {
+        mob_place(&e->mobs[0], MOB_ZOMBIE, hp, e->px + 2, e->py);
+        e->facing = 1; e->health = e->max_health; no_iframes(e);
+        env_step(e, mask_of(e, ACT_ATTACK) ? ACT_ATTACK : ACT_NOOP);
+        swings += e->fx.swing;
+        for (int i = 0; i < e->fx.n_hits; i++)
+            if (e->fx.hit[i].target == FX_TARGET_MOB && e->fx.hit[i].slot == 0) seen += e->fx.hit[i].dmg;
+    }
+    CHECK(swings > 0 && seen > 0 && e->mobs[0].kind && seen == hp - e->mobs[0].hp,
+          "fx hit damage %d vs hp lost %d", seen, hp - e->mobs[0].hp);
+    arena(e, DAY_STEPS);
+    mob_place(&e->mobs[0], MOB_ZOMBIE, ZOMBIE_HP, e->px, e->py);
+    int h = e->health;
+    env_step(e, ACT_NOOP);
+    int got = 0;
+    for (int i = 0; i < e->fx.n_hits; i++) if (e->fx.hit[i].target == FX_TARGET_PLAYER) got += e->fx.hit[i].dmg;
+    CHECK(got == h - e->health && got > 0, "fx player damage %d vs %d", got, h - e->health);
+#if FID_TICKED
+    CHECK(e->fx.path[FID_TICKS][FX_PLAYER][0] == (int16_t)(player_fx(e) >> 16)
+          && e->fx.path[FID_TICKS][FX_PLAYER][1] == (int16_t)(player_fy(e) >> 16), "fx path ends at the player");
+#endif
+    free(e);
+#endif
+}
+
 /* 40 achievements need 64-bit masks end to end, including the info rows. */
 static void test_info_rows(void) {
     Env *e = new_env(0);
@@ -535,9 +756,10 @@ static void test_info_rows(void) {
 
 int main(int argc, char **argv) {
     int worlds = argc > 1 ? atoi(argv[1]) : 512;
-    printf("v10 selftest (FID_MOBS=%d COMBAT=%d PHYSICS=%d MINING=%d TREES=%d, FID_TICKS=%d): Env %zu bytes, "
-           "obs status %d, actions %d, achievements %d\n", FID_MOBS, FID_COMBAT, FID_PHYSICS, FID_MINING, FID_TREES,
-           FID_TICKS, sizeof(Env), OBS_STATUS, ACT_COUNT, ACH_COUNT);
+    printf("v10 selftest (FID_MOBS=%d COMBAT=%d PHYSICS=%d MINING=%d TREES=%d, FID_TICKS=%d, TREE_LEAF_VISUAL=%d "
+           "SUPPORT_RULES=%d): Env %zu bytes, obs status %d, actions %d, achievements %d\n", FID_MOBS, FID_COMBAT,
+           FID_PHYSICS, FID_MINING, FID_TREES, FID_TICKS, TREE_LEAF_VISUAL, SUPPORT_RULES, sizeof(Env), OBS_STATUS,
+           ACT_COUNT, ACH_COUNT);
     test_determinism();
     test_light_parity();
     test_spawns();
@@ -548,6 +770,9 @@ int main(int argc, char **argv) {
     test_fight();
     test_worldgen(worlds);
     test_info_rows();
+    test_support();
+    test_tree_leaves();
+    test_fx();
     printf("%s: %d/%d checks passed\n", failures ? "FAILED" : "PASSED", checks - failures, checks);
     return failures != 0;
 }

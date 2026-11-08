@@ -110,6 +110,11 @@ static const char *const MOB_SHEET[PX_MOBS] = {
     "NPC_3", "NPC_2", "NPC_21",
 #endif
 };
+#if PX_V10
+#define PX_FLASH      0.12   /* hit flash, seconds */
+#define PX_POP_LIFE   1.0    /* damage number lifetime, seconds (CombatText ~60 ticks) */
+#define PX_STAB_TICKS 16     /* copper shortsword stab projectile life (AI_161) */
+#endif
 
 struct PxUi {
     SDL_Window   *win;
@@ -126,6 +131,12 @@ struct PxUi {
 #if PX_V10
     SDL_Texture  *obj[TILE_COUNT];    /* multi-cell objects at full size (w*16 x h*16) */
     SDL_Texture  *boss;               /* NPC_4, Eye of Cthulhu */
+    /* Held items at their original size for the use animations: weapons by
+       WEAPON_ITEM index, then copper / iron / gold pickaxe and the axe. */
+    SDL_Texture  *held[WEAPON_COUNT + 4];
+    int           held_w[WEAPON_COUNT + 4], held_h[WEAPON_COUNT + 4];
+    SDL_Texture  *tree_top;           /* Tree_Tops_0: 3 forest canopies, 80x80 */
+    SDL_Texture  *tree_branch;        /* Tree_Branches_0: left / right x 3, 40x40 */
 #endif
     SDL_Texture  *pick[3];            /* copper, iron, gold: original item sprites */
     SDL_Texture  *axe;                /* starter Copper Axe, original Item_3506 */
@@ -974,6 +985,22 @@ PxUi *px_init(int scale, const char *tex_dir)
         ui.boss=mk_tex(ui.ren,s.px,s.w,s.h); sheet_free(&s);
         if(!ui.boss) { px_shutdown(&ui); return NULL; }
     }
+    {   /* Use-animation sprites and the tree art, all original sheets. */
+        static const int tool_id[4] = {3509, 1, 3521, 3506};
+        char name[32];
+        Sheet s;
+        for (int k = 0; k < WEAPON_COUNT + 4; k++) {
+            snprintf(name, sizeof name, "Item_%d", k < WEAPON_COUNT ? ITEM_TERRARIA_ID[WEAPON_ITEM[k]] : tool_id[k - WEAPON_COUNT]);
+            if (!sheet_load(&ui, &s, dir, name)) { complain(dir, name); px_shutdown(&ui); return NULL; }
+            ui.held[k] = mk_tex(ui.ren, s.px, s.w, s.h); ui.held_w[k] = s.w; ui.held_h[k] = s.h; sheet_free(&s);
+            if (!ui.held[k]) { px_shutdown(&ui); return NULL; }
+        }
+        if (!sheet_load(&ui, &s, dir, "Tree_Tops_0")) { complain(dir, "Tree_Tops_0"); px_shutdown(&ui); return NULL; }
+        ui.tree_top = mk_tex(ui.ren, s.px, s.w, s.h); sheet_free(&s);
+        if (!sheet_load(&ui, &s, dir, "Tree_Branches_0")) { complain(dir, "Tree_Branches_0"); px_shutdown(&ui); return NULL; }
+        ui.tree_branch = mk_tex(ui.ren, s.px, s.w, s.h); sheet_free(&s);
+        if (!ui.tree_top || !ui.tree_branch) { px_shutdown(&ui); return NULL; }
+    }
 #endif
 
     ui.font = mk_font(ui.ren);
@@ -1026,6 +1053,9 @@ void px_shutdown(PxUi *ui)
 #if PX_V10
     for(i=0;i<TILE_COUNT;i++) if(ui->obj[i]) SDL_DestroyTexture(ui->obj[i]);
     if(ui->boss) SDL_DestroyTexture(ui->boss);
+    for(i=0;i<WEAPON_COUNT+4;i++) if(ui->held[i]) SDL_DestroyTexture(ui->held[i]);
+    if(ui->tree_top) SDL_DestroyTexture(ui->tree_top);
+    if(ui->tree_branch) SDL_DestroyTexture(ui->tree_branch);
 #endif
     for(i=0;i<3;i++) if(ui->pick[i]) SDL_DestroyTexture(ui->pick[i]);
     if(ui->axe) SDL_DestroyTexture(ui->axe);
@@ -1405,8 +1435,19 @@ static void draw_player(PxUi *ui, const Env *e, const PxView *v, int alpha)
     SDL_Rect src = {player_frame(v) * PL_CW, e->facing < 0 ? PL_CH : 0, PL_CW, PL_CH};
     SDL_Rect dst = {bx + PL_OX, by + PL_OY, PL_CW, PL_CH};
 
-    SDL_SetTextureAlphaMod(ui->player[e->armor], (Uint8)alpha);
-    SDL_RenderCopy(ui->ren, ui->player[e->armor], &src, &dst);
+    SDL_Texture *t = ui->player[e->armor];
+#if PX_V10
+    /* Player.immuneAlpha: the body blinks through the i-frames that follow
+       a hit, and a fresh hit tints it red for a moment. */
+    bool flash = v->clock >= v->player_hit_t && v->clock < v->player_hit_t + PX_FLASH;
+    if (v->clock >= v->player_hit_t && v->clock < v->immune_end && (int)(v->clock * 20.0) % 2) alpha = alpha * 70 / 255;
+    SDL_SetTextureColorMod(t, 255, flash ? 90 : 255, flash ? 90 : 255);
+#endif
+    SDL_SetTextureAlphaMod(t, (Uint8)alpha);
+    SDL_RenderCopy(ui->ren, t, &src, &dst);
+#if PX_V10
+    SDL_SetTextureColorMod(t, 255, 255, 255);
+#endif
 }
 
 /* ---- Reach overlay ------------------------------------------------------ */
@@ -1903,6 +1944,8 @@ static void draw_mobs_v10(PxUi *ui, const Env *e, const PxView *v, int alpha)
             SDL_SetTextureColorMod(t, 255, 255, 255);
             SDL_SetTextureAlphaMod(t, (Uint8)alpha);
         }
+        /* Hit flash: a brief red tint once the hit's game tick is shown. */
+        if (v->clock >= v->mob_hit_t[i] && v->clock < v->mob_hit_t[i] + PX_FLASH) SDL_SetTextureColorMod(t, 255, 70, 70);
         SDL_RenderCopyEx(ui->ren, t, &src, &dst, angle, NULL, flip);
         SDL_SetTextureColorMod(t, 255, 255, 255);
         SDL_SetTextureAlphaMod(t, 255);
@@ -1929,7 +1972,10 @@ static void draw_boss(PxUi *ui, const Env *e, const PxView *v)
     SDL_Rect src = {0, ((p2 ? 3 : 0) + (int)(v->clock * 8.0) % 3) * EOC_FH, EOC_FW, EOC_FH};
     SDL_Rect dst = {(int)lroundf(cx) - EOC_FW / 2 - cam_px(v->cam_x),
                     (int)lroundf(cy) - EOC_FH / 2 - cam_px(v->cam_y), EOC_FW, EOC_FH};
+    bool flash = v->clock >= v->boss_hit_t && v->clock < v->boss_hit_t + PX_FLASH;
+    SDL_SetTextureColorMod(ui->boss, 255, flash ? 90 : 255, flash ? 90 : 255);
     SDL_RenderCopyEx(ui->ren, ui->boss, &src, &dst, a * 180.0 / M_PI - 90.0, NULL, SDL_FLIP_NONE);
+    SDL_SetTextureColorMod(ui->boss, 255, 255, 255);
 }
 
 static void draw_boss_bar(PxUi *ui, const Env *e)
@@ -1945,29 +1991,56 @@ static void draw_boss_bar(PxUi *ui, const Env *e)
     frame(ui, x - 1, y - 1, w + 2, 8, UI_LINE);
 }
 
-/* A held item rotated about the player's hand; `deg` 0 is the sprite's own
-   up-right diagonal, positive clockwise; mirrored when facing left. */
-static void draw_held(PxUi *ui, const Env *e, const PxView *v, SDL_Texture *t, double deg, int reach)
+/* Hitbox top-left of the interpolated player, screen px. */
+static void player_box(const PxView *v, double *x, double *y)
 {
-    int s = 24;
-    int hx = (int)lroundf(v->feet_x * PX_TILE) - cam_px(v->cam_x) + PLAYER_W * PX_TILE / 2 + e->facing * 4;
-    int hy = (int)lroundf((v->feet_y + 1.0f) * PX_TILE) - cam_px(v->cam_y) - PLAYER_PX_H / 2 - 2;
-    if (!t) return;
-    SDL_Rect dst = {e->facing > 0 ? hx + reach : hx - s - reach, hy - s, s, s};
-    SDL_Point pivot = {e->facing > 0 ? 0 : s, s};
-    SDL_SetTextureColorMod(t, 255, 255, 255);
-    SDL_SetTextureAlphaMod(t, 255);
-    SDL_RenderCopyEx(ui->ren, t, NULL, &dst, e->facing > 0 ? deg : -deg, &pivot,
-                     e->facing > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
+    *x = v->feet_x * PX_TILE + PLAYER_W * PX_TILE / 2.0 - PLAYER_PX_W / 2.0 - cam_px(v->cam_x);
+    *y = (v->feet_y + 1.0) * PX_TILE - PLAYER_PX_H - cam_px(v->cam_y);
+}
+
+/* ItemCheck_ApplyUseStyle, useStyle 1 (swing), at use progress p in [0, 1):
+   itemRotation = (itemAnimation / itemAnimationMax - 0.5) * -dir * 3.5 -
+   dir * 0.3, sprite drawn with its handle corner at itemLocation, which
+   moves from behind the head (first third) to in front (second) and low
+   (last). `k` indexes ui->held, at the sprite's original size. */
+static void draw_swing(PxUi *ui, int k, int dir, double px, double py, double p)
+{
+    int w = ui->held_w[k], h = ui->held_h[k];
+    double a = 1.0 - p, rot = (a - 0.5) * -dir * 3.5 - dir * 0.3, cx = px + PLAYER_PX_W / 2.0, lx, ly;
+    if (a < 0.333)      { lx = cx + (w * 0.5 - (w > 32 ? 14 : 10)) * dir; ly = py + 24; }
+    else if (a < 0.666) { lx = cx + (w * 0.5 - (w > 32 ? 18 : 10)) * dir; ly = py + (w > 32 ? 8 : 10); }
+    else                { lx = cx - (w * 0.5 - (w > 32 ? 14 : 6)) * dir;  ly = py + (w > 32 ? 8 : 10); }
+    SDL_Point pivot = {dir > 0 ? 0 : w, h};
+    SDL_Rect dst = {(int)lround(lx) - pivot.x, (int)lround(ly) - pivot.y, w, h};
+    SDL_SetTextureColorMod(ui->held[k], 255, 255, 255);
+    SDL_SetTextureAlphaMod(ui->held[k], 255);
+    SDL_RenderCopyEx(ui->ren, ui->held[k], NULL, &dst, rot * 180.0 / M_PI, &pivot,
+                     dir > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
+}
+
+/* The copper shortsword (useStyle 13): its stab projectile (AI_161_RapierStabs)
+   thrusts the blade out from the body centre at 2.1 px per tick along the
+   facing for PX_STAB_TICKS, fading over the last quarter. */
+static void draw_stab(PxUi *ui, int dir, double px, double py, double p)
+{
+    int w = ui->held_w[0], h = ui->held_h[0];
+    double hx = px + PLAYER_PX_W / 2.0 + dir * (2.1 * p * PX_STAB_TICKS - 4.0), hy = py + PLAYER_PX_H / 2.0;
+    SDL_Point pivot = {dir > 0 ? 0 : w, h};
+    SDL_Rect dst = {(int)lround(hx) - pivot.x, (int)lround(hy) - pivot.y, w, h};
+    SDL_SetTextureColorMod(ui->held[0], 255, 255, 255);
+    SDL_SetTextureAlphaMod(ui->held[0], (Uint8)(p > 0.75 ? 255.0 * (1.0 - p) / 0.25 : 255.0));
+    SDL_RenderCopyEx(ui->ren, ui->held[0], NULL, &dst, dir > 0 ? 45.0 : -45.0, &pivot,
+                     dir > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
+    SDL_SetTextureAlphaMod(ui->held[0], 255);
 }
 
 static void draw_tools(PxUi *ui, const Env *e, const PxView *v)
 {
-    double p = v->swing_len > 0.0 ? (v->clock - v->swing_t0) / v->swing_len : 1.0;
+    double px, py, p = v->swing_len > 0.0 ? (v->clock - v->swing_t0) / v->swing_len : 1.0;
+    player_box(v, &px, &py);
     if (p >= 0.0 && p < 1.0) {
-        SDL_Texture *t = ui->item[WEAPON_ITEM[e->weapon]];
-        if (e->weapon == 0) draw_held(ui, e, v, t, 45.0, (int)(10.0 * sin(p * M_PI)) - 6);
-        else draw_held(ui, e, v, t, -110.0 + 180.0 * p, -6);
+        if (v->swing_weapon == 0) draw_stab(ui, e->facing, px, py, p);
+        else draw_swing(ui, v->swing_weapon, e->facing, px, py, p);
         return;
     }
 #if FID_MINING
@@ -1975,8 +2048,115 @@ static void draw_tools(PxUi *ui, const Env *e, const PxView *v)
 #else
     if (e->mine_cd) {
 #endif
-        double q = fmod(v->clock * 3.0, 1.0);
-        draw_held(ui, e, v, e->mining_tree ? ui->axe : ui->pick[e->tool_tier - 1], -100.0 + 150.0 * q, -6);
+        /* Pickaxes and the axe swing like swords, one swing per use time
+           (copper pickaxe 15 ticks, copper axe 21). */
+        double use = (e->mining_tree ? 21 : 15) * (v->tick_s > 0.0 ? v->tick_s : 1.0 / 60.0);
+        draw_swing(ui, WEAPON_COUNT + (e->mining_tree ? 3 : e->tool_tier - 1), e->facing, px, py,
+                   fmod(v->clock, use) / use);
+    }
+}
+
+/* Glyphs at an integer scale. */
+static void text_scaled(PxUi *ui, int x, int y, int sc, uint32_t col, const char *s)
+{
+    SDL_Rect src = {0, 0, GLYPH_W, GLYPH_H}, dst = {x, y, GLYPH_W * sc, GLYPH_H * sc};
+    SDL_SetTextureColorMod(ui->font, (Uint8)CR(col), (Uint8)CG(col), (Uint8)CB(col));
+    SDL_SetTextureAlphaMod(ui->font, (Uint8)CA(col));
+    for (; *s; s++, dst.x += CELL_W * sc) {
+        int c = (unsigned char)*s;
+        if (c <= 32 || c > 126) continue;
+        src.x = (c - 32) * CELL_W;
+        SDL_RenderCopy(ui->ren, ui->font, &src, &dst);
+    }
+}
+
+/* Damage numbers (CombatText): orange on NPCs, deeper and larger on crits,
+   red on the player; launched upward, slowing, fading over the last 40%. */
+static void draw_pops(PxUi *ui, const PxView *v)
+{
+    int camx = cam_px(v->cam_x), camy = cam_px(v->cam_y);
+    for (int i = 0; i < PX_POPS; i++) {
+        const PxPop *p = &v->pop[i];
+        double age = v->clock - p->t0, u = age / PX_POP_LIFE;
+        if (p->dmg <= 0 || age < 0.0 || u >= 1.0) continue;
+        char s[12];
+        snprintf(s, sizeof s, "%d", p->dmg);
+        uint32_t a = (uint32_t)(u < 0.6 ? 255.0 : 255.0 * (1.0 - u) / 0.4) << 24;
+        uint32_t rgbc = p->target == FX_TARGET_PLAYER ? 0xFF505Au : p->crit ? 0xFF641Eu : 0xFFA050u;
+        int sc = p->crit ? 3 : 2, w = text_w(s) * sc;
+        int x = (int)lroundf(p->x) - camx - w / 2;
+        int y = (int)lroundf(p->y) - camy - GLYPH_H * sc - 2 - (int)(30.0 * (1.0 - (1.0 - u) * (1.0 - u)));
+        for (int d = 0; d < 4; d++)
+            text_scaled(ui, x + (d == 0) - (d == 1), y + (d == 2) - (d == 3), sc, a | 0x101010u, s);
+        text_scaled(ui, x, y, sc, a | rgbc, s);
+    }
+}
+
+#if TREE_LEAF_VISUAL
+/* Forest trees as TileDrawing.DrawTrees draws them: the canopy (Tree_Tops)
+   on the trunk's top tile, leafy branches (Tree_Branches) beside inner trunk
+   tiles. Positions are a deterministic function of the trunk cell (visual
+   only: the core samples the branch wood when the tree is felled). Runs of
+   fewer than 5 trunk tiles are stumps (trees grow 5-16): no crown. */
+static bool trunk_branch(int x, int y, int side)
+{
+    uint32_t b = hash2(x, y, 0xB4A2u) % 10u;   /* GrowTree: 2 in 10 per side */
+    return side ? (b == 6u || b == 7u) : (b == 5u || b == 7u);
+}
+
+static void draw_trees(PxUi *ui, const Env *e, const PxView *v)
+{
+    int camx = cam_px(v->cam_x), camy = cam_px(v->cam_y);
+    int t0x = camx / PX_TILE, t0y = camy / PX_TILE;
+    for (int ty = t0y - 17; ty <= t0y + PX_VIEW_TH + 5; ty++)
+        for (int tx = t0x - 3; tx <= t0x + PX_VIEW_TW + 3; tx++) {
+            if (!in_bounds(tx, ty) || e->tiles[ty][tx] != TILE_LOG || tile_at(e, tx, ty - 1) == TILE_LOG) continue;
+            int base = ty;
+            while (tile_at(e, tx, base + 1) == TILE_LOG) base++;
+            if (base - ty + 1 < 5) continue;
+            /* Branches on inner tiles (not the top two, not the base), never
+               two in a row on one side. */
+            for (int y = ty + 2; y < base; y++)
+                for (int side = 0; side < 2; side++) {
+                    int bx = tx + (side ? 1 : -1);
+                    if (!trunk_branch(tx, y, side) || (y + 1 < base && trunk_branch(tx, y + 1, side))) continue;
+                    if (tile_at(e, bx, y) != TILE_AIR) continue;
+                    SDL_Rect src = {side * 42, (int)(hash2(tx, y, 0x3B1Fu) % 3u) * 42, 40, 40};
+                    SDL_Rect dst = {bx * PX_TILE - (side ? 0 : 24) - camx, y * PX_TILE - 12 - camy, 40, 40};
+                    SDL_RenderCopy(ui->ren, ui->tree_branch, &src, &dst);
+                }
+            SDL_Rect src = {(int)(hash2(tx, base, 0x7095u) % 3u) * 82, 0, 80, 80};
+            SDL_Rect dst = {tx * PX_TILE + PX_TILE / 2 - 40 - camx, ty * PX_TILE + PX_TILE - 80 - camy, 80, 80};
+            SDL_RenderCopy(ui->ren, ui->tree_top, &src, &dst);
+        }
+}
+#endif
+
+void px_fx_step(PxView *v, const Env *e, double t0, double tick_s)
+{
+    v->tick_s = tick_s;
+    if (e->fx.swing) {
+        v->swing_t0 = t0;
+        v->swing_weapon = e->weapon;
+#if FID_COMBAT
+        v->swing_len = (e->weapon == 0 ? PX_STAB_TICKS : e->item_anim_max) * tick_s;
+#else
+        v->swing_len = 20 * tick_s;
+#endif
+    }
+#if FID_COMBAT
+    if (e->immune_ticks > 0) v->immune_end = t0 + (FID_TICKS + e->immune_ticks) * tick_s;
+#endif
+    for (int i = 0; i < e->fx.n_hits; i++) {
+        const FxHit *h = &e->fx.hit[i];
+        double t = t0 + (h->tick + 1) * tick_s;   /* shown once its tick has run */
+        if (h->target == FX_TARGET_MOB && h->slot < MAX_MOBS) v->mob_hit_t[h->slot] = t;
+        else if (h->target == FX_TARGET_BOSS) v->boss_hit_t = t;
+        else v->player_hit_t = t;
+        /* CombatText spawns at a random point across the top of the body. */
+        int jitter = (int)(hash2(h->x + i, (int)(t * 1000.0), 0x9017u) % 13u) - 6;
+        v->pop[v->pop_next] = (PxPop){(float)(h->x + jitter), (float)h->y, t, h->dmg, h->target, h->crit};
+        v->pop_next = (v->pop_next + 1) % PX_POPS;
     }
 }
 
@@ -2084,6 +2264,9 @@ void px_draw(PxUi *ui, const Env *env, const PxView *v)
 
     SDL_RenderSetClipRect(ui->ren, &view);
     draw_world(ui, e, v);
+#if PX_V10 && TREE_LEAF_VISUAL
+    draw_trees(ui, e, v);
+#endif
 #if PX_V10
 #if FID_MINING
     draw_dig(ui, e, v);
@@ -2095,6 +2278,7 @@ void px_draw(PxUi *ui, const Env *env, const PxView *v)
     draw_mobs_v10(ui, e, v, 60);
     draw_player(ui, e, v, 34);
     draw_boss(ui, e, v);
+    draw_pops(ui, v);
 #else
     draw_mobs(ui,e,v);
     draw_player(ui, e, v, 255);

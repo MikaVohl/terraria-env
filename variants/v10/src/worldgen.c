@@ -619,4 +619,11 @@ void world_generate(Env *e) {
         ore_band(ORES[k], &lo, &hi);
         guarantee_ore(e, ORES[k], count_tiles(e, ORES[k], lo, hi), MINS[k], lo, hi);
     }
+#if TREE_LEAF_VISUAL
+    /* Canopies are part of the tree sprite (frontend), not cells. They were
+       reserved above so every other cell matches TREE_LEAF_VISUAL=0. */
+    for (int y = 0; y < WORLD_H; ++y)
+        for (int x = 0; x < WORLD_W; ++x)
+            if (e->tiles[y][x] == TILE_LEAVES) e->tiles[y][x] = TILE_AIR;
+#endif
 }

@@ -110,9 +110,10 @@ void boss_tick(Env *e) {
 }
 
 /* Damage to the boss; defeat drops demonite ore. */
-static void boss_damage(Env *e,int damage) {
+static void boss_damage(Env *e,int damage,bool crit) {
     Boss *b=&e->boss;
     b->hp-=damage;
+    env_fx_hit(e,FX_TARGET_BOSS,0,b->x*16+EOC_SIZE*8,b->y*16,damage,crit);
     if(b->hp<=0) {
         b->active=false; b->hp=0;
         env_give(e,ITEM_DEMONITE_ORE,rng_range(&e->rng,EOC_DEMONITE_MIN,EOC_DEMONITE_MAX));
@@ -125,7 +126,7 @@ static void boss_damage(Env *e,int damage) {
 bool boss_attack(Env *e,int x0,int y0,int x1,int y1,int damage) {
     Boss *b=&e->boss;
     if(!b->active || !overlaps(b,x0,y0,x1,y1)) return false;
-    boss_damage(e,damage);
+    boss_damage(e,damage,false);
     return true;
 }
 #else
@@ -136,8 +137,9 @@ bool boss_attack(Env *e,int x0,int y0,int x1,int y1,int damage) {
 static void boss_strike(Env *e,int base) {
     int twice=2*env_damage_var(e,base)-EOC_DEF;
     if(twice<2) twice=2;
-    if(rng_range(&e->rng,1,100)<=FID_CRIT_PCT) twice*=2;
-    boss_damage(e,twice/2);
+    bool crit=rng_range(&e->rng,1,100)<=FID_CRIT_PCT;
+    if(crit) twice*=2;
+    boss_damage(e,twice/2,crit);
 }
 
 /* ItemCheck_MeleeHitNPCs for the boss (see mobs_swing). The EoC has
