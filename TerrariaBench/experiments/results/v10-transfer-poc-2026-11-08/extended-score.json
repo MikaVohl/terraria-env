@@ -1,0 +1,35 @@
+{
+  "run": "v10-poc-01",
+  "observer_version": "0.7",
+  "published_score": 0,
+  "published_milestones_game_s": {},
+  "extended_count": 4,
+  "extended_available": 19,
+  "extended_game_s": {
+    "gel_1": 91.0,
+    "torch_crafted": 104.7,
+    "workbench_placed": 44.5,
+    "wood_armor_crafted": 45.7
+  },
+  "extended_unavailable": [],
+  "deaths": 0,
+  "max_depth_tiles": 2,
+  "world": {
+    "seed": "32000401",
+    "evil": "crimson",
+    "surface_tile": 337.0,
+    "rock_layer_tile": 487.0
+  },
+  "crafted": {
+    "Wood Platform": 90,
+    "Work Bench": 2,
+    "Wooden Sword": 1,
+    "Wood Breastplate": 1,
+    "Torch": 21
+  },
+  "placed_tile_types": {
+    "18": 4,
+    "4": 10
+  },
+  "game_seconds": 377
+}

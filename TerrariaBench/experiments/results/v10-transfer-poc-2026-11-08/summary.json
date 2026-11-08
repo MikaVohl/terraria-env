@@ -1,0 +1,307 @@
+{
+ "steps": 1500,
+ "deaths": 0,
+ "achievements": [
+  "collect wood",
+  "place block",
+  "place torch",
+  "place platform",
+  "craft workbench",
+  "craft wooden sword",
+  "defeat Blue Slime",
+  "explore 30 columns",
+  "craft wood breastplate"
+ ],
+ "actions": [
+  [
+   "noop",
+   73
+  ],
+  [
+   "right",
+   70
+  ],
+  [
+   "mine below right column",
+   59
+  ],
+  [
+   "mine body foot-left",
+   59
+  ],
+  [
+   "select platform",
+   58
+  ],
+  [
+   "cycle weapon",
+   53
+  ],
+  [
+   "mine body foot-right",
+   52
+  ],
+  [
+   "mine down-right",
+   49
+  ],
+  [
+   "craft platforms",
+   45
+  ],
+  [
+   "left",
+   44
+  ],
+  [
+   "mine down",
+   43
+  ],
+  [
+   "mine down-left",
+   42
+  ],
+  [
+   "mine foot-left",
+   36
+  ],
+  [
+   "place foot-left",
+   36
+  ],
+  [
+   "mine foot-right",
+   34
+  ],
+  [
+   "place body middle-left",
+   33
+  ],
+  [
+   "place body foot-right",
+   32
+  ],
+  [
+   "jump",
+   29
+  ],
+  [
+   "place head-right",
+   28
+  ],
+  [
+   "place up-right",
+   28
+  ],
+  [
+   "place above right column",
+   27
+  ],
+  [
+   "place up-left",
+   25
+  ],
+  [
+   "place foot-right",
+   23
+  ],
+  [
+   "mine head-right",
+   22
+  ],
+  [
+   "mine above right column",
+   22
+  ],
+  [
+   "place head-left",
+   22
+  ],
+  [
+   "select workbench",
+   22
+  ],
+  [
+   "select dirt",
+   21
+  ],
+  [
+   "mine middle-right",
+   21
+  ],
+  [
+   "mine body middle-right",
+   21
+  ],
+  [
+   "place body head-right",
+   20
+  ],
+  [
+   "place middle-left",
+   20
+  ],
+  [
+   "mine body head-left",
+   20
+  ],
+  [
+   "select torch",
+   20
+  ],
+  [
+   "select next",
+   19
+  ],
+  [
+   "mine head-left",
+   19
+  ],
+  [
+   "place up",
+   19
+  ],
+  [
+   "mine middle-left",
+   18
+  ],
+  [
+   "attack",
+   17
+  ],
+  [
+   "place body middle-right",
+   17
+  ],
+  [
+   "mine body middle-left",
+   16
+  ],
+  [
+   "mine up",
+   16
+  ],
+  [
+   "place middle-right",
+   16
+  ],
+  [
+   "mine up-left",
+   15
+  ],
+  [
+   "mine body head-right",
+   15
+  ],
+  [
+   "drop through platform",
+   15
+  ],
+  [
+   "place body head-left",
+   14
+  ],
+  [
+   "mine up-right",
+   12
+  ],
+  [
+   "place down-right",
+   12
+  ],
+  [
+   "select wood",
+   11
+  ],
+  [
+   "place body foot-left",
+   10
+  ],
+  [
+   "place below right column",
+   9
+  ],
+  [
+   "craft torch",
+   7
+  ],
+  [
+   "place down-left",
+   5
+  ],
+  [
+   "place down",
+   4
+  ],
+  [
+   "craft workbench",
+   2
+  ],
+  [
+   "eat mushroom",
+   1
+  ],
+  [
+   "craft wooden sword",
+   1
+  ],
+  [
+   "craft wood breastplate",
+   1
+  ]
+ ],
+ "unmapped_tiles": [
+  [
+   [
+    51,
+    "air"
+   ],
+   27970
+  ],
+  [
+   [
+    73,
+    "air"
+   ],
+   20609
+  ],
+  [
+   [
+    3,
+    "air"
+   ],
+   16452
+  ],
+  [
+   [
+    185,
+    "air"
+   ],
+   8680
+  ],
+  [
+   [
+    187,
+    "air"
+   ],
+   8470
+  ],
+  [
+   [
+    83,
+    "air"
+   ],
+   1284
+  ],
+  [
+   [
+    82,
+    "air"
+   ],
+   103
+  ]
+ ],
+ "unmapped_mobs": [],
+ "liquid_cells_as_air": 0,
+ "wall_seconds": 452.40925097465515
+}
