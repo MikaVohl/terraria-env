@@ -1,0 +1,29 @@
+[
+ {
+  "name": "v9_gen_g9999_lstm-3001",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999_lstm",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_gen_g9999_lstm-3002",
+  "lib": "build-v9",
+  "arm": "v9_gen_g9999_lstm",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v9_shaped_g9999_lstm-3001",
+  "lib": "build-v9",
+  "arm": "v9_shaped_g9999_lstm",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]

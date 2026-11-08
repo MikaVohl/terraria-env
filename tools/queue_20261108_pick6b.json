@@ -1,0 +1,38 @@
+[
+ {
+  "name": "best_g9998_6B-2005",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2005,
+  "steps": 6442450944,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9998_6B-2006",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2006,
+  "steps": 6442450944,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9998_6B-2007",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2007,
+  "steps": 6442450944,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "best_g9998_6B-2008",
+  "lib": "build-v8-o3t2-inv",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2008,
+  "steps": 6442450944,
+  "interval": 268435456,
+  "max_steps": 0
+ }
+]

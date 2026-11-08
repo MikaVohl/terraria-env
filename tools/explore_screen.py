@@ -139,6 +139,8 @@ ARMS["mem_lstm256_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix_ep60
 for _prefix in ("v9", "v9map"):
     ARMS[f"{_prefix}_gen_g9999"] = ARMS["max2_pot0_nov01_unimix_g9999"]       # generic (no recipe shaping)
     ARMS[f"{_prefix}_shaped_g9999"] = ARMS["max2_fn_unimix_g9999"]            # frontier recipe/boss-chain potential
+    ARMS[f"{_prefix}_gen_g9999_lstm"] = ARMS["max2_pot0_nov01_unimix_g9999"] + ["--memory", "lstm", "--memory-size", "256"]
+    ARMS[f"{_prefix}_shaped_g9999_lstm"] = ARMS["max2_fn_unimix_g9999"] + ["--memory", "lstm", "--memory-size", "256"]
 # v8fid (variants/v8fid): real-behaviour ports run 4 game ticks per action, so a
 # 3,000-step episode covers less game progress; this arm controls for that.
 ARMS["max2_pot0_nov01_unimix_g9998_ep10000"] = ARMS["max2_pot0_nov01_unimix_g9998"] + ["--episode-steps", "10000"]
