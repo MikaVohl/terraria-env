@@ -55,7 +55,9 @@
 /* Knobs that run in real 60 Hz game ticks: one agent action holds its input
    for FID_TICKS ticks (1/15 s), so a 3000-step episode is 200 s of game time. */
 #define FID_TICKED (FID_MOBS||FID_COMBAT||FID_PHYSICS||FID_MINING)
+#ifndef FID_TICKS
 #define FID_TICKS 4
+#endif
 /* Fixed point: Q16.16 pixels (16 px per tile), as Terraria positions are px. */
 typedef int32_t fix_t;
 #define FIX_ONE 65536
