@@ -1,0 +1,17 @@
+{"lib": "perf/v7/build-v8-o3t2-inv/libterraria.so", "state_bytes": 51040, "status_len": 521, "world_hash": "642f3d5813783726", "rollout_hash": "b8f163b4f1e2f556", "episodes": 333, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-off/libterraria.so", "state_bytes": 51040, "status_len": 521, "world_hash": "642f3d5813783726", "rollout_hash": "b8f163b4f1e2f556", "episodes": 333, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-mobs/libterraria.so", "state_bytes": 51392, "status_len": 521, "world_hash": "0a4d0d0d152e44e3", "rollout_hash": "0e16c82ccd3efc14", "episodes": 91, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-combat/libterraria.so", "state_bytes": 51104, "status_len": 521, "world_hash": "ec5d7e70c3b14e37", "rollout_hash": "b9b6c4ea91e99600", "episodes": 411, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-physics/libterraria.so", "state_bytes": 51072, "status_len": 525, "world_hash": "3a8087d0034d050b", "rollout_hash": "7bb56d11cf3d5a98", "episodes": 394, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-mining/libterraria.so", "state_bytes": 51112, "status_len": 522, "world_hash": "2b083048abab6735", "rollout_hash": "8cd10da74f43459a", "episodes": 512, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-trees/libterraria.so", "state_bytes": 51040, "status_len": 521, "world_hash": "276253431baa0e06", "rollout_hash": "e4f773e881ebe3c1", "episodes": 321, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-mobcombat/libterraria.so", "state_bytes": 51456, "status_len": 521, "world_hash": "8facfd0e9add2cd5", "rollout_hash": "c8aaf3480d883aef", "episodes": 79, "deterministic": true, "save_load_failures": []}
+{"lib": "perf/v7/build-v8fid-all/libterraria.so", "state_bytes": 51568, "status_len": 526, "world_hash": "d764d9c06dc98195", "rollout_hash": "60c925d9fee14079", "episodes": 84, "deterministic": true, "save_load_failures": []}
+perf/v7/build-v8fid-off/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: IDENTICAL
+perf/v7/build-v8fid-mobs/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
+perf/v7/build-v8fid-combat/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
+perf/v7/build-v8fid-physics/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
+perf/v7/build-v8fid-mining/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
+perf/v7/build-v8fid-trees/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
+perf/v7/build-v8fid-mobcombat/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
+perf/v7/build-v8fid-all/libterraria.so vs perf/v7/build-v8-o3t2-inv/libterraria.so: different
