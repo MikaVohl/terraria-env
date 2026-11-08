@@ -133,12 +133,19 @@ def text_observation(packet, max_steps, cycle):
     return "\n".join(lines)
 
 
-GUIDE = """GAME GUIDE (declared game-knowledge track; facts about this environment, not a scripted policy)
-Scoring: achievements are weighted by tier: tier1 x1, tier2 x3, tier3 x5, tier4 x8 (max 129). Each counts once.
+# Max weighted score and the tier-4 list come from the library (v9: 129; v10
+# adds "find a Demon Altar" and "hold 6 lenses", max 145).
+_TIER4_NOTES = {"find a Demon Altar": "find a Demon Altar (stand with a demon altar within crafting range)",
+                "hold 6 lenses": "hold 6 lenses (6 lens in inventory at once)"}
+_TIER4 = ", ".join(_TIER4_NOTES.get(n, n) for n, t in zip(SPEC.achievement_names, SPEC.achievement_tiers or [])
+                   if t == 4) or ("craft gold pickaxe, collect lens, craft Suspicious Looking Eye, "
+                                  "summon the Eye of Cthulhu, defeat the Eye of Cthulhu")
+GUIDE = f"""GAME GUIDE (declared game-knowledge track; facts about this environment, not a scripted policy)
+Scoring: achievements are weighted by tier: tier1 x1, tier2 x3, tier3 x5, tier4 x8 (max {SPEC.max_weighted_score or 129}). Each counts once.
  Tier1: collect wood, collect stone, place block, place torch, place platform, craft workbench, craft wooden sword, collect copper, defeat Blue Slime, open chest, explore 30 columns (span 30 columns of x), climb rope, heal with food or potion.
  Tier2: craft furnace, smelt copper, collect iron, smelt iron, craft anvil, craft metal sword (copper/iron/silver/gold sword), craft wood breastplate, use life crystal, defeat Zombie, defeat Demon Eye, survive a night (be alive at dawn), reach the caverns (y>=64).
  Tier3: craft iron pickaxe, collect silver, smelt silver, collect gold, smelt gold, craft iron chainmail, defeat Skeleton, return to surface (after reaching caverns, get back above the surface line).
- Tier4: craft gold pickaxe, collect lens, craft Suspicious Looking Eye, summon the Eye of Cthulhu, defeat the Eye of Cthulhu.
+ Tier4: {_TIER4}.
 World: 128x128 tiles. Surface around y=26-30 (spawn at the surface, at dawn). Underground below the surface; caverns from y=64 down; bedrock at the bottom. Trees (trunk '|') near spawn.
 Ores: copper and iron in underground and caverns (iron is common); silver in caverns; gold in the lower half of the caverns. Your copper pickaxe mines every ore. Life crystals ('H') and chests ('C', open with 'open chest' when adjacent/near) are underground. Demon altars ('D') are in cavern chambers.
 Mining: one 'mine' action removes one adjacent tile (into your inventory). Pickaxe cooldown after each mine: copper pickaxe 3 ticks (mine, then 2 other actions such as noop or moving, then mine again); iron 2; gold 1. During cooldown every mine action is illegal. Mining a tree trunk ('|') at the cell beside your feet/body cuts the trunk above it: one wood per trunk cell.

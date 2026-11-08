@@ -1,0 +1,7 @@
+<terraria-lite v10 11x9 window, 25 tile kinds, 948 status, obs=3522, actions=86>
+PPO: 1024 envs x 128 steps = batch 131072, 16 iterations, 2,097,152 env steps
+
+ iter     steps   return    ach    len  death%  entropy      kl   clip     ev     sps
+v10_gen_g9999-2001: 1,048,576 7.281/40 score=8.97% t1-4=40/12/6/2 death=78.9% bench=38 stone=89 furnace=0 peak-y=80.9 (141.6s)
+v10_gen_g9999-2001: 2,097,152 7.617/40 score=9.10% t1-4=43/12/6/2 death=80.5% bench=51 stone=77 furnace=0 peak-y=80.8 (285.2s)
+Completed v10_gen_g9999-2001: 285.2s

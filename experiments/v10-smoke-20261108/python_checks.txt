@@ -1,0 +1,34 @@
+### build-v10
+ok check_spec
+ok check_determinism_and_snapshots
+ok check_native_autoreset
+ok check_scoring
+ok check_boss_potential
+ok check_v10_potential
+ok check_evaluation
+v10 Python checks passed (<terraria-lite v10 11x9 window, 25 tile kinds, 948 status, obs=3522, actions=86>)
+v10 Python checks passed: 64,000 scalar/batch transitions at 1/2/4/8 workers; raw/flat encoding; legal support; recurrent boundaries; model reloads; RND; state snapshots
+OK live compact: 256 envs x 600 steps, 106 episode ends; nonzero shaping {'mean': 8465, 'frontier': 107083, 'frontier_surface': 107083}; novelty bonuses 4547, {'novelty_cells': 657, 'novelty_paid': 4547}; shaping time fast 0.4s vs reference 1.4s
+OK live flat: 256 envs x 600 steps, 106 episode ends; nonzero shaping {'mean': 8465, 'frontier': 107083, 'frontier_surface': 107083}; novelty bonuses 4547, {'novelty_cells': 657, 'novelty_paid': 4547}; shaping time fast 0.7s vs reference 1.6s
+### build-v10-noport
+ok check_spec
+ok check_determinism_and_snapshots
+ok check_native_autoreset
+ok check_scoring
+ok check_boss_potential
+ok check_v10_potential
+ok check_evaluation
+v10 Python checks passed (<terraria-lite v10 11x9 window, 25 tile kinds, 943 status, obs=3517, actions=86>)
+v10 Python checks passed: 64,000 scalar/batch transitions at 1/2/4/8 workers; raw/flat encoding; legal support; recurrent boundaries; model reloads; RND; state snapshots
+OK live compact: 256 envs x 600 steps, 319 episode ends; nonzero shaping {'mean': 92392, 'frontier': 97501, 'frontier_surface': 97501}; novelty bonuses 16418, {'novelty_cells': 2855, 'novelty_paid': 16418}; shaping time fast 0.7s vs reference 1.8s
+OK live flat: 256 envs x 600 steps, 319 episode ends; nonzero shaping {'mean': 92392, 'frontier': 97501, 'frontier_surface': 97501}; novelty bonuses 16418, {'novelty_cells': 2855, 'novelty_paid': 16418}; shaping time fast 1.0s vs reference 2.1s
+### build-v9 (regression)
+ok check_spec
+ok check_determinism_and_snapshots
+ok check_native_autoreset
+ok check_scoring
+ok check_boss_potential
+ok check_evaluation
+v9 Python checks passed (<terraria-lite v9 11x9 window, 25 tile kinds, 941 status, obs=3515, actions=86>)
+OK live compact: 256 envs x 600 steps, 319 episode ends; nonzero shaping {'mean': 92392, 'frontier': 71602, 'frontier_surface': 71602}; novelty bonuses 16418, {'novelty_cells': 2855, 'novelty_paid': 16418}; shaping time fast 0.5s vs reference 1.5s
+OK live flat: 256 envs x 600 steps, 319 episode ends; nonzero shaping {'mean': 92392, 'frontier': 71602, 'frontier_surface': 71602}; novelty bonuses 16418, {'novelty_cells': 2855, 'novelty_paid': 16418}; shaping time fast 0.8s vs reference 1.9s

@@ -247,3 +247,81 @@ the draft above. Each is marked **[IMPL]**; knobs and defaults are listed in
   whole step + observation + mask + resets (`tools/sim_throughput.c`).** v8
   (`build-v8-o3t2-inv`) 1.29 M steps/s, v9 1.23 M (0.95x), v9 + minimap 0.98 M
   (0.76x). Both pass the 1/1.5 gate.
+
+## 14. v10 implementation notes (2026-11-08)
+
+Facts of `variants/v10/` (D22-D24). Knobs, defaults, build and test commands:
+`variants/v10/README.md`. Each note is marked **[IMPL]**.
+
+- **[IMPL] Ports (D22).** The five v8fid knobs (`FID_MOBS`, `FID_COMBAT`, `FID_PHYSICS`,
+  `FID_MINING`, `FID_TREES`) are carried over, all on by default. `build-v10-noport` (all
+  off) is v9 plus the two D24 achievements: `tools/v10_noport_parity.py` stepped 400,000
+  uniform-legal steps (16 lanes) on `build-v9` and `build-v10-noport` with identical worlds,
+  views, masks, status outside the achievement block, achievements and rewards (net of
+  the D24 unlocks).
+- **[IMPL] All five regular mobs are ported** (`FID_MOBS`), none kept on v9's grid AI.
+  Blue Slime (`AI_001_Slimes`) and Cave Bat (aiStyle 14) come from v8fid; the slime is now
+  also aggressive at night (`!Main.dayTime`). New: Zombie and Skeleton as
+  `AI_003_Fighters` (max speed 1.0 / 1.5, acceleration 0.07, stuck counter and boredom,
+  daytime wander above the surface, inline step-up, wall jumps -6/-7/-8 for 2/3/4-tile
+  walls, gap jump, platform drop only toward a player below) and Demon Eye as
+  `AI_002_FloatingEye` (no gravity, half-speed bounce, 0.1/0.04 acceleration, caps 4/1.5).
+  Real stats whenever `FID_MOBS` or `FID_COMBAT` is on (life/damage/defense): slime
+  25/7/2, bat 16/13/2, zombie 45/14/6, Demon Eye 60/18/2, skeleton 60/20/8 (v9: zombie
+  30/10, eye 30/12, skeleton 50/16); all are knobs. Kept from v9: spawning, the despawn
+  radius and the dawn rule (so the eye's daytime fly-away branch is not reached). The
+  fixtures (`tests/fid_test.c`, 89/89) check every speed cap, hop gap, jump and stat.
+- **[IMPL] Knockback fix.** `StrikeNPC` gets weapon knockback x knockBackResist from
+  `GetIncomingStrikeModifiers` and applies knockBackResist again on light hits; v8fid
+  used the raw weapon knockback in the heavy branch and one resist factor in the light
+  one. v10 follows the source (no effect on the slime, resist 1).
+- **[IMPL] Boss with the ports.** The Eye of Cthulhu keeps v9's per-action grid AI. With
+  `FID_COMBAT` its 48x48 px body is hit per tick by the swing/stab hitboxes once per swing,
+  without a line-of-sight test (`noTileCollide`: `Player.ProcessHitAgainstNPC` skips
+  `CanHit`), with damage variance, crits, `EOC_DEF` (0; real 12) and no knockback, and it
+  deals contact damage every tick through `Player.Hurt`. v9's contact damage was tuned
+  against an 8-step hurt cooldown (120 ticks at 15 ticks/step); 40-tick i-frames let it
+  land three times as often, and the boss hovered out of reach of the overhead swing.
+  The scripted iron-gear fight (night mobs included) then won 1/200. **[T] retune** under
+  `FID_COMBAT`: contact damage 8/12 (v9 12/18) and hover height 5 rows (v9 8): 193/200 wins
+  (v9: 194/200; noport build: 194/200). Mixed `FID_COMBAT`/`FID_PHYSICS` ablations are not
+  retuned (their scripted fight is reported, not gated).
+- **[IMPL] 15 ticks per action (D23).** `FID_TICKS` = 15: one action = 1/4 s, a 10,000-step
+  episode = 41.7 min of game time. Constants counted in actions stay action counts: day
+  1,800 / night 1,200 steps (7.5 / 5 min; real 15 / 9 min would be 3,600 / 2,160 steps and
+  only 1.7 cycles per episode), spawn periods 120 / 60 steps, heal cooldown 60 steps (15 s;
+  real potion sickness 60 s), regeneration, despawn radius, EoC hover/dash/pause timers,
+  lens drop 33% per kill. Ported rules replace the action cooldowns: i-frames 40 ticks (2.7
+  steps) for the 8-step hurt cooldown, `itemAnimation` (one sword swing per 2 steps, one
+  stab per step) for the 3-step attack cooldown, tool `useTime` (stone in 3 steps with the
+  copper pick, a tree in 17 with the axe) for the mining cooldown. Lens supply: at most
+  about 10 Demon Eye spawns per night (20 surface attempts, half eyes), so 6 lenses need
+  about two nights of kills out of 3.3 nights per episode. Full table: v10 README.
+- **[IMPL] Stepping stones (D24).** `find a Demon Altar`: at step end a Demon Altar tile is
+  within the crafting-station square (`station_near`, columns px-3..px+4, rows py-5..py+3),
+  i.e. where the eye can be crafted; no light condition. `hold 6 lenses`: at step end the
+  inventory holds >= `EYE_LENSES` lenses. Both tier 4; tiers 13/12/8/7, **max 145**. They
+  sit before `craft Suspicious Looking Eye` in the enum (the last three tier-4 indices move
+  by two). Shaped arm: `potential.py` adds lens count / 6 and (0.5 depth progress + 0.5 altar
+  in view) goals.
+- **[IMPL] Wood floor with `FID_TREES`.** Real trees (5-16 tiles, 5-wide clear column) are
+  fewer, and a felled trunk tile yields 1.92 wood (fixture, 4,041 trees). The 150-wood floor
+  now counts ceil(150/1.93) = 78 trunk tiles within 48 columns of spawn; growth that stalls
+  plants another tree in reach. Over 512 worlds: min 78, median 84 trunk tiles. Other supply
+  is v9's (copper min 149, iron 140, silver 71, gold 60, 2-3 altars, 3-5 crystals).
+- **[IMPL] Observation.** Status 948 entries with INV_LOG=1 and all ports (noport 943):
+  `FID_PHYSICS` sub-tile x/y and velocity x/y, `FID_MINING` dig damage, before the entity
+  block. Minimap stays a knob (default off), not a v10 default.
+- **[IMPL] Sim-cost gate (D18), M5 Pro, one thread, 64 lanes, uniform legal actions,
+  `tools/sim_throughput.c`, 5 rounds x 20,000 steps.** v8 `o3t2-inv` 1.29 M steps/s, v9
+  1.20 M, `build-v10-noport` 1.17 M (0.98x v9), `build-v10` 0.67 M (0.56x v9, 0.52x v8):
+  **below the 1/1.5 gate**. The cost is the 15 game ticks per action (the same build at
+  `FID_TICKS=4`: 1.07 M); by port, turning one off gives physics 0.86 M, combat 0.71 M,
+  mobs 0.72 M, mining 0.68 M (3 rounds x 10,000 steps).
+- **[IMPL] CPU smoke** (2,097,152 steps, seed 2001, `v10_gen_g9999` / `v10_shaped_g9999`
+  without the CUDA-only options, 128 validation worlds, `experiments/v10-smoke-20261108/`):
+  pipeline runs end to end with `weighted_score`; generic 9.10% (7.6/40 achievements,
+  80% deaths), shaped 8.94% (7.5/40, 78% deaths); `find a Demon Altar` in 14 / 19 of 128
+  validation episodes. Same settings on `build-v10-noport`: generic 6.97%, shaped 7.18%
+  (99-100% deaths, stone collected in 0-1 of 128 episodes). One seed at 2M steps: a pipeline
+  check, not a learnability result.

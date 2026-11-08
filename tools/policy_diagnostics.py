@@ -77,7 +77,11 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
                 "deaths_at_night":sum(r["died_at_night"] for r in records),
                 "layer_step_fraction":(lambda t:{k:float(v) for k,v in zip(("surface","underground","caverns"),t/max(1,t.sum()))})(
                     np.sum([r["layer_steps"] for r in records],0))}
-               if SPEC.status_night is not None else {})}
+               if SPEC.status_night is not None else {}),
+            # v10: Demon Altar found (within crafting range) per episode
+            **({"altar_found_rate":float(np.mean([r["info"]["achievement_mask"]>>SPEC.achievement_names.index("find a Demon Altar")&1
+                                                  for r in records]))}
+               if "find a Demon Altar" in SPEC.achievement_names else {})}
 
 
 def main():
@@ -95,7 +99,9 @@ def main():
     result["diagnostic_source_sha256"]=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     a.out.write_text(json.dumps(result,indent=2)+"\n")
     print(json.dumps({"wood":result["inventory_peak"]["wood"],"bench":result["actions"]["craft workbench"],
-                      **({"weighted_score":result["score"].get("weighted_score")} if "score" in result else {})}))
+                      **({"weighted_score":result["score"].get("weighted_score")} if "score" in result else {}),
+                      **({"lens_peak":result["inventory_peak"]["lens"]} if "lens" in SPEC.item_names else {}),
+                      **({"altar_found_rate":result["altar_found_rate"]} if "altar_found_rate" in result else {})}))
 
 
 if __name__=="__main__": main()

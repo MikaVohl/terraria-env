@@ -30,6 +30,18 @@ goals, open until earned: "summon the Eye of Cthulhu", progress
 Cthulhu", progress (after the summon) boss present * (0.25 + 0.75 * damage
 dealt fraction). Both read only observed status (inventory, night bit, boss
 present / HP fraction).
+
+v10 adds two tier-4 stepping stones as frontier goals (both frontier modes,
+only when the library has the achievement, so older libraries are unchanged),
+open until earned: "hold 6 lenses", progress min(lens / need, 1) with need the
+Suspicious Looking Eye's lens quantity (EYE_LENSES), the same capped-count
+form as recipe ingredients; and "find a Demon Altar", progress
+0.5 * descent + 0.5 * altar visible. Altars only generate in the caverns, so
+descent is the fraction from the nominal surface to the deep/cavern row
+(observed depth), held at 1 once "reach the caverns" is earned (continuous at
+the unlock, and no downward pull that would fight the climb goal afterwards);
+"altar visible" is the demon-altar station bit of the view (the achievement
+itself needs the altar within crafting range, a subset of the view).
 """
 from __future__ import annotations
 
@@ -56,6 +68,8 @@ _RECIPE_ACH = {"workbench": "craft workbench", "furnace": "craft furnace", "torc
 DEEP_Y, SURFACE_BASE = SPEC.deep_row, SPEC.surface_base
 _DEEP_NAME = "descend deep" if "descend deep" in SPEC.achievement_names else "reach the caverns"
 BOSS_GOALS = SPEC.status_boss is not None and "defeat the Eye of Cthulhu" in SPEC.achievement_names
+LENS_GOAL = "hold 6 lenses" in SPEC.achievement_names                    # v10
+ALTAR_GOAL = "find a Demon Altar" in SPEC.achievement_names and "demon altar" in _STATION_INDEX
 
 
 class RecipePotential:
@@ -65,6 +79,8 @@ class RecipePotential:
         recipes = player_knowledge()["recipes"]
         self.gamma, self.coef, self.mode = gamma, coef, mode
         self.boss = BOSS_GOALS and mode != "mean"
+        self.lens = LENS_GOAL and mode != "mean"
+        self.altar = ALTAR_GOAL and mode != "mean"
         if mode != "mean":
             # Every recipe name must be mapped, so a renamed recipe fails loudly.
             self.ach = np.array([-1 if _RECIPE_ACH[r["name"]] is None
@@ -75,6 +91,12 @@ class RecipePotential:
             self._summon = SPEC.achievement_names.index("summon the Eye of Cthulhu")
             self._defeat = SPEC.achievement_names.index("defeat the Eye of Cthulhu")
             self._eye = SPEC.item_names.index("Suspicious Looking Eye")
+        if self.lens:
+            self._hold = SPEC.achievement_names.index("hold 6 lenses")
+            self._lens = SPEC.item_names.index("lens")
+        if self.altar:
+            self._found = SPEC.achievement_names.index("find a Demon Altar")
+            self._altar_vis = _STATION_INDEX["demon altar"]
         self.need = np.zeros((len(recipes), SPEC.n_items), dtype=np.float64)
         self.terms = np.zeros(len(recipes))
         self.station = np.full(len(recipes), -1)
@@ -85,6 +107,9 @@ class RecipePotential:
             if recipe["station"] != "air":
                 self.station[r] = _STATION_INDEX[recipe["station"]]
                 self.terms[r] += 1
+        if self.lens:   # the eye recipe's lens quantity (EYE_LENSES) is the goal's count
+            self._lens_need = self.need[:, self._lens].max()
+            assert self._lens_need > 0, "hold 6 lenses without a lens recipe"
         # phi depends only on the held ingredient counts and visible stations.
         # Remember both per lane with the value computed from them, and only
         # re-evaluate rows whose inputs changed (rare: most steps change
@@ -111,7 +136,7 @@ class RecipePotential:
             return self.coef * (held / self.terms).mean(-1)
         prog = held / self.terms
         open_ = (self.ach >= 0) & ((ach[:, None] >> np.maximum(self.ach, 0)) & 1 == 0)
-        if y is not None:
+        if self.mode == "frontier_surface":
             # One more frontier goal: climb fraction from DEEP_Y to the nominal
             # surface, counted only after the deep achievement (0 before, so
             # earning it is continuous), open until "return to surface" is earned.
@@ -127,6 +152,16 @@ class RecipePotential:
             defeat = np.where(summoned, present * (0.25 + 0.75 * (1.0 - hp)), 0.0)
             prog = np.concatenate((prog, summon[:, None], defeat[:, None]), 1)
             open_ = np.concatenate((open_, (~summoned)[:, None], ((ach >> self._defeat) & 1 == 0)[:, None]), 1)
+        if self.lens:
+            hold = np.minimum(inv[:, self._lens] / self._lens_need, 1.0)
+            prog = np.concatenate((prog, hold[:, None]), 1)
+            open_ = np.concatenate((open_, ((ach >> self._hold) & 1 == 0)[:, None]), 1)
+        if self.altar:
+            deep = (ach >> self._deep) & 1 == 1
+            descent = np.where(deep, 1.0, np.clip((y - SURFACE_BASE) / (DEEP_Y - SURFACE_BASE), 0.0, 1.0))
+            found = 0.5 * descent + 0.5 * vis[:, self._altar_vis]
+            prog = np.concatenate((prog, found[:, None]), 1)
+            open_ = np.concatenate((open_, ((ach >> self._found) & 1 == 0)[:, None]), 1)
         n = open_.sum(-1)
         return self.coef * np.where(n > 0, (prog * open_).sum(-1) / np.maximum(n, 1), 0.0)
 
@@ -135,7 +170,7 @@ class RecipePotential:
         inputs = {"inv": d["inventory"].astype(np.float64), "vis": d["stations"]}
         if self.mode != "mean":
             inputs["ach"] = d["achievements"]
-        if self.mode == "frontier_surface":
+        if self.mode == "frontier_surface" or self.altar:
             inputs["y"] = d["depth_rows"]
         if self.boss:
             s = _status(np.atleast_2d(obs)).astype(np.float64)
@@ -149,8 +184,15 @@ class RecipePotential:
             memo.append(inputs["ach"][:, None])
         if "y" in inputs:
             ach, y = inputs["ach"], inputs["y"]
-            climbing = ((ach >> self._deep) & 1 == 1) & ((ach >> self._back) & 1 == 0)
-            memo.append(np.where(climbing, y, -1)[:, None])
+            # y matters only while climbing (frontier_surface) or descending
+            # toward the caverns for the open altar goal.
+            deep = (ach >> self._deep) & 1 == 1
+            uses_y = np.zeros(len(ach), bool)
+            if self.mode == "frontier_surface":
+                uses_y |= deep & ((ach >> self._back) & 1 == 0)
+            if self.altar:
+                uses_y |= ~deep & ((ach >> self._found) & 1 == 0)
+            memo.append(np.where(uses_y, y, -1)[:, None])
         if "boss" in inputs:
             memo.append(inputs["boss"])
         key = np.concatenate([np.minimum(inv[:, self._items], self._cap), vis] + memo, 1)

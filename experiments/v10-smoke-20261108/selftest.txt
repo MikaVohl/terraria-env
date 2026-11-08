@@ -1,0 +1,33 @@
+### build-v10 flags (-DINV_LOG=1)
+v10 selftest (FID_MOBS=1 COMBAT=1 PHYSICS=1 MINING=1 TREES=1, FID_TICKS=15): Env 68432 bytes, obs status 948, actions 86, achievements 40
+night surface spawns over 1199 steps: 8 zombies, 6 demon eyes
+lens drops: 195 / 600 demon eyes (32.5%, knob 33%)
+scripted EoC fight (iron sword+chainmail, 140 HP, 3 potions): 193/200 wins, mean 125 steps
+worldgen supply over 512 worlds (seeds 0-255 and 23000001+):
+  resource                      min    p10 median    max    floor
+  copper ore                    149    222    281    457       30
+  iron ore                      140    147    192    311      140
+  silver ore (caverns)           71    102    133    209       40
+  gold ore (lower caverns)       60     60     63     95       60
+  trunk tiles within reach       78     78     84    142       78
+  demon altars (caverns)          2      2      3      3        2
+  life crystals                   3      3      4      5        3
+  chests                         10     10     10     10        0
+PASSED: 133/133 checks passed
+
+### build-v10-noport flags (-DINV_LOG=1 -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0)
+v10 selftest (FID_MOBS=0 COMBAT=0 PHYSICS=0 MINING=0 TREES=0, FID_TICKS=15): Env 67664 bytes, obs status 943, actions 86, achievements 40
+night surface spawns over 1199 steps: 6 zombies, 6 demon eyes
+lens drops: 200 / 600 demon eyes (33.3%, knob 33%)
+scripted EoC fight (iron sword+chainmail, 140 HP, 3 potions): 194/200 wins, mean 238 steps
+worldgen supply over 512 worlds (seeds 0-255 and 23000001+):
+  resource                      min    p10 median    max    floor
+  copper ore                    158    223    281    448       30
+  iron ore                      140    148    192    309      140
+  silver ore (caverns)           70    101    133    206       40
+  gold ore (lower caverns)       60     60     63     99       60
+  trunk tiles within reach      150    150    150    156      150
+  demon altars (caverns)          2      2      2      3        2
+  life crystals                   3      3      4      5        3
+  chests                         10     10     10     10        0
+PASSED: 98/98 checks passed

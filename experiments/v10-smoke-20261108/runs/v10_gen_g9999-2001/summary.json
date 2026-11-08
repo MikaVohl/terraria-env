@@ -1,0 +1,234 @@
+{
+  "agent": "ppo",
+  "gamma": 0.9999,
+  "seed": 2001,
+  "ent_coef": 0.03,
+  "progress_coef": 0.0,
+  "progress_anneal": false,
+  "lr": 0.0003,
+  "envs": 1024,
+  "steps": 2097152,
+  "architecture": "targets",
+  "curiosity_coef": 0.0,
+  "hidden": 0,
+  "depth": 2,
+  "cell_width": 32,
+  "parameters": 481457,
+  "achievement_reward": "equal",
+  "requested_steps": 2097152,
+  "collection_seconds": 33.73029883205891,
+  "optimisation_seconds": 193.78110220492817,
+  "sps": 7374,
+  "n_ep": 891,
+  "window": 200,
+  "ach": 4.96,
+  "ret": 3.96,
+  "len": 1025.18,
+  "died": 1.0,
+  "hits": {
+    "collect wood": 103,
+    "collect stone": 112,
+    "place block": 200,
+    "place torch": 49,
+    "place platform": 86,
+    "craft workbench": 23,
+    "craft wooden sword": 1,
+    "collect copper": 61,
+    "defeat Blue Slime": 2,
+    "open chest": 52,
+    "explore 30 columns": 26,
+    "climb rope": 42,
+    "heal with food or potion": 168,
+    "collect iron": 20,
+    "use life crystal": 5,
+    "reach the caverns": 66,
+    "collect silver": 4,
+    "collect gold": 1,
+    "find a Demon Altar": 7
+  },
+  "exploration": {
+    "archive_start_prob": 0.0,
+    "sil_minibatches": 0,
+    "novelty_coef": 0.01,
+    "potential_coef": 0.0,
+    "memory_features": "",
+    "restored_episodes": 0,
+    "novelty_cells": 12714,
+    "novelty_paid": 52209
+  },
+  "training_score": {
+    "weighted_score": 4.410344827586207,
+    "weighted_score_std": 3.0226237706630656,
+    "max_weighted_score": 145,
+    "tier_rates": {
+      "1": 0.3557692307692308,
+      "2": 0.03791666666666667,
+      "3": 0.003125,
+      "4": 0.005
+    },
+    "crafter_score": 2.5227733911703822,
+    "furthest_tier": {
+      "0": 0,
+      "1": 127,
+      "2": 63,
+      "3": 3,
+      "4": 7
+    }
+  },
+  "wall_seconds_including_validation": 285.23735899996245,
+  "final_validation": {
+    "steps": 2097152,
+    "episodes": 128,
+    "mean_achievements": 7.6171875,
+    "std_achievements": 3.8691914000012653,
+    "median_achievements": 8.0,
+    "p90_achievements": 12.0,
+    "max_achievements": 16,
+    "mean_return": 6.8125,
+    "mean_length": 3532.0234375,
+    "death_rate": 0.8046875,
+    "mean_peak_depth": 80.78125,
+    "mean_steps_after_last_achievement": 1685.4921875,
+    "first_achievement_steps": {
+      "collect wood": {
+        "episodes": 85,
+        "mean": 434.8941176470588,
+        "median": 142.0
+      },
+      "collect stone": {
+        "episodes": 77,
+        "mean": 784.1298701298701,
+        "median": 677.0
+      },
+      "place block": {
+        "episodes": 128,
+        "mean": 51.3359375,
+        "median": 42.0
+      },
+      "place torch": {
+        "episodes": 27,
+        "mean": 1517.4814814814815,
+        "median": 1458.0
+      },
+      "place platform": {
+        "episodes": 78,
+        "mean": 454.43589743589746,
+        "median": 205.5
+      },
+      "craft workbench": {
+        "episodes": 51,
+        "mean": 235.4313725490196,
+        "median": 154.0
+      },
+      "craft wooden sword": {
+        "episodes": 16,
+        "mean": 334.875,
+        "median": 279.5
+      },
+      "collect copper": {
+        "episodes": 58,
+        "mean": 1277.3620689655172,
+        "median": 1003.5
+      },
+      "defeat Blue Slime": {
+        "episodes": 2,
+        "mean": 85.5,
+        "median": 85.5
+      },
+      "open chest": {
+        "episodes": 27,
+        "mean": 1485.7407407407406,
+        "median": 1406.0
+      },
+      "explore 30 columns": {
+        "episodes": 33,
+        "mean": 604.060606060606,
+        "median": 210.0
+      },
+      "climb rope": {
+        "episodes": 25,
+        "mean": 1692.2,
+        "median": 1527.0
+      },
+      "heal with food or potion": {
+        "episodes": 106,
+        "mean": 93.5,
+        "median": 66.0
+      },
+      "collect iron": {
+        "episodes": 54,
+        "mean": 2038.3148148148148,
+        "median": 1747.0
+      },
+      "use life crystal": {
+        "episodes": 10,
+        "mean": 2216.0,
+        "median": 2309.5
+      },
+      "survive a night": {
+        "episodes": 51,
+        "mean": 3000.0,
+        "median": 3000.0
+      },
+      "reach the caverns": {
+        "episodes": 73,
+        "mean": 1283.86301369863,
+        "median": 1110.0
+      },
+      "collect silver": {
+        "episodes": 36,
+        "mean": 2328.6944444444443,
+        "median": 2109.5
+      },
+      "collect gold": {
+        "episodes": 24,
+        "mean": 2999.3333333333335,
+        "median": 2691.0
+      },
+      "find a Demon Altar": {
+        "episodes": 14,
+        "mean": 2346.714285714286,
+        "median": 1927.5
+      }
+    },
+    "hits": {
+      "collect wood": 85,
+      "collect stone": 77,
+      "place block": 128,
+      "place torch": 27,
+      "place platform": 78,
+      "craft workbench": 51,
+      "craft wooden sword": 16,
+      "collect copper": 58,
+      "defeat Blue Slime": 2,
+      "open chest": 27,
+      "explore 30 columns": 33,
+      "climb rope": 25,
+      "heal with food or potion": 106,
+      "collect iron": 54,
+      "use life crystal": 10,
+      "survive a night": 51,
+      "reach the caverns": 73,
+      "collect silver": 36,
+      "collect gold": 24,
+      "find a Demon Altar": 14
+    },
+    "weighted_score": 9.10021551724138,
+    "weighted_score_std": 6.403761733636417,
+    "max_weighted_score": 145,
+    "tier_rates": {
+      "1": 0.4284855769230769,
+      "2": 0.12239583333333333,
+      "3": 0.05859375,
+      "4": 0.015625
+    },
+    "crafter_score": 4.423542711286048,
+    "furthest_tier": {
+      "0": 0,
+      "1": 54,
+      "2": 21,
+      "3": 39,
+      "4": 14
+    }
+  }
+}

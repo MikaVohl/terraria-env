@@ -1,0 +1,459 @@
+### flags: -DINV_LOG=1 
+v10 port fixtures: MOBS=1 COMBAT=1 PHYSICS=1 MINING=1 TREES=1, FID_TICKS=15
+PASS physics jump held one action: 93.46 px = 5.84 tiles (real JumpMovement, 15 held ticks: 93.46 px)
+PASS physics jump lands: back on the floor
+PASS physics jump held two actions: 98.07 px = 6.13 tiles (real JumpMovement, 30 held ticks: 98.07 px)
+PASS physics long jump lands: back on the floor
+PASS physics run speed: max 3.040 px/tick, steady 2.915 px/tick (maxRunSpeed 3, accel 0.08)
+PASS physics ground friction: stops within 30 ticks (runSlowdown 0.2 from 3 px/tick: 15 ticks)
+PASS physics max fall speed: 10.00 px/tick (maxFallSpeed 10)
+PASS physics fall damage 30 tiles: 50 hp (real (30-25)*10 = 50)
+PASS physics step up 1 tile: feet row 58, column 68
+PASS physics blocked by 2 tiles: feet row 59, column 62
+PASS physics 2-high tunnel blocks 42px hitbox: column 62
+PASS physics 3-high tunnel passes: column 70
+PASS physics 1-wide hole holds 20px hitbox: feet row 59
+PASS physics 2-wide hole drops: feet row 69
+PASS physics rope climb: feet row 59 -> 48, pulley 1
+PASS combat knockback velocity: (4.50, -3.50)
+PASS combat knockback distance (grid FID_GRID_KB): 5.05 tiles on flat ground (grid knockback 5 cells)
+PASS mobs slime hop gaps (passive): grounded ticks 120,120,200,120,120,200 (AI_001: 120,120,200 repeating)
+PASS mobs slime hop heights: small 57.0 px, big 102.7 px (real vy -6/-8, gravity 0.3: 57.0/102.7 px)
+PASS mobs slime hop gaps (aggressive): grounded ticks 60,60,100,60,60,100 (AI_001: 60,60,100 repeating)
+PASS mobs slime aggressive at night: second hop after 60 grounded ticks (120 halved)
+PASS mobs bat flight speed: max |vx| 4.00, |vy| 1.50 px/tick (aiStyle 14 type 49: 4, 1.5)
+PASS mobs bat reaches player: closest 0 cells
+PASS mobs demon eye flight speed: max |vx| 4.00, |vy| 1.50 px/tick (AI_002_FloatingEye: 4, 1.5)
+PASS mobs demon eye reaches player: closest 0 cells
+PASS mobs zombie walk speed: max |vx| 1.000 px/tick after 15 ticks (AI_003: 1.0, +0.07/tick)
+PASS mobs zombie reaches player: closest 0 cells
+PASS mobs skeleton walk speed: max |vx| 1.500 px/tick after 22 ticks (AI_003: 1.5, +0.07/tick)
+PASS mobs skeleton reaches player: closest 0 cells
+PASS mobs zombie 1-tile wall: crossed to column 90 row 57, strongest jump 0.00 (AI_003: step-up, no jump)
+PASS mobs zombie 2-tile wall: crossed to column 90 row 56, strongest jump -6.00 (AI_003: vy -6)
+PASS mobs zombie 3-tile wall: crossed to column 90 row 55, strongest jump -7.00 (AI_003: vy -7)
+PASS mobs zombie 4-tile wall: crossed to column 90 row 54, strongest jump -8.00 (AI_003: vy -8)
+PASS mobs zombie 7-tile wall: crossed to column 91 row 51 (vy -8 to 6.6 tiles, then the inline step-up)
+PASS mobs zombie 8-tile wall: stays at column 51 (vy -8 rises 6.6 tiles, step-up adds 1)
+PASS mobs zombie wanders by day on the surface: column 72 from 60 (player at 20)
+PASS mobs zombie chases at night: column 48 from 60 (player at 20)
+PASS mobs Blue Slime stats: life 25, contact damage 7 (NPC.SetDefaults: 25 life, 7 damage, 24x18 px)
+PASS mobs Cave Bat stats: life 16, contact damage 13 (NPC.SetDefaults: 16 life, 13 damage, 22x18 px)
+PASS mobs Zombie stats: life 45, contact damage 14 (NPC.SetDefaults: 45 life, 14 damage, 18x40 px)
+PASS mobs Demon Eye stats: life 60, contact damage 18 (NPC.SetDefaults: 60 life, 18 damage, 30x32 px)
+PASS mobs Skeleton stats: life 60, contact damage 20 (NPC.SetDefaults: 60 life, 20 damage, 18x40 px)
+PASS combat damage variance (slime 7, defense 0): P(6,7,8) = 0.263 0.481 0.256 (DamageVar +-15%: 0.258 0.484 0.258)
+PASS combat defense 3 (iron chainmail): damage 4-6 (int)(6..8 - 1.5)
+PASS combat player i-frames: 5 hits in 200 ticks, every 40 ticks (immuneTime 40)
+PASS combat NPC immunity per swing: 1 then 1 hits in two swings
+PASS combat broadsword hitbox: foot-level hits by x offset -64:0 -48:0 -32:0 -16:0 +0:1 +16:1 +32:1 +48:1 +64:0 +80:0 ; overhead 1
+PASS combat shortsword stab reach: hits up to 45 px past centre (AI_161: 2.1*14 + 12.6 + 5 = 47)
+PASS combat NPC damage and crits (Blue Slime, defense 2): non-crit 7-9 (want 7-9: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC damage and crits (Skeleton, defense 8): non-crit 4-6 (want 4-6: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC knockback (heavy hit): slime vx 5.50 vy -4.12 (kb 5.5, vy -0.75*kb)
+PASS combat zombie knockback (light hit, resist twice): vx 1.000 (kb 4 * 0.5 * 0.5 = 1.0)
+PASS combat boss one hit per swing: 1 hits, hp 240 -> 230
+PASS combat boss contact i-frames: 3 contact hits in 120 ticks (immuneTime 40)
+PASS mining dirt with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining dirt with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining dirt with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining grass with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining grass with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining grass with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining stone with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining stone with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining stone with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining copper ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining copper ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining copper ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining iron ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining iron ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining iron ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining silver ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining silver ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining silver ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining gold ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining gold ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining gold ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining wood block with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining wood block with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining wood block with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining torch with copper pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 15 ticks)
+PASS mining torch with iron pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 13 ticks)
+PASS mining torch with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining tree (copper axe) with copper pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with iron pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with gold pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining demon altar unbreakable: still standing after 10 actions
+PASS mining hit damage decay: 35 -> 17 after 20 other hits (decay 2/hit once ttl < 48)
+PASS mining stone with held action: 3 actions at 15 ticks/action (3 hits, useTime 15: 31 ticks)
+PASS trees height range: 4041 trees in 400 worlds, heights 5:214 6:267 7:329 8:328 9:321 10:340 11:352 12:367 13:363 14:358 15:349 16:453 (GrowTree Next(5,17), floor growth capped at 16)
+PASS trees wood per trunk tile: mean trunk 10.98 tiles, mean wood 21.11 (1.92 per trunk tile; worldgen floor assumes 1.93)
+89/89 checks passed
+### flags: -DINV_LOG=1 -DFID_MOBS=0
+v10 port fixtures: MOBS=0 COMBAT=1 PHYSICS=1 MINING=1 TREES=1, FID_TICKS=15
+PASS physics jump held one action: 93.46 px = 5.84 tiles (real JumpMovement, 15 held ticks: 93.46 px)
+PASS physics jump lands: back on the floor
+PASS physics jump held two actions: 98.07 px = 6.13 tiles (real JumpMovement, 30 held ticks: 98.07 px)
+PASS physics long jump lands: back on the floor
+PASS physics run speed: max 3.040 px/tick, steady 2.915 px/tick (maxRunSpeed 3, accel 0.08)
+PASS physics ground friction: stops within 30 ticks (runSlowdown 0.2 from 3 px/tick: 15 ticks)
+PASS physics max fall speed: 10.00 px/tick (maxFallSpeed 10)
+PASS physics fall damage 30 tiles: 50 hp (real (30-25)*10 = 50)
+PASS physics step up 1 tile: feet row 58, column 68
+PASS physics blocked by 2 tiles: feet row 59, column 62
+PASS physics 2-high tunnel blocks 42px hitbox: column 62
+PASS physics 3-high tunnel passes: column 70
+PASS physics 1-wide hole holds 20px hitbox: feet row 59
+PASS physics 2-wide hole drops: feet row 69
+PASS physics rope climb: feet row 59 -> 48, pulley 1
+PASS combat knockback velocity: (4.50, -3.50)
+PASS combat knockback distance (grid FID_GRID_KB): 5.05 tiles on flat ground (grid knockback 5 cells)
+PASS combat damage variance (slime 7, defense 0): P(6,7,8) = 0.263 0.481 0.256 (DamageVar +-15%: 0.258 0.484 0.258)
+PASS combat defense 3 (iron chainmail): damage 4-6 (int)(6..8 - 1.5)
+PASS combat player i-frames: 5 hits in 200 ticks, every 40 ticks (immuneTime 40)
+PASS combat NPC immunity per swing: 1 then 1 hits in two swings
+PASS combat broadsword hitbox: foot-level hits by x offset -64:0 -48:0 -32:0 -16:0 +0:1 +16:1 +32:1 +48:1 +64:0 +80:0 ; overhead 1
+PASS combat shortsword stab reach: hits up to 32 px past centre (AI_161: 2.1*14 + 12.6 + 5 = 47)
+PASS combat NPC damage and crits (Blue Slime, defense 2): non-crit 7-9 (want 7-9: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC damage and crits (Skeleton, defense 8): non-crit 4-6 (want 4-6: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat boss one hit per swing: 1 hits, hp 240 -> 230
+PASS combat boss contact i-frames: 3 contact hits in 120 ticks (immuneTime 40)
+PASS mining dirt with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining dirt with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining dirt with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining grass with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining grass with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining grass with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining stone with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining stone with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining stone with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining copper ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining copper ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining copper ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining iron ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining iron ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining iron ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining silver ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining silver ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining silver ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining gold ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining gold ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining gold ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining wood block with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining wood block with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining wood block with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining torch with copper pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 15 ticks)
+PASS mining torch with iron pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 13 ticks)
+PASS mining torch with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining tree (copper axe) with copper pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with iron pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with gold pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining demon altar unbreakable: still standing after 10 actions
+PASS mining hit damage decay: 35 -> 17 after 20 other hits (decay 2/hit once ttl < 48)
+PASS mining stone with held action: 3 actions at 15 ticks/action (3 hits, useTime 15: 31 ticks)
+PASS trees height range: 4041 trees in 400 worlds, heights 5:214 6:267 7:329 8:328 9:321 10:340 11:352 12:367 13:363 14:358 15:349 16:453 (GrowTree Next(5,17), floor growth capped at 16)
+PASS trees wood per trunk tile: mean trunk 10.98 tiles, mean wood 21.11 (1.92 per trunk tile; worldgen floor assumes 1.93)
+62/62 checks passed
+### flags: -DINV_LOG=1 -DFID_COMBAT=0
+v10 port fixtures: MOBS=1 COMBAT=0 PHYSICS=1 MINING=1 TREES=1, FID_TICKS=15
+PASS physics jump held one action: 93.46 px = 5.84 tiles (real JumpMovement, 15 held ticks: 93.46 px)
+PASS physics jump lands: back on the floor
+PASS physics jump held two actions: 98.07 px = 6.13 tiles (real JumpMovement, 30 held ticks: 98.07 px)
+PASS physics long jump lands: back on the floor
+PASS physics run speed: max 3.040 px/tick, steady 2.915 px/tick (maxRunSpeed 3, accel 0.08)
+PASS physics ground friction: stops within 30 ticks (runSlowdown 0.2 from 3 px/tick: 15 ticks)
+PASS physics max fall speed: 10.00 px/tick (maxFallSpeed 10)
+PASS physics fall damage 30 tiles: 50 hp (real (30-25)*10 = 50)
+PASS physics step up 1 tile: feet row 58, column 68
+PASS physics blocked by 2 tiles: feet row 59, column 62
+PASS physics 2-high tunnel blocks 42px hitbox: column 62
+PASS physics 3-high tunnel passes: column 70
+PASS physics 1-wide hole holds 20px hitbox: feet row 59
+PASS physics 2-wide hole drops: feet row 69
+PASS physics rope climb: feet row 59 -> 48, pulley 1
+PASS mobs slime hop gaps (passive): grounded ticks 120,120,200,120,120,200 (AI_001: 120,120,200 repeating)
+PASS mobs slime hop heights: small 57.0 px, big 102.7 px (real vy -6/-8, gravity 0.3: 57.0/102.7 px)
+PASS mobs slime hop gaps (aggressive): grounded ticks 60,60,100,60,60,100 (AI_001: 60,60,100 repeating)
+PASS mobs slime aggressive at night: second hop after 60 grounded ticks (120 halved)
+PASS mobs bat flight speed: max |vx| 4.00, |vy| 1.50 px/tick (aiStyle 14 type 49: 4, 1.5)
+PASS mobs bat reaches player: closest 0 cells
+PASS mobs demon eye flight speed: max |vx| 4.00, |vy| 1.50 px/tick (AI_002_FloatingEye: 4, 1.5)
+PASS mobs demon eye reaches player: closest 0 cells
+PASS mobs zombie walk speed: max |vx| 1.000 px/tick after 15 ticks (AI_003: 1.0, +0.07/tick)
+PASS mobs zombie reaches player: closest 0 cells
+PASS mobs skeleton walk speed: max |vx| 1.500 px/tick after 22 ticks (AI_003: 1.5, +0.07/tick)
+PASS mobs skeleton reaches player: closest 0 cells
+PASS mobs zombie 1-tile wall: crossed to column 90 row 57, strongest jump 0.00 (AI_003: step-up, no jump)
+PASS mobs zombie 2-tile wall: crossed to column 90 row 56, strongest jump -6.00 (AI_003: vy -6)
+PASS mobs zombie 3-tile wall: crossed to column 90 row 55, strongest jump -7.00 (AI_003: vy -7)
+PASS mobs zombie 4-tile wall: crossed to column 90 row 54, strongest jump -8.00 (AI_003: vy -8)
+PASS mobs zombie 7-tile wall: crossed to column 91 row 51 (vy -8 to 6.6 tiles, then the inline step-up)
+PASS mobs zombie 8-tile wall: stays at column 51 (vy -8 rises 6.6 tiles, step-up adds 1)
+PASS mobs zombie wanders by day on the surface: column 72 from 60 (player at 20)
+PASS mobs zombie chases at night: column 48 from 60 (player at 20)
+PASS mobs Blue Slime stats: life 25, contact damage 7 (NPC.SetDefaults: 25 life, 7 damage, 24x18 px)
+PASS mobs Cave Bat stats: life 16, contact damage 13 (NPC.SetDefaults: 16 life, 13 damage, 22x18 px)
+PASS mobs Zombie stats: life 45, contact damage 14 (NPC.SetDefaults: 45 life, 14 damage, 18x40 px)
+PASS mobs Demon Eye stats: life 60, contact damage 18 (NPC.SetDefaults: 60 life, 18 damage, 30x32 px)
+PASS mobs Skeleton stats: life 60, contact damage 20 (NPC.SetDefaults: 60 life, 20 damage, 18x40 px)
+PASS mining dirt with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining dirt with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining dirt with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining grass with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining grass with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining grass with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining stone with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining stone with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining stone with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining copper ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining copper ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining copper ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining iron ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining iron ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining iron ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining silver ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining silver ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining silver ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining gold ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining gold ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining gold ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining wood block with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining wood block with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining wood block with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining torch with copper pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 15 ticks)
+PASS mining torch with iron pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 13 ticks)
+PASS mining torch with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining tree (copper axe) with copper pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with iron pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with gold pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining demon altar unbreakable: still standing after 10 actions
+PASS mining hit damage decay: 35 -> 17 after 20 other hits (decay 2/hit once ttl < 48)
+PASS mining stone with held action: 3 actions at 15 ticks/action (3 hits, useTime 15: 31 ticks)
+PASS trees height range: 4041 trees in 400 worlds, heights 5:214 6:267 7:329 8:328 9:321 10:340 11:352 12:367 13:363 14:358 15:349 16:453 (GrowTree Next(5,17), floor growth capped at 16)
+PASS trees wood per trunk tile: mean trunk 10.98 tiles, mean wood 21.11 (1.92 per trunk tile; worldgen floor assumes 1.93)
+75/75 checks passed
+### flags: -DINV_LOG=1 -DFID_PHYSICS=0
+v10 port fixtures: MOBS=1 COMBAT=1 PHYSICS=0 MINING=1 TREES=1, FID_TICKS=15
+PASS mobs slime hop gaps (passive): grounded ticks 120,120,200,120,120,200 (AI_001: 120,120,200 repeating)
+PASS mobs slime hop heights: small 57.0 px, big 102.7 px (real vy -6/-8, gravity 0.3: 57.0/102.7 px)
+PASS mobs slime hop gaps (aggressive): grounded ticks 60,60,100,60,60,100 (AI_001: 60,60,100 repeating)
+PASS mobs slime aggressive at night: second hop after 60 grounded ticks (120 halved)
+PASS mobs bat flight speed: max |vx| 4.00, |vy| 1.50 px/tick (aiStyle 14 type 49: 4, 1.5)
+PASS mobs bat reaches player: closest 0 cells
+PASS mobs demon eye flight speed: max |vx| 4.00, |vy| 1.50 px/tick (AI_002_FloatingEye: 4, 1.5)
+PASS mobs demon eye reaches player: closest 0 cells
+PASS mobs zombie walk speed: max |vx| 1.000 px/tick after 15 ticks (AI_003: 1.0, +0.07/tick)
+PASS mobs zombie reaches player: closest 0 cells
+PASS mobs skeleton walk speed: max |vx| 1.500 px/tick after 22 ticks (AI_003: 1.5, +0.07/tick)
+PASS mobs skeleton reaches player: closest 0 cells
+PASS mobs zombie 1-tile wall: crossed to column 90 row 57, strongest jump 0.00 (AI_003: step-up, no jump)
+PASS mobs zombie 2-tile wall: crossed to column 90 row 56, strongest jump -6.00 (AI_003: vy -6)
+PASS mobs zombie 3-tile wall: crossed to column 90 row 55, strongest jump -7.00 (AI_003: vy -7)
+PASS mobs zombie 4-tile wall: crossed to column 90 row 54, strongest jump -8.00 (AI_003: vy -8)
+PASS mobs zombie 7-tile wall: crossed to column 91 row 51 (vy -8 to 6.6 tiles, then the inline step-up)
+PASS mobs zombie 8-tile wall: stays at column 51 (vy -8 rises 6.6 tiles, step-up adds 1)
+PASS mobs zombie wanders by day on the surface: column 72 from 60 (player at 20)
+PASS mobs zombie chases at night: column 48 from 60 (player at 20)
+PASS mobs Blue Slime stats: life 25, contact damage 7 (NPC.SetDefaults: 25 life, 7 damage, 24x18 px)
+PASS mobs Cave Bat stats: life 16, contact damage 13 (NPC.SetDefaults: 16 life, 13 damage, 22x18 px)
+PASS mobs Zombie stats: life 45, contact damage 14 (NPC.SetDefaults: 45 life, 14 damage, 18x40 px)
+PASS mobs Demon Eye stats: life 60, contact damage 18 (NPC.SetDefaults: 60 life, 18 damage, 30x32 px)
+PASS mobs Skeleton stats: life 60, contact damage 20 (NPC.SetDefaults: 60 life, 20 damage, 18x40 px)
+PASS combat damage variance (slime 7, defense 0): P(6,7,8) = 0.263 0.481 0.256 (DamageVar +-15%: 0.258 0.484 0.258)
+PASS combat defense 3 (iron chainmail): damage 4-6 (int)(6..8 - 1.5)
+PASS combat player i-frames: 5 hits in 200 ticks, every 40 ticks (immuneTime 40)
+PASS combat NPC immunity per swing: 1 then 1 hits in two swings
+PASS combat broadsword hitbox: foot-level hits by x offset -64:0 -48:0 -32:0 -16:0 +0:1 +16:1 +32:1 +48:1 +64:0 +80:0 ; overhead 1
+PASS combat shortsword stab reach: hits up to 45 px past centre (AI_161: 2.1*14 + 12.6 + 5 = 47)
+PASS combat NPC damage and crits (Blue Slime, defense 2): non-crit 7-9 (want 7-9: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC damage and crits (Skeleton, defense 8): non-crit 4-6 (want 4-6: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC knockback (heavy hit): slime vx 5.50 vy -4.12 (kb 5.5, vy -0.75*kb)
+PASS combat zombie knockback (light hit, resist twice): vx 1.000 (kb 4 * 0.5 * 0.5 = 1.0)
+PASS combat boss one hit per swing: 1 hits, hp 240 -> 230
+PASS combat boss contact i-frames: 3 contact hits in 120 ticks (immuneTime 40)
+PASS mining dirt with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining dirt with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining dirt with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining grass with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining grass with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining grass with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining stone with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining stone with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining stone with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining copper ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining copper ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining copper ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining iron ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining iron ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining iron ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining silver ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining silver ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining silver ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining gold ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining gold ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining gold ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining wood block with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining wood block with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining wood block with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining torch with copper pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 15 ticks)
+PASS mining torch with iron pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 13 ticks)
+PASS mining torch with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining tree (copper axe) with copper pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with iron pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with gold pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining demon altar unbreakable: still standing after 10 actions
+PASS mining hit damage decay: 35 -> 17 after 20 other hits (decay 2/hit once ttl < 48)
+PASS mining stone with held action: 3 actions at 15 ticks/action (3 hits, useTime 15: 31 ticks)
+PASS trees height range: 4041 trees in 400 worlds, heights 5:214 6:267 7:329 8:328 9:321 10:340 11:352 12:367 13:363 14:358 15:349 16:453 (GrowTree Next(5,17), floor growth capped at 16)
+PASS trees wood per trunk tile: mean trunk 10.98 tiles, mean wood 21.11 (1.92 per trunk tile; worldgen floor assumes 1.93)
+72/72 checks passed
+### flags: -DINV_LOG=1 -DFID_MINING=0
+v10 port fixtures: MOBS=1 COMBAT=1 PHYSICS=1 MINING=0 TREES=1, FID_TICKS=15
+PASS physics jump held one action: 93.46 px = 5.84 tiles (real JumpMovement, 15 held ticks: 93.46 px)
+PASS physics jump lands: back on the floor
+PASS physics jump held two actions: 98.07 px = 6.13 tiles (real JumpMovement, 30 held ticks: 98.07 px)
+PASS physics long jump lands: back on the floor
+PASS physics run speed: max 3.040 px/tick, steady 2.915 px/tick (maxRunSpeed 3, accel 0.08)
+PASS physics ground friction: stops within 30 ticks (runSlowdown 0.2 from 3 px/tick: 15 ticks)
+PASS physics max fall speed: 10.00 px/tick (maxFallSpeed 10)
+PASS physics fall damage 30 tiles: 50 hp (real (30-25)*10 = 50)
+PASS physics step up 1 tile: feet row 58, column 68
+PASS physics blocked by 2 tiles: feet row 59, column 62
+PASS physics 2-high tunnel blocks 42px hitbox: column 62
+PASS physics 3-high tunnel passes: column 70
+PASS physics 1-wide hole holds 20px hitbox: feet row 59
+PASS physics 2-wide hole drops: feet row 69
+PASS physics rope climb: feet row 59 -> 48, pulley 1
+PASS combat knockback velocity: (4.50, -3.50)
+PASS combat knockback distance (grid FID_GRID_KB): 5.05 tiles on flat ground (grid knockback 5 cells)
+PASS mobs slime hop gaps (passive): grounded ticks 120,120,200,120,120,200 (AI_001: 120,120,200 repeating)
+PASS mobs slime hop heights: small 57.0 px, big 102.7 px (real vy -6/-8, gravity 0.3: 57.0/102.7 px)
+PASS mobs slime hop gaps (aggressive): grounded ticks 60,60,100,60,60,100 (AI_001: 60,60,100 repeating)
+PASS mobs slime aggressive at night: second hop after 60 grounded ticks (120 halved)
+PASS mobs bat flight speed: max |vx| 4.00, |vy| 1.50 px/tick (aiStyle 14 type 49: 4, 1.5)
+PASS mobs bat reaches player: closest 0 cells
+PASS mobs demon eye flight speed: max |vx| 4.00, |vy| 1.50 px/tick (AI_002_FloatingEye: 4, 1.5)
+PASS mobs demon eye reaches player: closest 0 cells
+PASS mobs zombie walk speed: max |vx| 1.000 px/tick after 15 ticks (AI_003: 1.0, +0.07/tick)
+PASS mobs zombie reaches player: closest 0 cells
+PASS mobs skeleton walk speed: max |vx| 1.500 px/tick after 22 ticks (AI_003: 1.5, +0.07/tick)
+PASS mobs skeleton reaches player: closest 0 cells
+PASS mobs zombie 1-tile wall: crossed to column 90 row 57, strongest jump 0.00 (AI_003: step-up, no jump)
+PASS mobs zombie 2-tile wall: crossed to column 90 row 56, strongest jump -6.00 (AI_003: vy -6)
+PASS mobs zombie 3-tile wall: crossed to column 90 row 55, strongest jump -7.00 (AI_003: vy -7)
+PASS mobs zombie 4-tile wall: crossed to column 90 row 54, strongest jump -8.00 (AI_003: vy -8)
+PASS mobs zombie 7-tile wall: crossed to column 91 row 51 (vy -8 to 6.6 tiles, then the inline step-up)
+PASS mobs zombie 8-tile wall: stays at column 51 (vy -8 rises 6.6 tiles, step-up adds 1)
+PASS mobs zombie wanders by day on the surface: column 72 from 60 (player at 20)
+PASS mobs zombie chases at night: column 48 from 60 (player at 20)
+PASS mobs Blue Slime stats: life 25, contact damage 7 (NPC.SetDefaults: 25 life, 7 damage, 24x18 px)
+PASS mobs Cave Bat stats: life 16, contact damage 13 (NPC.SetDefaults: 16 life, 13 damage, 22x18 px)
+PASS mobs Zombie stats: life 45, contact damage 14 (NPC.SetDefaults: 45 life, 14 damage, 18x40 px)
+PASS mobs Demon Eye stats: life 60, contact damage 18 (NPC.SetDefaults: 60 life, 18 damage, 30x32 px)
+PASS mobs Skeleton stats: life 60, contact damage 20 (NPC.SetDefaults: 60 life, 20 damage, 18x40 px)
+PASS combat damage variance (slime 7, defense 0): P(6,7,8) = 0.263 0.481 0.256 (DamageVar +-15%: 0.258 0.484 0.258)
+PASS combat defense 3 (iron chainmail): damage 4-6 (int)(6..8 - 1.5)
+PASS combat player i-frames: 5 hits in 200 ticks, every 40 ticks (immuneTime 40)
+PASS combat NPC immunity per swing: 1 then 1 hits in two swings
+PASS combat broadsword hitbox: foot-level hits by x offset -64:0 -48:0 -32:0 -16:0 +0:1 +16:1 +32:1 +48:1 +64:0 +80:0 ; overhead 1
+PASS combat shortsword stab reach: hits up to 45 px past centre (AI_161: 2.1*14 + 12.6 + 5 = 47)
+PASS combat NPC damage and crits (Blue Slime, defense 2): non-crit 7-9 (want 7-9: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC damage and crits (Skeleton, defense 8): non-crit 4-6 (want 4-6: round(9*0.85..1.15) - def/2), crit rate 0.039 (4%)
+PASS combat NPC knockback (heavy hit): slime vx 5.50 vy -4.12 (kb 5.5, vy -0.75*kb)
+PASS combat zombie knockback (light hit, resist twice): vx 1.000 (kb 4 * 0.5 * 0.5 = 1.0)
+PASS combat boss one hit per swing: 1 hits, hp 240 -> 230
+PASS combat boss contact i-frames: 3 contact hits in 120 ticks (immuneTime 40)
+PASS trees height range: 4041 trees in 400 worlds, heights 5:214 6:267 7:329 8:328 9:321 10:340 11:352 12:367 13:363 14:358 15:349 16:453 (GrowTree Next(5,17), floor growth capped at 16)
+PASS trees wood per trunk tile: mean trunk 10.98 tiles, mean wood 21.11 (1.92 per trunk tile; worldgen floor assumes 1.93)
+56/56 checks passed
+### flags: -DINV_LOG=1 -DFID_TREES=0
+v10 port fixtures: MOBS=1 COMBAT=1 PHYSICS=1 MINING=1 TREES=0, FID_TICKS=15
+PASS physics jump held one action: 93.46 px = 5.84 tiles (real JumpMovement, 15 held ticks: 93.46 px)
+PASS physics jump lands: back on the floor
+PASS physics jump held two actions: 98.07 px = 6.13 tiles (real JumpMovement, 30 held ticks: 98.07 px)
+PASS physics long jump lands: back on the floor
+PASS physics run speed: max 3.040 px/tick, steady 2.915 px/tick (maxRunSpeed 3, accel 0.08)
+PASS physics ground friction: stops within 30 ticks (runSlowdown 0.2 from 3 px/tick: 15 ticks)
+PASS physics max fall speed: 10.00 px/tick (maxFallSpeed 10)
+PASS physics fall damage 30 tiles: 50 hp (real (30-25)*10 = 50)
+PASS physics step up 1 tile: feet row 58, column 68
+PASS physics blocked by 2 tiles: feet row 59, column 62
+PASS physics 2-high tunnel blocks 42px hitbox: column 62
+PASS physics 3-high tunnel passes: column 70
+PASS physics 1-wide hole holds 20px hitbox: feet row 59
+PASS physics 2-wide hole drops: feet row 69
+PASS physics rope climb: feet row 59 -> 48, pulley 1
+PASS combat knockback velocity: (4.50, -3.50)
+PASS combat knockback distance (grid FID_GRID_KB): 5.05 tiles on flat ground (grid knockback 5 cells)
+PASS mobs slime hop gaps (passive): grounded ticks 120,120,200,120,120,200 (AI_001: 120,120,200 repeating)
+PASS mobs slime hop heights: small 57.0 px, big 102.7 px (real vy -6/-8, gravity 0.3: 57.0/102.7 px)
+PASS mobs slime hop gaps (aggressive): grounded ticks 60,60,100,60,60,100 (AI_001: 60,60,100 repeating)
+PASS mobs slime aggressive at night: second hop after 60 grounded ticks (120 halved)
+PASS mobs bat flight speed: max |vx| 4.00, |vy| 1.50 px/tick (aiStyle 14 type 49: 4, 1.5)
+PASS mobs bat reaches player: closest 0 cells
+PASS mobs demon eye flight speed: max |vx| 4.00, |vy| 1.50 px/tick (AI_002_FloatingEye: 4, 1.5)
+PASS mobs demon eye reaches player: closest 0 cells
+PASS mobs zombie walk speed: max |vx| 1.000 px/tick after 15 ticks (AI_003: 1.0, +0.07/tick)
+PASS mobs zombie reaches player: closest 0 cells
+PASS mobs skeleton walk speed: max |vx| 1.500 px/tick after 22 ticks (AI_003: 1.5, +0.07/tick)
+PASS mobs skeleton reaches player: closest 0 cells
+PASS mobs zombie 1-tile wall: crossed to column 90 row 57, strongest jump 0.00 (AI_003: step-up, no jump)
+PASS mobs zombie 2-tile wall: crossed to column 90 row 56, strongest jump -6.00 (AI_003: vy -6)
+PASS mobs zombie 3-tile wall: crossed to column 90 row 55, strongest jump -7.00 (AI_003: vy -7)
+PASS mobs zombie 4-tile wall: crossed to column 90 row 54, strongest jump -8.00 (AI_003: vy -8)
+PASS mobs zombie 7-tile wall: crossed to column 91 row 51 (vy -8 to 6.6 tiles, then the inline step-up)
+PASS mobs zombie 8-tile wall: stays at column 51 (vy -8 rises 6.6 tiles, step-up adds 1)
+PASS mobs zombie wanders by day on the surface: column 72 from 60 (player at 20)
+PASS mobs zombie chases at night: column 48 from 60 (player at 20)
+PASS mobs Blue Slime stats: life 25, contact damage 7 (NPC.SetDefaults: 25 life, 7 damage, 24x18 px)
+PASS mobs Cave Bat stats: life 16, contact damage 14 (NPC.SetDefaults: 16 life, 13 damage, 22x18 px)
+PASS mobs Zombie stats: life 45, contact damage 15 (NPC.SetDefaults: 45 life, 14 damage, 18x40 px)
+PASS mobs Demon Eye stats: life 60, contact damage 19 (NPC.SetDefaults: 60 life, 18 damage, 30x32 px)
+PASS mobs Skeleton stats: life 60, contact damage 21 (NPC.SetDefaults: 60 life, 20 damage, 18x40 px)
+PASS combat damage variance (slime 7, defense 0): P(6,7,8) = 0.263 0.481 0.256 (DamageVar +-15%: 0.258 0.484 0.258)
+PASS combat defense 3 (iron chainmail): damage 4-6 (int)(6..8 - 1.5)
+PASS combat player i-frames: 5 hits in 200 ticks, every 40 ticks (immuneTime 40)
+PASS combat NPC immunity per swing: 1 then 1 hits in two swings
+PASS combat broadsword hitbox: foot-level hits by x offset -64:0 -48:0 -32:0 -16:0 +0:1 +16:1 +32:1 +48:1 +64:0 +80:0 ; overhead 1
+PASS combat shortsword stab reach: hits up to 45 px past centre (AI_161: 2.1*14 + 12.6 + 5 = 47)
+PASS combat NPC damage and crits (Blue Slime, defense 2): non-crit 7-9 (want 7-9: round(9*0.85..1.15) - def/2), crit rate 0.037 (4%)
+PASS combat NPC damage and crits (Skeleton, defense 8): non-crit 4-6 (want 4-6: round(9*0.85..1.15) - def/2), crit rate 0.037 (4%)
+PASS combat NPC knockback (heavy hit): slime vx 7.70 vy -5.77 (kb 5.5, vy -0.75*kb)
+PASS combat zombie knockback (light hit, resist twice): vx 1.000 (kb 4 * 0.5 * 0.5 = 1.0)
+PASS combat boss one hit per swing: 1 hits, hp 240 -> 227
+PASS combat boss contact i-frames: 3 contact hits in 120 ticks (immuneTime 40)
+PASS mining dirt with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining dirt with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining dirt with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining grass with copper pick: 2 hits, 16 ticks = 2 actions (want 2 hits every 15 ticks)
+PASS mining grass with iron pick: 2 hits, 14 ticks = 1 actions (want 2 hits every 13 ticks)
+PASS mining grass with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining stone with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining stone with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining stone with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining copper ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining copper ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining copper ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining iron ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining iron ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining iron ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining silver ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining silver ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining silver ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining gold ore with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining gold ore with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining gold ore with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining wood block with copper pick: 3 hits, 31 ticks = 3 actions (want 3 hits every 15 ticks)
+PASS mining wood block with iron pick: 3 hits, 27 ticks = 2 actions (want 3 hits every 13 ticks)
+PASS mining wood block with gold pick: 2 hits, 18 ticks = 2 actions (want 2 hits every 17 ticks)
+PASS mining torch with copper pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 15 ticks)
+PASS mining torch with iron pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 13 ticks)
+PASS mining torch with gold pick: 1 hits, 1 ticks = 1 actions (want 1 hits every 17 ticks)
+PASS mining tree (copper axe) with copper pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with iron pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining tree (copper axe) with gold pick: 13 hits, 253 ticks = 17 actions (want 13 hits every 21 ticks)
+PASS mining demon altar unbreakable: still standing after 10 actions
+PASS mining hit damage decay: 35 -> 17 after 20 other hits (decay 2/hit once ttl < 48)
+PASS mining stone with held action: 3 actions at 15 ticks/action (3 hits, useTime 15: 31 ticks)
+87/87 checks passed

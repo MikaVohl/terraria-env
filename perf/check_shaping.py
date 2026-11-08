@@ -107,6 +107,19 @@ class RefPotential:
             defeat = np.where(summoned, present * (0.25 + 0.75 * (1.0 - hp)), 0.0)
             prog = np.concatenate((prog, summon[:, None], defeat[:, None]), 1)
             open_ = np.concatenate((open_, (~summoned)[:, None], ((ach >> f._defeat) & 1 == 0)[:, None]), 1)
+        if f.lens:
+            # v10 "hold 6 lenses": capped lens count over the eye recipe's need.
+            hold = np.minimum(inv[:, f._lens] / f._lens_need, 1.0)
+            prog = np.concatenate((prog, hold[:, None]), 1)
+            open_ = np.concatenate((open_, ((ach >> f._hold) & 1 == 0)[:, None]), 1)
+        if f.altar:
+            # v10 "find a Demon Altar": descent to the cavern row (1 once reached) + altar in view.
+            y = depth_rows(obs)
+            deep = (ach >> f._deep) & 1 == 1
+            descent = np.where(deep, 1.0, np.clip((y - SURFACE_BASE) / (DEEP_Y - SURFACE_BASE), 0.0, 1.0))
+            found = 0.5 * descent + 0.5 * vis[:, f._altar_vis]
+            prog = np.concatenate((prog, found[:, None]), 1)
+            open_ = np.concatenate((open_, ((ach >> f._found) & 1 == 0)[:, None]), 1)
         n = open_.sum(-1)
         return f.coef * np.where(n > 0, (prog * open_).sum(-1) / np.maximum(n, 1), 0.0)
 

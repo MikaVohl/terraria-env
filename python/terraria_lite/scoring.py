@@ -1,7 +1,8 @@
-"""Tiered benchmark score (v9, docs/ENV_V9_DESIGN.md sections 8-9).
+"""Tiered benchmark score (v9+, docs/ENV_V9_DESIGN.md sections 8-9).
 
 The headline is the mean over episodes of the unlocked achievements' tier
-weights (1/3/5/8) as a percentage of the maximum (129 for v9). Reported next
+weights (1/3/5/8) as a percentage of the maximum (read from the library: 129
+for v9, 145 for v10). Reported next
 to it: per-tier success rates (mean fraction of that tier's achievements
 unlocked per episode), the Crafter geometric score over per-achievement
 success rates and the furthest tier reached. Evaluation only: training reward
