@@ -1,0 +1,268 @@
+{
+ "rows": [
+  {
+   "run": "dryrun-paused-01",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "dryrun-realtime-01",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m01-haiku-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.232936",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m02-haiku-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.356928",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m03-luna-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.088375",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m04-luna-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.144728",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m05-terra-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.345110",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m06-terra-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.804004",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m07-combo-rt-w401",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "1.198921",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m07-combo-rt-w401",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.128245",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m08-combo-pa-w401",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "1.515433",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m08-combo-pa-w401",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.148426",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m09-luna-pa-w401-rerun",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.355701",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m10-terra-pa-w401-rerun",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "2.589368",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m11-haiku-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.228042",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m12-haiku-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.867470",
+   "uncertain": "0.026192"
+  },
+  {
+   "run": "m13-luna-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.095500",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m14-luna-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.348303",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m15-terra-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.893764",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "m16-terra-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "2.787946",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s1-haiku-base-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.466389",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s1-terra-base-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.174855",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s2-haiku-smart-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.350145",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s2-terra-smart-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.910449",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s3-haiku-zoom150-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.316909",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s3-terra-zoom150-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.989042",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s4-haiku-wide-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.295994",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s5-haiku-ui125-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.605143",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "s9-terra-base-rerun-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.095347",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-paused-haiku",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.001419",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-paused-haiku",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.004442",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-realtime-haiku",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.002844",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-realtime-haiku",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.000740",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-realtime-haiku-2",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.000767",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-realtime-haiku-2",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.003637",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "settings perception probe (Haiku + Luna, 144 calls)",
+   "role": "extra",
+   "provider": "gateway",
+   "reported": "0.049400",
+   "uncertain": "0.000000"
+  }
+ ],
+ "totals": {
+  "gateway": {
+   "reported": "20.109127",
+   "uncertain": "0.026192",
+   "conservative": "20.135319"
+  },
+  "openrouter": {
+   "reported": "0.287594",
+   "uncertain": "0.000000",
+   "conservative": "0.287594"
+  }
+ }
+}

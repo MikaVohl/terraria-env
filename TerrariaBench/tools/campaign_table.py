@@ -24,7 +24,25 @@ def short(model):
             "gpt-5.6-terra": "Terra", "gpt-5.6-sol": "Sol", "typesafe/jev-1.14": "Jev"}.get(model, model)
 
 
+DEFAULT_SETTINGS = {"window": [1024, 1024], "zoom": 1.0, "ui_scale": 0.9, "lighting": "color", "smart_cursor": "off",
+                    "minimap": "frame"}
+
+
+def settings_label(man):
+    s = man.get("display_settings") or {}
+    return ", ".join(f"{k} {'x'.join(map(str, s[k])) if isinstance(s[k], list) else s[k]}" for k, v in DEFAULT_SETTINGS.items()
+                     if k in s and s[k] != v)
+
+
 def setup(man):
+    if man.get("profile_id") == "default-v1" or (man.get("profile") or {}).get("profile_id") == "default-v1":
+        if str(man.get("protocol", "")).startswith("combo-"):
+            c = man["config"]
+            head = f'{short(c["planner_model"])} ({c["planner_reasoning"]}) planner + {short(c["executor_model"])} executor'
+            clock = c["clock"]
+        else:
+            head, clock = short(man["model"]["id"]) + f' ({man.get("reasoning_effort")})', man["clock"]
+        return ", ".join(x for x in (head, clock, settings_label(man)) if x)
     if str(man.get("protocol", "")).startswith("combo-"):
         c = man["config"]
         bits = [f'{short(c["planner_model"])} planner + {short(c["executor_model"])} executor', "realtime"]
@@ -56,14 +74,23 @@ def row(run):
     usd = (sum(Decimal(r["accounting"]["reported_usd"]) for r in res["roles"].values()) if combo
            else Decimal(res["accounting"]["reported_usd"]))
     calls = sum(r["calls"] for r in res["roles"].values()) if combo else res["calls"]
+    clock = json.loads((run / "evidence/clock.json").read_text()) if (run / "evidence/clock.json").exists() else {}
     return {"run": run.name, "setup": setup(man), "campaign_profile": man.get("campaign_profile") or man.get("config", {}).get("campaign_profile"),
+            "display_settings": man.get("display_settings"), "clock": man.get("clock") or man.get("config", {}).get("clock"),
             "world_seed": ext["world"]["seed"], "game_s": ext["game_seconds"], "wall_s": round(res["active_wall_seconds"]),
+            "wall_total_s": round(clock["wall_span_s"]) if clock else None,
             "stop": res["stop_reason"], "published_score": ext["published_score"],
             "published_game_s": ext["published_milestones_game_s"], "extended_count": ext["extended_count"],
             "extended_game_s": ext["extended_game_s"], "crafted": ext["crafted"], "placed_tile_types": ext["placed_tile_types"],
             "deaths": ext["deaths"], "max_depth_tiles": ext["max_depth_tiles"], "continuations": res.get("continuations"),
-            "calls": calls, "inputs": res.get("input_commands"), "latency_median_s": ev["latency_median_s"],
-            "screenshot_age_median_s": ev["screenshot_age_median_s"], "usd_reported": f"{usd:.4f}",
+            "calls": calls, "calls_by_role": {k: r["calls"] for k, r in res["roles"].items()} if combo else None,
+            "inputs": res.get("input_commands"), "latency_median_s": ev["latency_median_s"],
+            "screenshot_age_median_s": clock.get("screenshot_age_wall_median_s", ev["screenshot_age_median_s"]),
+            "screenshot_age_game_median_s": clock.get("screenshot_age_game_median_s"),
+            "hz_median": (clock.get("hz_unfrozen_intervals") or {}).get("median"),
+            "updates_per_running_s": clock.get("updates_per_running_second_overall"),
+            "usd_reported": f"{usd:.4f}",
+            "usd_by_role": {k: r["accounting"]["reported_usd"] for k, r in res["roles"].items()} if combo else None,
             "final_inventory": ev["final_inventory"]}
 
 
@@ -71,14 +98,17 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("campaign", type=Path)
     p.add_argument("--json", type=Path)
+    p.add_argument("--prefix", nargs="*", default=None, help="only runs whose name starts with one of these")
     args = p.parse_args()
     runs = sorted((r for r in args.campaign.iterdir() if (r / "extended-score.json").exists() and (r / "evidence/summary.json").exists()
-                   and not r.name.startswith("smoke") and "failed" not in r.name and "aborted" not in r.name),
+                   and not r.name.startswith(("smoke", "dryrun")) and "failed" not in r.name and "aborted" not in r.name
+                   and (args.prefix is None or r.name.startswith(tuple(args.prefix)))),
                   key=lambda r: json.loads((r / "manifest.json").read_text())["started_unix"])
     rows = [row(r) for r in runs]
     print("| Run | Setup | World | Game min | Pub. score | " + " | ".join(PUBLISHED) + " | Ext. count | " +
-          " | ".join(EXTENDED) + " | Deaths | Depth | Contin. | Calls | Lat. (s) | Shot age (s) | USD |")
-    print("|" + "---|" * (len(PUBLISHED) + len(EXTENDED) + 14))
+          " | ".join(EXTENDED) + " | Deaths | Depth | Contin. | Calls | Lat. (s) | Shot age (s) | Shot age game (s) | Hz | "
+          "Wall min | USD |")
+    print("|" + "---|" * (len(PUBLISHED) + len(EXTENDED) + 17))
     for r in rows:
         lat = r["latency_median_s"]
         lat = "/".join(f"{v:.1f}" for v in lat.values() if v) if isinstance(lat, dict) else f"{lat:.1f}"
@@ -87,7 +117,8 @@ def main():
               f' | {r["extended_count"]} | ' +
               " | ".join(mmss(r["extended_game_s"][k]) if k in r["extended_game_s"] else "–" for k in EXTENDED) +
               f' | {r["deaths"]} | {r["max_depth_tiles"]} | {r["continuations"] if r["continuations"] is not None else "–"} | '
-              f'{r["calls"]} | {lat} | {r["screenshot_age_median_s"]} | {r["usd_reported"]} |')
+              f'{r["calls"]} | {lat} | {r["screenshot_age_median_s"]} | {r["screenshot_age_game_median_s"]} | {r["hz_median"]} | '
+              f'{round(r["wall_total_s"] / 60, 1) if r["wall_total_s"] else "–"} | {r["usd_reported"]} |')
     if args.json:
         args.json.write_text(json.dumps(rows, indent=1) + "\n")
 

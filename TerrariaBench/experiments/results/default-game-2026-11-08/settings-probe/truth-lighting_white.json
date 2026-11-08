@@ -1,0 +1,310 @@
+[
+  {
+    "variant": "lighting_white",
+    "view": "v0",
+    "A": "lighting_white/v0-A.png",
+    "B": "lighting_white/v0-B.png",
+    "window": [
+      1024,
+      1024
+    ],
+    "zoom": 1.0,
+    "ui_scale": 0.9,
+    "trees": [
+      {
+        "px": 512,
+        "py": 525,
+        "height_px": 352,
+        "dx_tiles": 0
+      },
+      {
+        "px": 576,
+        "py": 525,
+        "height_px": 368,
+        "dx_tiles": 4
+      },
+      {
+        "px": 400,
+        "py": 541,
+        "height_px": 432,
+        "dx_tiles": -7
+      },
+      {
+        "px": 656,
+        "py": 525,
+        "height_px": 208,
+        "dx_tiles": 9
+      },
+      {
+        "px": 336,
+        "py": 541,
+        "height_px": 320,
+        "dx_tiles": -11
+      },
+      {
+        "px": 272,
+        "py": 541,
+        "height_px": 416,
+        "dx_tiles": -15
+      }
+    ],
+    "nearest_tree": {
+      "px": 512,
+      "py": 525,
+      "height_px": 352,
+      "dx_tiles": 0
+    },
+    "cursor_target": [
+      512,
+      509
+    ],
+    "cursor_truth": "tree",
+    "axe_slot": 3,
+    "player": {
+      "sx": 512,
+      "sy": 512,
+      "vx": 0,
+      "vy": 0,
+      "on_ground": true,
+      "facing": 1,
+      "life": 100,
+      "life_max": 100,
+      "dead": false,
+      "held_slot": 1,
+      "held": "Copper Shortsword",
+      "inventory_open": false
+    },
+    "hostiles_on_screen": 0
+  },
+  {
+    "variant": "lighting_white",
+    "view": "v1",
+    "A": "lighting_white/v1-A.png",
+    "B": "lighting_white/v1-B.png",
+    "window": [
+      1024,
+      1024
+    ],
+    "zoom": 1.0,
+    "ui_scale": 0.9,
+    "trees": [
+      {
+        "px": 477,
+        "py": 530,
+        "height_px": 256,
+        "dx_tiles": -2
+      },
+      {
+        "px": 541,
+        "py": 514,
+        "height_px": 112,
+        "dx_tiles": 2
+      },
+      {
+        "px": 605,
+        "py": 514,
+        "height_px": 256,
+        "dx_tiles": 6
+      },
+      {
+        "px": 349,
+        "py": 530,
+        "height_px": 96,
+        "dx_tiles": -10
+      },
+      {
+        "px": 685,
+        "py": 514,
+        "height_px": 176,
+        "dx_tiles": 11
+      },
+      {
+        "px": 285,
+        "py": 530,
+        "height_px": 224,
+        "dx_tiles": -14
+      }
+    ],
+    "nearest_tree": {
+      "px": 477,
+      "py": 530,
+      "height_px": 256,
+      "dx_tiles": -2
+    },
+    "cursor_target": [
+      477,
+      514
+    ],
+    "cursor_truth": "tree",
+    "axe_slot": 3,
+    "player": {
+      "sx": 512,
+      "sy": 513,
+      "vx": 0,
+      "vy": 0,
+      "on_ground": true,
+      "facing": 1,
+      "life": 100,
+      "life_max": 100,
+      "dead": false,
+      "held_slot": 1,
+      "held": "Copper Shortsword",
+      "inventory_open": false
+    },
+    "hostiles_on_screen": 0
+  },
+  {
+    "variant": "lighting_white",
+    "view": "v2",
+    "A": "lighting_white/v2-A.png",
+    "B": "lighting_white/v2-B.png",
+    "window": [
+      1024,
+      1024
+    ],
+    "zoom": 1.0,
+    "ui_scale": 0.9,
+    "trees": [
+      {
+        "px": 486,
+        "py": 525,
+        "height_px": 352,
+        "dx_tiles": -2
+      },
+      {
+        "px": 550,
+        "py": 525,
+        "height_px": 320,
+        "dx_tiles": 2
+      },
+      {
+        "px": 678,
+        "py": 525,
+        "height_px": 384,
+        "dx_tiles": 10
+      },
+      {
+        "px": 326,
+        "py": 509,
+        "height_px": 368,
+        "dx_tiles": -12
+      },
+      {
+        "px": 742,
+        "py": 525,
+        "height_px": 400,
+        "dx_tiles": 14
+      },
+      {
+        "px": 806,
+        "py": 525,
+        "height_px": 416,
+        "dx_tiles": 18
+      }
+    ],
+    "nearest_tree": {
+      "px": 486,
+      "py": 525,
+      "height_px": 352,
+      "dx_tiles": -2
+    },
+    "cursor_target": [
+      486,
+      509
+    ],
+    "cursor_truth": "tree",
+    "axe_slot": 3,
+    "player": {
+      "sx": 512,
+      "sy": 512,
+      "vx": 0,
+      "vy": 0,
+      "on_ground": true,
+      "facing": -1,
+      "life": 100,
+      "life_max": 100,
+      "dead": false,
+      "held_slot": 1,
+      "held": "Copper Shortsword",
+      "inventory_open": false
+    },
+    "hostiles_on_screen": 0
+  },
+  {
+    "variant": "lighting_white",
+    "view": "v3",
+    "A": "lighting_white/v3-A.png",
+    "B": "lighting_white/v3-B.png",
+    "window": [
+      1024,
+      1024
+    ],
+    "zoom": 1.0,
+    "ui_scale": 0.9,
+    "trees": [
+      {
+        "px": 486,
+        "py": 525,
+        "height_px": 352,
+        "dx_tiles": -2
+      },
+      {
+        "px": 550,
+        "py": 525,
+        "height_px": 320,
+        "dx_tiles": 2
+      },
+      {
+        "px": 678,
+        "py": 525,
+        "height_px": 384,
+        "dx_tiles": 10
+      },
+      {
+        "px": 326,
+        "py": 509,
+        "height_px": 368,
+        "dx_tiles": -12
+      },
+      {
+        "px": 742,
+        "py": 525,
+        "height_px": 400,
+        "dx_tiles": 14
+      },
+      {
+        "px": 806,
+        "py": 525,
+        "height_px": 416,
+        "dx_tiles": 18
+      }
+    ],
+    "nearest_tree": {
+      "px": 486,
+      "py": 525,
+      "height_px": 352,
+      "dx_tiles": -2
+    },
+    "cursor_target": [
+      512,
+      542
+    ],
+    "cursor_truth": "ground",
+    "axe_slot": 3,
+    "player": {
+      "sx": 512,
+      "sy": 512,
+      "vx": 0,
+      "vy": 0,
+      "on_ground": true,
+      "facing": -1,
+      "life": 100,
+      "life_max": 100,
+      "dead": false,
+      "held_slot": 2,
+      "held": "Copper Pickaxe",
+      "inventory_open": false
+    },
+    "hostiles_on_screen": 0
+  }
+]

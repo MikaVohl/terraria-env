@@ -1,0 +1,60 @@
+{
+  "instances": [
+    {
+      "display": ":11",
+      "direction": "right",
+      "error": null,
+      "screenshots": 82,
+      "heartbeats": 91,
+      "hz_median": 60.0,
+      "hz_mean": 59.96,
+      "hz_p05": 59.7,
+      "hz_min": 58.71,
+      "overall_updates_per_s": 59.96,
+      "net_dx_tiles": 251
+    },
+    {
+      "display": ":12",
+      "direction": "left",
+      "error": null,
+      "screenshots": 79,
+      "heartbeats": 91,
+      "hz_median": 60.0,
+      "hz_mean": 59.96,
+      "hz_p05": 59.7,
+      "hz_min": 59.0,
+      "overall_updates_per_s": 59.96,
+      "net_dx_tiles": -145
+    },
+    {
+      "display": ":13",
+      "direction": "right",
+      "error": null,
+      "screenshots": 82,
+      "heartbeats": 91,
+      "hz_median": 60.0,
+      "hz_mean": 59.91,
+      "hz_p05": 59.7,
+      "hz_min": 55.61,
+      "overall_updates_per_s": 59.91,
+      "net_dx_tiles": 137
+    },
+    {
+      "display": ":14",
+      "direction": "left",
+      "error": null,
+      "screenshots": 79,
+      "heartbeats": 91,
+      "hz_median": 60.0,
+      "hz_mean": 59.98,
+      "hz_p05": 59.76,
+      "hz_min": 59.58,
+      "overall_updates_per_s": 59.98,
+      "net_dx_tiles": -151
+    }
+  ],
+  "loadavg_1m_max": 14.673828125,
+  "loadavg_1m_median": 12.31103515625,
+  "cpu_count": 8,
+  "gpu_after": "6 %, 1935 MiB"
+}

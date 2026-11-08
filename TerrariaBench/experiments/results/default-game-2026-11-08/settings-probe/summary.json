@@ -1,0 +1,149 @@
+{
+  "usd": "0.0493944000",
+  "cells": {
+    "base|claude-haiku-5-5": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "lighting_retro|claude-haiku-5-5": {
+      "tree_ok": 4,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "lighting_white|claude-haiku-5-5": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 2,
+      "cursor_n": 4
+    },
+    "minimap_off|claude-haiku-5-5": {
+      "tree_ok": 4,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "minimap_overlay|claude-haiku-5-5": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "smartcursor_on|claude-haiku-5-5": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "ui125|claude-haiku-5-5": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "window1280x720|claude-haiku-5-5": {
+      "tree_ok": 4,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 2,
+      "cursor_n": 4
+    },
+    "zoom150|claude-haiku-5-5": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 2,
+      "cursor_n": 4
+    },
+    "base|gpt-5.6-luna": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "lighting_retro|gpt-5.6-luna": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "lighting_white|gpt-5.6-luna": {
+      "tree_ok": 2,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "minimap_off|gpt-5.6-luna": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 2,
+      "cursor_n": 4
+    },
+    "minimap_overlay|gpt-5.6-luna": {
+      "tree_ok": 2,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "smartcursor_on|gpt-5.6-luna": {
+      "tree_ok": 2,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 2,
+      "cursor_n": 4
+    },
+    "ui125|gpt-5.6-luna": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 3,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "window1280x720|gpt-5.6-luna": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 1,
+      "cursor_n": 4
+    },
+    "zoom150|gpt-5.6-luna": {
+      "tree_ok": 3,
+      "tree_n": 4,
+      "axe_ok": 4,
+      "axe_n": 4,
+      "cursor_ok": 2,
+      "cursor_n": 4
+    }
+  }
+}

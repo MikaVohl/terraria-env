@@ -11,7 +11,6 @@ as reference_live. Real-time clock: the game never pauses.
 """
 import argparse
 import base64
-import copy
 import io
 import json
 import queue
@@ -21,9 +20,10 @@ import time
 from pathlib import Path
 
 from . import gateway, unified
-from .linux_control import KEY_NAMES, GameControl, launch, stop_owned_game, validate_actions
+from .linux_control import KEY_NAMES, control, launch, stop_owned_game, validate_actions
 from .openrouter import Budget, ProviderError, decide, hermes_key
-from .reference_live import ROOT, digest, dump, reference_metrics
+from .reference_live import (DEFAULT_PROFILE_ID, DEFAULT_PROMPT, LIGHTING_MODES, ROOT, GameClock, digest, display_settings,
+                             dump, game_time, reference_metrics)
 from .reference_scoring import checkpoint_view, load_reference_events, reference_score
 
 JEV_MODEL = "typesafe/jev-1.14"
@@ -39,6 +39,25 @@ PLANNER_SYSTEM = (
     "\"ui_actions\": optional list of 1-16 actions {\"keys\":[...],\"mouse\":\"left|right\",\"x\":0-1023,\"y\":0-1023,\"ms\":20-2000}}.")
 UI_SESSION_NOTE = (" After your ui_actions run you immediately get a new screenshot and can keep clicking; the executor stays "
                    "paused until you reply without ui_actions.")
+# default-v1 combination: the single-model system prompt's goal and default controls, the same act primitives for
+# the planner's ui_actions, no checkpoint log and no statement about the clock (identical in both clock modes).
+_DEFAULT_PARAS = (ROOT / DEFAULT_PROMPT).read_text().split("\n\n")
+DEFAULT_GOAL, DEFAULT_CONTROLS = _DEFAULT_PARAS[0], _DEFAULT_PARAS[2]
+
+
+def planner_default_system(width, height):
+    return (
+        "You are the PLANNER of a two-part agent playing Terraria. A fast EXECUTOR acts every few seconds from the newest "
+        "screenshot and pursues the objective you give it with movement, jumping, mining, chopping, attacking and placing "
+        "blocks. It cannot open menus or craft: you do inventory and crafting yourself with ui_actions (keyboard and mouse "
+        "actions, executed while the executor pauses).\n\n" + DEFAULT_GOAL + "\n\n" + DEFAULT_CONTROLS +
+        f"\nScreenshots are {width}x{height} pixels. Reply with one JSON object only: {{\"objective\": concrete instruction "
+        "for the executor (max 300 chars), \"replan_seconds\": 10-60 (game seconds until you look again), \"notes\": your "
+        "memory for next time (max 1500 chars), \"ui_actions\": optional list of 1-16 actions {\"keys\":[...],"
+        f"\"mouse\":\"left|right\",\"x\":0-{width - 1},\"y\":0-{height - 1},\"ms\":20-2000}}; each action moves the mouse "
+        "to (x, y) if given, then holds the keys and/or mouse button for ms milliseconds and releases them}.")
+
+
 HAIKU_EXECUTOR_SYSTEM = (
     "You are the fast EXECUTOR of a Terraria agent. A planner gives you an objective; act on the newest screenshot "
     "right now. The game runs in real time. Holding a mouse button keeps swinging the held tool, about one swing "
@@ -46,6 +65,27 @@ HAIKU_EXECUTOR_SYSTEM = (
     "\nReply with one JSON object only: {\"actions\": 1-4 actions {\"keys\":[...],\"mouse\":\"left|right\","
     "\"x\":0-1023,\"y\":0-1023,\"ms\":20-2000}, \"status\": \"working\" | \"done\" | \"stuck\"}. Coordinates are screenshot pixels.")
 CENTER, SWEEP_PX = 512, (24, 40, 56)  # screen centre; axe/sword holds at 1.5, 2.5, 3.5 tiles from the player
+
+
+def jev_actions(choice, tree_side, foe_side, cx=CENTER, cy=CENTER, zoom=1.0):
+    """Jev's catalog actions as primitive inputs; pixel offsets (designed at zoom 1, centre 512) follow window and zoom."""
+    def px(dx, dy):
+        return round(cx + dx * zoom), round(cy + dy * zoom)
+    if choice == "chop_tree":
+        s = 1 if tree_side == "right" else -1
+        return [{"keys": ["3"], "ms": 40}] + [dict(zip("xy", px(s * d, -7)), mouse="left", ms=700) for d in SWEEP_PX]
+    if choice == "attack":
+        s = 1 if foe_side == "right" else -1
+        return [{"keys": ["1"], "ms": 40}, dict(zip("xy", px(s * 40, -12)), mouse="left", ms=350),
+                dict(zip("xy", px(s * 56, -22)), mouse="left", ms=350)]
+    return {"walk_left": [{"keys": ["a"], "ms": 500}], "walk_right": [{"keys": ["d"], "ms": 500}],
+            "jump_left": [{"keys": ["space", "a"], "ms": 450}], "jump_right": [{"keys": ["space", "d"], "ms": 450}],
+            "dig_down": [{"keys": ["2"], "ms": 40}] + [dict(zip("xy", px(dx, 36)), mouse="left", ms=450) for dx in (-8, 8, -8, 8)],
+            "dig_left": [{"keys": ["2"], "ms": 40}, dict(zip("xy", px(-24, -12)), mouse="left", ms=500),
+                         dict(zip("xy", px(-24, 12)), mouse="left", ms=500), {"keys": ["a"], "ms": 250}],
+            "dig_right": [{"keys": ["2"], "ms": 40}, dict(zip("xy", px(24, -12)), mouse="left", ms=500),
+                          dict(zip("xy", px(24, 12)), mouse="left", ms=500), {"keys": ["d"], "ms": 250}],
+            "toggle_inventory": [{"keys": ["esc"], "ms": 60}]}.get(choice, [])
 
 
 def jpeg_url(path, quality=85):
@@ -149,6 +189,13 @@ def run(args):
                             "their drops, but in this scenario they cannot damage you.")
     elif args.pve:
         task = task.replace("This scenario begins with hostile PvE disabled.", "Hostile enemies are active under normal game rules.")
+    default, paused = args.profile == DEFAULT_PROFILE_ID, args.clock == "paused"
+    if default:
+        if not args.game_seconds or args.hostile_damage != "on":
+            raise ValueError("default-v1 needs --game-seconds and the unmodified game rules")
+        args.pve, task = True, DEFAULT_GOAL
+    elif paused:
+        raise ValueError("the paused clock is implemented for the default-v1 profile")
     gkey = gateway.load_key()
     root.mkdir(parents=True)
     (root / "calls").mkdir()
@@ -160,14 +207,20 @@ def run(args):
     else:
         okey = hermes_key()
         roles["executor"] = Role("executor", root, Budget(args.usd_executor, JEV_PRICING, input_ceiling=40000, output_ceiling=4096), "openrouter")
-    planner_system = PLANNER_SYSTEM + (UI_SESSION_NOTE if args.ui_session else "")
+    settings = display_settings(args)
+    width, height = settings["window"]
+    if not default and (width, height) != (1024, 1024):
+        raise ValueError("the reference combo keeps the 1024x1024 window")
+    planner_system = (planner_default_system(width, height) if default else PLANNER_SYSTEM) + (UI_SESSION_NOTE if args.ui_session else "")
     protocol = "combo-v2" if args.ui_session else "combo-v1"
     manifest = {"protocol": protocol, "config": {"planner_model": args.planner, "planner_reasoning": args.planner_reasoning,
                 "executor": args.executor, "executor_model": EXECUTOR_MODELS[args.executor],
-                "pve": args.pve, "hostile_contact_damage": args.hostile_damage, "clock": "realtime", "seconds": args.seconds,
-                "jev_frames": args.jev_frames, "ui_session": args.ui_session, "campaign_profile": args.campaign_profile},
+                "pve": args.pve, "hostile_contact_damage": args.hostile_damage, "clock": args.clock, "seconds": args.seconds,
+                "jev_frames": args.jev_frames, "ui_session": args.ui_session, "campaign_profile": args.campaign_profile,
+                "profile": args.profile, "game_seconds": args.game_seconds},
+                "profile_id": args.profile, "game_seconds_budget": args.game_seconds, "display_settings": settings,
                 "task_prompt": task, "planner_system": planner_system, "executor_system": HAIKU_EXECUTOR_SYSTEM if args.executor != "jev" else None,
-                "privileged_state": False, "official_eligible": False, "started_unix": time.time(),
+                "privileged_state": False, "official_eligible": False, "started_unix": time.time(), "game_display": args.display,
                 "source_hashes": {p.name: digest(p) for p in Path(__file__).parent.glob("*.py")}}
     dump(root / "manifest.json", manifest)
 
@@ -180,6 +233,7 @@ def run(args):
     frame_n = [0]
     pid = game = None
     stop_reason, started = "startup", None
+    clock = GameClock(root / "telemetry")
 
     def log(entry):
         with lock, (root / "decisions.jsonl").open("a") as s:
@@ -195,42 +249,83 @@ def run(args):
             frames.append((path, meta["captured_unix"]))
         return path, meta
 
-    def planner_loop():
+    frozen = {"total": 0.0}
+
+    def clock_log(entry):
+        with (root / "clock.jsonl").open("a") as stream:
+            stream.write(json.dumps({**entry, "game_updates": clock.read(), "unix": time.time()}) + "\n")
+
+    def model_call(fn):
+        """Paused clock: the game process group is stopped while a model generates (both roles run sequentially)."""
+        if not paused:
+            return fn()
+        import os
+        import signal
+        os.killpg(pid, signal.SIGSTOP)
+        t0 = time.monotonic()
+        clock_log({"event": "freeze"})
+        try:
+            return fn()
+        finally:
+            os.killpg(pid, signal.SIGCONT)
+            frozen["total"] += time.monotonic() - t0
+            clock_log({"event": "thaw"})
+
+    planner_state = {"rejected": None}  # last reply the harness could not use; shown to the planner once
+
+    def planner_step():
+        """One planner call on a fresh screenshot; updates the plan and returns (call number, ui actions, replan s)."""
         role = roles["planner"]
-        rejected = None  # last reply the harness could not use; shown to the planner once
+        with lock:
+            recent = list(frames[-1:])
+            current, history = dict(plan), executed[-12:]
+        newest, meta = capture()
+        shots = [p for p, _ in recent] + [newest]
+        if default:
+            info = {"game_time_played": game_time(clock.read())}
+        else:
+            events = checkpoint_view(load_reference_events(root / "telemetry")) if list((root / "telemetry").glob("*.jsonl")) else []
+            info = {"checkpoint_log": events, "seconds_since_start": round(time.monotonic() - started)}
+        rejected = planner_state["rejected"]
+        text = json.dumps({"task": task, "your_notes": current["notes"], "current_objective": current["objective"],
+                           "executor_recent_actions": history, **info,
+                           **({"your_previous_reply_was_rejected": rejected} if rejected else {})})
+        planner_state["rejected"] = None
+        content = [{"type": "text", "text": text}] + [b for i, p in enumerate(shots) for b in (
+            {"type": "text", "text": "Newest screenshot:" if i == len(shots) - 1 else "Earlier screenshot:"}, image_block(jpeg_url(p)))]
+        archived = {"text": text, "frames": [str(p.relative_to(root)) for p in shots]}
+        response, latency, n = role.call(lambda: model_call(
+            lambda: gateway_text(args.planner, args.planner_reasoning, planner_system, content, gkey)), archived)
+        body = json_object(response["choices"][0]["message"]["content"] or "{}")
+        ui = normalized(body.get("ui_actions") or [])
+        if ui:
+            validate_actions(ui, width=width, height=height, max_hold_ms=2000)
+        replan = max(10, min(60, int(body.get("replan_seconds", 20))))
+        with lock:
+            plan.update(objective=str(body.get("objective", plan["objective"]))[:300], notes=str(body.get("notes", ""))[:1500],
+                        version=plan["version"] + 1, since=time.monotonic(), replan=replan)
+        log({"role": "planner", "n": n, "latency": latency, "objective": plan["objective"], "replan_seconds": replan,
+             "ui_actions": len(ui), "frame": str(newest.relative_to(root)), "game_updates": clock.read(), "unix": time.time()})
+        return n, ui, replan
+
+    def planner_error(error):
+        log({"role": "planner", "error": f"{type(error).__name__}: {error}"[:300], "unix": time.time()})
+        if not isinstance(error, ProviderError):
+            planner_state["rejected"] = f"{type(error).__name__}: {error}"[:300] + \
+                f" (key names: a-z, 0-9, {', '.join(k for k in KEY_NAMES if len(k) > 1)})"
+
+    def planner_loop():
+        """Real-time clock: the planner runs concurrently with the executor."""
         while not stop.is_set():
             try:
-                with lock:
-                    recent = list(frames[-1:])
-                    current, history = dict(plan), executed[-12:]
-                newest, meta = capture()
-                shots = [p for p, _ in recent] + [newest]
-                events = checkpoint_view(load_reference_events(root / "telemetry")) if list((root / "telemetry").glob("*.jsonl")) else []
-                text = json.dumps({"task": task, "your_notes": current["notes"], "current_objective": current["objective"],
-                                   "executor_recent_actions": history, "checkpoint_log": events,
-                                   "seconds_since_start": round(time.monotonic() - started),
-                                   **({"your_previous_reply_was_rejected": rejected} if rejected else {})})
-                rejected = None
-                content = [{"type": "text", "text": text}] + [b for i, p in enumerate(shots) for b in (
-                    {"type": "text", "text": "Newest screenshot:" if i == len(shots) - 1 else "Earlier screenshot:"}, image_block(jpeg_url(p)))]
-                archived = {"text": text, "frames": [str(p.relative_to(root)) for p in shots]}
-                response, latency, n = role.call(lambda: gateway_text(args.planner, args.planner_reasoning, planner_system, content, gkey), archived)
-                body = json_object(response["choices"][0]["message"]["content"] or "{}")
-                ui = normalized(body.get("ui_actions") or [])
+                n, ui, replan = planner_step()
                 if ui:
-                    validate_actions(ui, width=1024, height=1024, max_hold_ms=2000)
                     if args.ui_session:
                         ui_done.clear()
                         ui_session.set()
                     ui_queue.put((n, ui))
                 else:
                     ui_session.clear()
-                replan = max(10, min(60, int(body.get("replan_seconds", 20))))
-                with lock:
-                    plan.update(objective=str(body.get("objective", plan["objective"]))[:300], notes=str(body.get("notes", ""))[:1500],
-                                version=plan["version"] + 1, since=time.monotonic(), replan=replan)
-                log({"role": "planner", "n": n, "latency": latency, "objective": plan["objective"], "replan_seconds": replan,
-                     "ui_actions": len(ui), "frame": str(newest.relative_to(root)), "unix": time.time()})
                 replan_now.clear()
                 if ui and args.ui_session:
                     while not (ui_done.wait(1) or stop.is_set()):
@@ -238,10 +333,7 @@ def run(args):
                     continue
                 replan_now.wait(replan)
             except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
-                log({"role": "planner", "error": f"{type(error).__name__}: {error}"[:300], "unix": time.time()})
-                if not isinstance(error, ProviderError):
-                    rejected = f"{type(error).__name__}: {error}"[:300] + \
-                        f" (key names: a-z, 0-9, {', '.join(k for k in KEY_NAMES if len(k) > 1)})"
+                planner_error(error)
                 ui_session.clear()  # never leave the executor paused behind a failed planner call
                 stop.wait(3)
             except Exception as error:
@@ -254,13 +346,13 @@ def run(args):
         content = [{"type": "text", "text": json.dumps({"objective": objective, "your_recent_actions": recent})},
                    {"type": "text", "text": "Newest screenshot:"}, image_block(jpeg_url(frame))]
         response, latency, n = roles["executor"].call(
-            lambda: gateway_text(EXECUTOR_MODELS[args.executor], "medium", HAIKU_EXECUTOR_SYSTEM, content, gkey, thinking=False),
+            lambda: model_call(lambda: gateway_text(EXECUTOR_MODELS[args.executor], "medium", HAIKU_EXECUTOR_SYSTEM, content, gkey, thinking=False)),
             {"objective": objective, "recent": recent, "frame": str(frame.relative_to(root))})
         body = json_object(response["choices"][0]["message"]["content"] or "{}")
         actions = body.get("actions") or []
         if not isinstance(actions, list) or not 1 <= len(actions) <= 4:
             raise ValueError("executor must return 1-4 actions")
-        validate_actions(normalized(actions), width=1024, height=1024, max_hold_ms=2000)
+        validate_actions(normalized(actions), width=width, height=height, max_hold_ms=2000)
         summary = "; ".join(f'{"+".join(a.get("keys", []))}{" " + a["mouse"] if a.get("mouse") else ""}'
                             f'{"@%d,%d" % (a["x"], a["y"]) if "x" in a else ""}' for a in actions)
         return actions, summary, body.get("status", "working"), latency, n, frame, meta, {}
@@ -271,7 +363,7 @@ def run(args):
             history = [p for p, _ in frames[-args.jev_frames:]]
         state = [f"Task: {task}", f"Planner objective: {objective}", f"Your recent actions (newest last): {recent}",
                  "Terraria screenshots, oldest first; the newest is the current view. The camera keeps your character "
-                 "at the screen centre (512, 512)."]
+                 f"at the screen centre ({width // 2}, {height // 2})."]
         for i, p in enumerate(history):
             state += ["Current screenshot:" if i == len(history) - 1 else "Earlier screenshot:",
                       {"type": "image_url", "image_url": {"url": jpeg_url(p)}}]
@@ -282,7 +374,7 @@ def run(args):
                                                              "screen centre) is the nearest tree trunk in the current screenshot?",
                           "criteria": {"left": "Nearest trunk is left of the player.", "right": "Nearest trunk is right of the player.",
                                        "none": "No tree trunk visible."}},
-            "hostile_side": {"type": "choice", "instructions": "Is a hostile creature (slime, zombie, flying eye) within 6 tiles (96 px) "
+            "hostile_side": {"type": "choice", "instructions": f"Is a hostile creature (slime, zombie, flying eye) within 6 tiles ({round(96 * args.zoom)} px) "
                                                                 "of the player character in the current screenshot, and on which side?",
                              "criteria": {"left": "Hostile close on the left.", "right": "Hostile close on the right.",
                                           "none": "No hostile within 6 tiles."}},
@@ -300,7 +392,7 @@ def run(args):
                                     "toggle_inventory": "Press escape to open or close the inventory.", "wait": "Do nothing for a moment."}}}
         archived = {"state": state[:4] + [f"[{len(history)} screenshots]"], "frames": [str(p.relative_to(root)) for p in history], "questions": questions}
         response, latency, n = roles["executor"].call(
-            lambda: decide({"model": JEV_MODEL, "state": state, "questions": questions}, key=okey, timeout=20), archived)
+            lambda: model_call(lambda: decide({"model": JEV_MODEL, "state": state, "questions": questions}, key=okey, timeout=20)), archived)
         a = response["answers"]
         tree_side, foe_side = a["tree_side"]["choice"], a["hostile_side"]["choice"]
         # Jev's action choice is used only when its target exists; otherwise the next most probable valid action.
@@ -309,22 +401,7 @@ def run(args):
         ranked = sorted((a["action"].get("probabilities") or {a["action"]["choice"]: 1}).items(), key=lambda kv: -kv[1])
         choice = next((c for c, _ in ranked if valid(c)), "wait")
         executed_choice = choice if choice == a["action"]["choice"] else f'{choice} (instead of {a["action"]["choice"]})'
-        if choice == "chop_tree":
-            s = 1 if tree_side == "right" else -1
-            actions = [{"keys": ["3"], "ms": 40}] + [{"x": CENTER + s * d, "y": 505, "mouse": "left", "ms": 700} for d in SWEEP_PX]
-        elif choice == "attack":
-            s = 1 if foe_side == "right" else -1
-            actions = [{"keys": ["1"], "ms": 40}, {"x": CENTER + s * 40, "y": 500, "mouse": "left", "ms": 350},
-                       {"x": CENTER + s * 56, "y": 490, "mouse": "left", "ms": 350}]
-        else:
-            actions = {"walk_left": [{"keys": ["a"], "ms": 500}], "walk_right": [{"keys": ["d"], "ms": 500}],
-                       "jump_left": [{"keys": ["space", "a"], "ms": 450}], "jump_right": [{"keys": ["space", "d"], "ms": 450}],
-                       "dig_down": [{"keys": ["2"], "ms": 40}] + [{"x": x, "y": 548, "mouse": "left", "ms": 450} for x in (504, 520, 504, 520)],
-                       "dig_left": [{"keys": ["2"], "ms": 40}, {"x": 488, "y": 500, "mouse": "left", "ms": 500},
-                                    {"x": 488, "y": 524, "mouse": "left", "ms": 500}, {"keys": ["a"], "ms": 250}],
-                       "dig_right": [{"keys": ["2"], "ms": 40}, {"x": 536, "y": 500, "mouse": "left", "ms": 500},
-                                     {"x": 536, "y": 524, "mouse": "left", "ms": 500}, {"keys": ["d"], "ms": 250}],
-                       "toggle_inventory": [{"keys": ["esc"], "ms": 60}]}.get(choice, [])
+        actions = jev_actions(choice, tree_side, foe_side, width // 2, height // 2, args.zoom)
         status = "done" if a["objective_done"].get("noul", 0) > .7 else "working"
         detail = {"choice": choice, "executed": executed_choice, "confidence": a["action"].get("confidence"),
                   "probabilities": a["action"].get("probabilities"), "tree_side": tree_side, "hostile_side": foe_side,
@@ -334,61 +411,124 @@ def run(args):
 
     try:
         shutil.copytree(fixture, root / "tml", ignore=shutil.ignore_patterns("Logs", "*.log", "*.bak"))
-        pid = launch(root / "tml", root / "client.log", root / "telemetry", skipselect=True, width=1024, height=1024,
-                     config_updates={"UIScale": profile["environment"]["ui_scale"], "ResetDefaultUIScale": False, "Zoom": 1.0},
+        pid = launch(root / "tml", root / "client.log", root / "telemetry", skipselect=True, width=width, height=height,
+                     display=args.display,
+                     config_updates={"UIScale": args.ui_scale, "ResetDefaultUIScale": False, "Zoom": args.zoom,
+                                     "LightingMode": LIGHTING_MODES[args.lighting]},
                      extra_env={"TERRARIABENCH_PROFILE": profile["profile_id"], "TERRARIABENCH_PVE": "enabled" if args.pve else "disabled",
                                 "TERRARIABENCH_HOSTILE_DAMAGE": args.hostile_damage,
-                                "TERRARIABENCH_REFERENCE_STARTER_PREFIXES": "plain", "TERRARIABENCH_CHECKPOINT_CHAT": "enabled"})
+                                "TERRARIABENCH_REFERENCE_STARTER_PREFIXES": "plain",
+                                "TERRARIABENCH_CHECKPOINT_CHAT": "disabled" if default else "enabled"})
         dump(root / "game.json", {"pid": pid, "profile": str(root / "tml")})
         deadline = time.monotonic() + 100
         while not list((root / "telemetry").glob("*.jsonl")):
             if time.monotonic() > deadline or not Path(f"/proc/{pid}").exists():
                 raise RuntimeError("world/observer startup failed")
             time.sleep(.5)
-        game = GameControl(pid, root / "inputs.jsonl", width=1024, height=1024, max_hold_ms=2000)
+        game = control(pid, root / "inputs.jsonl", display=args.display, width=width, height=height, max_hold_ms=2000)
         game.setup_window()
+        if settings["setup_keys"]:
+            time.sleep(1)
+            game.act(settings["setup_keys"], actor="operator_setup")
+            time.sleep(.5)
         started = time.monotonic()
-        planner = threading.Thread(target=planner_loop, name="planner", daemon=True)
-        planner.start()
-        time.sleep(.5)
         stop_reason, step, errors = "wall_limit", 0, 0
         step_fn = jev_step if args.executor == "jev" else haiku_step
-        while time.monotonic() - started < args.seconds:
-            if stop.is_set():
-                stop_reason = fatal[0] if fatal else "planner_stopped"
-                break
-            try:
-                n, ui = ui_queue.get_nowait()
-                receipts = game.act(ui)
-                with lock:
-                    executed.append({"source": f"planner_ui_{n}", "at_s": round(time.monotonic() - started)})
-                log({"role": "planner_ui", "n": n, "actions": ui, "receipts": len(receipts), "unix": time.time()})
-                ui_done.set()
-                continue
-            except queue.Empty:
-                if ui_session.is_set():
-                    time.sleep(.1)
-                    continue
+
+        def out_of_game_time():
+            return default and clock.seconds() >= args.game_seconds
+
+        def act_within_budget(actions):
+            receipts = []
+            for action in actions:
+                if out_of_game_time():
+                    break
+                receipts += game.act([action])
+            return receipts
+
+        def executor_turn():
+            """One executor decision + its actions; returns False when the run must stop."""
+            nonlocal step, errors, stop_reason
             with lock:
                 objective, recent = plan["objective"], [e["source"] for e in executed[-4:]]
             try:
                 actions, summary, status, latency, n, frame, meta, detail = step_fn(objective, recent)
-                receipts = game.act(actions) if actions else (time.sleep(.3) or [])
+                receipts = act_within_budget(actions) if actions else (time.sleep(.3) or [])
                 with lock:
-                    executed.append({"source": summary, "at_s": round(time.monotonic() - started)})
+                    executed.append({"source": summary, "at_s": round(clock.seconds() if default else time.monotonic() - started)})
                 if status in ("done", "stuck"):
                     replan_now.set()
                 log({"role": "executor", "n": n, "step": step, "objective": objective, "summary": summary, "status": status,
                      "actions": actions, "latency": latency, "frame": str(frame.relative_to(root)), "observed_unix": meta["captured_unix"],
-                     "first_input_unix": receipts[0]["started_unix"] if receipts else None, **detail, "unix": time.time()})
+                     "first_input_unix": receipts[0]["started_unix"] if receipts else None, **detail,
+                     "game_updates": clock.read(), "unix": time.time()})
                 step += 1
             except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
                 errors += 1
                 log({"role": "executor", "step": step, "error": f"{type(error).__name__}: {error}"[:300], "unix": time.time()})
                 if errors >= 40:
                     stop_reason = "executor_error_limit"
-                    break
+                    return False
                 time.sleep(1 if not isinstance(error, ProviderError) or error.sent else 5)
+            return True
+
+        if paused:
+            # Paused clock: one thread; every model call (planner or executor) runs with the game stopped, and the
+            # planner is due every replan_seconds of game time (or when the executor reports done/stuck).
+            next_plan, planner_errors = 0, 0
+            while time.monotonic() - started < args.seconds:
+                if out_of_game_time():
+                    stop_reason = "game_time_limit"
+                    break
+                if clock.read() >= next_plan or replan_now.is_set():
+                    try:
+                        n, ui, replan = planner_step()
+                    except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
+                        planner_error(error)
+                        planner_errors += 1
+                        if planner_errors >= 40:
+                            stop_reason = "planner_error_limit"
+                            break
+                        time.sleep(3)
+                        continue
+                    replan_now.clear()
+                    if ui:
+                        receipts = act_within_budget(ui)
+                        with lock:
+                            executed.append({"source": f"planner_ui_{n}", "at_s": round(clock.seconds())})
+                        log({"role": "planner_ui", "n": n, "actions": ui, "receipts": len(receipts),
+                             "game_updates": clock.read(), "unix": time.time()})
+                        if args.ui_session:
+                            continue  # UI session: the planner looks again at once
+                    next_plan = clock.read() + replan * 60
+                    continue
+                if not executor_turn():
+                    break
+        else:
+            planner = threading.Thread(target=planner_loop, name="planner", daemon=True)
+            planner.start()
+            time.sleep(.5)
+            while time.monotonic() - started < args.seconds:
+                if out_of_game_time():
+                    stop_reason = "game_time_limit"
+                    break
+                if stop.is_set():
+                    stop_reason = fatal[0] if fatal else "planner_stopped"
+                    break
+                try:
+                    n, ui = ui_queue.get_nowait()
+                    receipts = act_within_budget(ui)
+                    with lock:
+                        executed.append({"source": f"planner_ui_{n}", "at_s": round(clock.seconds() if default else time.monotonic() - started)})
+                    log({"role": "planner_ui", "n": n, "actions": ui, "receipts": len(receipts), "unix": time.time()})
+                    ui_done.set()
+                    continue
+                except queue.Empty:
+                    if ui_session.is_set():
+                        time.sleep(.1)
+                        continue
+                if not executor_turn():
+                    break
         game.capture(root / "final.png")
     except Exception as error:
         stop_reason = f"{type(error).__name__}: {error}"
@@ -398,13 +538,18 @@ def run(args):
         if game:
             game.close()
         if pid:
-            dump(root / "termination.json", stop_owned_game(pid, root / "tml"))
+            try:
+                dump(root / "termination.json", stop_owned_game(pid, root / "tml"))
+            except (RuntimeError, OSError) as error:  # e.g. the game crashed and its pid was reused
+                dump(root / "termination.json", {"error": str(error)})
         events = load_reference_events(root / "telemetry") if list((root / "telemetry").glob("*.jsonl")) else []
         dump(root / "evaluation-events.json", events)
         receipts = [json.loads(s) for s in (root / "inputs.jsonl").read_text().splitlines()] if (root / "inputs.jsonl").exists() else []
         started_unix = end - (time.monotonic() - started) if started else end
-        result = {"protocol": protocol, "config": manifest["config"], "stop_reason": stop_reason, "frames": frame_n[0],
-                  "input_commands": len(receipts), "active_wall_seconds": time.monotonic() - started if started else 0,
+        result = {"protocol": protocol, "profile_id": args.profile, "config": manifest["config"], "stop_reason": stop_reason,
+                  "frames": frame_n[0], "input_commands": len(receipts), "clock": args.clock,
+                  "active_wall_seconds": time.monotonic() - started if started else 0, "think_frozen_seconds": frozen["total"],
+                  "game_seconds": clock.read() / 60, "game_seconds_budget": args.game_seconds,
                   "evaluation_end_unix": end, "roles": {k: r.summary() for k, r in roles.items()},
                   "score": reference_score(events, actions=receipts),
                   "score_metrics": reference_metrics(receipts, frame_n[0], started_unix, end), "official_eligible": False}
@@ -427,6 +572,17 @@ def main():
     p.add_argument("--pve", action="store_true")
     p.add_argument("--hostile-damage", choices=("on", "off"), default="on")
     p.add_argument("--campaign-profile", default=None)
+    p.add_argument("--profile", choices=("reference", DEFAULT_PROFILE_ID), default="reference")
+    p.add_argument("--clock", choices=("realtime", "paused"), default="realtime",
+                   help="paused (default-v1): the game is stopped during every planner/executor call; roles run in turn")
+    p.add_argument("--game-seconds", type=int, default=None, help="game-time budget (observer game_updates / 60)")
+    p.add_argument("--display", default=None, help="isolated instance: rootful Xwayland display for the game")
+    p.add_argument("--window", default="1024x1024")
+    p.add_argument("--zoom", type=float, default=1.0)
+    p.add_argument("--ui-scale", type=float, default=0.9)
+    p.add_argument("--lighting", choices=tuple(LIGHTING_MODES), default="color")
+    p.add_argument("--smart-cursor", choices=("off", "on"), default="off")
+    p.add_argument("--minimap", choices=("frame", "overlay", "off"), default="frame")
     p.add_argument("--allow-open-inventory", action="store_true", help="let Jev open the inventory (default: only close it)")
     p.add_argument("--ui-session", action="store_true",
                    help="combo-v2: after planner clicks, replan at once on a fresh screenshot; executor waits until the planner stops clicking")

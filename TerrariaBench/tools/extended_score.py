@@ -70,6 +70,12 @@ def placed(fact, event):
 def score(run, write=True):
     run = Path(run)
     telemetry = [json.loads(line) for f in sorted((run / "telemetry").glob("*.jsonl")) for line in open(f)]
+    # Runs with a game-time budget (default-v1) are scored only up to it: in real time the game keeps running while
+    # the last reply arrives and the run shuts down, and nothing the agent did can happen after the budget.
+    manifest = json.loads((run / "manifest.json").read_text()) if (run / "manifest.json").exists() else {}
+    budget = manifest.get("game_seconds_budget")
+    if budget:
+        telemetry = [e for e in telemetry if (e.get("game_updates") or 0) <= budget * 60 or e.get("event") == "end"]
     start = next((e for e in telemetry if e.get("event") == "start"), {})
     version = float(start.get("observer_version", "0"))
     header = read_header(next((run / "tml/Worlds").glob("*.wld")))

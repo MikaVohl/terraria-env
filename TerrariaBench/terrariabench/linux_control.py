@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import threading
 import time
 
 WIDTH, HEIGHT = 1280, 720
@@ -91,7 +92,8 @@ def panel_rect(env, game_width, game_height):
     return px, gy, x + w - LAYOUT_MARGIN - px, y + h - LAYOUT_MARGIN - gy
 
 
-def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEIGHT, extra_env=None, config_updates=None):
+def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEIGHT, extra_env=None, config_updates=None,
+           display=None):
     profile, log, telemetry = (Path(p).resolve() for p in (profile, log, telemetry))
     for p in (profile / "Mods", log.parent, telemetry):
         p.mkdir(parents=True, exist_ok=True)
@@ -108,9 +110,19 @@ def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEI
     for credential_name in ("OPENROUTER_API_KEY", "OPENROUTER_MANAGEMENT_KEY"):
         env.pop(credential_name, None)
     env["TERRARIABENCH_TELEMETRY_DIR"] = str(telemetry)
-    # Native Wayland avoids Xwayland's grabbed-pointer coordinate mismatch.
-    env["SDL_VIDEODRIVER"] = "wayland"
+    if display:
+        # Isolated instance: the game is the only client of its own rootful Xwayland server (see XGameControl).
+        env.pop("WAYLAND_DISPLAY", None)
+        env["DISPLAY"], env["SDL_VIDEODRIVER"] = display, "x11"
+    else:
+        # Native Wayland avoids Xwayland's grabbed-pointer coordinate mismatch.
+        env["SDL_VIDEODRIVER"] = "wayland"
     env["FNA_MOUSE_DISABLE_GLOBAL_ACCESS"] = "1"
+    # The paused clock SIGSTOPs the game at arbitrary points. tModLoader's FastParallel.For (multi-threaded lighting)
+    # times its worker countdown with a wall-clock stopwatch and throws "Fatal Deadlock in FastParallelFor" when a
+    # freeze lands inside it (3 paused-run crashes on 2026-11-08). One reported processor makes it run every range
+    # on the calling thread; game logic and rules are unchanged.
+    env["DOTNET_PROCESSOR_COUNT"] = "1"
     if extra_env:
         env.update(extra_env)
     tml = Path.home() / ".local/share/Steam/steamapps/common/tModLoader"
@@ -269,6 +281,133 @@ class GameControl:
     def close(self):
         self.release()
         self.device.close()
+
+
+X_KEYSYMS = {"space": "space", "esc": "Escape", "enter": "Return", "backspace": "BackSpace", "tab": "Tab",
+             "leftshift": "Shift_L", "leftctrl": "Control_L", "up": "Up", "down": "Down", "left": "Left",
+             "right": "Right", "minus": "minus"}
+X_BUTTONS = {"left": 1, "middle": 2, "right": 3}
+
+
+class XGameControl:
+    """Same contract as GameControl for a game that is the only client of its own rootful Xwayland server.
+
+    Input goes through that server's XTEST extension and screenshots come from that server, so several
+    instances on one desktop neither share keyboard/pointer focus nor see each other's input."""
+
+    def __init__(self, pid, journal=None, *, display, width=WIDTH, height=HEIGHT, max_hold_ms=1000):
+        from Xlib import X, XK, display as xdisplay
+        from Xlib.ext import xtest
+        self.X, self.xtest = X, xtest
+        self.pid, self.journal = int(pid), Path(journal) if journal else None
+        self.width, self.height, self.max_hold_ms = width, height, max_hold_ms
+        self.display_name = display
+        self.d = xdisplay.Display(display)
+        if not self.d.has_extension("XTEST"):
+            raise RuntimeError("isolated display lacks XTEST")
+        self.root = self.d.screen().root
+        self.keymap = {k: self.d.keysym_to_keycode(XK.string_to_keysym(X_KEYSYMS.get(k, k))) for k in KEY_NAMES}
+        if not all(self.keymap.values()):
+            raise RuntimeError("isolated display keymap lacks a benchmark key")
+        self.held, self.win = set(), None
+        # python-xlib connections are not thread-safe (the combo planner captures while the executor acts).
+        self.lock = threading.RLock()
+
+    def window(self):
+        windows = []
+        for w in self.root.query_tree().children:
+            attrs, geo = w.get_attributes(), w.get_geometry()
+            if attrs.map_state == self.X.IsViewable and geo.width >= self.width // 2:
+                windows.append((w, geo))
+        if len(windows) != 1:
+            raise RuntimeError("game window missing or ambiguous on the isolated display")
+        w, geo = windows[0]
+        at = w.translate_coords(self.root, 0, 0)
+        return w, (-at.x, -at.y), (geo.width, geo.height)
+
+    def setup_window(self):
+        with self.lock:
+            w, at, size = self.window()
+            if size != (self.width, self.height) or at != (0, 0):
+                w.configure(x=0, y=0, width=self.width, height=self.height)
+                self.d.sync()
+                time.sleep(.5)
+            self.focus()
+            return self.window()
+
+    def focus(self):
+        with self.lock:
+            w, at, size = self.window()
+            if size != (self.width, self.height) or at != (0, 0):
+                raise RuntimeError(f"game window not at 0,0 {self.width}x{self.height}: {at} {size}")
+            self.d.set_input_focus(w, self.X.RevertToParent, self.X.CurrentTime)
+            self.d.sync()
+            self.win = w
+            return w
+
+    def capture(self, path):
+        from PIL import Image
+        with self.lock:
+            self.focus()
+            raw = self.root.get_image(0, 0, self.width, self.height, self.X.ZPixmap, 0xffffffff)
+        image = Image.frombytes("RGB", (self.width, self.height), raw.data, "raw", "BGRX")
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        image.save(path)
+        return {"viewport": [self.width, self.height], "display": self.display_name, "path": str(path),
+                "captured_unix": time.time()}
+
+    def _send(self, kind, detail=0, **kw):
+        self.xtest.fake_input(self.d, kind, detail, **kw)
+
+    def release(self):
+        with self.lock:
+            for kind, code in list(self.held):
+                self._send(self.X.ButtonRelease if kind == "button" else self.X.KeyRelease, code)
+            self.d.sync()
+            self.held.clear()
+
+    def act(self, actions, actor="agent"):
+        validate_actions(actions, width=self.width, height=self.height, max_hold_ms=self.max_hold_ms)
+        receipts = []
+        for action in actions:
+            with self.lock:
+                self.focus()
+                if "x" in action:
+                    # Absolute XTEST motion reaches SDL only with the root window given explicitly.
+                    self._send(self.X.MotionNotify, x=action["x"], y=action["y"], root=self.root)
+                    self.d.sync()
+            if "x" in action:
+                time.sleep(.035)
+            started = time.time()
+            try:
+                with self.lock:
+                    for k in action.get("keys", []):
+                        self._send(self.X.KeyPress, self.keymap[k])
+                        self.held.add(("key", self.keymap[k]))
+                    if action.get("mouse"):
+                        self._send(self.X.ButtonPress, X_BUTTONS[action["mouse"]])
+                        self.held.add(("button", X_BUTTONS[action["mouse"]]))
+                    self.d.sync()
+                time.sleep(action.get("ms", 100) / 1000)
+            finally:
+                self.release()
+            receipt = {"actor": actor, "action": action, "started_unix": started, "ended_unix": time.time(),
+                       "game_pid": self.pid, "display": self.display_name, "dispatch": "xtest_isolated_xwayland"}
+            if self.journal:
+                with self.journal.open("a") as stream:
+                    stream.write(json.dumps(receipt) + "\n")
+            receipts.append(receipt)
+        return receipts
+
+    def close(self):
+        with self.lock:
+            self.release()
+            self.d.close()
+
+
+def control(pid, journal=None, *, display=None, **kw):
+    """The game's input/screenshot controller: the shared desktop (uinput, grim) or an isolated Xwayland display."""
+    return XGameControl(pid, journal, display=display, **kw) if display else GameControl(pid, journal, **kw)
 
 
 def main():
