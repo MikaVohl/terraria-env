@@ -49,7 +49,7 @@ Last updated 2026-11-08 20:45 UTC.
 | C1 | Headline metric | Weighted % of max (Craftax-style), plus tier rates, Crafter score, deaths | Craftax calibration reproduced (PPO 12.1% vs 11.9%; RNN 16.2% vs 15.3%) | **Decided** |
 | C2 | Budgets | 1B standard; 4B extended | v10: 4B = 1B; v9: 4B ≤ 1B | **Recommended**: 1B only, 4B optional appendix |
 | C3 | Seeds / statistics | 5 training seeds; IQM + bootstrap 95% CI; reserved test worlds once | Established practice in our studies | **Decided** |
-| C4 | Reference agents | PPO generic ("bitter lesson") and PPO shaped ("maximally good"); behaviour cloning optional | v8: shaped arm gets iron pickaxe in 5/15 runs, generic 0/9 | **Recommended** (BC: open) |
+| C4 | Reference agents | PPO generic ("bitter lesson") and PPO shaped ("maximally good"); behaviour cloning optional | v8, runs of 4B+ steps at γ ≥ 0.9998: shaped arm crafts the iron pickaxe in 4 of 11 runs (4 of 13 counting two frontier-surface runs), generic 0 of 9 | **Recommended** (BC: open) |
 | C5 | Cost reporting | GPU-hours × stated rental rate (date-stamped) | Site currently assumes $2.50/MI350X-hour (placeholder) | **Open**: pick a public rate source |
 
 ## D. LLM on Terraria-Lite
