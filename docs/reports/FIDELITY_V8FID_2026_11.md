@@ -188,9 +188,48 @@ validation, checkpoint) runs end to end. Run directory:
 
 ## Learnability
 
-Training results for the fidelity builds (2B steps, 5 seeds, the generic and shaped arms on
-the GPU node) will be appended to this section by the parent study. No learnability
-conclusion is drawn here from the 2M-step smoke run.
+eg15 GPU node, 2026-11-08. Each run is 2B steps, γ 0.9998, with validation on 128 worlds
+(17,000,001+), sampled policy. Arms: generic (`max2_pot0_nov01_unimix_g9998`, no recipe
+shaping) and shaped (`max2_fn_unimix_g9998`). Studies: `experiments/eg15-fidelity-v8fid-20261108`
+and `experiments/eg15-fidticks-20261108` on eg15. `FID_TICKS` became a compile-time knob
+(default 4) for the 15-tick runs.
+
+| Build | Arm | Seeds | Final score /32 | Mean | Furnace worlds /128 |
+|---|---|---|---|---:|---|
+| off (= v8 o3t2-inv) | generic | 2001, 2002 | 28.34, 27.60 | **27.97** | 128, 128 |
+| mobs + combat | generic | 2001, 2002 | 28.02, 27.99 | **28.01** | 128, 128 |
+| physics | generic | 2001, 2002 | 27.23, 27.65 | **27.44** | 128, 128 |
+| trees | generic | 2001 | 28.29 | 28.29 | 127 |
+| mining | generic | 2001 | 17.15 | 17.15 | 0 |
+| all five | generic | 2001, 2002 | 17.48, 17.49 | **17.49** | 0, 0 |
+| all five | shaped | 2001, 2002 | 17.59, 17.70 | 17.65 | 0, 0 |
+| all five, 10,000-step episodes | generic | 2001, 2002 | 18.37, 18.27 | 18.32 | 0, 1 |
+| all five, `FID_TICKS=15` | generic | 2001, 2002 | 25.77, 25.21 | **25.49** | 128, 127 |
+| all five, `FID_TICKS=15` | shaped | 2001 | 25.86 | 25.86 | 126 |
+| mining, `FID_TICKS=15` | generic | 2001 | 20.71 | 20.71 | 56 |
+
+Findings:
+
+- **The enemy, combat, physics and tree ports cost little or nothing.** Enemy AI and combat:
+  +0.04. Trees: +0.3 (one seed). Physics: −0.5. Every one of these builds builds the furnace
+  in essentially every validation world.
+- **The mining port alone accounts for the whole drop.** Mining and all-five both fall to
+  about 17.2–17.5 and never reach the furnace. Final-policy diagnostics for all-five
+  (`diag.json`, 128 worlds) show median peak inventories of 19 wood / 25 stone, against
+  44 / 133 for `off`. Under real multi-hit mining at 4 ticks per action the policies don't
+  gather enough material for the workbench → furnace chain. The shaped arm doesn't help.
+- **This is mostly action granularity, not episode length.** 10,000-step episodes recover
+  only +0.8. At `FID_TICKS=15` (one action ≈ one 1/4 s pickaxe swing at useTime 15), all-five
+  recovers to 25.5 with furnaces again in about every world: −2.5 against `off`, with every
+  ported mechanic still on. Mining alone at 15 ticks scores lower (20.7) than all-five at 15
+  ticks [one seed; with `FID_PHYSICS` off, movement keeps v8's one-cell steps while mining
+  runs 15 real ticks, a mismatch the full build doesn't have; inference, not tested].
+- **Speed:** all-five at 15 ticks measures 0.75M steps/s on one thread on the Mac (0.66× of
+  all-five at 4 ticks, about 0.58× v8), still far from the training bottleneck.
+
+Implication for v9: port the enemy, combat, tree and physics behaviour. Real mining is
+learnable only with a coarser action tick: 15 ticks costs about 2.5 points at 2B. Choose the
+tick before adopting the mining port.
 
 ## Reproduce
 
