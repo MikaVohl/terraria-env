@@ -1,0 +1,13 @@
+/* rl.html: probability-of-improvement matrix, arm definitions, ablation run list. */
+.arm-defs li { margin: 6px 0; }
+.pi .heat { font-size: 13px; }
+.pi .heat td { min-width: 76px; padding: 7px 4px; }
+.pi .heat th.rowh { font-size: 13px; }
+.pi-col { display: block; max-width: 120px; margin: 0 auto; font-size: 12px; font-weight: 500; line-height: 1.25; white-space: normal; }
+details.runs { margin: 10px 0; font-size: 14px; }
+details.runs summary { cursor: pointer; color: var(--link); }
+details.runs ul { padding-left: 18px; margin: 6px 0; }
+details.runs li { margin: 3px 0; }
+details.runs code { font-size: 12px; overflow-wrap: anywhere; }
+figure.fig { margin: 12px 0; }
+figure.fig h3 { margin: 4px 0; }

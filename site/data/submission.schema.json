@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "terraria-lite/submission.schema.json",
+  "title": "Terraria-Lite benchmark submission",
+  "description": "One file per entry. Every episode is listed; nothing is dropped or selected. Scores are recomputed from the tapes by the verifier, so reported numbers must match the replays.",
+  "type": "object",
+  "required": ["schema_version", "track", "environment", "agent", "budget", "evaluation", "episodes"],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "track": { "enum": ["terraria-lite", "terraria-official"] },
+    "environment": {
+      "type": "object",
+      "required": ["version", "native_sha256"],
+      "properties": {
+        "version": { "enum": ["v7", "v8", "v9"], "description": "Pinned environment version; v8 entries also state the knobs." },
+        "knobs": { "type": "object", "description": "v8 only, e.g. {\"ore\": 300, \"trees\": 200}" },
+        "native_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Hash of the libterraria build used" }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "required": ["name", "kind", "prior_knowledge"],
+      "properties": {
+        "name": { "type": "string" },
+        "kind": { "enum": ["rl", "llm", "human", "scripted", "random"] },
+        "prior_knowledge": { "type": "string", "description": "Shaping, demonstrations, pretrained model, public rules... disclosed in plain words." },
+        "model": { "type": "string", "description": "LLM: exact provider model id and reasoning setting" },
+        "harness": { "type": "string", "description": "LLM: harness name and version (e.g. compact16_interrupt v0.2)" },
+        "code_url": { "type": "string" },
+        "training_seeds": { "type": "array", "items": { "type": "integer" } }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "required": ["actions_per_episode"],
+      "properties": {
+        "env_steps": { "type": "integer", "description": "RL: training environment steps per seed" },
+        "gpu_hours": { "type": "number" },
+        "gpu": { "type": "string" },
+        "actions_per_episode": { "type": "integer" },
+        "max_calls": { "type": "integer" },
+        "usd_cap_per_episode": { "type": "number" },
+        "wall_seconds_cap": { "type": "integer" }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "required": ["split", "worlds", "sampler_seed"],
+      "properties": {
+        "split": { "enum": ["public-validation", "hidden-test", "public-dev"] },
+        "worlds": { "type": "array", "items": { "type": "integer" }, "description": "World seeds, in order" },
+        "sampler_seed": { "type": "integer" },
+        "replicates": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "episodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["world", "training_seed", "tape_sha256", "steps", "achievement_mask", "died", "stop"],
+        "properties": {
+          "world": { "type": "integer" },
+          "training_seed": { "type": "integer", "description": "RL: which trained policy; LLM: replicate index" },
+          "tape_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "steps": { "type": "integer" },
+          "achievement_mask": { "type": "string", "description": "Hex bitmask (u64 for v9)" },
+          "first_unlock": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "died": { "type": "boolean" },
+          "stop": { "enum": ["horizon", "death", "action_budget", "call_budget", "cost_budget", "time_budget", "error"] },
+          "cost_usd": { "type": "number" },
+          "wall_seconds": { "type": "number" },
+          "illegal_actions": { "type": "integer" },
+          "tokens": { "type": "object", "properties": { "prompt": { "type": "integer" }, "completion": { "type": "integer" } } }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Replays: Terraria-Lite</title>
+<meta name="description" content="Watch the 12 audited LLM attempts on Terraria-Lite, replayed from their action tapes by the real simulator in your browser, and check each final state against the audit.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/pages/replay.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>Replays</h1>
+  <p class="lead prose">Every LLM attempt on Terraria-Lite is stored as an action tape: the world seed and the list of primitive actions the model chose. This page feeds each of the 12 audited tapes to the real simulator, compiled to WebAssembly, and checks that the episode it rebuilds ends exactly where the audit says it did.</p>
+
+  <section class="block" id="viewer">
+    <h2>Watch an attempt</h2>
+    <div class="replay-pick">
+      <label for="attempt">Attempt</label>
+      <select id="attempt"></select>
+    </div>
+    <p class="note prose" id="attempt-sub"></p>
+    <figure class="replay-fig">
+      <div class="player">
+        <canvas class="px" id="screen" role="img" aria-label="Replay of an LLM attempt in Terraria-Lite"></canvas>
+      </div>
+      <div class="player-bar">
+        <button class="btn" type="button" id="play" disabled>Play</button>
+        <button class="btn" type="button" id="back" aria-label="Step back one action" disabled>&larr;</button>
+        <button class="btn" type="button" id="fwd" aria-label="Step forward one action" disabled>&rarr;</button>
+        <label class="speed">Speed
+          <select id="speed">
+            <option value="1">1x</option>
+            <option value="4" selected>4x</option>
+            <option value="16">16x</option>
+          </select>
+        </label>
+        <input type="range" id="scrub" min="0" max="0" value="0" step="1" aria-label="Step" disabled>
+      </div>
+      <figcaption>
+        <span class="mono" id="status" aria-live="off">Loading the simulator...</span>
+        <span class="note">Keyboard: <kbd>Space</kbd> play or pause, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> one action back or forward. 1x is 12 actions per second.</span>
+      </figcaption>
+    </figure>
+
+    <h3>Achievements in order</h3>
+    <p class="note">Each button plays from 48 actions before the unlock. Achievements not yet reached at the current step are dimmed.</p>
+    <div class="unlocks" id="unlocks" role="group" aria-label="Achievement unlocks"></div>
+  </section>
+
+  <section class="block" id="verify">
+    <h2>Does the replay match the audit?</h2>
+    <div class="grid2">
+      <div class="prose">
+        <p>Your browser runs <code>viz/terraria.wasm</code>: the v8 core with default knobs, compiled to WebAssembly. With default knobs v8 is byte-identical to frozen v7, the environment these attempts ran on. The page resets the world from the seed on the tape, applies the recorded actions in order and compares the final state with the audited record in <code>data/llm.json</code>.</p>
+        <p>This is the same check the audit ran natively. For the Luna batch, the frozen CLI verified hash chains, transitions, rewards, observations and final records without model calls, and each tape independently matched SDL headless replay on steps, health, achievement mask and native return (<code>docs/reports/LLM_LUNA_2026_10_17.md</code>, "Completion audit"). The harness study was replay-audited the same way (<code>docs/reports/LUNA_HARNESS_STUDY_2026_10_17.md</code>).</p>
+        <p class="note">Illegal attempts are recounted here as actions that the simulator's legal-action mask rejected in the state where they were issued. They still cost a game tick.</p>
+      </div>
+      <div>
+        <p id="verify-summary" class="verify-summary">Waiting for the replay...</p>
+        <div id="verify-table"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="facts-block">
+    <h2>About this attempt</h2>
+    <dl class="facts" id="facts"></dl>
+    <p class="note" id="facts-note"></p>
+  </section>
+
+  <section class="block" id="all">
+    <h2>All audited attempts</h2>
+    <p class="prose">Twelve attempts from three studies on frozen v7 (32 achievements, at most 3,000 actions): one GPT-6.1 Sol smoke test capped at 16 calls, the three-world GPT-6 Luna development batch under a shared $2 guard, and the eight-attempt Luna harness study (four harnesses on two paired worlds, $0.35 guard per attempt). No attempt reached 3,000 actions. Cost is the provider-reported cost.</p>
+    <div id="all-table"></div>
+  </section>
+
+  <section class="block" id="ppo">
+    <h2>Watching a trained PPO policy</h2>
+    <div class="prose">
+      <p>PPO entries are not action tapes. A policy samples its actions, so a PPO score is verified by re-evaluating the saved checkpoint: evaluation uses categorical sampling with a fixed sampler seed and the legal-action mask, so the same checkpoint on the same 128 worlds reproduces its score exactly (<a href="method.html#verification">method: verification</a>). The leaderboard marks these entries as checkpoint-verified.</p>
+      <p id="ppo-note">The viz page runs one of those checkpoints live in your browser, with its action probabilities, value estimate and entropy next to the game.</p>
+    </div>
+    <div class="links">
+      <a class="btn primary" href="viz/index.html#agent"><img class="px" src="viz/textures/Item_1.png" alt="">Watch the PPO policy play</a>
+      <a class="btn" href="viz/index.html#play">Play it yourself</a>
+      <a class="btn" href="failures.html">Failure gallery</a>
+    </div>
+  </section>
+</main>
+<script type="module" src="js/pages/replay.js"></script>
+</body>
+</html>

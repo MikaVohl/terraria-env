@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Official Terraria track: Terraria-Lite</title>
+<meta name="description" content="The official Terraria track runs agents in the real game through tModLoader under the same contract as Terraria-Lite. Draft contract, sample leaderboard layout and measured headless speed.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/pages/terraria.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>Official Terraria track</h1>
+  <p class="lead prose">The same benchmark contract, played in the real game: Terraria 1.4.4 through tModLoader, scored from a checkpoint log written by a mod. It answers the question Terraria-Lite cannot: does an agent that does well in the simulator also make progress in Terraria itself, and at what cost?</p>
+
+  <div class="callout prose" id="status">
+    <p><b>No agent has been scored on this track yet.</b> Every leaderboard row, chart mark and heatmap cell on this page is <span class="sample">sample data</span> that shows the layout the results will use. The contract below is a draft. The speed measurements in <a href="#speed">the speed section</a> are real (<code>experiments/tml-speed-20261107</code>).</p>
+  </div>
+
+  <section class="block" id="contract">
+    <h2>Contract (draft)</h2>
+    <p class="prose">Borrowed from <a href="https://terrariabench.com">TerrariaBench</a>: one harness for every model, progress read from the game rather than self-reported, and invalid runs shown with their reason instead of dropped. Borrowed from Terraria-Lite: RL policies and LLMs get the same observation and the same budget, so their scores sit on one axis.</p>
+    <div id="contract-table"></div>
+    <p class="note" id="budget-note"></p>
+  </section>
+
+  <section class="block" id="board">
+    <h2>Leaderboard <span id="board-badge"></span></h2>
+    <p class="prose">Score is the percent of the maximum weighted milestone score, with a 95% bootstrap interval over worlds. Cost is per episode for LLMs and training compute for RL. Invalid runs stay on the board with the reason. All rows are invented to show the format.</p>
+    <div id="board-table"></div>
+  </section>
+
+  <section class="block" id="pareto">
+    <h2>Score against cost and time <span id="pareto-badge"></span></h2>
+    <p class="prose">Left: score against dollars (log scale). Right: score against wall-clock hours (log scale). Valid runs only; the human row has no dollar cost and appears only on the time chart. All marks are sample data, drawn hollow and dashed.</p>
+    <div class="grid2">
+      <figure class="fig">
+        <div class="chart" id="cost-chart"></div>
+        <figcaption>Score against cost per entry (sample data).</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="time-chart"></div>
+        <figcaption>Score against wall-clock time (sample data).</figcaption>
+      </figure>
+    </div>
+    <div id="pareto-legend"></div>
+  </section>
+
+  <section class="block" id="progress">
+    <h2>Progress over game time <span id="progress-badge"></span></h2>
+    <p class="prose">Milestones reached against in-game minutes, as TerrariaBench plots progress over time. Each step is the median minute at which an agent first reached a milestone across its worlds. The budget ends at <span id="game-min"></span> game minutes.</p>
+    <div class="seg" role="group" aria-label="Progress measure">
+      <button type="button" aria-pressed="true" data-measure="count">Milestones reached</button>
+      <button type="button" aria-pressed="false" data-measure="weighted">Weighted score, %</button>
+    </div>
+    <div class="chart" id="progress-chart"></div>
+    <div id="progress-legend"></div>
+  </section>
+
+  <section class="block" id="heatmap">
+    <h2>First unlock, by milestone <span id="heat-badge"></span></h2>
+    <p class="prose">Rows are agents, columns are the <span id="n-milestones"></span> milestones in tier order. Each cell is the median game minute of the first unlock; stronger colour means earlier. A blank cell means the milestone was never reached.</p>
+    <div id="heat"></div>
+    <div id="tier-key" class="note"></div>
+  </section>
+
+  <section class="block" id="speed">
+    <h2>How fast is real Terraria?</h2>
+    <p class="prose">We measured a headless tModLoader 1.4.4 dedicated server stepping <code>Main.Update</code> in a tight loop on an Intel i7-9700 (Linux), with a scripted player that walks, jumps and mines with a copper pickaxe. Each run is 30 s of steady state after a 5 s warm-up, repeated three times. One agent action is 4 game ticks.</p>
+    <dl class="facts" id="tml-facts"></dl>
+    <div class="chart" id="speed-chart"></div>
+    <div id="speed-legend"></div>
+    <h3>What the measurement leaves out</h3>
+    <p class="prose" id="not-sim"></p>
+    <p class="prose">Running a full client-side player on the server failed: sky, filters and player saving are not initialised on a dedicated server and threw exceptions. Combat, item pickup and cursor tool use need a headless client host, which has not been built. Episode resets would also need an in-memory world snapshot, since generating a small world takes 16 s. All of this makes the numbers above upper bounds on speed.</p>
+    <p class="note">Source: <code>experiments/tml-speed-20261107/README.md</code> (method, raw JSONL and summary script in the same directory).</p>
+  </section>
+
+  <section class="block" id="estimator">
+    <h2>What would RL on real Terraria cost?</h2>
+    <p class="prose">Pick a training budget. The Terraria column assumes about <span id="aps"></span> actions per second per CPU core (the measured headless rate, so the real cost is higher). The Terraria-Lite column uses the measured median PPO training speed on one GPU. Both dollar rates are placeholder assumptions from <code>data/costs.json</code>, not quotes.</p>
+    <div class="est-ctl">
+      <label for="steps">Training steps: <b id="steps-out" class="num"></b></label>
+      <input type="range" id="steps" min="8" max="10" step="0.01" value="9" aria-describedby="steps-help">
+      <span class="note" id="steps-help">100M to 10B, log scale</span>
+    </div>
+    <div class="grid2" aria-live="polite">
+      <div>
+        <h3>Real Terraria, headless tModLoader</h3>
+        <dl class="facts" id="est-tml"></dl>
+      </div>
+      <div>
+        <h3>Terraria-Lite, PPO on one GPU</h3>
+        <dl class="facts" id="est-lite"></dl>
+      </div>
+    </div>
+    <p class="note" id="est-note"></p>
+  </section>
+</main>
+<script type="module" src="js/pages/terraria.js"></script>
+</body>
+</html>

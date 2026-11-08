@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What helped RL: Terraria-Lite</title>
+<meta name="description" content="116 PPO runs on Terraria-Lite v8: what moved the score (resource supply, discount horizon), what did not (bigger networks, memory, Go-Explore), and a generic arm against an arm with disclosed priors.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/pages/rl.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>What helped RL</h1>
+  <p class="lead prose" id="lead">PPO on Terraria-Lite v8 (32 achievements, 3,000-step episodes), changing one thing at a time. Scores are achievements per episode on 128 validation worlds unless marked test; the final configurations were also evaluated once on 128 reserved test worlds.</p>
+
+  <div class="tldr prose" id="tldr">
+    <h2>TL;DR</h2>
+    <ul id="tldr-list"></ul>
+  </div>
+
+  <dl class="facts" id="facts"></dl>
+
+  <section class="block" id="arms">
+    <h2>Bitter-lesson PPO against maximally good RL</h2>
+    <p class="prose">We keep two arms apart so that a score never hides how much the designer helped.</p>
+    <ul class="prose arm-defs">
+      <li><b>Bitter-lesson PPO (generic).</b> No reward shaping and no game knowledge: the agent sees the extrinsic achievement reward only, plus generic exploration that would work in any environment (a 0.01 novelty bonus and a 1% uniform action mix). Better results have to come from compute, horizon and the environment itself.</li>
+      <li><b>Maximally good RL (disclosed priors).</b> Anything that helps, as long as it is disclosed: potential-based shaping on the recipe graph (the "frontier" potential), a log-scale inventory observation, and later behaviour cloning from demonstrations. Both arms train on the same fair worlds (ore 3x + trees 2x) with the same action set and are scored on the same validation and test worlds.</li>
+    </ul>
+    <h3 id="final-h">Final configurations</h3>
+    <p class="prose">Interquartile mean (IQM) over 5 seeds with a 95% bootstrap confidence interval, as recommended by rliable. Validation and test are 128 worlds each; each seed plays every world once. The Crafter score is the geometric mean of per-achievement success rates (test worlds). Training cost is GPU-hours per seed times an assumed rate, <span id="rate"></span>.</p>
+    <div id="final-table"></div>
+    <p class="note" id="final-note"></p>
+    <h3>Probability of improvement</h3>
+    <p class="prose">P(row beats column): the chance that a random seed of the row configuration scores higher than a random seed of the column configuration (validation scores, 5 by 5 seed pairs, ties count half).</p>
+    <div class="pi" id="pi"></div>
+    <p class="note" id="pi-note"></p>
+  </section>
+
+  <section class="block" id="ablations">
+    <h2>One dimension at a time</h2>
+    <p class="prose">Each table changes one thing against a reference configuration and keeps the rest fixed. Bars are means over seeds, dots are individual seeds, the dashed line is the reference. Hard achievements are counted in worlds out of the 128 validation worlds (mean over seeds).</p>
+    <div class="seg" role="group" aria-label="Ablation table" id="ab-tables"></div>
+    <div class="filters">
+      <label for="ab-metric">Metric</label>
+      <select id="ab-metric"></select>
+    </div>
+    <figure class="fig">
+      <h3 id="ab-title"></h3>
+      <div class="chart" id="ab-chart"></div>
+      <figcaption id="ab-caption" aria-live="polite"></figcaption>
+    </figure>
+    <details class="runs">
+      <summary id="ab-runs-sum">Runs in this table</summary>
+      <ul id="ab-runs"></ul>
+    </details>
+  </section>
+
+  <section class="block" id="curves">
+    <h2>Learning curves</h2>
+    <p class="prose">Score on the 128 validation worlds during training, evaluated every 128M steps (every 256M steps in runs longer than 2B). Thin lines are seeds, thick lines the mean over seeds.</p>
+    <figure class="fig">
+      <div class="chart" id="curve-final"></div>
+      <div class="legend" id="curve-final-legend"></div>
+      <figcaption id="curve-final-cap"></figcaption>
+    </figure>
+    <h3>Longer runs, 4B to 6B steps</h3>
+    <p class="prose" id="long-text"></p>
+    <figure class="fig">
+      <div class="chart" id="curve-long"></div>
+      <div class="legend" id="curve-long-legend"></div>
+      <figcaption id="curve-long-cap"></figcaption>
+    </figure>
+    <h3>All runs: score against wall-clock time</h3>
+    <figure class="fig">
+      <div class="chart" id="all-runs"></div>
+      <div class="legend" id="all-runs-legend"></div>
+      <figcaption id="all-runs-cap"></figcaption>
+    </figure>
+  </section>
+
+  <section class="block" id="cost">
+    <h2>Training and inference cost <span class="sample">estimated</span></h2>
+    <p class="prose" id="cost-text"></p>
+    <div id="cost-table"></div>
+    <p class="note" id="cost-note"></p>
+  </section>
+
+  <section class="block" id="progress">
+    <h2>In progress</h2>
+    <ul class="prose" id="progress-list"></ul>
+    <p class="note"><a href="history.html">Every version, what changed and what went wrong</a></p>
+  </section>
+</main>
+<script type="module" src="js/pages/rl.js"></script>
+</body>
+</html>

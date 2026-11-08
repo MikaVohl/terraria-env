@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Submission kit: Terraria-Lite</title>
+<meta name="description" content="How to evaluate an RL policy, an LLM agent or a human on Terraria-Lite: versions, world seeds, evaluation commands, the JSON results schema, LLM harness rules, reporting rules and verification.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>Submission kit</h1>
+  <p class="lead prose">How to produce a Terraria-Lite result that can sit on the leaderboard: pick a version, evaluate on the right worlds, write one JSON file with every episode, and include tapes so the score can be replayed. Steps marked <span class="sample">planned</span> do not exist yet.</p>
+
+  <section class="block" id="versions">
+    <h2>Versions</h2>
+    <p class="prose">Results are only comparable within one version. State the version, and for v8 the knobs, in every result.</p>
+    <div id="versions-table"></div>
+  </section>
+
+  <section class="block" id="seeds">
+    <h2>World seeds</h2>
+    <div class="table-wrap"><table>
+      <caption class="visually-hidden">World seed policy</caption>
+      <thead><tr><th scope="col">Split</th><th scope="col">Seeds</th><th scope="col">Rule</th></tr></thead>
+      <tbody>
+        <tr><td>Public validation</td><td class="num">23,000,001 to 23,000,128</td><td>Use freely for curves, selection and ablations. Report validation numbers as validation.</td></tr>
+        <tr><td>Test</td><td class="num">25,000,001 to 25,000,128 (v8)</td><td>Evaluate once per frozen final configuration, after all selection is done. Every test run is reported, including ones that disappoint. A local seed list is not a secret test; independently administered hidden tests are <span class="sample">planned</span>.</td></tr>
+        <tr><td>LLM public development</td><td class="num">31,000,009 to 31,000,012; 32,000,001 to 32,000,002</td><td>Already used by the v7 LLM studies. Fine for development and plumbing; not a leaderboard split.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Earlier ranges consumed by historical studies are listed on the <a href="method.html#worlds">methodology page</a>; do not evaluate on them.</p>
+  </section>
+
+  <section class="block" id="eval">
+    <h2>Evaluation commands</h2>
+    <p class="prose">From the repository root. Build first with <code>make -j4 all lib</code> and <code>uv sync --extra rl</code>.</p>
+
+    <h3>RL policy (v8, ore 300%, trees 200%)</h3>
+    <p class="prose">Build the v8 library with the knobs used by the RL results, then evaluate a checkpoint on 128 worlds. The default package evaluator samples actions from the policy with a fixed sampler seed (<code>--sample-seed</code>, default 12345) under the legal-action mask.</p>
+<pre><code>make -C perf/v7 V7=$PWD/variants/v8 LIGHT_WINDOW=1 BUILD=build-v8-o3t2 \
+  VARIANT="-DORE_PCT=300 -DTREE_HEIGHT_PCT=200"
+TERRARIA_LITE_LIB=$PWD/perf/v7/build-v8-o3t2/libterraria.so \
+  uv run python -m terraria_lite.ppo_eval ppo.pt --episodes 128 --seed-start 23000001</code></pre>
+    <p class="note">The v8 studies trained and evaluated through <code>tools/iterate_ppo.py</code> with <code>--validation-seed-start 23000001</code> and <code>--test-seed-start 25000001</code>. Sources: README.md, variants/v8/README.md.</p>
+
+    <h3>LLM agent (v7)</h3>
+    <p class="prose"><code>plan</code> reads no credentials and contacts no provider; <code>run</code> needs a new output directory and <code>--allow-api</code> for paid calls; <code>verify</code> replays the run without model calls.</p>
+<pre><code>PYTHONPATH=python .venv/bin/python tools/eval_llm.py \
+  --mode plan --environment-root experiments/v7-reward-20261017.sGYPqq/variants/v7 \
+  --config benchmarks/llm/openrouter-luna-high-dev.json
+
+PYTHONPATH=python .venv/bin/python tools/eval_llm.py \
+  --mode run --environment-root experiments/v7-reward-20261017.sGYPqq/variants/v7 \
+  --config benchmarks/llm/openrouter-luna-high-dev.json \
+  --out experiments/my-luna-high-dev --allow-api
+
+PYTHONPATH=python .venv/bin/python tools/eval_llm.py \
+  --mode verify --environment-root experiments/v7-reward-20261017.sGYPqq/variants/v7 \
+  --out experiments/my-luna-high-dev</code></pre>
+    <p class="note">Offline baselines (uniform legal and noop) use <code>benchmarks/llm/smoke.json</code> with no API access. Source: docs/reports/LLM_EVALUATION.md.</p>
+
+    <h3>Any tape</h3>
+<pre><code>experiments/v7-reward-20261017.sGYPqq/variants/v7/terraria-px \
+  --watch experiments/my-luna-high-dev/world-31000010-rep-0/actions.tape --verify</code></pre>
+    <p class="prose">Prints the final steps, health, achievement mask and episode return as JSON. Drop <code>--verify</code> to watch the episode.</p>
+
+    <h3>Human</h3>
+    <p class="prose">Play in the browser on the <a href="viz/index.html#play">viz page</a> (lockstep: the world advances only when you act). Recording human episodes as tapes for submission is <span class="sample">planned</span>.</p>
+
+    <h3>v9 <span class="sample">planned</span></h3>
+    <p class="prose">A single <code>terraria-lite-eval</code> command for v9 that evaluates any agent kind and writes the results file below does not exist yet. Until then, v9 runs use the v9 library (<code>variants/v9/README.md</code>) with the commands above.</p>
+  </section>
+
+  <section class="block" id="schema">
+    <h2>Results file</h2>
+    <p class="prose">One JSON file per entry, listing every episode. Nothing is dropped or selected. Scores are recomputed from the tapes, so reported numbers must match the replays. Schema version <span id="schema-version"></span> (draft). <a href="data/submission.schema.json" download="submission.schema.json">Download the schema</a>.</p>
+    <div id="fields"></div>
+    <details>
+      <summary>Full JSON Schema</summary>
+      <pre><code id="schema-src">Loading...</code></pre>
+    </details>
+  </section>
+
+  <section class="block" id="harness">
+    <h2>LLM harness rules</h2>
+    <p class="prose">These are part of the evaluation contract. A different setting is a different track or scaffold, reported separately.</p>
+    <ul class="prose">
+      <li><b>Action budget.</b> 3,000 primitive actions per episode (v7 and v8), the same deadline as RL. Death ends the episode; no undo, reset or save-state search.</li>
+      <li><b>Calls.</b> A fixed maximum of model calls per episode (256 in the Luna development config). A call-budget stop is reported as such, not as a 3,000-action completion.</li>
+      <li><b>Actions per call.</b> Either one primitive action per call, or an open-loop list of up to 16 primitive actions with no conditional execution inside the list. The two interfaces are never pooled.</li>
+      <li><b>Illegal actions cost a tick.</b> A known-illegal action is still an attempted action and uses one step.</li>
+      <li><b>Malformed output costs a noop.</b> Batch validation is atomic: a partly invalid list does not run its valid prefix.</li>
+      <li><b>No tools.</b> No code execution, shell, files, web search, full map, hidden state, navigation controller or strategic action mask. The model sees the RL observation, the legal-action mask and the public rules and recipes.</li>
+      <li><b>Notes and history.</b> Model-authored notes are length-limited, history length is declared, and both reset every episode.</li>
+      <li><b>Cost guard and actual cost.</b> A local dollar guard reserves conservative charges before each request from declared price ceilings. Report the provider-reported actual cost separately from the accounted (guard) cost; they can differ a lot.</li>
+      <li><b>Wall-clock cap.</b> Declared per run and recorded; the world does not advance while the model thinks.</li>
+      <li><b>No retries, no fallbacks.</b> No automatic retries, no silent fallback to another model or provider. A transport error stops the attempt and it is kept.</li>
+      <li><b>All attempts reported.</b> Every world and replicate counts. No best-of-k, no dropped failures; infrastructure errors make the aggregate incomplete rather than shrinking the denominator.</li>
+    </ul>
+    <p class="note">Sources: docs/reports/LLM_EVALUATION.md, docs/reports/LLM_BENCHMARK_RESEARCH_2026_10.md.</p>
+  </section>
+
+  <section class="block" id="reporting">
+    <h2>Reporting rules</h2>
+    <ul class="prose">
+      <li>Every headline number comes with its interval and its sample size: IQM over training seeds with a bootstrap 95% CI (rliable definitions), the number of seeds and the number of worlds. LLM entries bootstrap over worlds.</li>
+      <li>All per-achievement success rates: 32 for v7 and v8, 38 for v9. Not only the headline.</li>
+      <li>Deaths (rate per episode) and first-unlock steps.</li>
+      <li>Budget and cost: environment steps and GPU-hours for RL; actions, calls, tokens, wall time and dollars for LLMs.</li>
+      <li>Prior knowledge in plain words (shaping, demonstrations, pretrained model, public rules).</li>
+      <li>A link to replayable tapes, so anyone can verify the episodes.</li>
+    </ul>
+    <p class="note">How these statistics are computed: <a href="method.html#scores">methodology</a>.</p>
+  </section>
+
+  <section class="block" id="verify">
+    <h2>Verification</h2>
+    <p class="prose">The simulator is deterministic, so a world seed and an action tape fix the whole episode. Verification replays the tape on the stated version and compares the recomputed steps, achievement mask, death and score with the reported ones. On the leaderboard an entry is marked:</p>
+    <ul class="prose">
+      <li><span class="verified">replay</span>: every episode's tape was replayed on the pinned build and matches the reported result. LLM runs also pass <code>tools/eval_llm.py --mode verify</code>, which checks the hash-chained event log state by state.</li>
+      <li><span class="verified">checkpoint</span>: the trained checkpoint was re-evaluated on the same worlds with the same sampler seed and reproduced the score.</li>
+      <li><span class="unverified">unverified</span>: numbers reported without tapes or checkpoints. Shown, but marked.</li>
+    </ul>
+    <p class="prose">A verifier that reads the results file directly, checks <code>native_sha256</code>, replays every listed tape and recomputes the aggregate is <span class="sample">planned</span>. Hash chains catch accidental changes; they do not prove anything against someone who rewrites every artifact, which is why hidden tests need independent administration.</p>
+  </section>
+</main>
+<script type="module" src="js/pages/submit.js"></script>
+</body>
+</html>

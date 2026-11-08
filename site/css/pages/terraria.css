@@ -1,0 +1,5 @@
+/* Official Terraria page: RL cost estimator controls. */
+.est-ctl { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 12px 0 4px; }
+.est-ctl input[type="range"] { flex: 1; min-width: 200px; max-width: 520px; }
+.est-ctl label b { display: inline-block; min-width: 4.5em; }
+.facts dt .sample { margin-left: 4px; }

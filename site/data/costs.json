@@ -1,0 +1,30 @@
+{
+  "_note": "Cost model used to put RL and LLM runs on one dollar axis. GPU and CPU rates are assumptions (placeholder) until a dated quote is pinned; API prices are the listed prices recorded at launch of each LLM study.",
+  "gpu": {
+    "name": "AMD MI350X (eg15 node, 8 GPUs), one training run per GPU",
+    "usd_per_gpu_hour": 2.5,
+    "date": "2026-11-07",
+    "placeholder": true,
+    "basis": "GPU-hours = wall-clock hours of the run (elapsed_seconds of the last checkpoint in curve.json). Runs that shared a GPU are counted as one full GPU, so costs are upper bounds."
+  },
+  "cpu": {
+    "name": "x86 server core (tModLoader headless, one process per core)",
+    "usd_per_core_hour": 0.04,
+    "date": "2026-11-07",
+    "placeholder": true
+  },
+  "api": [
+    {
+      "model": "openai/gpt-6-luna",
+      "usd_per_mtok_input": 0.10,
+      "usd_per_mtok_output": 0.50,
+      "date": "2026-10-17",
+      "source": "OpenRouter catalog at launch, docs/reports/LLM_LUNA_2026_10_17.md"
+    }
+  ],
+  "rl_inference": {
+    "_note": "Policy inference per 3,000-step episode: 3,000 forward passes of a 0.47M-parameter network. Not measured; an order-of-magnitude estimate.",
+    "usd_per_episode": 0.0001,
+    "placeholder": true
+  }
+}

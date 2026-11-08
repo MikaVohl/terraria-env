@@ -1,0 +1,10 @@
+/* failures.html: gallery cards (layout in site.css .fail), filter, replay clips. */
+.fail[hidden] { display: none; }
+.fail-vis { margin: 0; min-width: 0; }
+.fail .tag code { font-size: 12px; word-break: break-all; }
+.fail .btn { margin-top: 4px; }
+.fail-sub { font-size: 13.5px; font-weight: 600; margin: 12px 0 0; }
+.fail-sub:first-child { margin-top: 0; }
+.fail-clip { margin: 14px 0 0; max-width: 460px; }
+.fail-clip figcaption { display: grid; gap: 2px; font-size: 13px; color: var(--muted); }
+.fail-clip figcaption .mono { font-size: 12px; min-height: 1.5em; }

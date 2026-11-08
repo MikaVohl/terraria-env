@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraria-Lite leaderboard: RL and LLM agents</title>
+<meta name="description" content="Leaderboard for Terraria-Lite: RL and LLM agents on the same observation, actions and achievements, with IQM, 95% confidence intervals, seeds, cost and verified replays.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>Terraria-Lite leaderboard</h1>
+  <p class="lead prose">RL policies and LLM agents on the same simulator, observation, action set and scorer. Every score comes with its spread, its seed and world count, its budget and what it cost; every entry links to a replay or a checkpoint that reproduces it.</p>
+
+  <section class="block" id="contract">
+    <h2>The contract</h2>
+    <dl class="facts" id="contract-facts"></dl>
+    <p class="note prose" id="contract-llm"></p>
+  </section>
+
+  <section class="block" id="board">
+    <h2>Leaderboard</h2>
+    <div class="tabs" role="tablist" aria-label="Environment version" id="version-tabs"></div>
+    <p class="prose" id="version-status"></p>
+    <div class="filters" id="filters" role="group" aria-label="Filter entries"></div>
+    <div class="sample-legend">Rows like this <span class="sample">sample data</span> are placeholders that show the layout, not results.</div>
+    <div id="board-table"></div>
+    <p class="note prose" id="board-note"></p>
+  </section>
+
+  <section class="block" id="cost">
+    <h2>Score against cost and time</h2>
+    <p class="prose">Dollars or hours on a log axis, score on the vertical. For RL the x value is one training seed (GPU-hours times an assumed rental rate) and the score is the IQM over seeds; for LLMs it is the provider-reported cost or wall time of one episode. The dashed line is the frontier of real entries; hollow dashed marks are sample data.</p>
+    <div class="seg" role="group" aria-label="Horizontal axis" id="cost-axis">
+      <button type="button" aria-pressed="true" data-axis="usd">Dollars</button>
+      <button type="button" aria-pressed="false" data-axis="hours">Wall-clock hours</button>
+    </div>
+    <div class="chart" id="cost-chart"></div>
+    <div id="cost-legend"></div>
+  </section>
+
+  <section class="block" id="achievements">
+    <h2>Every achievement</h2>
+    <p class="prose" id="ach-intro"></p>
+    <div id="ach-heat"></div>
+  </section>
+
+  <section class="block" id="progress">
+    <h2>Progress over an episode</h2>
+    <p class="prose" id="progress-intro"></p>
+    <div class="chart" id="progress-chart"></div>
+    <div id="progress-legend"></div>
+    <h3>When each achievement first unlocks</h3>
+    <p class="prose" id="first-intro"></p>
+    <div id="first-heat"></div>
+  </section>
+
+  <section class="block" id="dist">
+    <h2>Achievements per episode</h2>
+    <p class="prose">Distribution of unlocked achievements per episode for the final v8 configurations (all seeds pooled, validation worlds). IQM over seeds hides how often a single episode falls short; this shows it.</p>
+    <div class="chart" id="dist-chart"></div>
+    <div id="dist-legend"></div>
+  </section>
+</main>
+<script type="module" src="js/pages/lite.js"></script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# The repository ignores *.tape; the site ships the audited LLM tapes it replays.
+!data/tapes/*.tape

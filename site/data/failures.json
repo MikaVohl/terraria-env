@@ -1,0 +1,88 @@
+{
+  "_note": "Failure gallery. 'viz' names the chart the page draws from data/rl.json or data/llm.json; 'replay' links a step in an audited LLM tape. Numbers in 'facts' are copied from the cited reports.",
+  "items": [
+    {
+      "id": "illegal",
+      "title": "LLMs spend a third of their actions on moves that cannot happen",
+      "agent": "llm",
+      "text": "Every primitive action costs a game tick, legal or not. Luna's attempts include mining empty cells, jumping under a ceiling, walking into walls and climbing rope that is not there. Interrupting the batch after the first illegal action cut the illegal fraction from 46.2% (compact16) to 11.8%, at about three times the calls per action.",
+      "viz": "illegal",
+      "source": "docs/reports/LUNA_HARNESS_STUDY_2026_10_17.md, docs/reports/LLM_LUNA_2026_10_17.md"
+    },
+    {
+      "id": "rope",
+      "title": "A rope that is not there: 239 climbing attempts in one episode",
+      "agent": "llm",
+      "text": "On world 31,000,011 Luna issued 170 illegal 'climb up' and 69 illegal 'climb down' actions. The batch interface hides intermediate feedback, so one wrong belief about the rope repeats for up to 16 actions per call.",
+      "facts": { "illegal_total": 639, "climb_up": 170, "climb_down": 69, "world": 31000011 },
+      "replay": { "tape": "luna-batch-31000011-full16", "note": "Episode ends in death at step 1,802." },
+      "source": "docs/reports/LLM_LUNA_2026_10_17.md"
+    },
+    {
+      "id": "death",
+      "title": "LLMs build a workshop, then die",
+      "agent": "llm",
+      "text": "Both long Luna episodes reached a furnace and smelted copper, then died (scores 20 and 19). Five of eight harness-study attempts died before 2,000 actions; the three survivors were stopped by the dollar guard, so none completed 3,000 actions. The final PPO configurations die in 1% to 9% of episodes.",
+      "viz": "llm-endings",
+      "replay": { "tape": "luna-batch-31000010-full16", "note": "Furnace at step 2,020, copper bar at 2,035, death at 2,478." },
+      "source": "docs/reports/LLM_LUNA_2026_10_17.md, docs/reports/LUNA_HARNESS_STUDY_2026_10_17.md"
+    },
+    {
+      "id": "surface",
+      "title": "PPO goes deep and never comes back, on some seeds",
+      "agent": "rl",
+      "text": "Return to surface needs the agent to climb back up after mining deep. The same configuration learns it on one training seed and not at all on another: the bars show worlds (of 128) where each seed's final policy returned to the surface.",
+      "viz": "surface-seeds",
+      "source": "data/rl.json (validation hits per run)"
+    },
+    {
+      "id": "anvil",
+      "title": "Iron bars spent on a second anvil",
+      "agent": "rl",
+      "text": "An anvil costs iron bars that the pickaxe and chainmail also need. Every seed of the generic gamma .9998 arm crafts 1.7 to 1.9 anvils per episode on average and holds up to four at once; across all v8 runs the peak is five or six. Each extra anvil burns bars that would have gone into the next tool.",
+      "viz": "anvils",
+      "source": "data/rl.json (diag.json: anvil crafts per episode, anvil inventory peak)"
+    },
+    {
+      "id": "pickaxe",
+      "title": "The iron pickaxe is a stockpiling problem",
+      "agent": "rl",
+      "text": "Diagnostics count episodes where crafting the iron pickaxe was legal at least once. In almost every run that number is 0 to 3 of 128: the policy never holds enough iron bars at once (median peak 5 to 8). The 4B and 6B shaped runs that do stockpile craft it in every single world where it becomes legal.",
+      "viz": "pickaxe-legal",
+      "source": "data/rl.json (diag.json: episodes_with_opportunity vs validation hits)"
+    },
+    {
+      "id": "bench",
+      "title": "Carrying a workbench for 38,031 actions and placing it on 958",
+      "agent": "rl",
+      "text": "On v4 a recurrent policy carried a bench for 38,031 actions with a valid placement spot on every one, but selected it on only 958, so the furnace recipe (4 wood, 20 stone, 3 torches and a bench in range) was never satisfied in 128 worlds. The successful MLP crafted on all 181 legal opportunities.",
+      "facts": { "carried": 38031, "selected": 958, "furnace_opportunities_recurrent": 0, "furnace_opportunities_mlp": 108 },
+      "viz": "bench",
+      "source": "docs/reports/CRAFTING_BOTTLENECKS_2026_10.md"
+    },
+    {
+      "id": "world",
+      "title": "Twice the world, six points lower",
+      "agent": "rl",
+      "text": "Doubling the world width to 256 tiles with the standard arm dropped the 2B score from 25.45 to 19.45. Longer episodes and better arms recover most of it, but not all: wider worlds are a navigation problem PPO does not solve with an 11x9 view.",
+      "viz": "world",
+      "source": "data/rl.json (ablation: Larger world)"
+    },
+    {
+      "id": "idle",
+      "title": "Up to half the episode spent after the last unlock",
+      "agent": "rl",
+      "text": "After the last achievement, the final policies keep acting for about 300 to 1,650 steps on average (of 3,000) without unlocking anything: the remaining achievements are out of their reach, and the reward gives no gradient toward them. The generic gamma .9998 arm has the shortest idle tail.",
+      "viz": "idle",
+      "source": "data/rl.json (mean_steps_after_last_achievement)"
+    },
+    {
+      "id": "tile-control",
+      "title": "Official Terraria: runs that edit tiles directly are invalid",
+      "agent": "llm",
+      "placeholder": true,
+      "text": "TerrariaBench marks runs with direct tile-control evidence as invalid. Our official track will do the same and list the reason next to the run. No official-Terraria runs exist yet; this card shows the layout.",
+      "source": "https://terrariabench.com/spec/"
+    }
+  ]
+}

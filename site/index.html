@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraria-Lite: an RL and LLM benchmark on early Terraria</title>
+<meta name="description" content="Terraria-Lite is a deterministic C reimplementation of early Terraria. RL and LLM agents are scored on the same achievements; a second track uses the real game.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<figure class="hero" id="hero" aria-label="Live: a trained policy playing Terraria-Lite">
+  <canvas class="px" role="img" aria-label="Terraria-Lite world rendered with Terraria art; the trained agent is playing live"></canvas>
+  <div class="ach-feed" aria-live="off"></div>
+  <figcaption>
+    <span>Live: the 2.1B-step PPO policy playing in your browser (real simulator in WebAssembly, Terraria art).</span>
+    <span class="status mono" aria-live="off"></span>
+    <span><button class="theme-btn pause" type="button" style="color:#f2efe9;border-color:#777">Pause</button></span>
+    <span><a href="viz/index.html#play">Play it yourself</a></span>
+  </figcaption>
+</figure>
+
+<main id="main" class="wrap">
+  <h1>Terraria-Lite</h1>
+  <p class="lead prose">A deterministic C reimplementation of early Terraria for reinforcement learning and LLM agents. Both kinds of agent see the same observation, act through the same 83 primitive actions and are scored on the same achievements. A second track runs agents in the real game.</p>
+  <div class="links">
+    <a class="btn primary" href="lite.html">Terraria-Lite leaderboard</a>
+    <a class="btn" href="terraria.html">Official Terraria track</a>
+    <a class="btn" href="rl.html">What helped RL</a>
+    <a class="btn" href="viz/index.html#play"><img class="px" src="viz/textures/Item_1.png" alt="">Play it yourself</a>
+    <a class="btn" href="submit.html">Submission kit</a>
+  </div>
+
+  <div class="tldr prose" id="tldr">
+    <h2>TL;DR</h2>
+    <ul>
+      <li>The simulator steps <b>1.29 million times per second on one CPU thread</b>. A PPO run trains at about 287k steps/s on one GPU, so 2 billion steps take about two hours. Real Terraria, headless, manages about 1,000 agent actions per second per process.</li>
+      <li>On v8 (32 achievements), the best PPO configurations reach <b id="tl-best">28.0/32</b> on held-out test worlds (IQM of 5 seeds). Iron pickaxes appear only at 4B steps and more; one 6B-step run reaches 29.3/32, with an iron pickaxe in 99 of 128 worlds and a climb back to the surface in 104.</li>
+      <li>An LLM (GPT-6 Luna) reaches a furnace and smelts copper for about $0.40 per episode, but wastes a third of its actions on illegal moves and dies. Across 14,848 evaluated PPO episodes, iron chainmail was crafted once and a gold pickaxe never.</li>
+      <li>The two largest single gains for PPO were making the world fair (enough ore and trees: +0.9 on the test worlds) and a longer discount horizon (up to +0.8 at 2B steps). Wider networks and an LSTM changed scores by less than 0.3.</li>
+      <li>v9 is the release candidate: a layered world, night, a boss (Eye of Cthulhu) and 38 achievements in four weighted tiers, so the benchmark stays far from saturated.</li>
+    </ul>
+  </div>
+
+  <dl class="facts" id="facts"></dl>
+
+  <section class="block" id="tracks">
+    <h2>Two tracks, one score</h2>
+    <p class="prose">The <a href="lite.html">Terraria-Lite track</a> is the fast simulator: RL trains on billions of steps, LLMs act through a text harness with the RL observation. The <a href="terraria.html">official Terraria track</a> runs the same contract on the real game through tModLoader, at about a thousandth of the speed. Both report cost and time next to score.</p>
+    <div class="grid2">
+      <div>
+        <h3>Terraria-Lite v8, held-out test worlds</h3>
+        <div id="mini-lite"></div>
+        <p class="note"><a href="lite.html">Full leaderboard, all versions</a></p>
+      </div>
+      <div>
+        <h3>Official Terraria <span class="sample">sample data</span></h3>
+        <div id="mini-official"></div>
+        <p class="note"><a href="terraria.html">Track contract and speed measurements</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="fast">
+    <h2>Terraria-Lite is fast</h2>
+    <p class="prose">Agent actions per second, log scale. Our rows are measured; the Craftax and Crafter rows come from the Craftax paper and site and ran on different hardware, so read them as orders of magnitude.</p>
+    <div class="chart" id="speed-chart"></div>
+    <div class="legend" id="speed-legend"></div>
+    <p class="note" id="speed-note"></p>
+  </section>
+
+  <section class="block" id="hard">
+    <h2>Terraria-Lite is hard</h2>
+    <p class="prose">Percent of episodes that unlock each achievement, hardest on the right: v8 final configurations on the 128 reserved test worlds, the 6B run on the validation worlds, and all eleven GPT-6 Luna attempts on their v7 development worlds. The wall sits after the anvil: the generic arm never crafts an iron pickaxe at 2B steps, the shaped arm only does at 4B to 6B steps, iron chainmail appears once in 14,848 PPO episodes and the gold pickaxe never.</p>
+    <div id="hard-heat"></div>
+    <p class="note">Cells: percent of episodes in which the achievement was unlocked. Columns sorted by the generic arm's rate. Hover a cell for the exact value.</p>
+  </section>
+
+  <section class="block" id="open">
+    <h2>Terraria-Lite is open-ended</h2>
+    <p class="prose">Each clip below is cut from one episode the policy plays in your browser right now: chopping, building stations, mining, smelting, fighting and navigating the dark. Nothing is pre-rendered.</p>
+    <div id="clips"></div>
+  </section>
+
+  <section class="block" id="pareto">
+    <h2>Score against cost</h2>
+    <p class="prose">RL pays once for training and almost nothing per episode; an LLM pays for every episode. The chart puts both on one dollar axis (log scale). RL cost is GPU-hours per training seed times an assumed rental rate (<span id="rate"></span>); LLM cost is the provider-reported cost per episode. The dashed line is the frontier of real entries.</p>
+    <div class="seg" role="group" aria-label="RL cost basis">
+      <button type="button" aria-pressed="true" data-basis="train">RL: training cost per seed</button>
+      <button type="button" aria-pressed="false" data-basis="episode">RL: inference cost per episode</button>
+    </div>
+    <div class="chart" id="pareto-chart"></div>
+    <div class="legend" id="pareto-legend"></div>
+  </section>
+
+  <section class="block" id="calibration">
+    <h2>Does our pipeline reproduce Craftax?</h2>
+    <p class="prose">Every Terraria-Lite number is only as good as the training pipeline behind it. We are rerunning the official Craftax baselines on our GPUs against the published scoreboard (percent of maximum reward at 1B steps). The pipeline smoke test has run; the 1B reruns have not.</p>
+    <div class="chart" id="calib-chart"></div>
+    <p class="note"><a href="method.html#calibration">Calibration details and the smoke run</a></p>
+  </section>
+
+  <section class="block" id="next">
+    <h2>In progress</h2>
+    <ul class="prose" id="next-list"></ul>
+    <p class="note"><a href="history.html">Every version, what changed and what went wrong</a></p>
+  </section>
+</main>
+<script type="module" src="js/pages/index.js"></script>
+</body>
+</html>

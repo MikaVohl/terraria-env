@@ -1,0 +1,218 @@
+{
+  "_note": "Terraria-Lite track. Entries with a 'ref' take their numbers from generated files: 'rl:final/<key>' and 'rl:run/<id>' from data/rl.json, 'llm:<study>/<harness>' from data/llm.json. Entries with placeholder: true are invented to show the layout.",
+  "contract": {
+    "summary": "RL and LLM agents get the same symbolic observation (11x9 local tile, light and entity window, inventory, status, earned achievements), the same legal-action mask and the same scorer. LLMs additionally receive the public rules and recipes as text.",
+    "observation": "11x9 local view: tile ids, light, visible mobs; inventory (sqrt(count/999) encoding), equipment, cooldowns, achievement bits. Darkness hides terrain and mobs.",
+    "actions": "83 discrete primitive actions (move, jump, mine/place in 20 reach cells, craft each recipe, select, attack, heal, climb). Masks encode physical legality, not strategy.",
+    "horizon": "3,000 primitive actions per episode (v7/v8); 10,000 in the v9 draft.",
+    "score_v8": "Achievements unlocked, out of 32 (equal weight). IQM over training seeds with a bootstrap 95% CI.",
+    "score_v9": "Percent of the maximum weighted score (tiers weighted 1/3/5/8, max 129).",
+    "llm_rules": "Primitive or open-loop lists of up to 16 primitive actions per call; every action costs a tick; illegal actions still cost a tick; no tools, code execution, map or hidden state; notes and history are declared scaffold settings.",
+    "same_information": true
+  },
+  "versions": [
+    {
+      "id": "v9",
+      "label": "v9 (draft)",
+      "status": "Design spec and first implementation (2026-11-07). Pilots at 250M, 1B and 4B steps are queued; no results yet.",
+      "unit": "%",
+      "domain": [0, 100],
+      "achievements": 38,
+      "placeholder_only": true
+    },
+    {
+      "id": "v8",
+      "label": "v8 (ore 3x, trees 2x)",
+      "status": "Development preview used for the October 31 to November 3 PPO studies. Reserved test worlds 25,000,001 to 25,000,128 evaluated once per final configuration.",
+      "unit": "/32",
+      "domain": [0, 32],
+      "achievements": 32
+    },
+    {
+      "id": "v7",
+      "label": "v7 (= v8 default knobs)",
+      "status": "Frozen v7 core. The LLM harness studies ran here; the viz page's wasm build is byte-identical to it.",
+      "unit": "/32",
+      "domain": [0, 32],
+      "achievements": 32
+    }
+  ],
+  "entries": [
+    {
+      "id": "v8-shaped-g9998", "version": "v8", "kind": "shaped", "short": "PPO + shaping, 2B",
+      "agent": "PPO + recipe shaping", "sub": "potential shaping (frontier), novelty, 1% uniform mix, log inventory, gamma .9998, 2B steps",
+      "prior": "recipe graph as a potential (disclosed)", "ref": "rl:final/shaped_g9998", "verified": "checkpoint",
+      "replay_note": "checkpoints and diag.json on eg15; exact policy replay via ppo_eval"
+    },
+    {
+      "id": "v8-generic-g9998", "version": "v8", "kind": "rl", "short": "PPO generic, 2B",
+      "agent": "PPO, generic", "sub": "no shaping, novelty 0.01, 1% uniform mix, gamma .9998, 2B steps",
+      "prior": "none", "ref": "rl:final/generic_g9998", "verified": "checkpoint"
+    },
+    {
+      "id": "v8-standard", "version": "v8", "kind": "shaped", "short": "PPO standard, 2B",
+      "agent": "PPO, standard arm", "sub": "potential 3 (mean), gamma .999, 2B steps",
+      "prior": "recipe graph as a potential (disclosed)", "ref": "rl:final/o3t2_standard", "verified": "checkpoint"
+    },
+    {
+      "id": "v8-best-run", "version": "v8", "kind": "shaped", "short": "PPO + shaping, 6B, 1 run",
+      "agent": "PPO + recipe shaping, 6B", "sub": "best single run: seed 2001 of the shaped gamma .9998 arm at 6B steps",
+      "prior": "recipe graph as a potential (disclosed)", "ref": "rl:run/eg15-pickaxe-v8-20261103/best_g9998_6B-2001/max2_fn_unimix_g9998-2001",
+      "verified": "checkpoint", "notes": "One seed, validation worlds; selected as the best run, so not comparable to IQM entries."
+    },
+    {
+      "id": "v8-bc-shaped", "version": "v8", "kind": "shaped", "placeholder": true,
+      "agent": "PPO + behaviour cloning + shaping", "sub": "maximally good RL arm: BC warm start from scripted demos, then shaped PPO, 4B steps",
+      "prior": "demonstrations + recipe potential",
+      "score": { "value": 29.6, "ci": [29.1, 30.0], "stat": "IQM" }, "seeds": 5, "worlds": 128, "split": "test",
+      "budget": { "env_steps": 4294967296 }, "cost": { "gpu_hours": 4.6 }, "wall_hours": 4.6, "crafter": 63.0, "deaths": 0.01, "verified": false
+    },
+    {
+      "id": "v8-llm-frontier", "version": "v8", "kind": "llm", "placeholder": true,
+      "agent": "Frontier LLM A, compact16 + interrupt", "sub": "high reasoning, 3,000 actions, $5 cap per episode",
+      "prior": "pretrained LLM + public rules",
+      "score": { "value": 17.5, "ci": [15.0, 19.5], "stat": "mean" }, "seeds": 1, "worlds": 16, "split": "public dev",
+      "budget": { "actions": 3000 }, "cost": { "per_episode_usd": 1.9 }, "wall_hours": 0.9, "crafter": 18.0, "deaths": 0.44, "verified": "replay"
+    },
+    {
+      "id": "v8-llm-small", "version": "v8", "kind": "llm", "placeholder": true,
+      "agent": "Small LLM B, compact4", "sub": "no reasoning, 3,000 actions, $1 cap per episode",
+      "prior": "pretrained LLM + public rules",
+      "score": { "value": 9.5, "ci": [7.5, 11.5], "stat": "mean" }, "seeds": 1, "worlds": 16, "split": "public dev",
+      "budget": { "actions": 3000 }, "cost": { "per_episode_usd": 0.12 }, "wall_hours": 0.3, "crafter": 7.0, "deaths": 0.75, "verified": "replay"
+    },
+    {
+      "id": "v8-human", "version": "v8", "kind": "human", "placeholder": true,
+      "agent": "Human players (browser)", "sub": "first attempt on a public seed, with the click-to-mine concession",
+      "prior": "human",
+      "score": { "value": 22.0, "ci": [19.0, 25.0], "stat": "median" }, "seeds": 1, "worlds": 24, "split": "public dev",
+      "budget": { "actions": 3000 }, "cost": {}, "wall_hours": 0.5, "verified": "replay"
+    },
+    {
+      "id": "v8-random", "version": "v8", "kind": "baseline", "placeholder": true,
+      "agent": "Uniform random legal action", "sub": "offline baseline from the LLM harness",
+      "prior": "none",
+      "score": { "value": 4.1, "ci": [3.8, 4.4], "stat": "mean" }, "seeds": 1, "worlds": 128, "split": "test",
+      "budget": { "actions": 3000 }, "cost": { "per_episode_usd": 0 }, "wall_hours": 0.0, "crafter": 2.1, "deaths": 0.02, "verified": "replay"
+    },
+
+    {
+      "id": "v7-ppo-default", "version": "v7", "kind": "shaped", "short": "PPO standard, 2B",
+      "agent": "PPO, standard arm", "sub": "potential 3 (mean), gamma .999, 2B steps, default supply",
+      "prior": "recipe graph as a potential (disclosed)", "ref": "rl:final/v8_default", "verified": "checkpoint"
+    },
+    {
+      "id": "v7-luna-interrupt", "version": "v7", "kind": "llm", "short": "Luna compact16 + interrupt",
+      "agent": "GPT-6 Luna (high), compact16 + interrupt", "sub": "harness v0.2; 2 paired worlds; $0.35 guard per world (both stopped by it)",
+      "prior": "pretrained LLM + public rules", "ref": "llm:luna-harness/compact16_interrupt", "verified": "replay"
+    },
+    {
+      "id": "v7-luna-compact4", "version": "v7", "kind": "llm", "short": "Luna compact4",
+      "agent": "GPT-6 Luna (high), compact4", "sub": "harness v0.2; 2 paired worlds; up to 4 actions per call",
+      "prior": "pretrained LLM + public rules", "ref": "llm:luna-harness/compact4", "verified": "replay"
+    },
+    {
+      "id": "v7-luna-full16", "version": "v7", "kind": "llm", "short": "Luna full16",
+      "agent": "GPT-6 Luna (high), full16", "sub": "harness v0.2; 2 paired worlds; full observation, 8 turns of history",
+      "prior": "pretrained LLM + public rules", "ref": "llm:luna-harness/full16", "verified": "replay"
+    },
+    {
+      "id": "v7-luna-compact16", "version": "v7", "kind": "llm", "short": "Luna compact16",
+      "agent": "GPT-6 Luna (high), compact16", "sub": "harness v0.2; 2 paired worlds; compact observation, 2 turns of history",
+      "prior": "pretrained LLM + public rules", "ref": "llm:luna-harness/compact16", "verified": "replay"
+    },
+    {
+      "id": "v7-luna-batch", "version": "v7", "kind": "llm", "short": "Luna batch (v0.1)",
+      "agent": "GPT-6 Luna (high), full16, development batch", "sub": "harness v0.1; 3 worlds; shared $2 guard stopped world 3 at 129 actions",
+      "prior": "pretrained LLM + public rules", "ref": "llm:luna-batch/full16", "verified": "replay"
+    },
+    {
+      "id": "v7-sol-smoke", "version": "v7", "kind": "llm", "short": "Sol smoke, 256 actions",
+      "agent": "GPT-6.1 Sol (high), smoke", "sub": "harness v0.1; 1 world; capped at 16 calls (256 actions)",
+      "prior": "pretrained LLM + public rules", "ref": "llm:sol-smoke/full16", "verified": "replay"
+    },
+    {
+      "id": "v7-ppo-16m", "version": "v7", "kind": "rl", "short": "PPO 16M",
+      "agent": "PPO, v7 reward study", "sub": "equal achievement reward, gamma .999, 16M steps; five-seed mean",
+      "prior": "none",
+      "score": { "value": 16.68, "ci": null, "stat": "mean" }, "seeds": 5, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 16777216 }, "cost": {}, "verified": "checkpoint",
+      "source": "README.md (October 17 PPO study), docs/reports/V7_REWARD_STUDY_2026_10_17.md"
+    },
+    {
+      "id": "v7-human", "version": "v7", "kind": "human", "placeholder": true,
+      "agent": "Human players (viz Play)", "sub": "seed 42 in the browser, first attempt",
+      "prior": "human",
+      "score": { "value": 19.0, "ci": [16.0, 22.0], "stat": "median" }, "seeds": 1, "worlds": 1, "split": "public dev",
+      "budget": { "actions": 3000 }, "cost": {}, "wall_hours": 0.45, "verified": "replay"
+    },
+
+    {
+      "id": "v9-shaped", "version": "v9", "kind": "shaped", "placeholder": true,
+      "agent": "PPO + recipe shaping", "sub": "v9 pilot arm, gamma .9999, 4B steps",
+      "prior": "recipe potential", "score": { "value": 41.0, "ci": [38.5, 43.0], "stat": "IQM" }, "seeds": 3, "worlds": 128, "split": "test",
+      "budget": { "env_steps": 4294967296 }, "cost": { "gpu_hours": 5.1 }, "wall_hours": 5.1, "crafter": 31.0, "deaths": 0.22, "verified": "checkpoint"
+    },
+    {
+      "id": "v9-generic-4b", "version": "v9", "kind": "rl", "placeholder": true,
+      "agent": "PPO, generic", "sub": "v9 pilot arm, gamma .9999, 4B steps",
+      "prior": "none", "score": { "value": 33.0, "ci": [30.0, 35.5], "stat": "IQM" }, "seeds": 3, "worlds": 128, "split": "test",
+      "budget": { "env_steps": 4294967296 }, "cost": { "gpu_hours": 4.8 }, "wall_hours": 4.8, "crafter": 24.0, "deaths": 0.30, "verified": "checkpoint"
+    },
+    {
+      "id": "v9-generic-1b", "version": "v9", "kind": "rl", "placeholder": true,
+      "agent": "PPO, generic, 1B", "sub": "v9 pilot arm, gamma .9999, 1B steps (official budget candidate)",
+      "prior": "none", "score": { "value": 27.0, "ci": [25.0, 29.0], "stat": "IQM" }, "seeds": 3, "worlds": 128, "split": "test",
+      "budget": { "env_steps": 1073741824 }, "cost": { "gpu_hours": 1.2 }, "wall_hours": 1.2, "crafter": 18.0, "deaths": 0.35, "verified": "checkpoint"
+    },
+    {
+      "id": "v9-minimap", "version": "v9", "kind": "rl", "placeholder": true,
+      "agent": "PPO, generic + explored-map input", "sub": "v9 minimap option, 1B steps",
+      "prior": "none", "score": { "value": 28.5, "ci": [26.0, 30.5], "stat": "IQM" }, "seeds": 2, "worlds": 128, "split": "test",
+      "budget": { "env_steps": 1073741824 }, "cost": { "gpu_hours": 1.5 }, "wall_hours": 1.5, "crafter": 19.0, "deaths": 0.33, "verified": "checkpoint"
+    },
+    {
+      "id": "v9-llm-a", "version": "v9", "kind": "llm", "placeholder": true,
+      "agent": "Frontier LLM A, compact16 + interrupt", "sub": "10,000 actions, $10 cap per episode",
+      "prior": "pretrained LLM + public rules", "score": { "value": 22.0, "ci": [17.0, 26.0], "stat": "mean" }, "seeds": 1, "worlds": 16, "split": "public dev",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 6.4 }, "wall_hours": 2.6, "crafter": 12.0, "deaths": 0.62, "verified": "replay"
+    },
+    {
+      "id": "v9-llm-b", "version": "v9", "kind": "llm", "placeholder": true,
+      "agent": "Small LLM B, compact4", "sub": "10,000 actions, $2 cap per episode",
+      "prior": "pretrained LLM + public rules", "score": { "value": 9.0, "ci": [6.0, 12.0], "stat": "mean" }, "seeds": 1, "worlds": 16, "split": "public dev",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0.5 }, "wall_hours": 1.0, "crafter": 5.0, "deaths": 0.81, "verified": "replay"
+    },
+    {
+      "id": "v9-human", "version": "v9", "kind": "human", "placeholder": true,
+      "agent": "Human players (browser)", "sub": "first attempt, public seeds",
+      "prior": "human", "score": { "value": 48.0, "ci": [40.0, 57.0], "stat": "median" }, "seeds": 1, "worlds": 24, "split": "public dev",
+      "budget": { "actions": 10000 }, "cost": {}, "wall_hours": 1.4, "verified": "replay"
+    },
+    {
+      "id": "v9-oracle", "version": "v9", "kind": "baseline", "placeholder": true,
+      "agent": "Scripted oracle", "sub": "full-information script; ceiling check (target 95% or more)",
+      "prior": "full state", "score": { "value": 96.0, "ci": [95.0, 97.0], "stat": "mean" }, "seeds": 1, "worlds": 200, "split": "test",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0 }, "wall_hours": 0.0, "verified": "replay"
+    },
+    {
+      "id": "v9-random", "version": "v9", "kind": "baseline", "placeholder": true,
+      "agent": "Uniform random legal action", "sub": "target band: below 5%",
+      "prior": "none", "score": { "value": 2.5, "ci": [2.2, 2.8], "stat": "mean" }, "seeds": 1, "worlds": 128, "split": "test",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0 }, "wall_hours": 0.0, "verified": "replay"
+    }
+  ],
+  "v9_tier_rates": {
+    "_note": "Per-tier success (mean fraction of the tier's achievements unlocked per episode). All sample data until the v9 pilots finish.",
+    "placeholder": true,
+    "tiers": ["Basic (x1)", "Intermediate (x3)", "Advanced (x5)", "Very advanced (x8)"],
+    "agents": [
+      { "id": "v9-shaped", "rates": [0.97, 0.71, 0.24, 0.02] },
+      { "id": "v9-generic-4b", "rates": [0.96, 0.58, 0.12, 0.0] },
+      { "id": "v9-generic-1b", "rates": [0.93, 0.44, 0.05, 0.0] },
+      { "id": "v9-llm-a", "rates": [0.82, 0.31, 0.06, 0.0] },
+      { "id": "v9-human", "rates": [0.98, 0.83, 0.42, 0.18] },
+      { "id": "v9-random", "rates": [0.21, 0.0, 0.0, 0.0] }
+    ]
+  }
+}

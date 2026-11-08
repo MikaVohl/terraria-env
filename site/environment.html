@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The environment: Terraria-Lite</title>
+<meta name="description" content="What Terraria-Lite simulates, what agents observe and do, its achievements and tiers, world generation, speed, and how to play it in the browser.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>The environment</h1>
+  <p class="lead prose">Terraria-Lite is a deterministic, allocation-free C simulator of early Terraria: digging, building, crafting at stations, smelting ore, fighting slimes and bats, and finding the way back up. It draws with Terraria's own art (from a local install) and keeps the mechanics deliberately simpler than the game.</p>
+
+  <section class="block" id="interface">
+    <h2>What an agent sees and does</h2>
+    <dl class="facts" id="iface"></dl>
+    <p class="prose">The viz page walks through one step in detail, with the real simulator and policy running in the page: <a href="viz/index.html#obs">the observation</a>, <a href="viz/index.html#action">the 83-action masked distribution</a>, <a href="viz/index.html#reward">reward and advantages</a>, <a href="viz/index.html#net">the network</a> and <a href="viz/index.html#csim">the simulator state</a>, byte by byte.</p>
+  </section>
+
+  <section class="block" id="worlds">
+    <h2>Worlds</h2>
+    <p class="prose">Every seed generates a new world. These are rendered here from the seed by the same WebAssembly build that the replays and the policy use (v8 core, default knobs, byte-identical to v7), lit everywhere so the caves and ore are visible. Agents see an 11 by 9 window and darkness hides what no light reaches.</p>
+    <div class="worlds" id="world-grid"></div>
+  </section>
+
+  <section class="block" id="ach">
+    <h2>Achievements</h2>
+    <p class="prose">v7 and v8 score 32 equal-weight achievements in 3,000 steps. The success column is the generic PPO arm on the reserved test worlds (5 seeds x 128 worlds); the tier column is where v9 places the achievement.</p>
+    <div id="ach-table"></div>
+    <h3>v9 tiers</h3>
+    <p class="prose" id="v9-intro"></p>
+    <div id="v9-tiers"></div>
+  </section>
+
+  <section class="block" id="v9">
+    <h2>What v9 adds</h2>
+    <div class="prose">
+      <ul>
+        <li><b>A layered world, 128 by 128 tiles:</b> surface, underground (copper, iron, Life Crystals), caverns (silver, gold, Skeletons, Demon Altars) and bedrock. Reaching the caverns replaces "descend deep".</li>
+        <li><b>Day and night:</b> 1,800 day and 1,200 night steps; at night the sky light drops to 3 of 15 and Zombies and Demon Eyes spawn on the surface. Demon Eyes drop lenses one time in three.</li>
+        <li><b>A boss:</b> six lenses make a Suspicious Looking Eye at a Demon Altar; using it at night summons the Eye of Cthulhu (240 HP, dashes, a faster second phase). A scripted fight with iron gear wins 194 of 200 worlds.</li>
+        <li><b>Fair supply:</b> realistic ore density with a guaranteed minimum per world (iron at least 140 ore, gold at least 60, 150 wood near spawn), instead of v8's 3x abundance.</li>
+        <li><b>10,000-step episodes</b> and a weighted score, so today's best policy scores well below the ceiling.</li>
+      </ul>
+      <p class="note">Source: <code>docs/ENV_V9_DESIGN.md</code>. Tier placement, supply minimums, episode length and mob numbers are tunable until the pilots report.</p>
+    </div>
+  </section>
+
+  <section class="block" id="play">
+    <h2>Play it yourself</h2>
+    <div class="grid2">
+      <div class="prose">
+        <p>The viz page opens with you playing seed 42 on the real simulator. A human score on the same seeds is the baseline every agent should be read against: Craftax reports only that one author needed about five hours for a perfect run.</p>
+        <p class="links"><a class="btn primary" href="viz/index.html#play"><img class="px" src="viz/textures/Item_1.png" alt="">Play seed 42</a></p>
+        <p><b>Controls:</b> <span id="controls"></span></p>
+        <h3>Concessions for humans</h3>
+        <ul id="concessions"></ul>
+      </div>
+      <div>
+        <h3>Human scores <span class="sample">sample data</span></h3>
+        <div class="chart" id="human-chart"></div>
+        <p class="note">Planned: first attempts by visitors on fixed public seeds, submitted with the action tape so each score replays exactly. No human scores have been collected yet; the bars show the layout.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="speed">
+    <h2>Speed, measured</h2>
+    <div id="speed-table"></div>
+    <p class="note prose" id="tml-note"></p>
+  </section>
+
+  <section class="block" id="determinism">
+    <h2>Determinism and parity</h2>
+    <ul class="prose">
+      <li>The simulator is deterministic given the world seed and the action sequence, so an action tape reproduces an episode exactly. The <a href="replay.html">replay page</a> re-runs the audited LLM tapes in your browser and checks the final state against the audit.</li>
+      <li>The WebAssembly build matches the native library on Env, observation and mask hashes over 80 worlds plus 4 random-legal episodes (<code>make -C viz parity</code>).</li>
+      <li>The policy's forward pass in C matches PyTorch to a maximum logit difference of 7.6e-6 on 160 observations; the backward pass matched <code>torch.autograd</code> to 1e-6.</li>
+      <li>Regression gates: <code>make check</code> (mechanics and an exact light oracle) and <code>make check-pixel</code> (original textures and UI fixtures).</li>
+    </ul>
+  </section>
+
+  <section class="block" id="simplifications">
+    <h2>What is simplified</h2>
+    <p class="prose">One-cell regular mobs (the Eye of Cthulhu is 3 by 3), discrete action ticks, no flowing liquids, no underworld, evil biome, NPCs, ranged or magic weapons, or potion brewing. The Suspicious Looking Eye is the only boss summon. Tile art and names follow Terraria. These choices keep the simulator above a million steps per second and the observation small; every feature added for v9 had to keep throughput within 1.5x of v8.</p>
+  </section>
+</main>
+<script type="module" src="js/pages/environment.js"></script>
+</body>
+</html>

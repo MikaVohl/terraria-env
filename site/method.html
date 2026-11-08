@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology: Terraria-Lite</title>
+<meta name="description" content="How Terraria-Lite scores agents: achievement scores, IQM and bootstrap intervals over training seeds, world splits, exact replay verification, the cost model and the Craftax calibration.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>Methodology</h1>
+  <p class="lead prose">What a score means, which worlds it comes from, how it is checked, what it cost, and how we test that our training pipeline is not the reason scores are low.</p>
+
+  <section class="block" id="scores">
+    <h2>Scores</h2>
+    <h3>v7 and v8: achievements out of 32</h3>
+    <p class="prose">An episode lasts at most 3,000 primitive actions. Its score is the number of distinct achievements unlocked, out of 32, each worth the same. An entry's score is the mean over its evaluation episodes (128 worlds per training seed for RL).</p>
+
+    <h3>v9 (draft): percent of the maximum weighted score</h3>
+    <p class="prose">v9 has <span id="v9-n"></span> achievements in four tiers weighted 1, 3, 5 and 8, so the maximum is <span id="v9-max"></span>. An episode scores the sum of the weights it unlocks divided by the maximum, as a percentage; the headline is the mean over episodes. This follows Craftax, which reports reward as a percent of its maximum. Tier placement may still move after the v9 pilots (<code>docs/ENV_V9_DESIGN.md</code>, section 8).</p>
+    <div id="v9-tiers"></div>
+
+    <h3>Crafter score</h3>
+    <p class="prose">Reported next to the headline, never instead of it. With s<sub>i</sub> the success rate of achievement i in percent over N achievements:</p>
+    <pre><code>Crafter score = exp( (1/N) * sum_i ln(1 + s_i) ) - 1</code></pre>
+    <p class="prose">The geometric mean rewards breadth: a rare achievement unlocked in 1% of episodes moves it far more than one more point on an achievement already at 99%. We call it the Crafter score only in this sense; our 32-achievement mean is not Crafter's score.</p>
+
+    <h3>Aggregating seeds: IQM, bootstrap interval, probability of improvement</h3>
+    <p class="prose">RL entries train several seeds (five for the v8 final configurations). Each seed yields one score, the mean over its 128 evaluation worlds. We report the interquartile mean (IQM) of the seed scores: sort them, drop the bottom and top 25%, average the rest (with five seeds, the middle three). The 95% interval is a percentile bootstrap: resample the seeds with replacement 10,000 times and take the 2.5th and 97.5th percentiles of the IQM. The probability of improvement P(A &gt; B) is the fraction of seed pairs in which A's seed beats B's, ties counting half. These follow the definitions of rliable (Agarwal et al., 2021, <a href="https://arxiv.org/abs/2108.13264">Deep RL at the Edge of the Statistical Precipice</a>); our implementation is in <code>site/tools/export_data.py</code>.</p>
+    <p class="prose">The four v8 final configurations on the 128 reserved test worlds (real results):</p>
+    <div class="chart" id="iqm-chart"></div>
+    <div id="iqm-legend"></div>
+    <p class="note">Bars: test IQM over 5 seeds; whiskers: bootstrap 95% CI; dots: individual seeds. Source: <code>data/rl.json</code> (final).</p>
+    <div id="pimp"></div>
+    <p class="note">P(row beats column), computed on validation seed scores. Source: <code>data/rl.json</code> (p_improve).</p>
+
+    <h3>Evaluation is not the training reward</h3>
+    <p class="prose">The training reward is +1 for each first unlock and &minus;1 on death. Entries may train on anything else: recipe shaping, novelty bonuses, demonstrations, a pretrained language model. The score never changes. What changes is the label: every entry discloses its prior knowledge, and the leaderboard separates generic RL from RL with disclosed priors. A shaped return is never reported as a score. In v9 the tier weights are evaluation-only; the training reward stays +1/&minus;1.</p>
+  </section>
+
+  <section class="block" id="worlds">
+    <h2>Worlds and splits</h2>
+    <p class="prose">A world is fully determined by its integer seed. Splits are disjoint seed ranges. A range used for a test is consumed and never reused for selection.</p>
+    <div class="table-wrap"><table>
+      <caption class="visually-hidden">World seed ranges</caption>
+      <thead><tr><th scope="col">Split</th><th scope="col">Seeds</th><th scope="col">Use</th></tr></thead>
+      <tbody>
+        <tr><td>Public validation</td><td class="num">23,000,001 to 23,000,128</td><td>Learning curves, checkpoint and configuration selection, ablations (v8; planned for v9).</td></tr>
+        <tr><td>Reserved test</td><td class="num">25,000,001 to 25,000,128</td><td>Evaluated once per final configuration (the v8 studies of October 31 to November 3). Never used for selection.</td></tr>
+        <tr><td>LLM public development</td><td class="num">31,000,009 to 31,000,012</td><td>Sol smoke (31,000,009) and Luna batch (31,000,010 to 31,000,012), v7.</td></tr>
+        <tr><td>LLM public development</td><td class="num">32,000,001 to 32,000,002</td><td>Luna harness comparison: four harness packages on the same two worlds, v7.</td></tr>
+        <tr><td>Consumed (v4 learning study)</td><td class="num">6,000,001 to 6,000,128 (validation); 7,000,001 to 7,000,128 (test)</td><td>Historical; do not reuse.</td></tr>
+        <tr><td>Consumed (v4 credit study)</td><td class="num">8,000,001 to 8,000,128 (validation); 9,000,001 to 9,000,128 (test)</td><td>Historical; do not reuse.</td></tr>
+        <tr><td>Consumed (footprint study)</td><td class="num">11,000,001 to 11,000,128 (test)</td><td>Used once per version (v4 and v5).</td></tr>
+        <tr><td>Guarded (v7 reward study)</td><td class="num">17M validation, 19M reserved test ranges</td><td>Kept out of LLM development.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Sources: README.md; docs/reports/EXPLORATION_2026_10_18.md; docs/reports/LLM_SMOKE_2026_10_17.md, LLM_LUNA_2026_10_17.md, LUNA_HARNESS_PROTOCOL_2026_10_17.md; docs/reports/LLM_BENCHMARK_RESEARCH_2026_10.md. A public seed list is not a secret held-out test: formal private testing needs independent administration and frozen submissions.</p>
+  </section>
+
+  <section class="block" id="verification">
+    <h2>Verification</h2>
+    <p class="prose">The simulator is deterministic: a world seed plus a list of actions fixes every state. A score is accepted only if it can be recomputed.</p>
+    <ul class="prose">
+      <li><b>Action tapes.</b> Every evaluated episode can be saved as a tape (environment version, seed, actions). <code>terraria-px --watch TAPE --verify</code> replays it headlessly and prints the final steps, health, achievement mask and return; without <code>--verify</code> it plays the episode on screen.</li>
+      <li><b>LLM runs.</b> Each run stores a manifest with the model, scaffold, budgets and the game, native-library and harness hashes; an append-only, hash-chained log of requests, responses, actions, rewards and states; a per-attempt result; and the tape. <code>tools/eval_llm.py --mode verify</code> replays every primitive action without calling a model and checks each observed state and reward, the final state and the tape. Hash chains detect accidental modification; they are not proof against someone who rewrites the whole artifact set.</li>
+      <li><b>RL runs.</b> Checkpoints are hashed. Evaluation uses categorical sampling with a fixed sampler seed and the legal-action mask, so re-evaluating a checkpoint on the same worlds reproduces its score exactly.</li>
+      <li><b>Browser replays.</b> The viz page and this site run the v8 core compiled to WebAssembly with default knobs, which is byte-identical to frozen v7. <code>make -C viz parity</code> compares the wasm build against the native build on Env, observation and mask hashes over 80 worlds and 4 random-legal episodes. The exported policy's forward pass matched PyTorch on 160 observations (max |&Delta;logit| 7.6e-6). That is why the LLM tapes on the <a href="replay.html">replay page</a> replay exactly.</li>
+    </ul>
+    <p class="note">Sources: docs/reports/LLM_EVALUATION.md, docs/reports/LLM_BENCHMARK_RESEARCH_2026_10.md, docs/ENV_V9_DESIGN.md section 9, viz/README.md.</p>
+  </section>
+
+  <section class="block" id="cost">
+    <h2>Cost model</h2>
+    <p class="prose">RL pays once for training; an LLM pays per episode. To put both on one dollar axis we use the rates below. The GPU and CPU rates are assumptions until a dated quote is pinned; API prices are the listed prices at the launch of each LLM study, and LLM costs on the leaderboard are the provider-reported costs, not estimates.</p>
+    <div id="cost-table"></div>
+    <p class="note" id="cost-note"></p>
+  </section>
+
+  <section class="block" id="calibration">
+    <h2>Craftax calibration</h2>
+    <p class="prose">Low scores on Terraria-Lite could mean the environment is hard, or that our PPO pipeline is weak. To tell these apart we rerun the official Craftax baselines on our hardware and compare against the published Craftax scoreboard. If our PPO matches the published PPO on Craftax, a gap on Terraria-Lite is about the environment.</p>
+    <h3>Published scoreboard</h3>
+    <p class="prose">Reward as a percent of the maximum (226), copied from the <a id="cal-src" href="#">Craftax README scoreboard</a>. Scores from outside the original paper are unverified there too.</p>
+    <div class="grid2">
+      <div id="pub-1b"></div>
+      <div id="pub-1m"></div>
+    </div>
+    <h3>Our reruns <span class="sample">sample data</span></h3>
+    <p class="prose" id="ours-note"></p>
+    <figure class="fig">
+      <div class="chart" id="calib-chart"></div>
+      <figcaption>Craftax-1B, percent of maximum reward. Solid: published. Hollow and dashed: our planned reruns, sample data until the runs finish.</figcaption>
+    </figure>
+    <div id="calib-legend"></div>
+    <h3>What has actually run</h3>
+    <p class="prose" id="smoke-text"></p>
+    <dl class="facts" id="smoke-facts"></dl>
+  </section>
+
+  <section class="block" id="lineage">
+    <h2>What we took from Craftax and TerrariaBench</h2>
+    <div class="grid2">
+      <div>
+        <h3><a href="https://craftaxenv.github.io">Craftax</a></h3>
+        <ul>
+          <li>The framing: an environment should be fast enough for billions of steps, hard enough not to saturate, and open-ended.</li>
+          <li>Tiered achievements with increasing weight (v9 uses weights 1, 3, 5, 8).</li>
+          <li>Two standard budgets, 1M and 1B steps, so sample efficiency and asymptotic performance are both measured.</li>
+          <li>Reward as a percent of the maximum, which stays readable as the achievement list changes.</li>
+          <li>A public scoreboard with a code link for every entry.</li>
+        </ul>
+      </div>
+      <div>
+        <h3><a href="https://terrariabench.com">TerrariaBench</a></h3>
+        <ul>
+          <li>The same harness for every model, so models are compared and not harnesses.</li>
+          <li>Progress read from an objective checkpoint log in the game, not from the agent's own report.</li>
+          <li>Invalid runs listed with the reason instead of silently dropped.</li>
+          <li>Progress plotted over time and milestone heatmaps that show where each agent stalls.</li>
+          <li>Featured clips of real runs next to the numbers.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="prose">From Crafter we keep per-achievement success rates and the geometric-mean score; from rliable, IQM with bootstrap intervals over seeds instead of a mean of the best runs.</p>
+  </section>
+</main>
+<script type="module" src="js/pages/method.js"></script>
+</body>
+</html>

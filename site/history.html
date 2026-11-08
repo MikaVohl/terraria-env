@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Versions and timeline: Terraria-Lite</title>
+<meta name="description" content="Every Terraria-Lite version from v1 to the v9 release candidate: what changed, what the agents scored, and what went wrong.">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/pages/history.css">
+</head>
+<body>
+<main id="main" class="wrap">
+  <h1>Versions and timeline</h1>
+  <p class="lead prose">Terraria-Lite changed often between September and November 2026. Each version below lists what changed, the headline result and what went wrong. v1, v3 and v7 are frozen for historical evaluation, and results are never relabelled across versions.</p>
+
+  <section class="block" id="best">
+    <h2>Best score over time</h2>
+    <p class="prose">Headline scores (achievements per episode, out of 32) as they were reported at each step. Each mark is labelled with the version it was measured on.</p>
+    <figure class="fig">
+      <div class="chart" id="best-chart"></div>
+      <div class="legend" id="best-legend"></div>
+      <figcaption id="best-cap"></figcaption>
+    </figure>
+  </section>
+
+  <section class="block" id="versions">
+    <h2>Versions</h2>
+    <ol class="timeline" id="timeline"></ol>
+  </section>
+
+  <section class="block" id="progress">
+    <h2>In progress</h2>
+    <ul class="prose" id="progress-list"></ul>
+  </section>
+
+  <section class="block" id="reports">
+    <h2>Reports</h2>
+    <p class="prose">The full reports live in the repository, outside the served site. Paths are relative to the repository root.</p>
+    <ul class="prose report-list" id="report-list"></ul>
+  </section>
+</main>
+<script type="module" src="js/pages/history.js"></script>
+</body>
+</html>

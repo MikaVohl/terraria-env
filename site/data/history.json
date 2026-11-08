@@ -1,0 +1,85 @@
+{
+  "_source": "README.md, docs/reports/*.md, docs/ENV_V9_DESIGN.md, notebooks/v8_env_results_2026_10_31.ipynb, tools/queue_*.json. Scores on different versions are different tasks and are not directly comparable.",
+  "versions": [
+    {
+      "id": "v1", "date": "2026-09", "title": "v1: first simulator",
+      "changed": ["Deterministic C simulator with terminal frontend and an RL interface.", "Preserved byte-for-byte by tools/freeze_v1.sh (commit 0f9170bd)."],
+      "result": "Early PPO runs (unshaped, 100M-step and wall studies).",
+      "wrong": "Mechanics far from Terraria; old checkpoints and tapes are rejected by v4."
+    },
+    {
+      "id": "v2-v3", "date": "2026-10-10", "title": "v2 and v3: the game contract",
+      "changed": ["Recipes, controls and achievements written down as a contract (docs/reports/V2.md).", "Optimised v2; v3 frozen for historical evaluation."],
+      "result": "v3: 18.55/32 plain PPO, 19.94/32 selected test score.",
+      "wrong": "Different task from v4; results are not relabelled."
+    },
+    {
+      "id": "v4", "date": "2026-10-10", "title": "v4: core Terraria geometry",
+      "changed": ["2x3 player envelope, six-tile jumps, 25-tile safe falls, 400-HP Life Crystal capacity.", "Cutting a tree harvests the connected trunk; pass-through trees and furniture.", "Exact light oracle and regression gates."],
+      "result": "16M plain PPO: 20.79/32 on 128 untouched test worlds, furnace in 100/128 (247.5M-transition study). Five-seed memory study: 18.83/32 test, no furnace in 128 worlds.",
+      "wrong": "Crafting is the gate: wood and a workbench in range rarely coincide; more compute did not guarantee progress."
+    },
+    {
+      "id": "v5", "date": "2026-10-11", "title": "v5: object scale",
+      "changed": ["Chest, Life Crystal, furnace, campfire, bench and anvil footprints from the original art."],
+      "result": "Plain PPO five-seed means 13.79 (v4) to 17.32 (v5), furnace coverage 6.6% to 38.8% (503M transitions, 30 runs).",
+      "wrong": "Spatial-target and memory packages almost never craft benches on v5; effects are package dependent."
+    },
+    {
+      "id": "v6-v7", "date": "2026-10-12", "title": "v6 and v7: pickaxe ownership, ore supply, direct selection",
+      "changed": ["Independent pickaxe ownership and ore supply.", "One-action direct inventory selection.", "v7 frozen as the common RL and LLM environment."],
+      "result": "v7 reward study (Oct 17): five-seed means 16.68/32 (equal reward, gamma .999), gamma 1.0 lowers scores by 0.99. LLM harness: Sol smoke 9/32 for $0.28; Luna 20 and 19/32 for $0.41 and $0.44, both died.",
+      "wrong": "Exact-minimum iron produced an unfair cliff; no v7 condition reached a furnace at final validation in the 16M study."
+    },
+    {
+      "id": "explore", "date": "2026-10-18", "title": "Exploration study (v4 mechanics)",
+      "changed": ["Training-only aids screened against a paired PPO control at 16M."],
+      "result": "Potential-based recipe shaping is the first change that reliably passes the furnace: +1.41/32, furnace worlds 1.5 to 23 of 128. Best 48M policy 21.67/32.",
+      "wrong": "Return to surface is reachable (scripted 39/39) but never learned; self-imitation and cell novelty hurt."
+    },
+    {
+      "id": "eg15", "date": "2026-10-25", "title": "Scaling on eg15 (8x MI350X)",
+      "changed": ["Max-speed PPO path: 1,024 envs, bf16, compiled graphs, about 287k steps/s per GPU.", "Width, depth and memory sweeps at 512M to 2B steps."],
+      "result": "Width was flat across 83x parameters; memory cost 1.8x to 4x time per step for no gain.",
+      "wrong": "Two trainers per GPU silently corrupted gradients (docs/reports/GPU_SHARING_CORRUPTION_2026_10.md); all conclusions use one run per GPU."
+    },
+    {
+      "id": "v8", "date": "2026-10-31", "title": "v8: environment knobs",
+      "changed": ["Ore and tree supply, view size, world width, episode length and log-scale inventory as build knobs; defaults reproduce v7.", "116 PPO runs from 512M to 6B steps; five seeds for each final configuration; reserved test worlds used once."],
+      "result": "Ore 3x + trees 2x: +0.9 on test. Generic arm at gamma .9998: 28.00/32 test IQM; shaped arm 27.98. One 6B shaped run: 29.33/32, iron pickaxe in 99/128 worlds, return to surface in 104/128.",
+      "wrong": "Gold pickaxe and iron chainmail never crafted; larger worlds cost up to 6 points; v8 is too close to saturation to release."
+    },
+    {
+      "id": "viz", "date": "2026-11-01", "title": "viz: the simulator in the browser",
+      "changed": ["v8 core compiled to WebAssembly, byte-identical to v7, with the 2.1B-step policy evaluated in C.", "Play, watch, 256 parallel worlds, and a step-by-step look at observation, action, reward, network and state."],
+      "result": "wasm and native agree on Env, Obs and mask hashes over 80 worlds; forward pass matches PyTorch to 7.6e-6.",
+      "wrong": "Needs a local Terraria install for the art."
+    },
+    {
+      "id": "tml", "date": "2026-11-07", "title": "Real Terraria speed",
+      "changed": ["tModLoader 1.4.4 dedicated server ticked in a tight loop by a server-side mod."],
+      "result": "About 1,000 agent actions per second per process (4 ticks per action), 3,500 with 4 processes.",
+      "wrong": "Client-side player logic (pickup, damage, melee, cursor tools, crafting) does not run headless yet."
+    },
+    {
+      "id": "v9", "date": "2026-11-07", "title": "v9: the release candidate",
+      "changed": ["128x128 layered world, day and night, Zombies, Demon Eyes, Skeletons, Demon Altars, Eye of Cthulhu.", "38 achievements in four tiers weighted 1/3/5/8; headline is percent of the weighted maximum.", "Sim-cost gate passes: 1.23M steps/s (0.95x of v8)."],
+      "result": "Pilots at 250M, 1B and 4B steps queued (generic and shaped, gamma .9999, plus a minimap arm).",
+      "wrong": "Open: tier placement, supply minimums and episode length are tunable until pilots report."
+    }
+  ],
+  "best_over_time": [
+    { "date": "2026-10-10", "version": "v4", "score": 20.79, "label": "PPO 16M, test", "kind": "rl" },
+    { "date": "2026-10-17", "version": "v7", "score": 16.68, "label": "PPO 16M, five-seed mean", "kind": "rl" },
+    { "date": "2026-10-17", "version": "v7", "score": 20, "label": "Luna, one world (died)", "kind": "llm" },
+    { "date": "2026-10-18", "version": "v4", "score": 21.67, "label": "PPO + recipe shaping 48M", "kind": "shaped" },
+    { "date": "2026-11-01", "version": "v7", "score": 25.38, "label": "PPO 2B, default supply, test IQM", "kind": "shaped" },
+    { "date": "2026-11-01", "version": "v8", "score": 28.0, "label": "PPO generic gamma .9998, test IQM", "kind": "rl" },
+    { "date": "2026-11-03", "version": "v8", "score": 29.33, "label": "PPO shaped 6B, one run, validation", "kind": "shaped" }
+  ],
+  "in_progress": [
+    { "what": "Bitter-lesson PPO at 6B steps", "detail": "Generic arm (no shaping), gamma .9999, five seeds, ore 3x + trees 2x.", "source": "tools/queue_20261107_bitter.json" },
+    { "what": "v9 pilots", "detail": "16 runs: generic and shaped at 250M, 1B and 4B steps (gamma .9999) and a minimap generic arm at 1B.", "source": "tools/queue_20261108_v9pilot.json" },
+    { "what": "Craftax calibration", "detail": "Pipeline smoke done (Craftax-Classic, 1M steps on CPU); official 1B baselines on our GPUs pending.", "source": "experiments/craftax-calibration" }
+  ]
+}

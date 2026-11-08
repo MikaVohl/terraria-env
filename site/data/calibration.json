@@ -1,0 +1,40 @@
+{
+  "_note": "Craftax calibration: official Craftax baselines rerun on our hardware and pipeline, against the published scoreboard. Published numbers are copied from the Craftax README scoreboard (reward as % of the maximum 226; scores from outside the original paper are unverified there too).",
+  "published_source": "https://github.com/MichaelTMatthews/Craftax#-scoreboard",
+  "published": {
+    "Craftax-1B": [
+      { "algo": "PPO-LSTM", "pct": 19.5 },
+      { "algo": "PPO-GTrXL", "pct": 18.3 },
+      { "algo": "PQN-RNN", "pct": 16.0 },
+      { "algo": "PPO-RNN", "pct": 15.3 },
+      { "algo": "RND", "pct": 12.0 },
+      { "algo": "PPO", "pct": 11.9 },
+      { "algo": "ICM", "pct": 11.9 },
+      { "algo": "E3B", "pct": 11.0 }
+    ],
+    "Craftax-1M": [
+      { "algo": "Simulus", "pct": 6.6 },
+      { "algo": "Efficient MBRL", "pct": 5.4 },
+      { "algo": "PPO-RNN", "pct": 2.3 },
+      { "algo": "RND", "pct": 2.2 },
+      { "algo": "PPO", "pct": 2.2 }
+    ]
+  },
+  "ours": {
+    "_note": "Planned reruns of Craftax_Baselines ppo.py and ppo_rnn.py at 1B steps, 5 seeds, plus our own PPO settings (1,024 envs, gamma .9998, entropy .03) on Craftax-Symbolic. In progress; the numbers below are sample data.",
+    "placeholder": true,
+    "rows": [
+      { "algo": "PPO", "pct": 12.3, "ci": [11.6, 12.9], "seeds": 5, "hw": "1x MI350X", "gpu_hours": 1.1 },
+      { "algo": "PPO-RNN", "pct": 15.0, "ci": [14.2, 15.9], "seeds": 5, "hw": "1x MI350X", "gpu_hours": 2.3 },
+      { "algo": "PPO, Terraria-Lite settings", "pct": 13.4, "ci": [12.5, 14.1], "seeds": 5, "hw": "1x MI350X", "gpu_hours": 1.2 }
+    ]
+  },
+  "smoke": {
+    "_source": "experiments/craftax-calibration/run/{protocol,summary}.json",
+    "env": "Craftax-Classic-Symbolic-v1",
+    "upstream_commit": "7ce36fa05b84a2c9e758012f1e6da402e1e3a891",
+    "steps": 1048576, "envs": 64, "device": "CPU", "wall_seconds": 327.8,
+    "final_episode_return": 4.73,
+    "note": "Pipeline smoke only: upstream ppo.py with a logging-only patch, 1M steps on CPU. Not comparable to the 1B scoreboard."
+  }
+}

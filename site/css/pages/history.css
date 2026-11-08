@@ -1,0 +1,6 @@
+/* history.html: timeline details and the report list. */
+.timeline p { margin: 6px 0; }
+.timeline .wrong b { color: var(--bad); }
+.timeline .src code, .report-list code { font-size: 12.5px; overflow-wrap: anywhere; }
+.report-list li { margin: 4px 0; }
+figure.fig { margin: 12px 0; }
