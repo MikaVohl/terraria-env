@@ -1,0 +1,74 @@
+[
+ {
+  "name": "v10_gen_4B-3001",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_gen_4B-3002",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_4B-3001",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_4B-3002",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3002,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v10nophysics_gen_1B-3001",
+  "lib": "build-v10-nophysics",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10nomobs_gen_1B-3001",
+  "lib": "build-v10-nomobs",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10nocombat_gen_1B-3001",
+  "lib": "build-v10-nocombat",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10nomining_gen_1B-3001",
+  "lib": "build-v10-nomining",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]
