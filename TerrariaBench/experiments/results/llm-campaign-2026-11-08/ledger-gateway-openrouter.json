@@ -1,0 +1,226 @@
+{
+ "rows": [
+  {
+   "run": "combo-luna-jev-w301-15m",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.032734",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "combo-luna-jev-w301-15m",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.075831",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "combo-terra-jev-w301-15m",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.225908",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "combo-terra-jev-w301-15m",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.060690",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "haiku-card3-extlog-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.194782",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "haiku-card3-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.203044",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "haiku-v2-w302-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.287468",
+   "uncertain": "0.026192"
+  },
+  {
+   "run": "haiku-v2-w302-40m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.923690",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "haiku-v2-w303-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.110008",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "haiku-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.067329",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "luna-card3-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.065849",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "luna-frozen-w301-10m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.102556",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "luna-refprofile-w001-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.039758",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "luna-v2-w302-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.062136",
+   "uncertain": "0.045835"
+  },
+  {
+   "run": "luna-v2-w303-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.061674",
+   "uncertain": "0.045835"
+  },
+  {
+   "run": "luna-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.050118",
+   "uncertain": "0.045835"
+  },
+  {
+   "run": "opus-v2-w302-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "2.557024",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "opus-v2-w303-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.295684",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-luna-jev-01",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.001579",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-combo-luna-jev-01",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.004502",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-luna-01.failed-http400",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.045835"
+  },
+  {
+   "run": "smoke-luna-01.infra-failed-1",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-luna-02",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.003050",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "sol-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.798378",
+   "uncertain": "0.834822"
+  },
+  {
+   "run": "sonnet-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "2.952640",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "terra-v2-w302-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.598570",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "terra-v2-w302-40m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "2.496523",
+   "uncertain": "0.458349"
+  },
+  {
+   "run": "terra-v2-w303-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.656388",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "terra-w301-15m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.554264",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "unified route ping + 6 price probes (2026-11-08 04:35 UTC)",
+   "role": "extra",
+   "provider": "gateway",
+   "reported": "0.024870",
+   "uncertain": "0.000000"
+  }
+ ],
+ "totals": {
+  "gateway": {
+   "reported": "14.366024",
+   "uncertain": "1.502703",
+   "conservative": "15.868727"
+  },
+  "openrouter": {
+   "reported": "0.141023",
+   "uncertain": "0.000000",
+   "conservative": "0.141023"
+  }
+ }
+}

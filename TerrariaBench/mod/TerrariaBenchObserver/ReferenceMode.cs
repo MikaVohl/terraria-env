@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -15,6 +16,8 @@ public static class ReferenceMode
 {
     public static bool Active => Environment.GetEnvironmentVariable("TERRARIABENCH_PROFILE") == "reference-reconstructed-v1";
     public static bool PveDisabled => Active && Environment.GetEnvironmentVariable("TERRARIABENCH_PVE") != "enabled";
+    // Declared variant (observer 0.7): hostiles spawn, fight and drop loot, but cannot hit the player.
+    public static bool HostileContactDisabled => Active && Environment.GetEnvironmentVariable("TERRARIABENCH_HOSTILE_DAMAGE") == "off";
     public static int SuppressedNpcs;
     public static int SuppressedProjectiles;
 }
@@ -81,8 +84,20 @@ public sealed class ReferenceObserver : ModSystem
     private long tick;
     private bool disabled, wasDead, probeDone, stateDisabled;
 
+    internal static ReferenceObserver Instance;
+
+    // Extended evidence (observer 0.7): crafts and station placements, never scored by the public subset.
+    internal static void Record(string kind, Dictionary<string, object> data)
+    {
+        var self = Instance;
+        if (self == null || self.journal == null || self.disabled || !ReferenceMode.Active) return;
+        try { self.Emit(kind, data); }
+        catch (Exception error) { self.Mod.Logger.Error("Extended evidence write failed.", error); }
+    }
+
     public override void OnWorldLoad()
     {
+        Instance = this;
         tick = 0;
         disabled = false;
         probeDone = stateDisabled = false;
@@ -124,7 +139,8 @@ public sealed class ReferenceObserver : ModSystem
                 Emit("start", new Dictionary<string, object> {
                     ["baseline"] = seen.OrderBy(x => x).ToArray(), ["catalog"] = "public_reference_manifest_v1",
                     ["world_id"] = Main.worldID, ["hostile_mobs_enabled"] = !ReferenceMode.PveDisabled,
-                    ["pve_enabled"] = !ReferenceMode.PveDisabled, ["observer_version"] = "0.6",
+                    ["pve_enabled"] = !ReferenceMode.PveDisabled, ["observer_version"] = "0.7",
+                    ["hostile_contact_damage"] = !ReferenceMode.HostileContactDisabled,
                     ["scenario"] = ExperimentSetup.Scenario,
                     ["trusted_setup"] = ExperimentSetup.Scenario != "fresh",
                     ["starter_prefixes_reset"] = resetPrefixes
@@ -289,5 +305,35 @@ public sealed class ReferenceDamageObserver : ModPlayer
     {
         if (ReferenceMode.Active && Player.whoAmI == Main.myPlayer)
         { ExperimentSetup.DamageReceived += info.Damage; ExperimentSetup.HitsReceived++; }
+    }
+
+    public override bool CanBeHitByNPC(NPC npc, ref int cooldownSlot) => !ReferenceMode.HostileContactDisabled;
+
+    public override bool CanBeHitByProjectile(Projectile proj) => !(ReferenceMode.HostileContactDisabled && proj.hostile);
+}
+
+public sealed class ReferenceCraftObserver : GlobalItem
+{
+    public override void OnCreated(Item item, ItemCreationContext context)
+    {
+        if (context is RecipeItemCreationContext)
+            ReferenceObserver.Record("crafted", new Dictionary<string, object> {
+                ["item_type"] = item.type, ["stack"] = item.stack, ["name"] = item.Name });
+    }
+}
+
+public sealed class ReferencePlacementObserver : GlobalTile
+{
+    // Stations, light, furniture and storage; ordinary blocks and walls are not journaled.
+    private static readonly HashSet<int> Journaled = new() {
+        TileID.Torches, TileID.ClosedDoor, TileID.Tables, TileID.Chairs, TileID.Containers, TileID.Bottles,
+        TileID.Anvils, TileID.Furnaces, TileID.WorkBenches, TileID.Hellforge, TileID.Loom, TileID.Sawmill,
+        TileID.Campfire, TileID.Beds, TileID.CookingPots, TileID.TinkerersWorkbench, TileID.MythrilAnvil };
+
+    public override void PlaceInWorld(int i, int j, int type, Item item)
+    {
+        if (Journaled.Contains(type))
+            ReferenceObserver.Record("placed", new Dictionary<string, object> {
+                ["tile_type"] = type, ["tile"] = new[] { i, j }, ["item_type"] = item?.type ?? 0 });
     }
 }

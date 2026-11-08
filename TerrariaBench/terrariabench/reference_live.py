@@ -16,7 +16,7 @@ import shutil
 import signal
 import time
 
-from . import gateway
+from . import gateway, unified
 from .linux_control import GameControl, KEY_NAMES, launch, stop_owned_game, validate_actions
 from .openrouter import RETRY_POLICY, Budget, ProviderError, hermes_key, model_metadata, request, retry_delay
 from .reference_scoring import checkpoint_view, load_reference_events, reference_score
@@ -112,6 +112,23 @@ def trim_turns(messages, excess_tokens, prompt_tokens, keep_turns=6):
     return head + note + body[cut:], dropped
 
 
+PLACED_TILE_NAMES = {4: "Torch", 10: "Door", 13: "Bottle", 14: "Table", 15: "Chair", 16: "Anvil", 17: "Furnace",
+                     18: "Work Bench", 21: "Chest", 77: "Hellforge", 79: "Bed", 86: "Loom", 96: "Cooking Pot",
+                     106: "Sawmill", 114: "Tinkerer's Workbench", 134: "Mythril Anvil", 215: "Campfire"}
+
+
+def evidence_view(events):
+    """--checkpoint-log extended: observer 0.7 crafted/placed events, agent-readable, newest 60."""
+    out = []
+    for e in events:
+        if e.get("event") == "crafted":
+            out.append({"crafted": e.get("name"), "stack": e.get("stack"), "elapsed_seconds": round(e["elapsed_seconds"])})
+        elif e.get("event") == "placed":
+            out.append({"placed": PLACED_TILE_NAMES.get(e.get("tile_type"), f"tile {e.get('tile_type')}"),
+                        "elapsed_seconds": round(e["elapsed_seconds"])})
+    return out[-60:] or "nothing crafted or placed yet"
+
+
 def reference_metrics(receipts, frames, started_unix, end_unix, stall_seconds=300):
     """Activity fields named as in published terrariabench.com result.json score_metrics."""
     starts = sorted(r["started_unix"] for r in receipts)
@@ -165,7 +182,9 @@ def run(args):
     # Background launches inherit SIGINT as ignored; install handlers explicitly.
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, _operator_stop)
-    gw = args.provider == "gateway"
+    gw, uni = args.provider == "gateway", args.provider == "unified"
+    if args.hostile_damage == "off" and not args.pve:
+        raise ValueError("--hostile-damage off needs --pve (hostiles must spawn)")
     if gw:
         spec = gateway.MODELS.get(args.model)
         if spec is None or args.reasoning not in spec["reasoning"]:
@@ -181,6 +200,18 @@ def run(args):
         budget = Budget(args.usd, model["pricing"], input_ceiling=180000,
                         output_ceiling=min(args.reserve_output_tokens or spec["max_tokens"], spec["max_tokens"]))
         key, session = gateway.load_key(), gateway.session_id()
+    elif uni:
+        spec = unified.MODELS.get(args.model)
+        if spec is None or args.reasoning not in unified.REASONING:
+            raise ValueError("unknown Unified model or reasoning level")
+        price = spec["price"]
+        model = {"id": args.model, "provider": "unified",
+                 "pricing": {"prompt": f"{price['input']:.10f}", "completion": f"{price['output']:.10f}"},
+                 "price_source": "fitted from gateway X-Token-Usage-Cost headers (unified.MODELS); reported cost = header",
+                 "request_shape": "OpenAI Responses API (/v1/responses), not streamed, store=false, encrypted reasoning items replayed, tool_choice auto",
+                 "reasoning_fields": {"reasoning_effort": args.reasoning}, "max_tokens": unified.MAX_COMPLETION_TOKENS}
+        budget = Budget(args.usd, model["pricing"], input_ceiling=180000, output_ceiling=unified.MAX_COMPLETION_TOKENS)
+        key, session = gateway.load_key(), None
     else:
         model = model_metadata(args.model)
         if "tools" not in model["supported_parameters"]:
@@ -195,10 +226,19 @@ def run(args):
     (output / "source/reference").mkdir()
     shutil.copy2(ROOT / "reference/evidence.json", output / "source/reference/evidence.json")
     hidden = args.hide_progress
-    tools = TOOLS[:2] if hidden else TOOLS
+    tools = TOOLS[:2] if hidden else copy.deepcopy(TOOLS)
+    if args.checkpoint_log == "extended" and not hidden:
+        tools[2]["function"]["description"] = (
+            "Read the game's checkpoint log. It also lists every item you crafted and every station, torch or piece of "
+            "furniture you placed in the world (these evidence lines do not score). Diagnostic events do not score. "
+            "No hidden map or inventory state is returned.")
     continue_message = CONTINUE_HIDDEN if hidden or args.hide_time else CONTINUE
     prompt = (ROOT / (HIDDEN_PROGRESS_PROMPT if hidden else profile["agent"]["task_prompt"])).read_text()
-    if args.pve:
+    if args.pve and args.hostile_damage == "off":
+        prompt = prompt.replace("This scenario begins with hostile PvE disabled.",
+                                "Hostile enemies spawn and can be fought for their drops, but in this scenario "
+                                "they cannot damage you.")
+    elif args.pve:
         prompt = prompt.replace("This scenario begins with hostile PvE disabled.",
                                 "Hostile enemies are active under normal game rules.")
     if args.observe_after_act:
@@ -208,14 +248,16 @@ def run(args):
         prompt = prompt.replace("The game continues running while you think.",
                                 "The game is paused while you think and runs only while your commands execute.")
     if args.interface_card:
-        card = {"v1": "interface_card.txt", "v2": "interface_card_v2.txt"}[args.interface_card]
+        card = {"v1": "interface_card.txt", "v2": "interface_card_v2.txt", "v3": "interface_card_v3.txt"}[args.interface_card]
         prompt += "\n" + (ROOT / "prompts" / card).read_text()
     manifest = {"profile": profile, "mode": args.mode, "model": model,
                 "task_prompt": prompt, "system_prompt": HARNESS, "tools": tools,
                 "information_policy": {"checkpoint_tool": not hidden, "checkpoint_chat": not hidden,
                                        "remaining_time_in_continuations": not (hidden or args.hide_time),
-                                       "screenshot_after_act": args.observe_after_act},
-                "pve_enabled": args.pve, "clock": args.clock, "interface_card": args.interface_card,
+                                       "screenshot_after_act": args.observe_after_act,
+                                       "checkpoint_log": "published + crafted/placed evidence" if args.checkpoint_log == "extended" else "published"},
+                "pve_enabled": args.pve, "hostile_contact_damage": args.hostile_damage,
+                "clock": args.clock, "interface_card": args.interface_card, "campaign_profile": args.campaign_profile,
                 "exact_reference_reproduction": False, "official_eligible": False,
                 "source_hashes": {str(p.relative_to(output / "source")): digest(p) for p in (output / "source").rglob("*") if p.is_file()},
                 "fixture_hashes": {str(p.relative_to(fixture)): digest(p) for p in fixture.rglob("*") if p.is_file()},
@@ -237,7 +279,7 @@ def run(args):
                 "continuation_policy": {"message": continue_message, "stop_after_consecutive_tool_less_replies": 5},
                 "reasoning_effort": args.reasoning, "reasoning_mapping": (
                     f"omp --thinking {args.reasoning}: {json.dumps(model['reasoning_fields'])}" if gw else
-                    f"OpenRouter reasoning.effort={args.reasoning}"),
+                    f"reasoning_effort={args.reasoning}" if uni else f"OpenRouter reasoning.effort={args.reasoning}"),
                 "sampling": "provider default; upstream setting unavailable",
                 "started_unix": time.time()}
     dump(output / "manifest.json", manifest)
@@ -302,6 +344,7 @@ def run(args):
                      config_updates={"UIScale": profile["environment"]["ui_scale"], "ResetDefaultUIScale": False, "Zoom": 1.0},
                      extra_env={"TERRARIABENCH_PROFILE": profile["profile_id"],
                                 "TERRARIABENCH_PVE": "enabled" if args.pve else "disabled",
+                                "TERRARIABENCH_HOSTILE_DAMAGE": args.hostile_damage,
                                 "TERRARIABENCH_REFERENCE_STARTER_PREFIXES": "plain",
                                 "TERRARIABENCH_CHECKPOINT_CHAT": "disabled" if hidden else "enabled"})
         dump(output / "game.json", {"pid": pid, "profile": str(output / "tml")})
@@ -332,6 +375,10 @@ def run(args):
                 payload = gateway.body(args.model, args.reasoning, HARNESS, anthropic_messages, anthropic_tools, session)
                 dump(output / f"request-{step:03d}.json", {**archived({"messages": context}), "provider_body_omitted":
                      "Anthropic body is a deterministic conversion of these messages (gateway.convert/body)"})
+            elif uni:
+                payload = unified.responses_body(args.model, args.reasoning, context, tools)
+                dump(output / f"request-{step:03d}.json", {**archived({"messages": context}), "provider_body_omitted":
+                     "Responses body is a deterministic conversion of these messages (unified.responses_body)"})
             else:
                 payload = {"model": args.model, "tools": tools,
                            "messages": [{k: v for k, v in m.items() if k != "omitted_turns"} for m in context],
@@ -353,6 +400,8 @@ def run(args):
                     if gw:
                         message, meta = gateway.messages(payload, key=key, session=session, timeout=timeout)
                         response = gateway.normalize(message, meta, args.model)
+                    elif uni:
+                        response = unified.responses(payload, key=key, timeout=timeout)
                     else:
                         response = request("/chat/completions", key=key, payload=payload, timeout=timeout)
                     thaw()
@@ -443,7 +492,10 @@ def run(args):
                         next_images.append(observation())
                         value = {"image_follows": True, "viewport": [1024, 1024]}
                     elif name == "checkpoints" and not hidden and not parameters:
-                        value = {"events": checkpoint_view(load_reference_events(output / "telemetry"))}
+                        events = load_reference_events(output / "telemetry")
+                        value = {"events": checkpoint_view(events)}
+                        if args.checkpoint_log == "extended":
+                            value["crafted_and_placed"] = evidence_view(events)
                     else:
                         raise ValueError("unknown tool or arguments")
                 except (ValueError, KeyError, TypeError) as error:
@@ -501,13 +553,13 @@ def main():
     parser.add_argument("--seconds", type=int, default=180)
     parser.add_argument("--calls", type=int, default=12)
     parser.add_argument("--usd", type=float, default=.25)
-    parser.add_argument("--provider", choices=("openrouter", "gateway"), default="openrouter")
+    parser.add_argument("--provider", choices=("openrouter", "gateway", "unified"), default="openrouter")
     parser.add_argument("--keep-images", type=int, default=8,
                         help="context policy: newest screenshots kept; all text/tool results are kept")
     parser.add_argument("--image-block", type=int, default=8,
                         help="drop old screenshots this many at a time (cache-stable); 1 = exactly --keep-images")
     parser.add_argument("--max-tokens-total", type=int, default=2000000)
-    parser.add_argument("--reasoning", choices=("low", "medium", "high"), default="medium")
+    parser.add_argument("--reasoning", choices=("none", "low", "medium", "high"), default="medium")
     parser.add_argument("--hide-progress", action="store_true",
                         help="variant: no checkpoint tool or chat lines, and no remaining time in continuations")
     parser.add_argument("--hide-time", action="store_true", help="no remaining time in continuation messages")
@@ -515,6 +567,11 @@ def main():
     parser.add_argument("--observe-after-act", action="store_true",
                         help="variant: every act result carries a fresh screenshot")
     parser.add_argument("--pve", action="store_true", help="variant: hostile NPCs active (normal rules)")
+    parser.add_argument("--hostile-damage", choices=("on", "off"), default="on",
+                        help="variant (observer >= 0.7, with --pve): off = hostiles spawn and drop loot but cannot hit the player")
+    parser.add_argument("--campaign-profile", default=None, help="label recorded in the manifest for declared campaign settings")
+    parser.add_argument("--checkpoint-log", choices=("published", "extended"), default="published",
+                        help="extended: the checkpoints tool also lists crafted items and placed stations (observer >= 0.7)")
     parser.add_argument("--reserve-output-tokens", type=int, default=None,
                         help="gateway: output tokens reserved per call for spend control (default max_tokens)")
     parser.add_argument("--image-format", choices=("png", "jpeg"), default="png",
@@ -522,9 +579,9 @@ def main():
     parser.add_argument("--jpeg-quality", type=int, default=85)
     parser.add_argument("--clock", choices=("realtime", "frozen"), default="realtime",
                         help="frozen: the game is paused during every model call; --seconds counts game time")
-    parser.add_argument("--interface-card", nargs="?", const="v1", choices=("v1", "v2"), default=None,
+    parser.add_argument("--interface-card", nargs="?", const="v1", choices=("v1", "v2", "v3"), default=None,
                         help="append key bindings and screen geometry (no strategy) to the task prompt; "
-                             "v2 adds tile mechanics (placement target, 2-tile body)")
+                             "v2 adds tile mechanics (placement target, 2-tile body); v3 adds the Smart Cursor key")
     run(parser.parse_args())
 
 

@@ -165,6 +165,16 @@ nothing else scored in up to 45 minutes: with PvE off there are no slimes, hence
 torches or furnace. Models repeatedly stop and need continuation messages (Opus least).
 Hiding checkpoints did not change scores in single runs. Reported spend $15.46.
 
+## LLM campaign with cheap models (2026-11-08)
+
+Full report: [llm-campaign-2026-11-08.md](llm-campaign-2026-11-08.md). New declared profile camp-v2
+(hostiles spawn but cannot hit the player, screenshot after every act, Smart Cursor interface card, crafted/placed
+evidence in the checkpoint log), GPT-5.6 through the gateway's Responses API, observer 0.7 journaling crafts and
+placements, and an extended milestone catalog, on three unseen worlds. `workbench_1` fires on *crafting*; with
+placement journaled, Haiku, Sonnet, Luna and Terra crafted benches in most 15-minute runs but placed none; only
+Opus (15 min, published score 7) and Terra after 28 minutes of a 40-minute run (score 7) placed one. On the
+reference profile Luna scored 0, like the published GPT-5.5 run.
+
 ## Candidates to discuss for the next benchmark phase
 
 These are proposals for selection together, not newly implemented benchmarks.

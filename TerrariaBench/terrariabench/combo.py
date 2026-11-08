@@ -20,7 +20,7 @@ import threading
 import time
 from pathlib import Path
 
-from . import gateway
+from . import gateway, unified
 from .linux_control import KEY_NAMES, GameControl, launch, stop_owned_game, validate_actions
 from .openrouter import Budget, ProviderError, decide, hermes_key
 from .reference_live import ROOT, digest, dump, reference_metrics
@@ -107,6 +107,14 @@ class Role:
 
 
 def gateway_text(model, reasoning, system, content, key, thinking=True):
+    if model in unified.MODELS:
+        # Anthropic content blocks -> OpenAI parts; no thinking = reasoning_effort "none".
+        parts = [{"type": "text", "text": b["text"]} if b["type"] == "text" else
+                 {"type": "image_url", "image_url": {"url": f'data:{b["source"]["media_type"]};base64,{b["source"]["data"]}'}}
+                 for b in content]
+        payload = unified.body(model, reasoning if thinking else "none",
+                               [{"role": "system", "content": system}, {"role": "user", "content": parts}], max_tokens=16384)
+        return unified.chat(payload, key=key, timeout=90)
     session = gateway.session_id()
     body = gateway.body(model, reasoning, system, [{"role": "user", "content": content}], [], session)
     body.pop("tools")
@@ -115,6 +123,14 @@ def gateway_text(model, reasoning, system, content, key, thinking=True):
         body["thinking"] = {"type": "disabled"}
     message, meta = gateway.messages(body, key=key, session=session, timeout=90)
     return gateway.normalize(message, meta, model)
+
+
+EXECUTOR_MODELS = {"haiku": "claude-haiku-5-5", "luna": "gpt-5.6-luna", "jev": JEV_MODEL}
+
+
+def price_of(model):
+    price = (gateway.MODELS.get(model) or unified.MODELS[model])["price"]
+    return {"prompt": f"{price['input']:.10f}", "completion": f"{price['output']:.10f}"}
 
 
 def image_block(url):
@@ -128,27 +144,29 @@ def run(args):
         raise ValueError("new output outside the fixture required")
     profile = json.loads((ROOT / "configs/reference-reconstructed.json").read_text())
     task = (ROOT / profile["agent"]["task_prompt"]).read_text()
-    if args.pve:
+    if args.pve and args.hostile_damage == "off":
+        task = task.replace("This scenario begins with hostile PvE disabled.", "Hostile enemies spawn and can be fought for "
+                            "their drops, but in this scenario they cannot damage you.")
+    elif args.pve:
         task = task.replace("This scenario begins with hostile PvE disabled.", "Hostile enemies are active under normal game rules.")
     gkey = gateway.load_key()
     root.mkdir(parents=True)
     (root / "calls").mkdir()
-    pprice = gateway.MODELS[args.planner]["price"]
-    roles = {"planner": Role("planner", root, Budget(args.usd_planner, {"prompt": f"{pprice['input']:.10f}", "completion": f"{pprice['output']:.10f}"},
+    roles = {"planner": Role("planner", root, Budget(args.usd_planner, price_of(args.planner),
                                                       input_ceiling=180000, output_ceiling=16384), "gateway")}
-    if args.executor == "haiku":
-        eprice = gateway.MODELS["claude-haiku-5-5"]["price"]
-        roles["executor"] = Role("executor", root, Budget(args.usd_executor, {"prompt": f"{eprice['input']:.10f}", "completion": f"{eprice['output']:.10f}"},
-                                                         input_ceiling=60000, output_ceiling=4096), "gateway")
+    if args.executor in ("haiku", "luna"):
+        roles["executor"] = Role("executor", root, Budget(args.usd_executor, price_of(EXECUTOR_MODELS[args.executor]),
+                                                         input_ceiling=60000, output_ceiling=16384 if args.executor == "luna" else 4096), "gateway")
     else:
         okey = hermes_key()
         roles["executor"] = Role("executor", root, Budget(args.usd_executor, JEV_PRICING, input_ceiling=40000, output_ceiling=4096), "openrouter")
     planner_system = PLANNER_SYSTEM + (UI_SESSION_NOTE if args.ui_session else "")
     protocol = "combo-v2" if args.ui_session else "combo-v1"
     manifest = {"protocol": protocol, "config": {"planner_model": args.planner, "planner_reasoning": args.planner_reasoning,
-                "executor": args.executor, "executor_model": JEV_MODEL if args.executor == "jev" else "claude-haiku-5-5",
-                "pve": args.pve, "clock": "realtime", "seconds": args.seconds, "jev_frames": args.jev_frames, "ui_session": args.ui_session},
-                "task_prompt": task, "planner_system": planner_system, "executor_system": HAIKU_EXECUTOR_SYSTEM if args.executor == "haiku" else None,
+                "executor": args.executor, "executor_model": EXECUTOR_MODELS[args.executor],
+                "pve": args.pve, "hostile_contact_damage": args.hostile_damage, "clock": "realtime", "seconds": args.seconds,
+                "jev_frames": args.jev_frames, "ui_session": args.ui_session, "campaign_profile": args.campaign_profile},
+                "task_prompt": task, "planner_system": planner_system, "executor_system": HAIKU_EXECUTOR_SYSTEM if args.executor != "jev" else None,
                 "privileged_state": False, "official_eligible": False, "started_unix": time.time(),
                 "source_hashes": {p.name: digest(p) for p in Path(__file__).parent.glob("*.py")}}
     dump(root / "manifest.json", manifest)
@@ -236,7 +254,7 @@ def run(args):
         content = [{"type": "text", "text": json.dumps({"objective": objective, "your_recent_actions": recent})},
                    {"type": "text", "text": "Newest screenshot:"}, image_block(jpeg_url(frame))]
         response, latency, n = roles["executor"].call(
-            lambda: gateway_text("claude-haiku-5-5", "medium", HAIKU_EXECUTOR_SYSTEM, content, gkey, thinking=False),
+            lambda: gateway_text(EXECUTOR_MODELS[args.executor], "medium", HAIKU_EXECUTOR_SYSTEM, content, gkey, thinking=False),
             {"objective": objective, "recent": recent, "frame": str(frame.relative_to(root))})
         body = json_object(response["choices"][0]["message"]["content"] or "{}")
         actions = body.get("actions") or []
@@ -319,6 +337,7 @@ def run(args):
         pid = launch(root / "tml", root / "client.log", root / "telemetry", skipselect=True, width=1024, height=1024,
                      config_updates={"UIScale": profile["environment"]["ui_scale"], "ResetDefaultUIScale": False, "Zoom": 1.0},
                      extra_env={"TERRARIABENCH_PROFILE": profile["profile_id"], "TERRARIABENCH_PVE": "enabled" if args.pve else "disabled",
+                                "TERRARIABENCH_HOSTILE_DAMAGE": args.hostile_damage,
                                 "TERRARIABENCH_REFERENCE_STARTER_PREFIXES": "plain", "TERRARIABENCH_CHECKPOINT_CHAT": "enabled"})
         dump(root / "game.json", {"pid": pid, "profile": str(root / "tml")})
         deadline = time.monotonic() + 100
@@ -333,7 +352,7 @@ def run(args):
         planner.start()
         time.sleep(.5)
         stop_reason, step, errors = "wall_limit", 0, 0
-        step_fn = haiku_step if args.executor == "haiku" else jev_step
+        step_fn = jev_step if args.executor == "jev" else haiku_step
         while time.monotonic() - started < args.seconds:
             if stop.is_set():
                 stop_reason = fatal[0] if fatal else "planner_stopped"
@@ -398,14 +417,16 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--fixture", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
-    p.add_argument("--planner", default="claude-sonnet-5-5", choices=sorted(gateway.MODELS))
+    p.add_argument("--planner", default="claude-sonnet-5-5", choices=sorted(gateway.MODELS) + sorted(unified.MODELS))
     p.add_argument("--planner-reasoning", default="low")
-    p.add_argument("--executor", choices=("haiku", "jev"), required=True)
+    p.add_argument("--executor", choices=("haiku", "luna", "jev"), required=True)
     p.add_argument("--seconds", type=int, default=1800)
     p.add_argument("--usd-planner", type=float, default=5)
     p.add_argument("--usd-executor", type=float, default=3)
     p.add_argument("--jev-frames", type=int, default=3)
     p.add_argument("--pve", action="store_true")
+    p.add_argument("--hostile-damage", choices=("on", "off"), default="on")
+    p.add_argument("--campaign-profile", default=None)
     p.add_argument("--allow-open-inventory", action="store_true", help="let Jev open the inventory (default: only close it)")
     p.add_argument("--ui-session", action="store_true",
                    help="combo-v2: after planner clicks, replan at once on a fresh screenshot; executor waits until the planner stops clicking")
