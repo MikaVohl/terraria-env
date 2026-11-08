@@ -46,8 +46,8 @@ def tile_legend(environment_root=None):
 class Session:
     def __init__(self, seed, max_steps=3000, environment_root=None):
         validate_seed(seed)
-        if type(max_steps) is not int or not 1 <= max_steps <= 3000:
-            raise ValueError("Primitive action budget must be an integer in 1..3000")
+        if type(max_steps) is not int or not 1 <= max_steps <= max(3000, SPEC.default_steps):
+            raise ValueError("Primitive action budget must be an integer in 1..max(3000, native episode length)")
         self.seed, self.max_steps = seed, max_steps
         self.environment_root = environment_root
         self.env = TerrariaLite(max_steps=max_steps)
@@ -62,7 +62,7 @@ class Session:
         # Native inventory encoding is sqrt(count/999), NOT count/999.
         inventory = {name: int(round(float(status[SPEC.status_inv0+i])**2 * SPEC.inventory_clip))
                      for i, name in enumerate(SPEC.item_names)}
-        return {"environment_version": SPEC.version, "steps": self.info["steps"],
+        result = {"environment_version": SPEC.version, "steps": self.info["steps"],
                 "score": self.info["achievements"], "terminated": self.terminated, "truncated": self.truncated,
                 "tiles": self.obs[:n].reshape(SPEC.cells, SPEC.tile_kinds).argmax(-1).reshape(SPEC.view_h, SPEC.view_w).tolist(),
                 "light": np.rint(self.obs[n:n+SPEC.cells]*15).astype(int).reshape(SPEC.view_h, SPEC.view_w).tolist(),
@@ -73,6 +73,16 @@ class Session:
                 "visible_entities": [{"cell": i, "features": x.tolist()} for i, x in enumerate(entities) if x.any()],
                 "legal_actions": np.flatnonzero(self.env.action_mask()).tolist(),
                 "invalid_requests": self.invalid_requests, "illegal_attempts": self.illegal_attempts}
+        if SPEC.status_day_phase is not None:
+            # v9 status additions, decoded from the same RL observation (no extra world information).
+            layer0, boss = SPEC.status_layer0, SPEC.status_boss
+            result["v9"] = {"day_phase": float(status[SPEC.status_day_phase]), "is_night": bool(status[SPEC.status_night] > .5),
+                            "layer": ["surface", "underground", "caverns"][int(np.argmax(status[layer0:layer0+3]))],
+                            "boss": {"present": bool(status[boss] > .5), "health_fraction": float(status[boss+1]),
+                                     "phase2": bool(status[boss+2] > .5), "dx_over_32": float(status[boss+3]),
+                                     "dy_over_32": float(status[boss+4])},
+                            "selected_slot_one_hot": status[boss+5:SPEC.status_inv0].tolist()}
+        return result
 
     def knowledge(self):
         return {"protocol": PROTOCOL, "rules": player_knowledge(), "tile_names": tile_legend(self.environment_root),

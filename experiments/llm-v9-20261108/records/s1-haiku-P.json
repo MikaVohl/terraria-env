@@ -1,0 +1,115 @@
+{
+ "label": "s1-haiku-P",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "b9d05d7d4088",
+  "llm_macros.py": "f0e798cd4f18",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "405cc50d3ce4",
+  "llm_text.py": "1b9bc89fd4a5",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "anthropic_gateway",
+  "model": "claude-haiku-5-5",
+  "reasoning_effort": "none",
+  "max_steps": 1500,
+  "max_actions_per_call": 16,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "primitive",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 0.5
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000101,
+   "status": "action_budget",
+   "steps": 1500,
+   "died": false,
+   "achievements": 14,
+   "weighted_score_pct": 12.4,
+   "tier_counts": {
+    "1": 13,
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
+   "furthest_tier": 2,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place block",
+    "place torch",
+    "place platform",
+    "craft workbench",
+    "craft wooden sword",
+    "collect copper",
+    "defeat Blue Slime",
+    "open chest",
+    "explore 30 columns",
+    "climb rope",
+    "heal with food or potion",
+    "reach the caverns"
+   ],
+   "first_unlock_steps": {
+    "climb rope": 447,
+    "collect copper": 343,
+    "collect stone": 172,
+    "collect wood": 1,
+    "craft wooden sword": 74,
+    "craft workbench": 11,
+    "defeat Blue Slime": 54,
+    "explore 30 columns": 435,
+    "heal with food or potion": 60,
+    "open chest": 424,
+    "place block": 437,
+    "place platform": 16,
+    "place torch": 57,
+    "reach the caverns": 386
+   },
+   "weighted_at_steps": {
+    "250": 6.2,
+    "500": 12.4,
+    "1000": 12.4,
+    "1500": 12.4
+   },
+   "calls": 221,
+   "ticks_per_call": 6.79,
+   "illegal_attempts": 106,
+   "illegal_rate": 0.0707,
+   "invalid_responses": 3,
+   "interrupt_reasons": {
+    "achievement": 12,
+    "damage": 4,
+    "illegal": 105,
+    "new_mob": 6
+   },
+   "failed_requests": 0,
+   "macro_items": {},
+   "mean_latency_s": 10.92,
+   "usage_tokens": {
+    "cache_read_tokens": 4157869,
+    "cache_write_tokens": 604999,
+    "completion_tokens": 228360,
+    "fresh_input_tokens": 884,
+    "prompt_tokens": 4763752,
+    "total_tokens": 4992112
+   },
+   "accounted_cost_usd": 0.231473,
+   "reported_cost_usd": 0.231473,
+   "wall_minutes": 40.3,
+   "final_health": 100
+  }
+ ],
+ "insight": "Primitive track (16 ticks/call max, cooldown wait on but manual noops from the h1 guide): only 12.4% at 1,500 steps, stuck in tier 1 (one tier-2 unlock), 6.8 ticks/call. Same model/world on the macro track reached 21.7%: macros are the largest harness factor for Haiku."
+}

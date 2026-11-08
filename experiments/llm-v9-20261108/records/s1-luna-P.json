@@ -1,0 +1,108 @@
+{
+ "label": "s1-luna-P",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "b9d05d7d4088",
+  "llm_macros.py": "f0e798cd4f18",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "405cc50d3ce4",
+  "llm_text.py": "1b9bc89fd4a5",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openai_gateway",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "low",
+  "max_steps": 1500,
+  "max_actions_per_call": 16,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "primitive",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 0.6
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000101,
+   "status": "death",
+   "steps": 591,
+   "died": true,
+   "achievements": 11,
+   "weighted_score_pct": 13.18,
+   "tier_counts": {
+    "1": 8,
+    "2": 3,
+    "3": 0,
+    "4": 0
+   },
+   "furthest_tier": 2,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place block",
+    "place torch",
+    "craft workbench",
+    "collect copper",
+    "defeat Blue Slime",
+    "heal with food or potion",
+    "craft furnace",
+    "smelt copper",
+    "reach the caverns"
+   ],
+   "first_unlock_steps": {
+    "collect copper": 232,
+    "collect stone": 223,
+    "collect wood": 1,
+    "craft furnace": 302,
+    "craft workbench": 2,
+    "defeat Blue Slime": 58,
+    "heal with food or potion": 156,
+    "place block": 568,
+    "place torch": 73,
+    "reach the caverns": 421,
+    "smelt copper": 345
+   },
+   "weighted_at_steps": {
+    "250": 5.43,
+    "500": 12.4,
+    "1000": 13.18,
+    "1500": 13.18
+   },
+   "calls": 135,
+   "ticks_per_call": 4.38,
+   "illegal_attempts": 40,
+   "illegal_rate": 0.0677,
+   "invalid_responses": 1,
+   "interrupt_reasons": {
+    "achievement": 7,
+    "damage": 10,
+    "illegal": 36,
+    "new_mob": 9
+   },
+   "failed_requests": 0,
+   "macro_items": {},
+   "mean_latency_s": 9.05,
+   "usage_tokens": {
+    "cache_read_tokens": 1232071,
+    "completion_tokens": 24823,
+    "prompt_tokens": 1385782,
+    "reasoning_tokens": 6641,
+    "total_tokens": 1410605
+   },
+   "accounted_cost_usd": 0.085171,
+   "reported_cost_usd": 0.063129,
+   "wall_minutes": 20.4,
+   "final_health": 0
+  }
+ ],
+ "insight": "Primitive track still reached furnace (302) and copper smelting (345), far earlier than Luna on v7 (736-2035), thanks to the guide; died at 591 to a Skeleton at y=109 while carrying only the copper shortsword. 6.8% illegal, 4.4 ticks/call."
+}

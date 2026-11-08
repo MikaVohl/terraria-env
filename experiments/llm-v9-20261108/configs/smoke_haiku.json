@@ -1,0 +1,5 @@
+{"provider":"anthropic_gateway","model":"claude-haiku-5-5","reasoning_effort":"none","seeds":[33000101],"max_steps":400,"max_calls":40,"max_actions_per_call":16,
+"max_output_tokens":2048,"max_total_tokens_per_episode":5000000,"max_context_bytes":300000,"max_wall_seconds":1200,"request_timeout_seconds":120,
+"history_turns":6,"history_mode":"chunked","notes_max_chars":2048,"observation_format":"text","action_format":"names","knowledge":"guide","batch_interrupt":"events",
+"max_cost_usd_total":0.15,"input_usd_per_token_ceiling":1.0e-7,"output_usd_per_token_ceiling":5.0e-7,"cache_read_usd_per_token":1.0e-8,"cache_write_usd_per_token":1.25e-7,
+"pricing_source":"Anthropic list prices as in TerrariaBench/terrariabench/gateway.py; gateway X-Token-Usage-Cost header retained; charged=max(list estimate, header)","max_retries":2,"label":"smoke-haiku"}

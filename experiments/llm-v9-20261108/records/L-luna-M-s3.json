@@ -1,0 +1,107 @@
+{
+ "label": "L-luna-M-s3",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "fa0c0a28dfca",
+  "llm_macros.py": "15b693dcbf39",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "be4322c8ace5",
+  "llm_text.py": "b3d2868b5bc0",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openai_gateway",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "low",
+  "max_steps": 10000,
+  "max_actions_per_call": 48,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "macro",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 1.0
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000003,
+   "status": "death",
+   "steps": 289,
+   "died": true,
+   "achievements": 7,
+   "weighted_score_pct": 6.98,
+   "tier_counts": {
+    "1": 6,
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
+   "furthest_tier": 2,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place torch",
+    "craft workbench",
+    "collect copper",
+    "defeat Blue Slime",
+    "reach the caverns"
+   ],
+   "first_unlock_steps": {
+    "collect copper": 111,
+    "collect stone": 117,
+    "collect wood": 1,
+    "craft workbench": 2,
+    "defeat Blue Slime": 39,
+    "place torch": 56,
+    "reach the caverns": 178
+   },
+   "weighted_at_steps": {
+    "250": 6.98,
+    "500": 6.98,
+    "1000": 6.98,
+    "1500": 6.98,
+    "3000": 6.98,
+    "5000": 6.98,
+    "10000": 6.98
+   },
+   "calls": 33,
+   "ticks_per_call": 8.76,
+   "illegal_attempts": 10,
+   "illegal_rate": 0.0346,
+   "invalid_responses": 0,
+   "interrupt_reasons": {
+    "achievement": 6,
+    "damage": 9,
+    "illegal": 10,
+    "new_mob": 2
+   },
+   "failed_requests": 0,
+   "macro_items": {
+    "walk left": 1,
+    "dig down": 10,
+    "dig right": 1
+   },
+   "mean_latency_s": 9.23,
+   "usage_tokens": {
+    "cache_read_tokens": 278701,
+    "completion_tokens": 5861,
+    "prompt_tokens": 307609,
+    "reasoning_tokens": 1868,
+    "total_tokens": 313470
+   },
+   "accounted_cost_usd": 0.018389,
+   "reported_cost_usd": 0.013484,
+   "wall_minutes": 5.1,
+   "final_health": 0
+  }
+ ],
+ "insight": "Died at step 289 (7.0%): dug straight into the caverns (reached at 178) carrying only the copper shortsword and lost a melee exchange with a Skeleton (16 damage per hit) while retreating with illegal moves instead of walling off."
+}

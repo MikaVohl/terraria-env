@@ -1,0 +1,128 @@
+{
+ "label": "L-mix-TL-s1",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "1696a0ae9484",
+  "llm_macros.py": "15b693dcbf39",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "e9f114ee7052",
+  "llm_text.py": "b3d2868b5bc0",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openai_gateway",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "low",
+  "max_steps": 10000,
+  "max_actions_per_call": 48,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "macro",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 1.12
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000001,
+   "status": "death",
+   "steps": 1918,
+   "died": true,
+   "achievements": 15,
+   "weighted_score_pct": 17.83,
+   "tier_counts": {
+    "1": 12,
+    "2": 2,
+    "3": 1,
+    "4": 0
+   },
+   "furthest_tier": 3,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place block",
+    "place torch",
+    "place platform",
+    "craft workbench",
+    "craft wooden sword",
+    "collect copper",
+    "defeat Blue Slime",
+    "open chest",
+    "climb rope",
+    "heal with food or potion",
+    "collect iron",
+    "reach the caverns",
+    "collect gold"
+   ],
+   "first_unlock_steps": {
+    "climb rope": 349,
+    "collect copper": 137,
+    "collect gold": 1864,
+    "collect iron": 183,
+    "collect stone": 119,
+    "collect wood": 9,
+    "craft wooden sword": 54,
+    "craft workbench": 10,
+    "defeat Blue Slime": 44,
+    "heal with food or potion": 339,
+    "open chest": 338,
+    "place block": 59,
+    "place platform": 63,
+    "place torch": 61,
+    "reach the caverns": 231
+   },
+   "weighted_at_steps": {
+    "250": 11.63,
+    "500": 13.95,
+    "1000": 13.95,
+    "1500": 13.95,
+    "3000": 17.83,
+    "5000": 17.83,
+    "10000": 17.83
+   },
+   "calls": 138,
+   "ticks_per_call": 13.9,
+   "illegal_attempts": 37,
+   "illegal_rate": 0.0193,
+   "invalid_responses": 1,
+   "interrupt_reasons": {
+    "achievement": 13,
+    "damage": 19,
+    "illegal": 36,
+    "new_mob": 14,
+    "nightfall": 1,
+    "stuck": 6
+   },
+   "failed_requests": 0,
+   "macro_items": {
+    "walk left": 1,
+    "dig down": 17,
+    "dig right": 4,
+    "dig left": 4,
+    "stairs up-left": 5,
+    "stairs up-right": 1
+   },
+   "mean_latency_s": 9.53,
+   "usage_tokens": {
+    "cache_read_tokens": 1172336,
+    "completion_tokens": 25520,
+    "prompt_tokens": 1451972,
+    "reasoning_tokens": 9692,
+    "total_tokens": 1477492
+   },
+   "accounted_cost_usd": 0.460344,
+   "reported_cost_usd": 0.362657,
+   "wall_minutes": 22.0,
+   "final_health": 0
+  }
+ ],
+ "insight": "Terra planner (every 5th call + after macro stops; 34 of 138 calls) with a Luna executor on the world where Terra alone reached 48% by step 1,946: only 17.8% and died at 1,918 to a Skeleton at y=120 at night. The mixture cost 40% of Terra-alone per step but did not transfer Terra's crafting discipline: the executor wandered the deep caverns without building a furnace."
+}

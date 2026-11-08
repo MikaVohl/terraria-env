@@ -1,0 +1,271 @@
+{
+ "runs": [
+  {
+   "run": "B-random",
+   "route": "offline",
+   "model": null,
+   "label": "B-random",
+   "finished": true,
+   "cap_usd": 0.0,
+   "calls": 0,
+   "accounted_usd": 0.0,
+   "reported_usd": 0.0,
+   "committed_usd": 0.0
+  },
+  {
+   "run": "L-haiku-M-s1",
+   "route": "gateway",
+   "model": "claude-haiku-5-5",
+   "label": "L-haiku-M-s1",
+   "finished": true,
+   "cap_usd": 1.05,
+   "calls": 881,
+   "accounted_usd": 1.027036,
+   "reported_usd": 1.027036,
+   "committed_usd": 1.027036
+  },
+  {
+   "run": "L-haiku-M-s2",
+   "route": "gateway",
+   "model": "claude-haiku-5-5",
+   "label": "L-haiku-M-s2",
+   "finished": true,
+   "cap_usd": 1.05,
+   "calls": 284,
+   "accounted_usd": 0.289984,
+   "reported_usd": 0.289984,
+   "committed_usd": 0.289984
+  },
+  {
+   "run": "L-haiku-M-s3",
+   "route": "gateway",
+   "model": "claude-haiku-5-5",
+   "label": "L-haiku-M-s3",
+   "finished": true,
+   "cap_usd": 1.05,
+   "calls": 812,
+   "accounted_usd": 0.897019,
+   "reported_usd": 0.897019,
+   "committed_usd": 0.897019
+  },
+  {
+   "run": "L-luna-M-s1",
+   "route": "gateway",
+   "model": "gpt-5.6-luna",
+   "label": "L-luna-M-s1",
+   "finished": true,
+   "cap_usd": 1.0,
+   "calls": 709,
+   "accounted_usd": 0.49762,
+   "reported_usd": 0.36902,
+   "committed_usd": 0.49762
+  },
+  {
+   "run": "L-luna-M-s2",
+   "route": "gateway",
+   "model": "gpt-5.6-luna",
+   "label": "L-luna-M-s2",
+   "finished": true,
+   "cap_usd": 1.0,
+   "calls": 767,
+   "accounted_usd": 0.556534,
+   "reported_usd": 0.412396,
+   "committed_usd": 0.556534
+  },
+  {
+   "run": "L-luna-M-s3",
+   "route": "gateway",
+   "model": "gpt-5.6-luna",
+   "label": "L-luna-M-s3",
+   "finished": true,
+   "cap_usd": 1.0,
+   "calls": 33,
+   "accounted_usd": 0.018389,
+   "reported_usd": 0.013484,
+   "committed_usd": 0.018389
+  },
+  {
+   "run": "L-mix-TL-s1",
+   "route": "gateway",
+   "model": "gpt-5.6-luna",
+   "label": "L-mix-TL-s1",
+   "finished": true,
+   "cap_usd": 1.12,
+   "calls": 138,
+   "accounted_usd": 0.460344,
+   "reported_usd": 0.362657,
+   "committed_usd": 0.460344
+  },
+  {
+   "run": "L-terra-M-s1",
+   "route": "gateway",
+   "model": "gpt-5.6-terra",
+   "label": "L-terra-M-s1",
+   "finished": true,
+   "cap_usd": 3.0,
+   "calls": 400,
+   "accounted_usd": 2.815442,
+   "reported_usd": 2.087345,
+   "committed_usd": 2.815442
+  },
+  {
+   "run": "L-terra-M-s2",
+   "route": "gateway",
+   "model": "gpt-5.6-terra",
+   "label": "L-terra-M-s2",
+   "finished": true,
+   "cap_usd": 1.07,
+   "calls": 135,
+   "accounted_usd": 0.877048,
+   "reported_usd": 0.648198,
+   "committed_usd": 0.877048
+  },
+  {
+   "run": "L-terra-M-s3",
+   "route": "gateway",
+   "model": "gpt-5.6-terra",
+   "label": "L-terra-M-s3",
+   "finished": true,
+   "cap_usd": 1.15,
+   "calls": 142,
+   "accounted_usd": 0.962602,
+   "reported_usd": 0.71007,
+   "committed_usd": 0.962602
+  },
+  {
+   "run": "s1-haiku-M",
+   "route": "gateway",
+   "model": "claude-haiku-5-5",
+   "label": "s1-haiku-M",
+   "finished": true,
+   "cap_usd": 0.5,
+   "calls": 164,
+   "accounted_usd": 0.179421,
+   "reported_usd": 0.179421,
+   "committed_usd": 0.179421
+  },
+  {
+   "run": "s1-haiku-P",
+   "route": "gateway",
+   "model": "claude-haiku-5-5",
+   "label": "s1-haiku-P",
+   "finished": true,
+   "cap_usd": 0.5,
+   "calls": 221,
+   "accounted_usd": 0.231473,
+   "reported_usd": 0.231473,
+   "committed_usd": 0.231473
+  },
+  {
+   "run": "s1-jev-M",
+   "route": "openrouter",
+   "model": "typesafe/jev-1.14",
+   "label": "s1-jev-M",
+   "finished": true,
+   "cap_usd": 0.15,
+   "calls": 164,
+   "accounted_usd": 0.075574,
+   "reported_usd": 0.025748,
+   "committed_usd": 0.075574
+  },
+  {
+   "run": "s1-jev-P",
+   "route": "openrouter",
+   "model": "typesafe/jev-1.14",
+   "label": "s1-jev-P",
+   "finished": true,
+   "cap_usd": 0.35,
+   "calls": 642,
+   "accounted_usd": 0.347524,
+   "reported_usd": 0.088989,
+   "committed_usd": 0.347524
+  },
+  {
+   "run": "s1-luna-M",
+   "route": "gateway",
+   "model": "gpt-5.6-luna",
+   "label": "s1-luna-M",
+   "finished": true,
+   "cap_usd": 0.6,
+   "calls": 162,
+   "accounted_usd": 0.117862,
+   "reported_usd": 0.087193,
+   "committed_usd": 0.117862
+  },
+  {
+   "run": "s1-luna-P",
+   "route": "gateway",
+   "model": "gpt-5.6-luna",
+   "label": "s1-luna-P",
+   "finished": true,
+   "cap_usd": 0.6,
+   "calls": 135,
+   "accounted_usd": 0.085171,
+   "reported_usd": 0.063129,
+   "committed_usd": 0.085171
+  },
+  {
+   "run": "s1-sonnet-M",
+   "route": "gateway",
+   "model": "claude-sonnet-5-5",
+   "label": "s1-sonnet-M",
+   "finished": true,
+   "cap_usd": 1.8,
+   "calls": 34,
+   "accounted_usd": 0.276748,
+   "reported_usd": 0.232394,
+   "committed_usd": 0.276748
+  },
+  {
+   "run": "s1-terra-M",
+   "route": "gateway",
+   "model": "gpt-5.6-terra",
+   "label": "s1-terra-M",
+   "finished": true,
+   "cap_usd": 1.5,
+   "calls": 118,
+   "accounted_usd": 0.816002,
+   "reported_usd": 0.600796,
+   "committed_usd": 0.816002
+  },
+  {
+   "run": "smoke-haiku",
+   "route": "gateway",
+   "model": "claude-haiku-5-5",
+   "label": "smoke-haiku",
+   "finished": true,
+   "cap_usd": 0.15,
+   "calls": 40,
+   "accounted_usd": 0.036912,
+   "reported_usd": 0.036912,
+   "committed_usd": 0.036912
+  }
+ ],
+ "totals": {
+  "gateway": {
+   "budget_usd": 11.0,
+   "accounted_usd": 10.145607,
+   "reported_usd": 8.248527,
+   "committed_usd": 10.145607,
+   "available_usd": 0.854393
+  },
+  "openrouter": {
+   "budget_usd": 0.5,
+   "accounted_usd": 0.423098,
+   "reported_usd": 0.114737,
+   "committed_usd": 0.423098,
+   "available_usd": 0.076902
+  }
+ },
+ "probes_outside_harness": {
+  "note": "Price/route probe calls outside the harness (gateway X-Token-Usage-Cost headers): Luna/Terra/Haiku 'ok' and price probes $0.00262, Sol price probe $0.00424; one Jev test decision $0.00023 (OpenRouter).",
+  "gateway_usd": 0.00686,
+  "openrouter_usd": 0.00023
+ },
+ "grand_total": {
+  "gateway_accounted_usd": 10.1525,
+  "gateway_reported_usd": 8.2554,
+  "openrouter_accounted_usd": 0.4233,
+  "openrouter_reported_usd": 0.115
+ }
+}

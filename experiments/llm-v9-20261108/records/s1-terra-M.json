@@ -1,0 +1,129 @@
+{
+ "label": "s1-terra-M",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "b9d05d7d4088",
+  "llm_macros.py": "f0e798cd4f18",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "405cc50d3ce4",
+  "llm_text.py": "1b9bc89fd4a5",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openai_gateway",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "low",
+  "max_steps": 1500,
+  "max_actions_per_call": 48,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "macro",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 1.5
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000101,
+   "status": "action_budget",
+   "steps": 1500,
+   "died": false,
+   "achievements": 17,
+   "weighted_score_pct": 22.48,
+   "tier_counts": {
+    "1": 13,
+    "2": 2,
+    "3": 2,
+    "4": 0
+   },
+   "furthest_tier": 3,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place block",
+    "place torch",
+    "place platform",
+    "craft workbench",
+    "craft wooden sword",
+    "collect copper",
+    "defeat Blue Slime",
+    "open chest",
+    "explore 30 columns",
+    "climb rope",
+    "heal with food or potion",
+    "collect iron",
+    "reach the caverns",
+    "collect silver",
+    "collect gold"
+   ],
+   "first_unlock_steps": {
+    "climb rope": 830,
+    "collect copper": 93,
+    "collect gold": 816,
+    "collect iron": 803,
+    "collect silver": 563,
+    "collect stone": 96,
+    "collect wood": 1,
+    "craft wooden sword": 17,
+    "craft workbench": 2,
+    "defeat Blue Slime": 30,
+    "explore 30 columns": 492,
+    "heal with food or potion": 34,
+    "open chest": 197,
+    "place block": 906,
+    "place platform": 1454,
+    "place torch": 38,
+    "reach the caverns": 202
+   },
+   "weighted_at_steps": {
+    "250": 9.3,
+    "500": 10.08,
+    "1000": 21.71,
+    "1500": 22.48
+   },
+   "calls": 118,
+   "ticks_per_call": 12.71,
+   "illegal_attempts": 31,
+   "illegal_rate": 0.0207,
+   "invalid_responses": 0,
+   "interrupt_reasons": {
+    "achievement": 14,
+    "damage": 13,
+    "illegal": 31,
+    "new_mob": 12,
+    "stuck": 9
+   },
+   "failed_requests": 0,
+   "macro_items": {
+    "walk left": 3,
+    "walk right": 4,
+    "dig down": 23,
+    "dig right": 10,
+    "dig left": 12,
+    "stairs up-left": 11,
+    "stairs up-right": 1
+   },
+   "mean_latency_s": 10.23,
+   "usage_tokens": {
+    "cache_read_tokens": 1111071,
+    "completion_tokens": 26916,
+    "prompt_tokens": 1246469,
+    "reasoning_tokens": 12482,
+    "total_tokens": 1273385
+   },
+   "accounted_cost_usd": 0.816002,
+   "reported_cost_usd": 0.600796,
+   "wall_minutes": 20.1,
+   "final_health": 20
+  }
+ ],
+ "insight": "Best screen: 22.5% at 1,500 steps, alive. Macros used heavily (dig down/left/right, stairs); collected silver (563) and gold (816) and opened a chest, but never built a furnace: raw collection outpaced the crafting chain."
+}

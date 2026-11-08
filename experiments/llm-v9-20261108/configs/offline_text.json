@@ -1,0 +1,1 @@
+{"provider":"random","seeds":[33000101],"max_steps":300,"max_calls":400,"max_actions_per_call":16,"observation_format":"text","action_format":"names","knowledge":"guide","batch_interrupt":"events","history_mode":"chunked","max_wall_seconds":600}

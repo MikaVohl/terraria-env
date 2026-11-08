@@ -1,0 +1,99 @@
+{
+ "label": "s1-jev-P",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "dd825eee2897",
+  "llm_macros.py": "f0e798cd4f18",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "be4322c8ace5",
+  "llm_text.py": "1b9bc89fd4a5",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openrouter_decisions",
+  "model": "typesafe/jev-1.14",
+  "reasoning_effort": "none",
+  "max_steps": 1500,
+  "max_actions_per_call": 1,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 1,
+  "action_set": "primitive",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 0.35
+ },
+ "replay_verified": false,
+ "episodes": [
+  {
+   "seed": 33000101,
+   "status": "cost_budget",
+   "steps": 642,
+   "died": false,
+   "achievements": 10,
+   "weighted_score_pct": 9.3,
+   "tier_counts": {
+    "1": 9,
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
+   "furthest_tier": 2,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "craft workbench",
+    "craft wooden sword",
+    "collect copper",
+    "defeat Blue Slime",
+    "open chest",
+    "explore 30 columns",
+    "heal with food or potion",
+    "reach the caverns"
+   ],
+   "first_unlock_steps": {
+    "collect copper": 373,
+    "collect stone": 352,
+    "collect wood": 1,
+    "craft wooden sword": 31,
+    "craft workbench": 2,
+    "defeat Blue Slime": 24,
+    "explore 30 columns": 78,
+    "heal with food or potion": 137,
+    "open chest": 119,
+    "reach the caverns": 511
+   },
+   "weighted_at_steps": {
+    "250": 5.43,
+    "500": 6.98,
+    "1000": 9.3,
+    "1500": 9.3
+   },
+   "calls": 642,
+   "ticks_per_call": 1.0,
+   "illegal_attempts": 0,
+   "illegal_rate": 0.0,
+   "invalid_responses": 0,
+   "interrupt_reasons": {},
+   "failed_requests": 1,
+   "macro_items": {},
+   "mean_latency_s": 0.25,
+   "usage_tokens": {
+    "completion_tokens": 133208,
+    "prompt_tokens": 2118783,
+    "total_tokens": 2251991
+   },
+   "accounted_cost_usd": 0.347524,
+   "reported_cost_usd": 0.088989,
+   "wall_minutes": 2.7,
+   "final_health": 100
+  }
+ ],
+ "insight": "Jev as single-action chooser over the legal set: 0 illegal actions, 0.25 s/decision, 10 achievements by 642 (9.3%); stopped by the conservative accounted guard (ceiling 0.10/M vs actual 0.042/M; reported spend $0.089). No notes, so no multi-step plans."
+}

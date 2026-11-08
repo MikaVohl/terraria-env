@@ -1,6 +1,7 @@
 """Plan/run/verify a budgeted symbolic agent evaluation against an explicit game.
 
-No network or secret access unless run + --allow-api + provider=openrouter.
+No network or secret access unless run + --allow-api with a paid provider
+(openrouter, anthropic_gateway, openai_gateway).
 """
 import argparse
 import json
@@ -12,14 +13,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=("plan", "run", "verify"), default="plan")
     parser.add_argument("--environment-root", type=Path, required=True)
+    parser.add_argument("--library", type=Path, help="Native library (default: <root>/python/terraria_lite/libterraria.*)")
     parser.add_argument("--config", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--allow-api", action="store_true")
     parser.add_argument("--ssh-key-source", help="Explicit SSH login whose Hermes OpenRouter key is read into memory only")
+    parser.add_argument("--relaxed-harness", action="store_true",
+                        help="Verify only: waive harness-source hash equality (differences are reported); environment hashes stay strict")
     args = parser.parse_args()
     root = args.environment_root.resolve()
-    libs = [root / "python/terraria_lite" / ("libterraria." + ext) for ext in ("dylib", "so", "dll")]
-    library = next((p for p in libs if p.is_file()), None)
+    if args.library:
+        library = args.library.resolve() if args.library.is_file() else None
+    else:
+        libs = [root / "python/terraria_lite" / ("libterraria." + ext) for ext in ("dylib", "so", "dll")]
+        library = next((p for p in libs if p.is_file()), None)
     if library is None:
         parser.error("Build the chosen environment library before evaluating")
     os.environ["TERRARIA_LITE_LIB"] = str(library)
@@ -27,7 +34,7 @@ def main():
     if args.mode == "verify":
         if not args.out or args.allow_api or args.ssh_key_source:
             parser.error("Verify requires --out and never permits API/credential access")
-        print(json.dumps(verify(args.out, root), indent=2))
+        print(json.dumps(verify(args.out, root, relaxed_harness=args.relaxed_harness), indent=2))
         return
     if not args.config:
         parser.error("Plan/run requires --config")
@@ -40,15 +47,20 @@ def main():
         return
     if not args.out:
         parser.error("Run requires a fresh --out directory")
-    key, source = None, None
+    key, source, credentials = None, None, None
     if args.ssh_key_source:
-        if not args.allow_api or c["provider"] != "openrouter":
+        if not args.allow_api or c["provider"] not in ("openrouter", "openrouter_decisions"):
             parser.error("SSH credentials require an explicitly enabled OpenRouter run")
         from terraria_lite.llm_providers import hermes_key
         key, source = hermes_key(args.ssh_key_source)
         print("OpenRouter credential loaded into memory; value suppressed", flush=True)
-    summary = run(c, root, args.out, allow_api=args.allow_api, key=key, credential_source=source)
-    print(json.dumps({k:v for k,v in summary.items() if k != "episodes"}, indent=2))
+    if args.allow_api and c["provider"] in ("anthropic_gateway", "openai_gateway"):
+        from terraria_lite.llm_providers import gateway_credentials
+        header, secret, source = gateway_credentials()
+        credentials = (header, secret)
+        print("Gateway credential loaded into memory; value suppressed", flush=True)
+    summary = run(c, root, args.out, allow_api=args.allow_api, key=key, credential_source=source, credentials=credentials)
+    print(json.dumps({k:v for k,v in summary.items() if k not in ("episodes", "achievement_rates")}, indent=2))
     if summary["complete"]:
         print(json.dumps(verify(args.out, root), indent=2))
     else:

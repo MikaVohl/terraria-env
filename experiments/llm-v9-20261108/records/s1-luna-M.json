@@ -1,0 +1,125 @@
+{
+ "label": "s1-luna-M",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "b9d05d7d4088",
+  "llm_macros.py": "f0e798cd4f18",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "405cc50d3ce4",
+  "llm_text.py": "1b9bc89fd4a5",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openai_gateway",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "low",
+  "max_steps": 1500,
+  "max_actions_per_call": 48,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "macro",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 0.6
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000101,
+   "status": "death",
+   "steps": 1384,
+   "died": true,
+   "achievements": 16,
+   "weighted_score_pct": 21.71,
+   "tier_counts": {
+    "1": 12,
+    "2": 2,
+    "3": 2,
+    "4": 0
+   },
+   "furthest_tier": 3,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place block",
+    "place torch",
+    "craft workbench",
+    "craft wooden sword",
+    "collect copper",
+    "defeat Blue Slime",
+    "open chest",
+    "explore 30 columns",
+    "climb rope",
+    "heal with food or potion",
+    "collect iron",
+    "reach the caverns",
+    "collect silver",
+    "defeat Skeleton"
+   ],
+   "first_unlock_steps": {
+    "climb rope": 618,
+    "collect copper": 266,
+    "collect iron": 1062,
+    "collect silver": 1238,
+    "collect stone": 144,
+    "collect wood": 1,
+    "craft wooden sword": 82,
+    "craft workbench": 4,
+    "defeat Blue Slime": 71,
+    "defeat Skeleton": 1124,
+    "explore 30 columns": 1017,
+    "heal with food or potion": 429,
+    "open chest": 428,
+    "place block": 1242,
+    "place torch": 85,
+    "reach the caverns": 300
+   },
+   "weighted_at_steps": {
+    "250": 4.65,
+    "500": 9.3,
+    "1000": 10.08,
+    "1500": 21.71
+   },
+   "calls": 162,
+   "ticks_per_call": 8.54,
+   "illegal_attempts": 85,
+   "illegal_rate": 0.0614,
+   "invalid_responses": 2,
+   "interrupt_reasons": {
+    "achievement": 15,
+    "damage": 16,
+    "illegal": 80,
+    "new_mob": 12,
+    "stuck": 3
+   },
+   "failed_requests": 0,
+   "macro_items": {
+    "dig down": 11,
+    "dig right": 6,
+    "walk right": 2,
+    "stairs up-left": 2,
+    "dig left": 1
+   },
+   "mean_latency_s": 9.39,
+   "usage_tokens": {
+    "cache_read_tokens": 1605507,
+    "completion_tokens": 36834,
+    "prompt_tokens": 1813261,
+    "reasoning_tokens": 10370,
+    "total_tokens": 1850095
+   },
+   "accounted_cost_usd": 0.117862,
+   "reported_cost_usd": 0.087193,
+   "wall_minutes": 25.4,
+   "final_health": 0
+  }
+ ],
+ "insight": null
+}

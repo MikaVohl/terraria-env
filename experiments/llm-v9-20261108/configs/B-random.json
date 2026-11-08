@@ -1,0 +1,15 @@
+{
+ "provider": "random",
+ "seeds": [
+  33000001,
+  33000002,
+  33000003
+ ],
+ "max_steps": 10000,
+ "max_calls": 10000,
+ "max_actions_per_call": 1,
+ "max_wall_seconds": 7200,
+ "observation_format": "compact",
+ "action_format": "ids",
+ "label": "B-random"
+}

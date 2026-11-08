@@ -1,0 +1,126 @@
+{
+ "label": "L-terra-M-s2",
+ "harness": "terraria-llm-dev-v0.3",
+ "harness_snapshot_sha": {
+  "__init__.py": "aa65c561651d",
+  "llm_bench.py": "fa0c0a28dfca",
+  "llm_macros.py": "15b693dcbf39",
+  "llm_protocol.py": "8aa7d9464d01",
+  "llm_providers.py": "be4322c8ace5",
+  "llm_text.py": "b3d2868b5bc0",
+  "rules.py": "572b044b72df",
+  "scoring.py": "476277919532"
+ },
+ "native_library_sha256": "6547bf276c4d9e36e0d8c4599066f0c3c40e7ded11ac7a60e29cd1d6318ff96d",
+ "environment_version": 9,
+ "condition": {
+  "provider": "openai_gateway",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "low",
+  "max_steps": 10000,
+  "max_actions_per_call": 48,
+  "observation_format": "text",
+  "action_format": "names",
+  "knowledge": "guide",
+  "batch_interrupt": "events",
+  "history_mode": "chunked",
+  "history_turns": 6,
+  "action_set": "macro",
+  "cooldown_wait": true,
+  "max_cost_usd_total": 1.07
+ },
+ "replay_verified": true,
+ "episodes": [
+  {
+   "seed": 33000002,
+   "status": "cost_budget",
+   "steps": 1464,
+   "died": false,
+   "achievements": 14,
+   "weighted_score_pct": 13.95,
+   "tier_counts": {
+    "1": 12,
+    "2": 2,
+    "3": 0,
+    "4": 0
+   },
+   "furthest_tier": 2,
+   "achievement_list": [
+    "collect wood",
+    "collect stone",
+    "place block",
+    "place torch",
+    "place platform",
+    "craft workbench",
+    "collect copper",
+    "defeat Blue Slime",
+    "open chest",
+    "explore 30 columns",
+    "climb rope",
+    "heal with food or potion",
+    "collect iron",
+    "reach the caverns"
+   ],
+   "first_unlock_steps": {
+    "climb rope": 236,
+    "collect copper": 379,
+    "collect iron": 334,
+    "collect stone": 118,
+    "collect wood": 1,
+    "craft workbench": 2,
+    "defeat Blue Slime": 40,
+    "explore 30 columns": 437,
+    "heal with food or potion": 41,
+    "open chest": 170,
+    "place block": 786,
+    "place platform": 8,
+    "place torch": 44,
+    "reach the caverns": 202
+   },
+   "weighted_at_steps": {
+    "250": 9.3,
+    "500": 13.18,
+    "1000": 13.95,
+    "1500": 13.95,
+    "3000": 13.95,
+    "5000": 13.95,
+    "10000": 13.95
+   },
+   "calls": 135,
+   "ticks_per_call": 10.84,
+   "illegal_attempts": 34,
+   "illegal_rate": 0.0232,
+   "invalid_responses": 2,
+   "interrupt_reasons": {
+    "achievement": 13,
+    "damage": 14,
+    "illegal": 32,
+    "new_mob": 12,
+    "stuck": 15
+   },
+   "failed_requests": 0,
+   "macro_items": {
+    "walk right": 10,
+    "dig down": 16,
+    "dig right": 8,
+    "stairs up-left": 6,
+    "walk left": 3,
+    "stairs up-right": 9,
+    "dig left": 1
+   },
+   "mean_latency_s": 9.7,
+   "usage_tokens": {
+    "cache_read_tokens": 1275610,
+    "completion_tokens": 26365,
+    "prompt_tokens": 1428383,
+    "reasoning_tokens": 11000,
+    "total_tokens": 1454748
+   },
+   "accounted_cost_usd": 0.877048,
+   "reported_cost_usd": 0.648198,
+   "wall_minutes": 21.8,
+   "final_health": 100
+  }
+ ],
+ "insight": "Cost-censored at 1,464 steps (13.9%) on world 33,000,002: reached the caverns at 202 with ore but no furnace, then spent its last ~40 calls climbing a rope shaft one row per call (15 macro stops, 32 illegal). Upward navigation, not game knowledge, limited it; a rope-climb macro and a smaller output reservation would help."
+}
