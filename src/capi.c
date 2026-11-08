@@ -68,6 +68,38 @@ TL_API int tl_default_steps(void){ return DEFAULT_MAX_STEPS; }
 TL_API int tl_status_inv0(void)  { return OBS_INV_0; }
 TL_API int tl_status_ach0(void)  { return OBS_ACH_0; }
 TL_API int tl_inv_clip(void)     { return OBS_INV_CLIP; }
+TL_API int tl_world_w(void)     { return WORLD_W; }
+TL_API int tl_surface_base(void) { return SURFACE_BASE; }
+TL_API int tl_deep_row(void)    { return DEEP_Y; }   /* "descend deep" / v9 "reach the caverns" row */
+/* Episode-info rows of tl_batch_step_autoreset: (steps, health, depth,
+   achievement mask low 32 bits[, high 32 bits for 64-bit masks (v9)]).
+   ACH_COUNT is an enum, so headers with 64-bit masks define ACH_MASK_BITS. */
+#if defined(ACH_MASK_BITS) && ACH_MASK_BITS > 32
+#define TL_INFO_WIDTH 5
+#else
+#define TL_INFO_WIDTH 4
+#endif
+TL_API int tl_info_width(void)  { return TL_INFO_WIDTH; }
+#ifdef OBS_ENTITY_CHANNELS
+TL_API int tl_entity_channels(void) { return OBS_ENTITY_CHANNELS; }
+#endif
+#ifdef ACH_TIER_TABLE
+/* v9 scoring (design section 8): tier 1-4 per achievement, weights 1/3/5/8. */
+TL_API int tl_ach_tier(int i)   { return i>=0&&i<ACH_COUNT?ACH_TIER[i]:0; }
+TL_API int tl_ach_weight(int i) { return i>=0&&i<ACH_COUNT?TIER_WEIGHT[ACH_TIER[i]]:0; }
+#endif
+#ifdef OBS_NIGHT
+TL_API int tl_status_day_phase(void) { return OBS_DAY_PHASE; }
+TL_API int tl_status_night(void) { return OBS_NIGHT; }
+TL_API int tl_status_layer0(void) { return OBS_LAYER_0; }
+TL_API int tl_status_boss(void) { return OBS_BOSS; }
+TL_API int tl_status_map0(void) { return OBS_MAP_0; }
+TL_API int tl_map_w(void) { return MINIMAP?MAP_W:0; }
+TL_API int tl_map_h(void) { return MINIMAP?MAP_H:0; }
+TL_API int tl_cavern_row(void) { return CAVERN_Y; }
+TL_API int tl_day_steps(void) { return DAY_STEPS; }
+TL_API int tl_night_steps(void) { return NIGHT_STEPS; }
+#endif
 
 TL_API const char *tl_action_name(int a) { return action_name(a); }
 TL_API const char *tl_ach_name(int i)
@@ -159,7 +191,8 @@ TL_API int      tl_steps(const Env *e)        { return e ? e->steps : 0; }
 TL_API float    tl_return(const Env *e)       { return e ? e->ep_return : 0.0f; }
 TL_API int      tl_health(const Env *e)       { return e ? e->health : 0; }
 TL_API int      tl_depth(const Env *e)        { return e ? e->py : 0; }
-TL_API unsigned tl_achievements(const Env *e) { return e ? e->achievements : 0u; }
+TL_API unsigned tl_achievements(const Env *e) { return e ? (unsigned)e->achievements : 0u; }
+TL_API unsigned long long tl_achievements64(const Env *e) { return e ? (unsigned long long)e->achievements : 0ull; }
 TL_API const char *tl_message(const Env *e)   { return e ? e->msg : ""; }
 TL_API int      tl_player_x(const Env *e)     { return e ? e->px : 0; }
 
@@ -300,8 +333,9 @@ TL_API void tl_batch_step_flat(Env **envs,int n,const int *actions,float *obs,
    k-th finished lane), writing the fresh observation and mask in place.
    Rows of final_obs for lanes that did not finish are left untouched.
    obs/final_obs are float32 flat rows (flat=1) or raw Obs rows (flat=0).
-   info rows hold (steps, health, depth, achievement mask) as int32 and
-   info_return the episode return. Returns the number of lanes reset. */
+   info rows (tl_info_width() int32 each) hold (steps, health, depth,
+   achievement mask[, mask high 32 bits]) and info_return the episode return.
+   Returns the number of lanes reset. */
 typedef struct {
  Env **envs; const int *lanes; int count,workers,flat; unsigned long long next_seed;
  void *obs,*final_obs; uint8_t *masks; int *info; float *info_return;
@@ -313,8 +347,11 @@ static void reset_lane(void *context,size_t worker) {
   int i=r->lanes[k]; Env *e=r->envs[i];
   unsigned char *o=(unsigned char*)r->obs+(size_t)i*row;
   memcpy((unsigned char*)r->final_obs+(size_t)i*row,o,row);
-  int *inf=r->info+(size_t)i*4;
-  inf[0]=e->steps; inf[1]=e->health; inf[2]=e->py; inf[3]=(int)e->achievements;
+  int *inf=r->info+(size_t)i*TL_INFO_WIDTH;
+  inf[0]=e->steps; inf[1]=e->health; inf[2]=e->py; inf[3]=(int)(uint32_t)e->achievements;
+#if TL_INFO_WIDTH > 4
+  inf[4]=(int)(uint32_t)(e->achievements>>32);
+#endif
   r->info_return[i]=e->ep_return;
   env_reset(e,(uint64_t)(r->next_seed+(unsigned long long)k));
   if(r->flat) { Obs tmp; env_obs(e,&tmp); encode_flat(&tmp,(float*)o); }

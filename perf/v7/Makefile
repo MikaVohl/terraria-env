@@ -12,6 +12,8 @@ BUILD   ?= $(if $(filter 1,$(LIGHT_WINDOW)),build-lw,build)
 ROOT    := ../..
 CFLAGS  := -std=c11 -O2 -g -Wall -Wextra -Wno-unused-const-variable
 CORE    := sim.c worldgen.c light.c obs.c
+# v9 splits mob and boss AI into their own files (absent in v7/v8 sources).
+CORE    += $(notdir $(wildcard $(V7)/src/mobs.c $(V7)/src/boss.c))
 # Variant knobs for sources that define them (variants/v8), e.g.
 #   make -C perf/v7 V7=$PWD/variants/v8 LIGHT_WINDOW=1 BUILD=build-v8-ore300 VARIANT="-DORE_PCT=300"
 # Use one BUILD directory per VARIANT; the flags are recorded in $(BUILD)/variant.
