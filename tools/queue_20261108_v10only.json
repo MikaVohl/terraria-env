@@ -1,0 +1,38 @@
+[
+ {
+  "name": "v10onlyphysics_gen_1B-3001",
+  "lib": "build-v10-onlyphysics",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10onlymobs_gen_1B-3001",
+  "lib": "build-v10-onlymobs",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10onlycombat_gen_1B-3001",
+  "lib": "build-v10-onlycombat",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10onlymining_gen_1B-3001",
+  "lib": "build-v10-onlymining",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]
