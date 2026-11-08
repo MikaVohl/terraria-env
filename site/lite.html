@@ -29,6 +29,17 @@
     <p class="note prose" id="board-note"></p>
   </section>
 
+  <section class="block" id="ports" hidden>
+    <h2>v10: what each real-Terraria port costs</h2>
+    <p class="prose">v10 ports five behaviours from Terraria's source code: mob AI, combat, physics, mining and trees. To see which one makes v10 harder, the generic PPO arm trained for 1B steps on builds with one port switched off, with only one port switched on, and with none. Ports are described in <code>docs/ENV_V9_DESIGN.md</code> (section 14) and the decisions in <code>DECISIONS.md</code> (B1 to B4). The ports were first tested on v8 in the fidelity study, <code>docs/reports/FIDELITY_V8FID_2026_11.md</code>: there, real mining at 4 ticks per action cut the score from 27.97 to 17.15 of 32, and 15 ticks per action brought all five ports back to 25.49.</p>
+    <figure class="fig">
+      <div class="chart" id="ports-chart"></div>
+      <div id="ports-legend"></div>
+    </figure>
+    <div id="ports-table"></div>
+    <p class="note prose" id="ports-note"></p>
+  </section>
+
   <section class="block" id="cost">
     <h2>Score against cost and time</h2>
     <p class="prose">Dollars or hours on a log axis, score on the vertical. For RL the x value is one training seed (GPU-hours times an assumed rental rate) and the score is the IQM over seeds; for LLMs it is the provider-reported cost or wall time of one episode. The dashed line is the frontier of real entries; hollow dashed marks are sample data.</p>

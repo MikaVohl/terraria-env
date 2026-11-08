@@ -21,12 +21,11 @@
     ]
   },
   "ours": {
-    "_note": "Planned reruns of Craftax_Baselines ppo.py and ppo_rnn.py at 1B steps, 5 seeds, plus our own PPO settings (1,024 envs, gamma .9998, entropy .03) on Craftax-Symbolic. In progress; the numbers below are sample data.",
-    "placeholder": true,
+    "_note": "Our reruns of the unmodified Craftax_Baselines ppo.py and ppo_rnn.py (commit 7ce36fa0, W&B replaced by a local JSON log) on Craftax-Symbolic-v1 at 1B steps, 3 seeds batched in one process on one MI350X GPU of eg15, plus ppo.py with our Terraria-Lite settings (gamma .9998, GAE lambda .99, entropy .03, 128-step rollouts, learning rate 3e-4; several changes at once). Score: mean episode return over the last 20 updates of each seed, as a percent of the maximum 226; pct is the mean over the 3 seeds, ci the range over seeds. Source: eg15 ~/Projects/craftax/runs/calib-20261107/craftax_{ppo,ppo_rnn,ppo_ourhp}.jsonl; headline cited in DECISIONS.md C1.",
     "rows": [
-      { "algo": "PPO", "pct": 12.3, "ci": [11.6, 12.9], "seeds": 5, "hw": "1x MI350X", "gpu_hours": 1.1 },
-      { "algo": "PPO-RNN", "pct": 15.0, "ci": [14.2, 15.9], "seeds": 5, "hw": "1x MI350X", "gpu_hours": 2.3 },
-      { "algo": "PPO, Terraria-Lite settings", "pct": 13.4, "ci": [12.5, 14.1], "seeds": 5, "hw": "1x MI350X", "gpu_hours": 1.2 }
+      { "algo": "PPO", "pct": 12.077, "ci": [11.98, 12.17], "seed_pcts": [12.17, 11.98, 12.08], "seeds": 3, "hw": "1x MI350X, 3 seeds in one process", "wall_hours": 4.6 },
+      { "algo": "PPO-RNN", "pct": 16.247, "ci": [16.07, 16.45], "seed_pcts": [16.45, 16.22, 16.07], "seeds": 3, "hw": "1x MI350X, 3 seeds in one process", "wall_hours": 4.85 },
+      { "algo": "PPO, Terraria-Lite settings", "pct": 5.257, "ci": [5.18, 5.35], "seed_pcts": [5.24, 5.18, 5.35], "seeds": 3, "hw": "1x MI350X, 3 seeds in one process", "wall_hours": 4.58 }
     ]
   },
   "smoke": {

@@ -1,24 +1,35 @@
 {
-  "_note": "Terraria-Lite track. Entries with a 'ref' take their numbers from generated files: 'rl:final/<key>' and 'rl:run/<id>' from data/rl.json, 'llm:<study>/<harness>' from data/llm.json. Entries with placeholder: true are invented to show the layout.",
+  "_note": "Terraria-Lite track. Entries with a 'ref' take their numbers from generated files: 'rl:final/<key>' and 'rl:run/<id>' from data/rl.json, 'llm:<study>/<harness>' from data/llm.json. v9 and v10 entries carry their numbers inline with a 'source' (eg15 run summaries or a report); 'score.ci_kind: range' means the interval is the min to max over seeds or worlds, not a confidence interval. Entries with placeholder: true are invented to show the layout.",
   "contract": {
     "summary": "RL and LLM agents get the same symbolic observation (11x9 local tile, light and entity window, inventory, status, earned achievements), the same legal-action mask and the same scorer. LLMs additionally receive the public rules and recipes as text.",
     "observation": "11x9 local view: tile ids, light, visible mobs; inventory (sqrt(count/999) encoding), equipment, cooldowns, achievement bits. Darkness hides terrain and mobs.",
     "actions": "83 discrete primitive actions (move, jump, mine/place in 20 reach cells, craft each recipe, select, attack, heal, climb). Masks encode physical legality, not strategy.",
-    "horizon": "3,000 primitive actions per episode (v7/v8); 10,000 in the v9 draft.",
+    "horizon": "3,000 primitive actions per episode (v7/v8); 10,000 in v9 and v10 (v10: 15 game ticks per action, 41.7 game minutes).",
     "score_v8": "Achievements unlocked, out of 32 (equal weight). IQM over training seeds with a bootstrap 95% CI.",
-    "score_v9": "Percent of the maximum weighted score (tiers weighted 1/3/5/8, max 129).",
+    "score_v9": "Percent of the maximum weighted score (tiers weighted 1/3/5/8; max 129 on v9, 145 on v10), mean over episodes. IQM over 5 seeds with a bootstrap 95% CI where 5 seeds exist; otherwise the mean with the range over seeds.",
     "llm_rules": "Primitive or open-loop lists of up to 16 primitive actions per call; every action costs a tick; illegal actions still cost a tick; no tools, code execution, map or hidden state; notes and history are declared scaffold settings.",
     "same_information": true
   },
   "versions": [
     {
+      "id": "v10",
+      "label": "v10 (real-Terraria ports)",
+      "status": "Release candidate (DECISIONS.md B1, recommended, 2026-11-08): v9 plus behaviour ports from Terraria's source (mob AI, combat, physics, mining, trees) at 15 game ticks per action, and two tier-4 stepping stones (find a Demon Altar, hold 6 lenses). 40 achievements, weighted maximum 145. PPO pilots on the 128 validation worlds 23,000,001 to 23,000,128; no reserved test-world evaluation and no LLM runs on v10 yet.",
+      "unit": "%",
+      "domain": [0, 100],
+      "achievements": 40,
+      "max_weighted": 145,
+      "tiers": ["Basic, 13 (x1)", "Intermediate, 12 (x3)", "Advanced, 8 (x5)", "Very advanced, 7 (x8)"]
+    },
+    {
       "id": "v9",
-      "label": "v9 (draft)",
-      "status": "Design spec and first implementation (2026-11-07). Pilots at 250M, 1B and 4B steps are queued; no results yet.",
+      "label": "v9",
+      "status": "Layered 128x128 world, day and night, Zombies, Demon Eyes, Skeletons and the Eye of Cthulhu; 38 achievements in four tiers, weighted maximum 129. PPO pilots (validation worlds) and an LLM campaign (public worlds) ran on 2026-11-08. Generic PPO scores about 56% at 1B steps, above the 25 to 35% target band, so v10 replaced v9 as the release candidate.",
       "unit": "%",
       "domain": [0, 100],
       "achievements": 38,
-      "placeholder_only": true
+      "max_weighted": 129,
+      "tiers": ["Basic, 13 (x1)", "Intermediate, 12 (x3)", "Advanced, 8 (x5)", "Very advanced, 5 (x8)"]
     },
     {
       "id": "v8",
@@ -148,40 +159,100 @@
     },
 
     {
-      "id": "v9-shaped", "version": "v9", "kind": "shaped", "placeholder": true,
-      "agent": "PPO + recipe shaping", "sub": "v9 pilot arm, gamma .9999, 4B steps",
-      "prior": "recipe potential", "score": { "value": 41.0, "ci": [38.5, 43.0], "stat": "IQM" }, "seeds": 3, "worlds": 128, "split": "test",
-      "budget": { "env_steps": 4294967296 }, "cost": { "gpu_hours": 5.1 }, "wall_hours": 5.1, "crafter": 31.0, "deaths": 0.22, "verified": "checkpoint"
+      "id": "v10-shaped-1b", "version": "v10", "kind": "shaped", "short": "PPO + shaping, 1B",
+      "agent": "PPO + recipe shaping", "sub": "recipe-graph potential plus lens and altar goals, novelty 0.01, 1% uniform mix, gamma .9999, 1B steps",
+      "prior": "recipe graph as a potential (disclosed)", "score": {"value": 34.07, "ci": [33.61, 34.85], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [34.85, 33.61, 33.74], "seeds": 3, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 1073741824 }, "wall_hours": 1.25, "crafter": 20.3, "deaths": 0.307, "tiers": [0.987, 0.6, 0.326, 0.034], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v10pilot-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); ranges cited in DECISIONS.md B1 and C2"
     },
     {
-      "id": "v9-generic-4b", "version": "v9", "kind": "rl", "placeholder": true,
-      "agent": "PPO, generic", "sub": "v9 pilot arm, gamma .9999, 4B steps",
-      "prior": "none", "score": { "value": 33.0, "ci": [30.0, 35.5], "stat": "IQM" }, "seeds": 3, "worlds": 128, "split": "test",
-      "budget": { "env_steps": 4294967296 }, "cost": { "gpu_hours": 4.8 }, "wall_hours": 4.8, "crafter": 24.0, "deaths": 0.30, "verified": "checkpoint"
+      "id": "v10-generic-1b", "version": "v10", "kind": "rl", "short": "PPO generic, 1B",
+      "agent": "PPO, generic", "sub": "no shaping, novelty 0.01, 1% uniform mix, gamma .9999, 1B steps",
+      "prior": "none", "score": {"value": 32.38, "ci": [32.1, 32.84], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [32.1, 32.84, 32.19], "seeds": 3, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 1073741824 }, "wall_hours": 1.02, "crafter": 18.2, "deaths": 0.299, "tiers": [0.986, 0.565, 0.303, 0.029], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v10pilot-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); ranges cited in DECISIONS.md B1 and C2"
     },
     {
-      "id": "v9-generic-1b", "version": "v9", "kind": "rl", "placeholder": true,
-      "agent": "PPO, generic, 1B", "sub": "v9 pilot arm, gamma .9999, 1B steps (official budget candidate)",
-      "prior": "none", "score": { "value": 27.0, "ci": [25.0, 29.0], "stat": "IQM" }, "seeds": 3, "worlds": 128, "split": "test",
-      "budget": { "env_steps": 1073741824 }, "cost": { "gpu_hours": 1.2 }, "wall_hours": 1.2, "crafter": 18.0, "deaths": 0.35, "verified": "checkpoint"
+      "id": "v10-shaped-4b", "version": "v10", "kind": "shaped", "short": "PPO + shaping, 4B",
+      "agent": "PPO + recipe shaping, 4B", "sub": "same shaped arm at 4B steps",
+      "prior": "recipe graph as a potential (disclosed)", "score": {"value": 33.5, "ci": [32.15, 34.84], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [34.84, 32.15], "seeds": 2, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 4294967296 }, "wall_hours": 4.85, "crafter": 19.2, "deaths": 0.305, "tiers": [0.99, 0.599, 0.321, 0.023], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v10next-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); ranges cited in DECISIONS.md B1 and C2"
     },
     {
-      "id": "v9-minimap", "version": "v9", "kind": "rl", "placeholder": true,
-      "agent": "PPO, generic + explored-map input", "sub": "v9 minimap option, 1B steps",
-      "prior": "none", "score": { "value": 28.5, "ci": [26.0, 30.5], "stat": "IQM" }, "seeds": 2, "worlds": 128, "split": "test",
-      "budget": { "env_steps": 1073741824 }, "cost": { "gpu_hours": 1.5 }, "wall_hours": 1.5, "crafter": 19.0, "deaths": 0.33, "verified": "checkpoint"
+      "id": "v10-generic-4b", "version": "v10", "kind": "rl", "short": "PPO generic, 4B",
+      "agent": "PPO, generic, 4B", "sub": "same generic arm at 4B steps",
+      "prior": "none", "score": {"value": 32.73, "ci": [32.64, 32.83], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [32.64, 32.83], "seeds": 2, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 4294967296 }, "wall_hours": 3.83, "crafter": 18.3, "deaths": 0.383, "tiers": [0.99, 0.573, 0.327, 0.016], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v10next-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); ranges cited in DECISIONS.md B1 and C2"
     },
     {
-      "id": "v9-llm-a", "version": "v9", "kind": "llm", "placeholder": true,
-      "agent": "Frontier LLM A, compact16 + interrupt", "sub": "10,000 actions, $10 cap per episode",
-      "prior": "pretrained LLM + public rules", "score": { "value": 22.0, "ci": [17.0, 26.0], "stat": "mean" }, "seeds": 1, "worlds": 16, "split": "public dev",
-      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 6.4 }, "wall_hours": 2.6, "crafter": 12.0, "deaths": 0.62, "verified": "replay"
+      "id": "v9-generic-1b", "version": "v9", "kind": "rl", "short": "PPO generic, 1B",
+      "agent": "PPO, generic", "sub": "no shaping, novelty 0.01, 1% uniform mix, gamma .9999, 1B steps",
+      "prior": "none", "score": {"value": 57.25, "ci": [47.65, 62.79], "stat": "IQM"}, "seed_scores": [57.49, 63.45, 45.09, 52.78, 61.48], "seeds": 5, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 1073741824 }, "wall_hours": 1.38, "crafter": 39.1, "deaths": 0.106, "tiers": [0.999, 0.814, 0.628, 0.123], "verified": "checkpoint",
+      "notes": "mean 56.06; seeds 57.49, 63.45, 45.09, 52.78, 61.48",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v9pilot-20261108 and eg15-v9extra-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); cited in docs/ENV_V9_DESIGN.md D9 and DECISIONS.md C2"
     },
     {
-      "id": "v9-llm-b", "version": "v9", "kind": "llm", "placeholder": true,
-      "agent": "Small LLM B, compact4", "sub": "10,000 actions, $2 cap per episode",
-      "prior": "pretrained LLM + public rules", "score": { "value": 9.0, "ci": [6.0, 12.0], "stat": "mean" }, "seeds": 1, "worlds": 16, "split": "public dev",
-      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0.5 }, "wall_hours": 1.0, "crafter": 5.0, "deaths": 0.81, "verified": "replay"
+      "id": "v9-shaped-1b", "version": "v9", "kind": "shaped", "short": "PPO + shaping, 1B",
+      "agent": "PPO + recipe shaping", "sub": "recipe-graph potential, novelty 0.01, 1% uniform mix, gamma .9999, 1B steps",
+      "prior": "recipe graph as a potential (disclosed)", "score": {"value": 54.08, "ci": [48.67, 60.73], "stat": "IQM"}, "seed_scores": [53.89, 48.22, 58.77, 49.58, 61.71], "seeds": 5, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 1073741824 }, "wall_hours": 1.68, "crafter": 37.6, "deaths": 0.122, "tiers": [0.996, 0.793, 0.594, 0.123], "verified": "checkpoint",
+      "notes": "mean 54.44; seeds 53.89, 48.22, 58.77, 49.58, 61.71",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v9pilot-20261108 and eg15-v9extra-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); cited in docs/ENV_V9_DESIGN.md D9 and DECISIONS.md C2"
+    },
+    {
+      "id": "v9-shaped-4b", "version": "v9", "kind": "shaped", "short": "PPO + shaping, 4B",
+      "agent": "PPO + recipe shaping, 4B", "sub": "same shaped arm at 4B steps",
+      "prior": "recipe graph as a potential (disclosed)", "score": {"value": 51.72, "ci": [45.13, 58.3], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [58.3, 45.13], "seeds": 2, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 4294967296 }, "wall_hours": 5.88, "crafter": 34.4, "deaths": 0.148, "tiers": [0.996, 0.753, 0.582, 0.084], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v9pilot-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); cited in docs/ENV_V9_DESIGN.md D9 and DECISIONS.md C2"
+    },
+    {
+      "id": "v9-generic-4b", "version": "v9", "kind": "rl", "short": "PPO generic, 4B",
+      "agent": "PPO, generic, 4B", "sub": "same generic arm at 4B steps",
+      "prior": "none", "score": {"value": 41.72, "ci": [38.49, 44.94], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [38.49, 44.94], "seeds": 2, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 4294967296 }, "wall_hours": 4.96, "crafter": 21.2, "deaths": 0.125, "tiers": [0.998, 0.591, 0.436, 0.053], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v9pilot-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); cited in docs/ENV_V9_DESIGN.md D9 and DECISIONS.md C2"
+    },
+    {
+      "id": "v9-minimap", "version": "v9", "kind": "rl", "short": "PPO + minimap, 1B",
+      "agent": "PPO, generic + explored-map input", "sub": "v9 minimap option (16x16 cells), 1B steps",
+      "prior": "none", "score": {"value": 49.9, "ci": [45.4, 54.4], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [45.4, 54.4], "seeds": 2, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 1073741824 }, "wall_hours": 1.34, "crafter": 36.3, "deaths": 0.074, "tiers": [0.998, 0.734, 0.497, 0.127], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v9pilot-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); cited in docs/ENV_V9_DESIGN.md D9 and DECISIONS.md C2"
+    },
+    {
+      "id": "v9-lstm", "version": "v9", "kind": "rl", "short": "PPO + LSTM, 1B",
+      "agent": "PPO, generic + LSTM memory", "sub": "LSTM policy, 1B steps",
+      "prior": "none", "score": {"value": 49.55, "ci": [44.12, 54.98], "stat": "mean", "ci_kind": "range", "range_over": "seeds"}, "seed_scores": [54.98, 44.12], "seeds": 2, "worlds": 128, "split": "validation",
+      "budget": { "env_steps": 1073741824 }, "wall_hours": 2.5, "crafter": 32.1, "deaths": 0.09, "tiers": [0.998, 0.755, 0.536, 0.058], "verified": "checkpoint",
+      "source": "eg15 ~/Projects/RL/experiments/eg15-v9lstm-20261108/*/runs/*/summary.json, final_validation (128 validation worlds 23,000,001 to 23,000,128); cited in docs/ENV_V9_DESIGN.md D9 and DECISIONS.md C2"
+    },
+    {
+      "id": "v9-llm-haiku", "version": "v9", "kind": "llm", "short": "Haiku 5.5 + guide + macros",
+      "agent": "Claude Haiku 5.5 (no thinking), guide + macros", "sub": "macro track, harness h3, 10,000 actions per episode",
+      "prior": "pretrained LLM + public rules + game guide (disclosed)", "score": {"value": 52.97, "ci": [24.03, 67.44], "stat": "mean", "ci_kind": "range", "range_over": "worlds"}, "seed_scores": [67.44, 24.03, 67.44], "seeds": 1, "worlds": 3, "split": "public worlds 33,000,001 to 003",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0.74 }, "wall_hours": 1.95, "deaths": 0.333, "tiers": [0.949, 0.806, 0.542, 0.133], "verified": "replay",
+      "notes": "Two full episodes at 67.44% ($1.03 and $0.90); died at step 3,636 on the third (24.03%). Provider-reported cost $2.21 for the three worlds.",
+      "source": "docs/reports/LLM_V9_CAMPAIGN_2026_11_08.md (long runs, harness h3)"
+    },
+    {
+      "id": "v9-llm-terra", "version": "v9", "kind": "llm", "short": "Terra + guide + macros",
+      "agent": "GPT-5.6 Terra (low), guide + macros", "sub": "macro track, harness h3, dollar guard per episode",
+      "prior": "pretrained LLM + public rules + game guide (disclosed)", "score": {"value": 37.46, "ci": [13.95, 58.91], "stat": "mean", "ci_kind": "range", "range_over": "worlds"}, "seed_scores": [58.91, 13.95, 39.53], "seeds": 1, "worlds": 3, "split": "public worlds 33,000,001 to 003",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 1.15 }, "wall_hours": 0.62, "deaths": 0, "tiers": [0.974, 0.528, 0.417, 0.0], "verified": "replay",
+      "notes": "Every episode stopped at its dollar guard before 10,000 steps (at 5,968, 1,464 and 1,609), so the mean is a lower bound. Reported cost $3.45 ($4.66 accounted).",
+      "source": "docs/reports/LLM_V9_CAMPAIGN_2026_11_08.md (long runs, harness h3)"
+    },
+    {
+      "id": "v9-llm-luna", "version": "v9", "kind": "llm", "short": "Luna + guide + macros",
+      "agent": "GPT-5.6 Luna (low), guide + macros", "sub": "macro track, harness h3, 10,000 actions per episode",
+      "prior": "pretrained LLM + public rules + game guide (disclosed)", "score": {"value": 24.03, "ci": [6.98, 34.88], "stat": "mean", "ci_kind": "range", "range_over": "worlds"}, "seed_scores": [30.23, 34.88, 6.98], "seeds": 1, "worlds": 3, "split": "public worlds 33,000,001 to 003",
+      "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0.27 }, "wall_hours": 1.31, "deaths": 1, "tiers": [0.769, 0.306, 0.25, 0.0], "verified": "replay",
+      "notes": "Died on all three worlds (steps 9,881, 9,059 and 289). Reported cost $0.80 ($1.07 accounted).",
+      "source": "docs/reports/LLM_V9_CAMPAIGN_2026_11_08.md (long runs, harness h3)"
     },
     {
       "id": "v9-human", "version": "v9", "kind": "human", "placeholder": true,
@@ -202,17 +273,22 @@
       "budget": { "actions": 10000 }, "cost": { "per_episode_usd": 0 }, "wall_hours": 0.0, "verified": "replay"
     }
   ],
-  "v9_tier_rates": {
-    "_note": "Per-tier success (mean fraction of the tier's achievements unlocked per episode). All sample data until the v9 pilots finish.",
-    "placeholder": true,
-    "tiers": ["Basic (x1)", "Intermediate (x3)", "Advanced (x5)", "Very advanced (x8)"],
-    "agents": [
-      { "id": "v9-shaped", "rates": [0.97, 0.71, 0.24, 0.02] },
-      { "id": "v9-generic-4b", "rates": [0.96, 0.58, 0.12, 0.0] },
-      { "id": "v9-generic-1b", "rates": [0.93, 0.44, 0.05, 0.0] },
-      { "id": "v9-llm-a", "rates": [0.82, 0.31, 0.06, 0.0] },
-      { "id": "v9-human", "rates": [0.98, 0.83, 0.42, 0.18] },
-      { "id": "v9-random", "rates": [0.21, 0.0, 0.0, 0.0] }
+  "v10_ablations": {
+    "_note": "Generic PPO arm (gamma .9999, 1B steps) on v10 builds that switch the five behaviour ports (FID_MOBS, FID_COMBAT, FID_PHYSICS, FID_MINING, FID_TREES) on or off; every build runs 15 game ticks per action. 'One port off' turns one port off and keeps the rest on; 'one port on' turns every other port off, trees included. Scores are final weighted % on the 128 validation worlds per seed; counts (anvil, return to surface, lens, altar) are worlds out of 128 per seed; deaths are the mean share of episodes. The night-tuning builds are the open decision DECISIONS.md B4.",
+    "source": "eg15 ~/Projects/RL/experiments/eg15-v10pilot-20261108, eg15-v10next-20261108, eg15-v10only-20261108, eg15-v10night-20261108 (*/runs/*/summary.json, final_validation); summarised in DECISIONS.md B1, B2 and B4",
+    "rows": [
+      { "id": "all", "label": "All five ports (v10 as built)", "group": "v10", "scores": [32.1, 32.84, 32.19], "mean": 32.38, "tiers": [0.986, 0.565, 0.303, 0.029], "deaths": 0.299, "anvil": [22, 20, 17], "surface": [0, 0, 0], "lens": [0, 0, 0], "altar": [17, 33, 29] },
+      { "id": "no_physics", "label": "Physics port off", "group": "one port off", "scores": [30.91], "mean": 30.91, "tiers": [0.987, 0.559, 0.258, 0.028], "deaths": 0.227, "anvil": [17], "surface": [0], "lens": [0], "altar": [25] },
+      { "id": "no_mobs", "label": "Mob AI port off", "group": "one port off", "scores": [36.33], "mean": 36.33, "tiers": [0.993, 0.617, 0.385, 0.039], "deaths": 0.258, "anvil": [48], "surface": [0], "lens": [0], "altar": [35] },
+      { "id": "no_combat", "label": "Combat port off", "group": "one port off", "scores": [38.81], "mean": 38.81, "tiers": [0.99, 0.628, 0.479, 0.029], "deaths": 0.18, "anvil": [46], "surface": [0], "lens": [0], "altar": [26] },
+      { "id": "no_mining", "label": "Mining port off", "group": "one port off", "scores": [36.43], "mean": 36.43, "tiers": [0.994, 0.631, 0.388, 0.03], "deaths": 0.523, "anvil": [74], "surface": [0], "lens": [0], "altar": [27] },
+      { "id": "only_physics", "label": "Only physics ported", "group": "one port on", "scores": [43.93, 42.42, 45.57], "mean": 43.97, "tiers": [0.998, 0.691, 0.559, 0.064], "deaths": 0.076, "anvil": [90, 79, 100], "surface": [0, 0, 0], "lens": [0, 0, 0], "altar": [60, 44, 68] },
+      { "id": "only_mobs", "label": "Only mob AI ported", "group": "one port on", "scores": [43.55], "mean": 43.55, "tiers": [0.998, 0.709, 0.538, 0.056], "deaths": 0.133, "anvil": [95], "surface": [0], "lens": [0], "altar": [50] },
+      { "id": "only_combat", "label": "Only combat ported", "group": "one port on", "scores": [38.92], "mean": 38.92, "tiers": [0.998, 0.674, 0.405, 0.054], "deaths": 0.062, "anvil": [82], "surface": [0], "lens": [0], "altar": [48] },
+      { "id": "only_mining", "label": "Only mining ported", "group": "one port on", "scores": [28.95, 28.18, 40.24], "mean": 32.46, "tiers": [0.996, 0.405, 0.389, 0.071], "deaths": 0.089, "anvil": [2, 0, 54], "surface": [0, 0, 0], "lens": [0, 0, 0], "altar": [68, 73, 50] },
+      { "id": "noport", "label": "No ports (v9 rules + stepping stones)", "group": "control", "scores": [59.2, 58.88], "mean": 59.04, "tiers": [0.998, 0.885, 0.715, 0.217], "deaths": 0.129, "anvil": [108, 102], "surface": [125, 126], "lens": [107, 106], "altar": [88, 84] },
+      { "id": "night120", "label": "All ports, night spawn every 120 steps", "group": "night tuning", "scores": [31.19, 30.38], "mean": 30.79, "tiers": [0.973, 0.537, 0.277, 0.028], "deaths": 0.273, "anvil": [13, 15], "surface": [0, 0], "lens": [0, 0], "altar": [21, 29] },
+      { "id": "night180", "label": "All ports, night spawn every 180 steps", "group": "night tuning", "scores": [33.44, 32.12], "mean": 32.78, "tiers": [0.989, 0.579, 0.311, 0.025], "deaths": 0.289, "anvil": [40, 14], "surface": [0, 0], "lens": [0, 0], "altar": [23, 21] }
     ]
   }
 }

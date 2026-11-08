@@ -13,7 +13,7 @@ TEXTURES ?= $(HOME)/Library/Application Support/Steam/steamapps/common/Terraria/
 
 serve: viz
 	@echo "site: http://localhost:$(PORT)"
-	python3 -m http.server $(PORT) --bind 127.0.0.1
+	python3 tools/serve.py $(PORT)
 
 viz:
 	$(MAKE) -C ../viz terraria.wasm
@@ -23,3 +23,11 @@ data:
 	cd .. && uv run --no-project --with pandas,numpy python site/tools/export_data.py
 
 .PHONY: serve viz data
+
+official:
+	python3 tools/export_terrariabench.py
+
+videos:
+	cd .. && uv run --no-project --with numpy python site/tools/fetch_videos.py
+
+.PHONY: official videos

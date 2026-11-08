@@ -1,2 +1,4 @@
 # The repository ignores *.tape; the site ships the audited LLM tapes it replays.
 !data/tapes/*.tape
+# Run recordings: large, reproducible with tools/fetch_videos.py.
+media/

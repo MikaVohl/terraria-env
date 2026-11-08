@@ -35,18 +35,19 @@
     <h2>TL;DR</h2>
     <ul>
       <li>The simulator steps <b>1.29 million times per second on one CPU thread</b>. A PPO run trains at about 287k steps/s on one GPU, so 2 billion steps take about two hours. Real Terraria, headless, manages about 1,000 agent actions per second per process.</li>
-      <li>On v8 (32 achievements), the best PPO configurations reach <b id="tl-best">28.0/32</b> on held-out test worlds (IQM of 5 seeds). Iron pickaxes appear only at 4B steps and more; one 6B-step run reaches 29.3/32, with an iron pickaxe in 99 of 128 worlds and a climb back to the surface in 104.</li>
-      <li>An LLM (GPT-6 Luna) reaches a furnace and smelts copper for about $0.40 per episode, but wastes a third of its actions on illegal moves and dies. Across 14,848 evaluated PPO episodes, iron chainmail was crafted once and a gold pickaxe never.</li>
-      <li>The two largest single gains for PPO were making the world fair (enough ore and trees: +0.9 on the test worlds) and a longer discount horizon (up to +0.8 at 2B steps). Wider networks and an LSTM changed scores by less than 0.3.</li>
-      <li>v9 is the release candidate: a layered world, night, a boss (Eye of Cthulhu) and 38 achievements in four weighted tiers, so the benchmark stays far from saturated.</li>
+      <li>On v8 (32 achievements), the best PPO configurations reach <b id="tl-best">28.0/32</b> on held-out test worlds (IQM of 5 seeds). Iron pickaxes appear only in runs of 4B steps and more, and only with recipe shaping: 5 of 15 shaped runs against 0 of 9 generic runs (<code>DECISIONS.md</code> C4). One 6B-step run reaches 29.3/32, with an iron pickaxe in 99 of 128 worlds and a climb back to the surface in 104.</li>
+      <li>v9 added a layered world, night, a boss and 38 weighted achievements. Generic PPO scores about 56% of the weighted maximum at 1B steps (mean of 5 seeds, validation worlds). Claude Haiku 5.5 with a game guide and macro actions averages 53.0% over 3 public worlds: 67.4% on the two worlds it survived, at about $1 per full 10,000-step episode, and 24.0% on the world where it died at step 3,636.</li>
+      <li>v10 is the release candidate: v9 plus mob AI, combat, physics, mining and trees ported from Terraria's source at 15 game ticks per action. PPO at 1B steps scores 32.1 to 32.8% (generic) and 33.6 to 34.9% (shaped) across 3 seeds, inside the 25 to 35% target band, and 4B steps do not help. With every port switched off the same arm scores about 59%.</li>
+      <li>An LLM (GPT-6 Luna) on v7 reaches a furnace and smelts copper for about $0.40 per episode, but wastes a third of its actions on illegal moves and dies. Across 14,848 evaluated v8 PPO episodes, iron chainmail was crafted once and a gold pickaxe never.</li>
+      <li>The two largest single gains for PPO on v8 were making the world fair (enough ore and trees: +0.9 on the test worlds) and a longer discount horizon (up to +0.8 at 2B steps). Wider networks and an LSTM changed scores by less than 0.3.</li>
     </ul>
   </div>
 
   <dl class="facts" id="facts"></dl>
 
   <section class="block" id="tracks">
-    <h2>Two tracks, one score</h2>
-    <p class="prose">The <a href="lite.html">Terraria-Lite track</a> is the fast simulator: RL trains on billions of steps, LLMs act through a text harness with the RL observation. The <a href="terraria.html">official Terraria track</a> runs the same contract on the real game through tModLoader, at about a thousandth of the speed. Both report cost and time next to score.</p>
+    <h2>Two tracks</h2>
+    <p class="prose">The <a href="lite.html">Terraria-Lite track</a> is the fast simulator: RL trains on billions of steps, LLMs act through a text harness with the RL observation. The <a href="terraria.html">official Terraria track</a> puts LLM agents in the unmodified game through tModLoader, with screenshots in and keyboard and mouse out, scored from a read-only observer mod. Both report cost and time next to score.</p>
     <div class="grid2">
       <div>
         <h3>Terraria-Lite v8, held-out test worlds</h3>
@@ -54,9 +55,9 @@
         <p class="note"><a href="lite.html">Full leaderboard, all versions</a></p>
       </div>
       <div>
-        <h3>Official Terraria <span class="sample">sample data</span></h3>
+        <h3>Official Terraria, 20 game-minutes (interim)</h3>
         <div id="mini-official"></div>
-        <p class="note"><a href="terraria.html">Track contract and speed measurements</a></p>
+        <p class="note"><a href="terraria.html">Both clock modes, videos, the harness and speed measurements</a></p>
       </div>
     </div>
   </section>
@@ -95,7 +96,7 @@
 
   <section class="block" id="calibration">
     <h2>Does our pipeline reproduce Craftax?</h2>
-    <p class="prose">Every Terraria-Lite number is only as good as the training pipeline behind it. We are rerunning the official Craftax baselines on our GPUs against the published scoreboard (percent of maximum reward at 1B steps). The pipeline smoke test has run; the 1B reruns have not.</p>
+    <p class="prose">Every Terraria-Lite number is only as good as the training pipeline behind it, so we reran the official Craftax baselines on our GPUs at 1B steps, 3 seeds each. Our PPO scores 12.1% of the maximum reward against the published 11.9%, and PPO-RNN 16.2% against 15.3%. Our Terraria-Lite PPO settings reach only 5.3% on Craftax: they were tuned for a different, longer-horizon game.</p>
     <div class="chart" id="calib-chart"></div>
     <p class="note"><a href="method.html#calibration">Calibration details and the smoke run</a></p>
   </section>

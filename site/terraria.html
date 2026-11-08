@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Official Terraria track: Terraria-Lite</title>
-<meta name="description" content="The official Terraria track runs agents in the real game through tModLoader under the same contract as Terraria-Lite. Draft contract, sample leaderboard layout and measured headless speed.">
+<meta name="description" content="LLM agents in unmodified Terraria (tModLoader 1.4.4): interim results of the default-v2 campaign in real time and paused, run videos, milestone timelines, the harness, and the measured speed of headless Terraria.">
 <script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch{}</script>
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/pages/terraria.css">
@@ -12,62 +12,88 @@
 <body>
 <main id="main" class="wrap">
   <h1>Official Terraria track</h1>
-  <p class="lead prose">The same benchmark contract, played in the real game: Terraria 1.4.4 through tModLoader, scored from a checkpoint log written by a mod. It answers the question Terraria-Lite cannot: does an agent that does well in the simulator also make progress in Terraria itself, and at what cost?</p>
+  <p class="lead prose">LLM agents playing the unmodified game: Terraria 1.4.4 through tModLoader, normal enemies, a fresh small world, 20 minutes of game time, screenshots in and keyboard and mouse out. Progress is read from a read-only observer mod's journal, never from what the model says. Every model plays twice per world: once in real time and once with the game frozen while the model thinks.</p>
 
-  <div class="callout prose" id="status">
-    <p><b>No agent has been scored on this track yet.</b> Every leaderboard row, chart mark and heatmap cell on this page is <span class="sample">sample data</span> that shows the layout the results will use. The contract below is a draft. The speed measurements in <a href="#speed">the speed section</a> are real (<code>experiments/tml-speed-20261107</code>).</p>
-  </div>
+  <div class="callout prose" id="status"></div>
+  <dl class="facts" id="facts"></dl>
 
-  <section class="block" id="contract">
-    <h2>Contract (draft)</h2>
-    <p class="prose">Borrowed from <a href="https://terrariabench.com">TerrariaBench</a>: one harness for every model, progress read from the game rather than self-reported, and invalid runs shown with their reason instead of dropped. Borrowed from Terraria-Lite: RL policies and LLMs get the same observation and the same budget, so their scores sit on one axis.</p>
-    <div id="contract-table"></div>
-    <p class="note" id="budget-note"></p>
-  </section>
-
-  <section class="block" id="board">
-    <h2>Leaderboard <span id="board-badge"></span></h2>
-    <p class="prose">Score is the percent of the maximum weighted milestone score, with a 95% bootstrap interval over worlds. Cost is per episode for LLMs and training compute for RL. Invalid runs stay on the board with the reason. All rows are invented to show the format.</p>
-    <div id="board-table"></div>
-  </section>
-
-  <section class="block" id="pareto">
-    <h2>Score against cost and time <span id="pareto-badge"></span></h2>
-    <p class="prose">Left: score against dollars (log scale). Right: score against wall-clock hours (log scale). Valid runs only; the human row has no dollar cost and appears only on the time chart. All marks are sample data, drawn hollow and dashed.</p>
-    <div class="grid2">
-      <figure class="fig">
-        <div class="chart" id="cost-chart"></div>
-        <figcaption>Score against cost per entry (sample data).</figcaption>
-      </figure>
-      <figure class="fig">
-        <div class="chart" id="time-chart"></div>
-        <figcaption>Score against wall-clock time (sample data).</figcaption>
-      </figure>
+  <section class="block" id="boards">
+    <h2>Leaderboards</h2>
+    <p class="prose">Rows are agent setups on profile default-v2, one run per world (worlds 401 and 402 are crimson, 403 is a corruption world no earlier run had seen). <b>Extended</b> counts facts reached out of a 19-fact catalog that separates crafting and placing from holding items; <b>published</b> is the 13-checkpoint subset terrariabench.com scores, which rewards possession and so also loot from chests. Both are read from the observer journal after the run and cut at the 20-minute budget. With one to three runs per row these are signals, not rankings.</p>
+    <div class="tabs" role="tablist" aria-label="Clock mode" id="board-tabs">
+      <button type="button" role="tab" aria-selected="true" aria-controls="board-rt" id="tab-rt" data-clock="realtime">Real time</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="board-pa" id="tab-pa" data-clock="paused">Paused</button>
     </div>
-    <div id="pareto-legend"></div>
-  </section>
-
-  <section class="block" id="progress">
-    <h2>Progress over game time <span id="progress-badge"></span></h2>
-    <p class="prose">Milestones reached against in-game minutes, as TerrariaBench plots progress over time. Each step is the median minute at which an agent first reached a milestone across its worlds. The budget ends at <span id="game-min"></span> game minutes.</p>
-    <div class="seg" role="group" aria-label="Progress measure">
-      <button type="button" aria-pressed="true" data-measure="count">Milestones reached</button>
-      <button type="button" aria-pressed="false" data-measure="weighted">Weighted score, %</button>
+    <div role="tabpanel" id="board-rt" aria-labelledby="tab-rt">
+      <p class="prose note">Real time: the game never pauses, so every second of model latency is a second the character stands still with enemies around.</p>
+      <div id="board-realtime"></div>
     </div>
-    <div class="chart" id="progress-chart"></div>
-    <div id="progress-legend"></div>
+    <div role="tabpanel" id="board-pa" aria-labelledby="tab-pa" hidden>
+      <p class="prose note">Paused: the game process is stopped (SIGSTOP) during every model call and resumed for the actions and the screenshot, so latency costs money and wall time but no game time.</p>
+      <div id="board-paused"></div>
+    </div>
+    <p class="note" id="board-note"></p>
   </section>
 
-  <section class="block" id="heatmap">
-    <h2>First unlock, by milestone <span id="heat-badge"></span></h2>
-    <p class="prose">Rows are agents, columns are the <span id="n-milestones"></span> milestones in tier order. Each cell is the median game minute of the first unlock; stronger colour means earlier. A blank cell means the milestone was never reached.</p>
-    <div id="heat"></div>
-    <div id="tier-key" class="note"></div>
+  <section class="block" id="systems">
+    <h2>One model or a planner with a fast executor</h2>
+    <p class="prose">Opus 5.5 alone is slow for real time (about 4 s per screenshot) and expensive. In the combination, Opus plans every 10 to 60 game seconds and does all menu work, while Jev 1.14 picks walk, jump, chop, dig and attack moves from a catalog about every 0.3 s. Both see the same screenshots and send the same key and mouse primitives.</p>
+    <div id="systems-table"></div>
+    <p class="note" id="systems-note"></p>
+  </section>
+
+  <section class="block" id="timelines">
+    <h2>Milestones over game time</h2>
+    <p class="prose">Each line is one run: the number of extended-catalog facts reached by each game minute. Times are game time, so real-time and paused runs share the axis.</p>
+    <div class="seg" role="group" aria-label="Runs shown" id="tl-filter">
+      <button type="button" aria-pressed="true" data-clock="realtime">Real time</button>
+      <button type="button" aria-pressed="false" data-clock="paused">Paused</button>
+    </div>
+    <div class="chart" id="tl-chart"></div>
+    <div id="tl-legend"></div>
+    <h3>First time each fact was reached</h3>
+    <p class="prose">Rows are runs, columns are the catalog facts any run reached (published checkpoints first, then extended facts). Each cell is the game minute of the first unlock; darker is earlier, blank is never.</p>
+    <div id="tl-heat"></div>
+  </section>
+
+  <section class="block" id="videos">
+    <h2>Run videos</h2>
+    <p class="prose" id="videos-intro"></p>
+    <div class="vids" id="video-grid"></div>
+  </section>
+
+  <section class="block" id="all-runs">
+    <h2>Every run</h2>
+    <p class="prose">All runs of the campaign so far, including pilots, runs that ended early and runs that are not scored, with the reason. Sort by any column.</p>
+    <div id="runs-table"></div>
+  </section>
+
+  <section class="block" id="compare">
+    <h2>Compared with earlier profiles and terrariabench.com</h2>
+    <p class="prose">The same harness family has run under four protocols. Scores on the published catalog are comparable across them; the rules are not. Earlier profiles turned enemy damage off or added a checkpoint tool and an interface card, which made the early game easier.</p>
+    <div id="compare-table"></div>
+    <p class="note" id="compare-note"></p>
+  </section>
+
+  <section class="block" id="harness">
+    <h2>Harness card</h2>
+    <p class="prose">Everything a model gets. The system prompt is the same in both clock modes and contains no hints, recipes, progress feedback or remaining time. Context keeps all text until 120k tokens and the newest 8 screenshots.</p>
+    <div id="profile-table"></div>
+    <h3>System prompt</h3>
+    <pre id="prompt"></pre>
+    <p class="note" id="prompt-note"></p>
+    <h3>Tool</h3>
+    <p class="prose" id="tool-text"></p>
+    <details>
+      <summary>JSON schema of the act tool</summary>
+      <pre id="schema"></pre>
+    </details>
+    <p class="note" id="harness-src"></p>
   </section>
 
   <section class="block" id="speed">
     <h2>How fast is real Terraria?</h2>
-    <p class="prose">We measured a headless tModLoader 1.4.4 dedicated server stepping <code>Main.Update</code> in a tight loop on an Intel i7-9700 (Linux), with a scripted player that walks, jumps and mines with a copper pickaxe. Each run is 30 s of steady state after a 5 s warm-up, repeated three times. One agent action is 4 game ticks.</p>
+    <p class="prose">For RL, speed decides everything. We measured a headless tModLoader 1.4.4 dedicated server stepping <code>Main.Update</code> in a tight loop on an Intel i7-9700 (Linux), with a scripted player that walks, jumps and mines with a copper pickaxe. Each run is 30 s of steady state after a 5 s warm-up, repeated three times. One agent action is 4 game ticks.</p>
     <dl class="facts" id="tml-facts"></dl>
     <div class="chart" id="speed-chart"></div>
     <div id="speed-legend"></div>
@@ -79,7 +105,7 @@
 
   <section class="block" id="estimator">
     <h2>What would RL on real Terraria cost?</h2>
-    <p class="prose">Pick a training budget. The Terraria column assumes about <span id="aps"></span> actions per second per CPU core (the measured headless rate, so the real cost is higher). The Terraria-Lite column uses the measured median PPO training speed on one GPU. Both dollar rates are placeholder assumptions from <code>data/costs.json</code>, not quotes.</p>
+    <p class="prose">No RL agent has been trained on the real game. Pick a training budget. The Terraria column assumes about <span id="aps"></span> actions per second per CPU core (the measured headless rate, so the real cost is higher). The Terraria-Lite column uses the measured median PPO training speed on one GPU. Both dollar rates are placeholder assumptions from <code>data/costs.json</code>, not quotes.</p>
     <div class="est-ctl">
       <label for="steps">Training steps: <b id="steps-out" class="num"></b></label>
       <input type="range" id="steps" min="8" max="10" step="0.01" value="9" aria-describedby="steps-help">
@@ -96,6 +122,12 @@
       </div>
     </div>
     <p class="note" id="est-note"></p>
+  </section>
+
+  <section class="block" id="planned">
+    <h2>Not run yet <span id="planned-badge"></span></h2>
+    <p class="prose">Rows the track is meant to have and does not: RL policies with the same screenshots and inputs, and human players under the same 20-minute budget. They are invented to show where they would sit.</p>
+    <div id="planned-table"></div>
   </section>
 </main>
 <script type="module" src="js/pages/terraria.js"></script>

@@ -18,8 +18,8 @@
     <h3>v7 and v8: achievements out of 32</h3>
     <p class="prose">An episode lasts at most 3,000 primitive actions. Its score is the number of distinct achievements unlocked, out of 32, each worth the same. An entry's score is the mean over its evaluation episodes (128 worlds per training seed for RL).</p>
 
-    <h3>v9 (draft): percent of the maximum weighted score</h3>
-    <p class="prose">v9 has <span id="v9-n"></span> achievements in four tiers weighted 1, 3, 5 and 8, so the maximum is <span id="v9-max"></span>. An episode scores the sum of the weights it unlocks divided by the maximum, as a percentage; the headline is the mean over episodes. This follows Craftax, which reports reward as a percent of its maximum. Tier placement may still move after the v9 pilots (<code>docs/ENV_V9_DESIGN.md</code>, section 8).</p>
+    <h3>v9 and v10: percent of the maximum weighted score</h3>
+    <p class="prose">v9 has <span id="v9-n"></span> achievements in four tiers weighted 1, 3, 5 and 8, so the maximum is <span id="v9-max"></span>. An episode scores the sum of the weights it unlocks divided by the maximum, as a percentage; the headline is the mean over episodes. This follows Craftax, which reports reward as a percent of its maximum. v10 adds two tier-4 stepping stones (find a Demon Altar, hold 6 lenses), so it has 40 achievements and a maximum of 145 (<code>docs/ENV_V9_DESIGN.md</code>, sections 8 and 14).</p>
     <div id="v9-tiers"></div>
 
     <h3>Crafter score</h3>
@@ -88,14 +88,15 @@
       <div id="pub-1b"></div>
       <div id="pub-1m"></div>
     </div>
-    <h3>Our reruns <span class="sample">sample data</span></h3>
-    <p class="prose" id="ours-note"></p>
+    <h3>Our reruns</h3>
+    <p class="prose">Our PPO lands at 12.1% against the published 11.9%, and PPO-RNN at 16.2% against 15.3%, so the pipeline reproduces the published baselines and a low Terraria-Lite score is about the environment, not the trainer. Our own Terraria-Lite settings are much worse on Craftax (5.3%): they were tuned for a long-horizon game and do not transfer. That run changed five settings at once, so it does not say which one is responsible.</p>
+    <p class="note prose" id="ours-note"></p>
     <figure class="fig">
       <div class="chart" id="calib-chart"></div>
-      <figcaption>Craftax-1B, percent of maximum reward. Solid: published. Hollow and dashed: our planned reruns, sample data until the runs finish.</figcaption>
+      <figcaption>Craftax-1B, percent of maximum reward. Rows marked "published" come from the Craftax README; rows marked "ours" are our reruns, mean of 3 seeds, with whiskers spanning the seeds and dots for the individual seeds.</figcaption>
     </figure>
     <div id="calib-legend"></div>
-    <h3>What has actually run</h3>
+    <h3>Pipeline smoke run</h3>
     <p class="prose" id="smoke-text"></p>
     <dl class="facts" id="smoke-facts"></dl>
   </section>

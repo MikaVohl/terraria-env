@@ -21,7 +21,7 @@ chrome();
   bars($("#iqm-chart"), order.map((k) => {
     const f = rl.final[k];
     return { label: f.name, value: f.test_iqm, lo: f.test_ci[0], hi: f.test_ci[1], dots: f.test_scores, color: color[k] };
-  }), { domain: [24, 29], fmt: (v) => v.toFixed(2), xLabel: "test score, achievements out of 32 (IQM over 5 seeds)", label: "v8 final configurations, test IQM" });
+  }), { domain: [24, 29], fmt: (v) => v.toFixed(2), xLabel: "test score out of 32 (IQM, 5 seeds)", label: "v8 final configurations, test IQM" });
   $("#iqm-legend").append(legend([{ color: "--base", label: "v8 default knobs" }, { color: "--rl", label: "generic RL" }, { color: "--shaped", label: "RL with disclosed priors (recipe shaping)" }]));
   const pi = rl.p_improve;
   const short = { generic_g9998: "generic, gamma .9998", shaped_g9998: "shaped, gamma .9998", o3t2_standard: "ore 3x + trees 2x", v8_default: "v8 default" };
@@ -60,10 +60,10 @@ chrome();
   const pub = Object.fromEntries(cal.published["Craftax-1B"].map((p) => [p.algo, p.pct]));
   bars($("#calib-chart"), [
     ...cal.published["Craftax-1B"].map((p) => ({ label: `${p.algo}, published`, value: p.pct, color: "--base" })),
-    ...ours.map((r) => ({ label: `${r.algo}, ours`, value: r.pct, lo: r.ci[0], hi: r.ci[1], color: r.algo.includes("Terraria") ? "--shaped" : "--rl", sample: cal.ours.placeholder,
-      tip: `<b>${r.algo}, ours</b><br>${r.pct.toFixed(1)}% [${r.ci[0].toFixed(1)}, ${r.ci[1].toFixed(1)}], ${r.seeds} seeds, ${r.hw}, ${r.gpu_hours} GPU-hours per seed${pub[r.algo] != null ? `<br>published: ${pub[r.algo].toFixed(1)}%` : ""}<br><i>sample data</i>` })),
+    ...ours.map((r) => ({ label: `${r.algo}, ours`, value: r.pct, lo: r.ci[0], hi: r.ci[1], dots: r.seed_pcts, color: r.algo.includes("Terraria") ? "--shaped" : "--rl",
+      tip: `<b>${r.algo}, ours</b><br>${r.pct.toFixed(1)}%, seeds ${r.seed_pcts.map((x) => x.toFixed(1)).join(", ")} (bar: range over ${r.seeds} seeds)<br>${r.hw}, ${fmt.hours(r.wall_hours)} wall clock${pub[r.algo] != null ? `<br>published: ${pub[r.algo].toFixed(1)}%` : ""}` })),
   ], { domain: [0, 25], fmt: (v) => `${v.toFixed(1)}%`, xLabel: "Craftax-1B reward, % of maximum (226)", label: "Craftax calibration" });
-  $("#calib-legend").append(legend([{ color: "--base", label: "published (Craftax README)" }, { color: "--rl", label: "our rerun of the official baseline", sample: true }, { color: "--shaped", label: "our PPO with Terraria-Lite settings", sample: true }]));
+  $("#calib-legend").append(legend([{ color: "--base", label: "published (Craftax README)" }, { color: "--rl", label: "our rerun of the official baseline" }, { color: "--shaped", label: "our PPO with Terraria-Lite settings" }]));
   const sm = cal.smoke;
   $("#smoke-text").textContent = `${sm.note} The upstream Craftax_Baselines ppo.py ran on ${sm.env} at commit ${sm.upstream_commit.slice(0, 12)}. Source: ${sm._source}.`;
   const facts = [

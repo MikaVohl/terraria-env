@@ -50,6 +50,8 @@ const B = 2 ** 30;
   const pickSh = longSh.filter((r) => r["craft iron pickaxe"] > 0);
   const pickAny = rl.runs.filter((r) => r["craft iron pickaxe"] > 0);
   const pSG = rl.p_improve.shaped_g9998.generic_g9998;
+  const liteE = Object.fromEntries(lite.entries.map((e) => [e.id, e]));
+  const v9g = liteE["v9-generic-1b"], v9s = liteE["v9-shaped-1b"], v10g = liteE["v10-generic-1b"], v10s = liteE["v10-shaped-1b"];
   const bv = best.validation, bvh = bv.hits;
 
   $("#tldr-list").replaceChildren(
@@ -58,6 +60,7 @@ const B = 2 ** 30;
     el("li", {}, el("b", {}, "Architecture did about nothing. "), `Hidden width 1024 instead of 128: ${signed(wide.delta)}; an LSTM with 256 units: ${signed(lstm.delta)} at ${fmt.n(lstm.hours / capRef.hours, 1)}x the wall-clock time (${fmt.hours(lstm.hours)} against ${fmt.hours(capRef.hours)}).`),
     el("li", {}, el("b", {}, "Shaping ties on the mean but unlocks the iron pickaxe. "), `Generic and shaped arms reach test IQM ${fmt.n(F.generic_g9998.test_iqm)} and ${fmt.n(F.shaped_g9998.test_iqm)}; P(shaped beats generic) is ${fmt.n(pSG)}. Only ${pickAny.length} of ${rl.runs.length} runs ever crafted an iron pickaxe, all shaped and all at ${fmt.steps(Math.min(...pickAny.map((r) => r.steps)))} steps or more: ${pickSh.length} of ${longSh.length} shaped runs at 4B to 6B steps, none of the ${longGen.length} generic runs at 4B.`),
     el("li", {}, el("b", {}, `One 6B-step shaped run reaches ${fmt.n(best.score)}/32 `), `with an iron pickaxe in ${bvh["craft iron pickaxe"]} of ${bv.episodes} validation worlds and a climb back to the surface in ${bvh["return to surface"]} (one seed, selected as the best run).`),
+    el("li", {}, el("b", {}, "The bitter lesson holds on the mean, not at the hardest step. "), `Counting the later 6B-step runs as well (generic arm at gamma .9999, five seeds; four more shaped seeds), the shaped arm crafted an iron pickaxe in 5 of 15 runs and the generic arm in 0 of 9 (DECISIONS.md C4). On the newer versions the two arms stay close at 1B steps: v9 ${fmt.n(mean(v9g.seed_scores), 1)}% generic against ${fmt.n(mean(v9s.seed_scores), 1)}% shaped (mean of 5 seeds), v10 ${fmt.n(v10g.score.value, 1)}% against ${fmt.n(v10s.score.value, 1)}% (mean of 3 seeds), validation worlds.`),
     el("li", {}, el("b", {}, "Things that hurt or did not help. "), `Worlds 256 tiles wide cost up to ${fmt.n(-worldWorst, 1)} points; a 21x15 view lowered the score in every setting tried (${signed(Math.max(...viewDeltas))} to ${signed(Math.min(...viewDeltas))}); Go-Explore restarts changed the generic arm by ${signed(geGen.mean - geGenRef.mean)} and the shaped arm by ${signed(geSh.mean - geShRef.mean)}.`),
   );
 
@@ -251,6 +254,6 @@ const B = 2 ** 30;
   $("#cost-note").replaceChildren(costs.gpu.basis, " Inference: ", costs.rl_inference._note, " The hatched row is ", sampleBadge(), ".");
 
   // ---- in progress ----
-  $("#progress-list").replaceChildren(...hist.in_progress.filter((p) => /bitter|v9/i.test(p.what)).map((p) =>
+  $("#progress-list").replaceChildren(...hist.in_progress.filter((p) => /^v10/.test(p.what)).map((p) =>
     el("li", {}, el("b", {}, p.what), `: ${p.detail} `, el("span", { class: "note" }, "(", el("code", {}, p.source), ")"))));
 })().catch((e) => fail($("#main"), e));

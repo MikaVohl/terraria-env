@@ -1,5 +1,5 @@
 import { chrome, el, $, $$, fmt, achIcon, kindBadge, sampleBadge, table, ciCell, fail } from "../common.js";
-import { scatter, lines, heatmap, legend } from "../charts.js";
+import { scatter, lines, heatmap, legend, bars } from "../charts.js";
 import { loadLite, attemptProgress } from "../board.js";
 
 chrome();
@@ -18,7 +18,7 @@ const VIZ_RUN = "eg15-envopt2b-v8-20261101/build-v8-g0/pot_e1024_max2-2001"; // 
   // ---- contract ----
   const c = lite.contract;
   $("#contract-facts").replaceChildren(...[
-    ["Observation", c.observation], ["Actions", c.actions], ["Horizon", c.horizon], ["Score (v7, v8)", c.score_v8], ["Score (v9)", c.score_v9],
+    ["Observation", c.observation], ["Actions", c.actions], ["Horizon", c.horizon], ["Score (v7, v8)", c.score_v8], ["Score (v9, v10)", c.score_v9],
   ].map(([k, v]) => el("div", {}, el("dt", {}, k), el("dd", { style: { fontSize: "15px", fontWeight: 400 } }, v))));
   $("#contract-llm").textContent = `${c.summary} LLM harness rules: ${c.llm_rules}`;
 
@@ -55,9 +55,9 @@ const VIZ_RUN = "eg15-envopt2b-v8-20261101/build-v8-g0/pot_e1024_max2-2001"; // 
         el("span", { class: "agent-sub" }, r.sub), r.notes ? el("span", { class: "agent-sub" }, r.notes) : "") },
       { key: "kind", label: "Kind", sort: (r) => r.kind, render: (r) => kindBadge(r.kind) },
       { key: "prior", label: "Prior knowledge", cls: "col-prior", sort: (r) => r.prior, render: (r) => el("span", { class: "note" }, r.prior) },
-      { key: "value", label: `Score ${unit}`, sort: (r) => r.value, title: "IQM over training seeds with a bootstrap 95% CI for RL; mean and range over worlds for LLM attempts",
+      { key: "value", label: `Score ${unit}`, sort: (r) => r.value, title: "IQM over 5 training seeds with a bootstrap 95% CI; with fewer seeds, the mean and the range over seeds; for LLM attempts, the mean and the range over worlds",
         render: (r) => el("div", {}, ciCell(r.value, r.ci, v.domain, unit === "%" ? 1 : 2),
-          el("span", { class: "agent-sub" }, `${r.stat}${r.ci ? (r.ciIsRange ? ", range over worlds" : ", 95% CI") : ""}`)) },
+          el("span", { class: "agent-sub" }, `${r.stat}${r.ci ? (r.ciIsRange ? `, range over ${r.rangeOver}` : ", 95% CI") : ""}`)) },
       { key: "n", label: "Seeds x worlds", sort: (r) => (r.seeds || 0) * (r.worlds || 0), render: (r) => el("span", { class: "num" }, `${r.seeds ?? "?"} x ${r.worlds ?? "?"}`, el("span", { class: "agent-sub" }, r.split || "")) },
       { key: "budget", label: "Budget", sort: (r) => r.steps ?? r.actions, render: (r) => el("span", { class: "num" },
         r.steps ? `${fmt.steps(r.steps)} steps` : "", r.steps ? el("span", { class: "agent-sub" }, "training, per seed") : "",
@@ -73,11 +73,13 @@ const VIZ_RUN = "eg15-envopt2b-v8-20261101/build-v8-g0/pot_e1024_max2-2001"; // 
       { key: "verified", label: "Verified", sort: (r) => (r.verified ? 1 : 0), render: verifiedCell },
     ];
     $("#board-table").replaceChildren(table(cols, ranked, { sortKey: "value", caption: `Terraria-Lite ${v.label} leaderboard` }));
-    $("#board-note").textContent = state.version === "v7"
-      ? "LLM entries are development studies on public worlds with few worlds each and dollar guards that stopped some episodes early; their interval is the range over worlds, not a confidence interval. They use pretrained knowledge and the public recipes, so they are not an equal-prior comparison with PPO trained from scratch."
-      : state.version === "v8"
-        ? `RL scores are the IQM over 5 training seeds on the 128 reserved test worlds (25,000,001 to 25,000,128), evaluated once. Training cost uses ${fmt.usd(costs.gpu.usd_per_gpu_hour)} per GPU-hour, an assumption, not a quote. No LLM has been run on v8 yet.`
-        : "v9 pilots are queued; every row is sample data showing the planned columns (percent of the weighted maximum, budgets of 250M, 1B and 4B steps).";
+    const notes = {
+      v7: "LLM entries are development studies on public worlds with few worlds each and dollar guards that stopped some episodes early; their interval is the range over worlds, not a confidence interval. They use pretrained knowledge and the public recipes, so they are not an equal-prior comparison with PPO trained from scratch.",
+      v8: `RL scores are the IQM over 5 training seeds on the 128 reserved test worlds (25,000,001 to 25,000,128), evaluated once. Training cost uses ${fmt.usd(costs.gpu.usd_per_gpu_hour)} per GPU-hour, an assumption, not a quote. No LLM has been run on v8 yet.`,
+      v9: "PPO rows: final policies on the 128 validation worlds (23,000,001 to 23,000,128), not reserved test worlds. The 1B rows have 5 seeds (IQM, bootstrap 95% CI, mean in the notes); the 4B, minimap and LSTM rows have 2 seeds (mean, range over seeds). 4B steps did not beat 1B. LLM rows (docs/reports/LLM_V9_CAMPAIGN_2026_11_08.md): one attempt on each of 3 public worlds with a game guide and macro actions, so they have more prior knowledge than generic PPO; the interval is the range over worlds. RL time is wall-clock per seed; GPU cost is not shown because runs shared GPUs. Hatched rows are sample data.",
+      v10: "PPO rows: final policies on the 128 validation worlds (23,000,001 to 23,000,128), 3 seeds at 1B and 2 at 4B; the score is the mean and the interval the range over seeds. Both arms land in the 25 to 35% target band at 1B, and 4B adds nothing (DECISIONS.md B1, C2). No PPO run returns to the surface or collects a lens on v10 (DECISIONS.md B2). RL time is wall-clock per seed; GPU cost is not shown because runs shared GPUs.",
+    };
+    $("#board-note").textContent = notes[state.version] || "";
   }
 
   function verifiedCell(r) {
@@ -115,12 +117,11 @@ const VIZ_RUN = "eg15-envopt2b-v8-20261101/build-v8-g0/pot_e1024_max2-2001"; // 
 
   function renderAch() {
     const v = ver(state.version);
-    if (state.version === "v9") {
-      const tr = lite.v9_tier_rates;
-      $("#ach-intro").replaceChildren("v9 groups its 38 achievements into four tiers weighted 1, 3, 5 and 8. Cells: mean fraction of a tier's achievements unlocked per episode. ", sampleBadge());
-      const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
-      $("#ach-heat").replaceChildren(heatmap(tr.agents.map((a) => ({ label: byId[a.id]?.agent || a.id, sample: true, cells: a.rates })),
-        tr.tiers.map((t) => ({ label: t, icon: el("span", { style: { fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", padding: "0 6px" } }, t) })), { fmt: (x) => `${Math.round(100 * x)}%` }));
+    if (v.unit === "%") {
+      const tr = visible().filter((r) => r.tiers);
+      $("#ach-intro").textContent = `${v.label} groups its ${v.achievements} achievements into four tiers weighted 1, 3, 5 and 8 (maximum ${v.max_weighted}). Cells: mean fraction of a tier's achievements unlocked per episode, averaged over seeds (PPO, validation worlds) or worlds (LLM, 3 public worlds).`;
+      $("#ach-heat").replaceChildren(heatmap(tr.map((r) => ({ label: shortName(r), cells: r.tiers })),
+        v.tiers.map((t) => ({ label: t, icon: el("span", { style: { fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", padding: "0 6px" } }, t) })), { fmt: (x) => `${Math.round(100 * x)}%` }));
       return;
     }
     const withRates = visible().filter((r) => r.rates);
@@ -136,8 +137,8 @@ const VIZ_RUN = "eg15-envopt2b-v8-20261101/build-v8-g0/pot_e1024_max2-2001"; // 
   function renderProgress() {
     const series = [], leg = [];
     const vis = visible();
-    if (state.version === "v9") {
-      $("#progress-intro").replaceChildren("No v9 episodes exist yet. This view will show mean achievements unlocked by each step for every entry once the pilots report. ", sampleBadge());
+    if (ver(state.version).unit === "%") {
+      $("#progress-intro").textContent = "Per-step progress and first-unlock steps for v9 and v10 are not exported to this site yet; the run summaries used here hold final scores only.";
       $("#progress-chart").replaceChildren(); $("#progress-legend").replaceChildren(); $("#first-heat").replaceChildren(); $("#first-intro").textContent = "";
       return;
     }
@@ -182,7 +183,30 @@ const VIZ_RUN = "eg15-envopt2b-v8-20261101/build-v8-g0/pot_e1024_max2-2001"; // 
     $("#dist-legend").replaceChildren(legend(series.map((s) => ({ color: s.color, label: s.label, line: true }))));
   }
 
-  function renderAll() { renderBoard(); renderCost(); renderAch(); renderProgress(); renderDist(); }
+  const GROUP_COLOR = { v10: "--rl", "one port off": "--bc", "one port on": "--gold", control: "--base", "night tuning": "--human" };
+  function renderPorts() {
+    const sec = $("#ports");
+    sec.hidden = state.version !== "v10";
+    if (sec.hidden) return;
+    const ab = lite.v10_ablations, all = ab.rows.find((r) => r.id === "all");
+    bars($("#ports-chart"), ab.rows.map((r) => ({ label: r.label, value: r.mean, dots: r.scores.length > 1 ? r.scores : null, color: GROUP_COLOR[r.group] })),
+      { domain: [0, 70], fmt: (x) => `${x.toFixed(1)}%`, ref: all.mean, refLabel: "v10 as built", xLabel: "weighted % of maximum (145), mean over seeds; dots are seeds", label: "v10 port ablations, generic PPO at 1B steps" });
+    $("#ports-legend").replaceChildren(legend(Object.entries(GROUP_COLOR).map(([g, color]) => ({ color, label: g === "v10" ? "v10 as built (all ports)" : g }))));
+    const counts = (a) => a.join(", ");
+    $("#ports-table").replaceChildren(table([
+      { key: "label", label: "Build", render: (r) => el("div", {}, el("span", { class: "agent-name" }, r.label), el("span", { class: "agent-sub" }, r.group)) },
+      { key: "mean", label: "Score %", cls: "r", sort: (r) => r.mean, render: (r) => el("span", { class: "num" }, el("b", {}, fmt.n(r.mean, 1)), el("span", { class: "agent-sub" }, r.scores.map((x) => x.toFixed(1)).join(", "))) },
+      { key: "tiers", label: "Tiers 1/2/3/4", sort: (r) => r.tiers[2], render: (r) => el("span", { class: "num" }, r.tiers.map((x) => Math.round(100 * x)).join(" / ")) },
+      { key: "deaths", label: "Deaths", cls: "r", sort: (r) => r.deaths, render: (r) => el("span", { class: "num" }, fmt.pct(r.deaths)) },
+      { key: "anvil", label: "Anvil", cls: "r", sort: (r) => r.anvil[0], render: (r) => el("span", { class: "num" }, counts(r.anvil)) },
+      { key: "surface", label: "Return to surface", cls: "r", sort: (r) => r.surface[0], render: (r) => el("span", { class: "num" }, counts(r.surface)) },
+      { key: "lens", label: "Lens", cls: "r", sort: (r) => r.lens[0], render: (r) => el("span", { class: "num" }, counts(r.lens)) },
+      { key: "altar", label: "Altar found", cls: "r", sort: (r) => r.altar[0], render: (r) => el("span", { class: "num" }, counts(r.altar)) },
+    ], ab.rows, { caption: "v10 port ablations: generic PPO, gamma .9999, 1B steps, 128 validation worlds; counts are worlds out of 128, one value per seed" }));
+    $("#ports-note").textContent = `${ab._note} Source: ${ab.source}.`;
+  }
+
+  function renderAll() { renderBoard(); renderPorts(); renderCost(); renderAch(); renderProgress(); renderDist(); }
   renderAll();
 })().catch((e) => fail($("#main"), e));
 

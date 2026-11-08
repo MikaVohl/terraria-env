@@ -1,5 +1,5 @@
 {
-  "_note": "Failure gallery. 'viz' names the chart the page draws from data/rl.json or data/llm.json; 'replay' links a step in an audited LLM tape. Numbers in 'facts' are copied from the cited reports.",
+  "_note": "Failure gallery. 'viz' names the chart the page draws from data/rl.json, data/llm.json or data/terrariabench.json; 'replay' links a step in an audited LLM tape; 'video' and 'videos' name official-Terraria recordings from data/videos.json with a start time in game seconds. Numbers in 'facts' are copied from the cited reports.",
   "items": [
     {
       "id": "illegal",
@@ -77,12 +77,56 @@
       "source": "data/rl.json (mean_steps_after_last_achievement)"
     },
     {
-      "id": "tile-control",
-      "title": "Official Terraria: runs that edit tiles directly are invalid",
+      "id": "tb-placed",
+      "track": "official",
+      "title": "Official Terraria: \"The workbench is placed\", and it is not",
       "agent": "llm",
-      "placeholder": true,
-      "text": "TerrariaBench marks runs with direct tile-control evidence as invalid. Our official track will do the same and list the reason next to the run. No official-Terraria runs exist yet; this card shows the layout.",
-      "source": "https://terrariabench.com/spec/"
+      "text": "The observer mod journals every crafted and placed object, so the score never depends on what the model says. Haiku crafts a work bench within the first minute of almost every run and then reports it as placed, sometimes with the achievement it would have earned. The journal shows the craft and no placement. The quotes are the models' own messages at the game time shown.",
+      "viz": "tb-placed",
+      "video": { "run": "b12-haiku-pa-w402", "start": 20, "note": "Haiku paused on world 402: the bench is crafted at 0:24 and the message at 0:25 calls it placed." },
+      "source": "TerrariaBench/experiments/landscape-2026-11-08.md; evidence/timeline.md and observer journal of each run"
+    },
+    {
+      "id": "tb-deaths",
+      "track": "official",
+      "title": "Official Terraria: in real time, slow models die again and again",
+      "agent": "llm",
+      "text": "With normal enemies and the clock running, every second of model latency is a second the character stands still. Luna and Terra take about 6 to 7 s per call, so they see the game once every 6 to 7 game seconds; after nightfall zombies and demon eyes kill them faster than they react. Luna died 17 times in 20 minutes on world 403. Pausing the game during model calls helps some models (Opus on world 401: 4 deaths paused against 17 in real time) but not all: paused Luna still died 11 and 14 times, because night still comes.",
+      "viz": "tb-deaths",
+      "video": { "run": "b05-luna-rt-w403", "deaths": true, "note": "Luna in real time on world 403; the buttons jump to each death." },
+      "source": "TerrariaBench/experiments/landscape-2026-11-08.md (b05, b04, b06r, c1, c2); observer journal death events"
+    },
+    {
+      "id": "tb-exit",
+      "track": "official",
+      "title": "Official Terraria: Terra leaves the world through Save & Exit",
+      "agent": "llm",
+      "text": "Nothing in the prompt mentions the game menu, and Terra opened it anyway and chose Save & Exit: at 16:04 in real time (default-v1, where re-entering the world crashed tModLoader) and at 1:41 in a paused run (default-v2, where it re-entered three times while the harness kept calling the model with the game clock stopped, $0.96 lost). default-v2 now ends a run when the journal reports that the player left the world; the remaining time is forfeited, not censored.",
+      "viz": "tb-videos",
+      "videos": [
+        { "run": "m15-terra-rt-w402", "start": 950, "note": "default-v1, real time, world 402: the menu opens at about 16:00." },
+        { "run": "b08-terra-pa-w403", "start": 85, "note": "default-v2, paused, world 403: Save & Exit at 1:41; the video ends with the world." }
+      ],
+      "source": "TerrariaBench/experiments/default-game-2026-11-08.md (bug 2); TerrariaBench/experiments/landscape-2026-11-08.md (b08)"
+    },
+    {
+      "id": "tb-wrapup",
+      "track": "official",
+      "title": "Official Terraria: Haiku stops playing and writes summaries",
+      "agent": "llm",
+      "text": "Paused Haiku reads the game time in every tool result, knows the session length and starts writing end-of-session summaries instead of calling the tool. With thinking on, the API cannot force a tool call. On world 403 it declared at 12:35 that it would take no further actions and repeated a final-state summary until the end: 338 of its 571 replies had no action, and each was executed as a 1-second wait, so the last 7.5 minutes passed as about 300 waits. The no-action rule keeps such runs bounded and scored; it cannot make the model act.",
+      "viz": "tb-noaction",
+      "video": { "run": "b14-haiku-pa-w403", "start": 740, "note": "From 12:20: the character stands still while the waits run out the clock." },
+      "source": "TerrariaBench/experiments/landscape-2026-11-08.md (a1, b12, b14)"
+    },
+    {
+      "id": "tb-notscored",
+      "track": "official",
+      "title": "Official Terraria: runs that do not count, and why",
+      "agent": "llm",
+      "text": "As on terrariabench.com, runs stay listed with their reason instead of disappearing. A run is not scored when the harness or the provider failed; it is censored when a dollar cap stopped it before 20 game-minutes, and then keeps what it reached. No default-v2 run has shown direct tile control; the observer is read-only and input goes through the X server like a keyboard and mouse.",
+      "viz": "tb-notscored",
+      "source": "TerrariaBench/experiments/landscape-2026-11-08.md; https://terrariabench.com/spec/"
     }
   ]
 }

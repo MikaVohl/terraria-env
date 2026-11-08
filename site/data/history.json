@@ -62,10 +62,28 @@
       "wrong": "Client-side player logic (pickup, damage, melee, cursor tools, crafting) does not run headless yet."
     },
     {
-      "id": "v9", "date": "2026-11-07", "title": "v9: the release candidate",
-      "changed": ["128x128 layered world, day and night, Zombies, Demon Eyes, Skeletons, Demon Altars, Eye of Cthulhu.", "38 achievements in four tiers weighted 1/3/5/8; headline is percent of the weighted maximum.", "Sim-cost gate passes: 1.23M steps/s (0.95x of v8)."],
-      "result": "Pilots at 250M, 1B and 4B steps queued (generic and shaped, gamma .9999, plus a minimap arm).",
-      "wrong": "Open: tier placement, supply minimums and episode length are tunable until pilots report."
+      "id": "v9", "date": "2026-11-07", "title": "v9: a layered world with night and a boss",
+      "changed": ["128x128 layered world, day and night, Zombies, Demon Eyes, Skeletons, Demon Altars, Eye of Cthulhu.", "38 achievements in four tiers weighted 1/3/5/8; headline is percent of the weighted maximum (129).", "Sim-cost gate passes: 1.23M steps/s (0.95x of v8)."],
+      "result": "PPO pilots (Nov 8, 128 validation worlds): generic 56.1% at 1B steps (mean of 5 seeds, IQM 57.3%), shaped 54.4%; 4B steps, a minimap and an LSTM did not help. LLM campaign (Nov 8): Claude Haiku 5.5 with a game guide and macros 53.0% mean over 3 public worlds (67.4 / 24.0 / 67.4), about $1 per full episode; GPT-5.6 Luna 24.0%.",
+      "wrong": "Too easy in the middle and a cliff at the top: tiers 1 to 3 are learned almost at once, tier 4 stops at the lens, and no run crafts the iron pickaxe, even at 10 bars instead of 12. Generic PPO at 1B is far above the 25 to 35% target band."
+    },
+    {
+      "id": "craftax", "date": "2026-11-08", "title": "Craftax calibration",
+      "changed": ["Official Craftax_Baselines ppo.py and ppo_rnn.py rerun unmodified on eg15 at 1B steps, 3 seeds each, plus ppo.py with our Terraria-Lite settings."],
+      "result": "PPO 12.1% of the maximum reward against the published 11.9%; PPO-RNN 16.2% against 15.3%. Our pipeline reproduces the published baselines.",
+      "wrong": "Our Terraria-Lite PPO settings score only 5.3% on Craftax; that run changed five settings at once, so it does not say which one hurts."
+    },
+    {
+      "id": "fidelity", "date": "2026-11-08", "title": "v8fid: real-Terraria behaviour on v8",
+      "changed": ["Five knobs port mob AI, combat, physics, mining and trees from Terraria's source onto v8.", "Generic PPO at 2B steps on each port."],
+      "result": "Mob AI, combat, physics and trees cost little or nothing (27.44 to 28.29 of 32 against 27.97 with every port off). Real mining at 4 game ticks per action drops the score to 17.15 with no furnace; at 15 ticks per action all five ports recover to 25.49.",
+      "wrong": "Mining at 4 ticks per action starves the policy of wood and stone, so v10 uses 15 game ticks per action."
+    },
+    {
+      "id": "v10", "date": "2026-11-08", "title": "v10: the release candidate",
+      "changed": ["v9 plus the five behaviour ports, all on, at 15 game ticks per action (one action is a quarter second).", "Two tier-4 stepping stones: find a Demon Altar, hold 6 lenses; 40 achievements, weighted maximum 145.", "Simulator 0.67M steps/s on one thread (0.52x of v8); training is network-bound."],
+      "result": "PPO at 1B steps (3 seeds, validation worlds): generic 32.1 to 32.8%, shaped 33.6 to 34.9%, inside the 25 to 35% target band; 4B steps no better. With every port off the same arm scores 59.2 and 58.9%.",
+      "wrong": "No ported build returns to the surface or collects a lens: not a bug, but surface nights are far deadlier under the enemy and combat ports. Night difficulty tuning is open (DECISIONS.md B2, B4)."
     }
   ],
   "best_over_time": [
@@ -78,8 +96,8 @@
     { "date": "2026-11-03", "version": "v8", "score": 29.33, "label": "PPO shaped 6B, one run, validation", "kind": "shaped" }
   ],
   "in_progress": [
-    { "what": "Bitter-lesson PPO at 6B steps", "detail": "Generic arm (no shaping), gamma .9999, five seeds, ore 3x + trees 2x.", "source": "tools/queue_20261107_bitter.json" },
-    { "what": "v9 pilots", "detail": "16 runs: generic and shaped at 250M, 1B and 4B steps (gamma .9999) and a minimap generic arm at 1B.", "source": "tools/queue_20261108_v9pilot.json" },
-    { "what": "Craftax calibration", "detail": "Pipeline smoke done (Craftax-Classic, 1M steps on CPU); official 1B baselines on our GPUs pending.", "source": "experiments/craftax-calibration" }
+    { "what": "v10 night tuning", "detail": "Night spawn period 120 and 180 steps instead of 60, and weaker night mobs under the ported combat, so that returning to the surface becomes learnable (DECISIONS.md B4).", "source": "tools/queue_20261108_v10night.json" },
+    { "what": "v10 oracle audit", "detail": "Scripted planner per world under the step limit, after the night tuning (DECISIONS.md B7).", "source": "DECISIONS.md" },
+    { "what": "LLMs on v10", "detail": "Guide and macros updated for the real-Terraria physics, then the v9 model list on v10 (DECISIONS.md D2, D3).", "source": "DECISIONS.md" }
   ]
 }

@@ -1,4 +1,11 @@
-/* Official Terraria page: RL cost estimator controls. */
+/* Official Terraria page: rotated heatmap column labels, run notes, harness card, RL cost estimator controls. */
+.heat thead th .hcol { display: block; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-size: 11px; font-weight: 500; margin: 0 auto; max-height: 150px; overflow: hidden; text-overflow: ellipsis; }
+.run-note { font-size: 13px; max-width: 520px; min-width: 280px; margin: 4px 0; white-space: normal; }
+td details summary { cursor: pointer; color: var(--link); font-size: 13px; }
+#prompt, #schema { white-space: pre-wrap; word-break: break-word; }
+#schema { max-height: 420px; overflow: auto; }
+code.src { font-size: 12px; word-break: break-all; }
+[role="tabpanel"][hidden] { display: none; }
 .est-ctl { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 12px 0 4px; }
 .est-ctl input[type="range"] { flex: 1; min-width: 200px; max-width: 520px; }
 .est-ctl label b { display: inline-block; min-width: 4.5em; }

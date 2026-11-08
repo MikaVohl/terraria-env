@@ -3,6 +3,7 @@
 // with a replay get a live clip of the audited tape and a link into replay.html.
 import { chrome, el, $, $$, data, fmt, esc, kindBadge, sampleBadge, table, fail } from "../common.js";
 import { bars, scatter, legend } from "../charts.js";
+import { videoPlayer, mmss } from "../video.js";
 import { boot, Episode, parseTape, draw, whileVisible } from "../sim.js";
 
 chrome();
@@ -20,13 +21,17 @@ const configColor = (key) => (key.startsWith("generic") ? "--rl" : "--shaped");
 const replayHref = (id, t) => `replay.html?id=${encodeURIComponent(id)}${t ? `&t=${t}` : ""}`;
 
 (async () => {
-  const [fx, rl, llm] = await data("failures", "rl", "llm");
+  const [fx, rl, llm, tb, vids] = await data("failures", "rl", "llm", "terrariabench", "videos");
+  const tbRuns = new Map([...tb.runs, ...tb.earlier.default_v1.runs].map((r) => [r.run, r]));
+  const videos = new Map(vids.videos.map((v) => [v.run, v]));
+  const tbMain = tb.runs.filter((r) => !r.not_scored && !r.long);
+  const tbSetup = (r) => r.setup.replace(/, smart_cursor on/, "").replace("realtime", "real time");
   const runs = new Map(rl.runs.map((r) => [r.id, r]));
   const attempts = new Map(llm.attempts.map((a) => [a.id, a]));
   const finals = Object.entries(rl.final).map(([key, f]) => ({ key, name: CONFIG_SHORT[key] || f.name, full: f.name, rs: f.runs.map((id) => runs.get(id)).filter(Boolean) }));
   const [v0, v1] = rl.validation_worlds;
 
-  $("#intro-data").textContent = `LLM failures come from the ${llm.attempts.length} audited LLM attempts on frozen v7, every one of which can be replayed in your browser. RL failures come from the ${rl.runs.length} v8 PPO runs, each evaluated on the 128 validation worlds ${world(v0)} to ${world(v1)}; "final configurations" are the four configurations trained with 5 seeds for 2B steps. Every card names its source.`;
+  $("#intro-data").textContent = `LLM failures on Terraria-Lite come from the ${llm.attempts.length} audited LLM attempts on frozen v7, every one of which can be replayed in your browser. RL failures come from the ${rl.runs.length} v8 PPO runs, each evaluated on the 128 validation worlds ${world(v0)} to ${world(v1)}; "final configurations" are the four configurations trained with 5 seeds for 2B steps. Official Terraria failures come from the ${tb.runs.length} runs of the default-v2 campaign so far (interim) and its default-v1 predecessor, with recordings of the game. Every card names its source.`;
 
   // per-seed rows for the final configurations: bar = mean over seeds, dots = seeds
   const finalRows = (field, f = (v) => fmt.n(v, 1)) => finals.map((c) => {
@@ -136,17 +141,69 @@ const replayHref = (id, t) => `replay.html?id=${encodeURIComponent(id)}${t ? `&t
       vis.append(figcap("Bar: mean over 5 training seeds; dots: each seed, each the mean over 128 validation episodes. Data: data/rl.json (diag.json)."));
     },
 
-    placeholder(vis) {
-      vis.append(el("p", { class: "fail-sub" }, "How invalid runs will be listed ", sampleBadge()));
+    "tb-placed"(vis) {
       vis.append(table([
-        { key: "run", label: "Run" }, { key: "score", label: "Score", cls: "r" }, { key: "status", label: "Status" }, { key: "reason", label: "Reason" },
-      ], [
-        { run: "Sample run A", score: "n/a", status: "valid", reason: "", placeholder: true },
-        { run: "Sample run B", score: "n/a", status: "invalid", reason: "direct tile-control evidence", placeholder: true },
-      ], { caption: "Sample layout for invalid official-Terraria runs" }));
-      vis.append(figcap("Sample layout only: no official-Terraria runs exist yet."));
+        { key: "run", label: "Run", render: (q) => el("span", {}, el("span", { class: "mono" }, q.run), el("span", { class: "agent-sub" }, tbSetup(tbRuns.get(q.run)))) },
+        { key: "t", label: "Game time", cls: "r", render: (q) => el("span", { class: "num" }, q.game_s == null ? "n/a" : mmss(q.game_s)) },
+        { key: "text", label: "The model said", render: (q) => el("q", {}, q.text) },
+        { key: "obs", label: "Observer journal", render: (q) => { const r = tbRuns.get(q.run); const c = r.published_game_s?.workbench_1; const p = r.extended_game_s?.workbench_placed;
+          return `bench crafted ${c != null ? mmss(c) : "never"}, placed ${p != null ? mmss(p) : "never"}`; } },
+      ], tb.quotes, { caption: "Model claims of a placed work bench against the observer journal" }));
+      const hk = tbMain.filter((r) => r.agent === "Haiku" && /medium/.test(r.setup));
+      vis.append(figcap(`Haiku (thinking medium) on default-v2: bench crafted in ${hk.filter((r) => r.published_game_s?.workbench_1 != null).length} of ${hk.length} runs, placed in ${hk.filter((r) => r.extended_game_s?.workbench_placed != null).length}. Data: data/terrariabench.json (quotes from each run's evidence/timeline.md).`));
+    },
+
+    "tb-deaths"(vis) {
+      const groups = new Map();
+      for (const r of tbMain) {
+        if (/none/.test(r.setup)) continue; // Haiku thinking-off pilot
+        const k = `${r.agent}, ${r.clock === "realtime" ? "real time" : "paused"}`;
+        if (!groups.has(k)) groups.set(k, { k, clock: r.clock, rs: [] });
+        groups.get(k).rs.push(r);
+      }
+      const rows = [...groups.values()].sort((a, b) => a.k.localeCompare(b.k));
+      bars(chart(vis), rows.map((g) => ({ label: g.k, value: mean(g.rs.map((r) => r.deaths)), dots: g.rs.length > 1 ? g.rs.map((r) => r.deaths) : null, color: g.clock === "realtime" ? "--bad" : "--rl",
+        tip: `<b>${esc(g.k)}</b><br>${g.rs.map((r) => `${r.run}: ${r.deaths} deaths in ${fmt.n(r.game_s / 60, 1)} game-min`).join("<br>")}` })),
+      { domain: [0, 25], fmt: (v) => fmt.n(v, 1), xLabel: "deaths per run (bar: mean, dots: runs)", label: "Deaths per run, real time against paused" });
+      vis.append(legend([{ color: "--bad", label: "real time" }, { color: "--rl", label: "paused" }]));
+      vis.append(figcap("default-v2 runs scored so far, 20 game-minutes (the censored Opus paused run: 15.6). Data: data/terrariabench.json (observer death events)."));
+    },
+
+    "tb-noaction"(vis) {
+      const rs = tbMain.filter((r) => r.no_action_turns > 0).sort((a, b) => b.no_action_turns / b.calls - a.no_action_turns / a.calls);
+      bars(chart(vis), rs.map((r) => ({ label: r.run, value: r.no_action_turns / r.calls, color: r.clock === "paused" ? "--rl" : "--bad",
+        tip: `<b>${r.run}</b><br>${esc(tbSetup(r))}<br>${r.no_action_turns} of ${r.calls} replies without an action` })),
+      { domain: [0, 0.7], fmt: (v) => fmt.pct(v, 0), tickFmt: (t) => fmt.pct(t), xLabel: "share of replies without a valid act call", label: "No-action turns per run" });
+      vis.append(legend([{ color: "--bad", label: "real time" }, { color: "--rl", label: "paused" }]));
+      vis.append(figcap("Runs with at least one no-action turn. Data: data/terrariabench.json."));
+    },
+
+    "tb-videos"() {},
+
+    "tb-notscored"(vis) {
+      const rs = tb.runs.filter((r) => r.not_scored || r.censored);
+      vis.append(table([
+        { key: "run", label: "Run", render: (r) => el("span", { class: "mono" }, r.run) },
+        { key: "game", label: "Game time", cls: "r", render: (r) => el("span", { class: "num" }, mmss(r.game_s)) },
+        { key: "status", label: "Status", render: (r) => el("span", { class: r.not_scored ? "check-bad" : null }, r.not_scored ? "not scored" : "censored") },
+        { key: "reason", label: "Reason", render: (r) => r.not_scored || `${r.stop.replace(/^RuntimeError: /, "")}; keeps published ${r.published_score}, extended ${r.extended_count}` },
+        { key: "usd", label: "Cost", cls: "r", render: (r) => el("span", { class: "num" }, fmt.usd(r.usd)) },
+      ], rs, { caption: "Official Terraria runs that are not scored or censored" }));
+      vis.append(figcap("default-v2 so far. Data: data/terrariabench.json."));
     },
   };
+
+  // ---- official-Terraria recordings (start and chapter times are game seconds, mapped to video seconds) ----
+  function recordings(vis, specs) {
+    for (const sp of specs) {
+      const v = videos.get(sp.run);
+      if (!v) { vis.append(el("p", { class: "note" }, `No recording exported for ${sp.run} (site/tools/fetch_videos.py).`)); continue; }
+      const r = tbRuns.get(sp.run);
+      const scale = v.trimmed_s / v.game_s;
+      const chapters = sp.deaths && r ? r.deaths_game_s.map((t, i) => ({ t: t * scale, game: t, label: `death ${i + 1}` })) : [];
+      vis.append(videoPlayer(v, { start: Math.round((sp.start || 0) * scale), chapters, title: r ? tbSetup(r) : sp.run, sub: sp.note }));
+    }
+  }
 
   // ---- live replay clip for cards with a tape ----
   async function clip(vis, item, link) {
@@ -211,7 +268,7 @@ const replayHref = (id, t) => `replay.html?id=${encodeURIComponent(id)}${t ? `&t
   }
 
   // ---- cards ----
-  const source = (s) => s.split(/,\s+(?=docs\/|data\/|experiments\/|https?:\/\/)/).flatMap((p, i) => [i ? ", " : "", /^https?:/.test(p) ? el("a", { href: p }, p) : el("code", {}, p)]);
+  const source = (s) => s.split(/[,;]\s+(?=docs\/|data\/|experiments\/|TerrariaBench\/|evidence\/|https?:\/\/)/).flatMap((p, i) => [i ? ", " : "", /^https?:/.test(p) ? el("a", { href: p }, p) : el("code", {}, p)]);
   const firstStep = (note) => { const m = /step ([\d,]+)/.exec(note || ""); return m ? +m[1].replace(/,/g, "") : null; };
   const gallery = $("#gallery");
   for (const item of fx.items) {
@@ -223,7 +280,7 @@ const replayHref = (id, t) => `replay.html?id=${encodeURIComponent(id)}${t ? `&t
       const t = Math.max(0, at - 48);
       link = el("a", { class: "btn", href: replayHref(item.replay.tape, t) }, el("img", { class: "px", src: "viz/textures/Item_50.png", alt: "" }), el("span", {}, `Open in the replay viewer at step ${fmt.int(t)}`));
     }
-    const card = el("article", { class: "fail", id: item.id, "data-agent": item.agent, "aria-labelledby": `${item.id}-h` },
+    const card = el("article", { class: "fail", id: item.id, "data-agent": item.agent, "data-track": item.track || "lite", "aria-labelledby": `${item.id}-h` },
       el("div", {},
         el("h3", { id: `${item.id}-h` }, item.title, item.placeholder ? [" ", sampleBadge()] : null),
         el("p", { class: "tag" }, kindBadge(item.agent), " Source: ", source(item.source)),
@@ -234,7 +291,7 @@ const replayHref = (id, t) => `replay.html?id=${encodeURIComponent(id)}${t ? `&t
     gallery.append(card);
     try {
       if (item.viz && VIS[item.viz]) VIS[item.viz](vis, item);
-      else if (item.placeholder) VIS.placeholder(vis, item);
+      if (item.video || item.videos) recordings(vis, item.videos || [item.video]);
       if (item.replay) clip(vis, item, link).catch((e) => { console.warn(e); vis.append(el("p", { class: "note" }, `Replay unavailable: ${e.message}`)); });
     } catch (e) { fail(vis, e); }
   }
@@ -246,7 +303,8 @@ const replayHref = (id, t) => `replay.html?id=${encodeURIComponent(id)}${t ? `&t
   };
   for (const b of $$("#filter button")) b.addEventListener("click", () => {
     $$("#filter button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    for (const c of $$("#gallery .fail")) c.hidden = b.dataset.kind !== "all" && c.dataset.agent !== b.dataset.kind;
+    const k = b.dataset.kind;
+    for (const c of $$("#gallery .fail")) c.hidden = k !== "all" && (k === "official" ? c.dataset.track !== "official" : c.dataset.agent !== k || c.dataset.track === "official");
     count();
   });
   count();

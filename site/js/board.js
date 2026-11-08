@@ -18,6 +18,7 @@ function resolve(e, { rl, llm, costs }) {
     id: e.id, version: e.version, kind: e.kind, agent: e.agent, short: e.short || e.agent, sub: e.sub, prior: e.prior,
     placeholder: !!e.placeholder, verified: e.verified || false, notes: e.notes, source: e.source,
     value: e.score?.value ?? null, ci: e.score?.ci ?? null, stat: e.score?.stat || "mean",
+    ciIsRange: e.score?.ci_kind === "range", rangeOver: e.score?.range_over || "worlds", seedScores: e.seed_scores ?? null, tiers: e.tiers ?? null,
     seeds: e.seeds ?? null, worlds: e.worlds ?? null, split: e.split || null,
     steps: e.budget?.env_steps ?? null, actions: e.budget?.actions ?? null,
     gpuHours: e.cost?.gpu_hours ?? null, epUsd: e.cost?.per_episode_usd ?? null,

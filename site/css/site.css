@@ -82,7 +82,7 @@ p { margin: 10px 0; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .grid2 > * { min-width: 0; }
 @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
-.note { font-size: 14px; color: var(--muted); }
+.note { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
 .callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; margin: 14px 0; }
 .tldr { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 18px 0; }
 .tldr h2 { font-size: 1.15rem; margin: 0 0 4px; }
@@ -199,6 +199,19 @@ table.heat { border-collapse: separate; border-spacing: 1px; }
 .worlds { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
 .worlds canvas { width: 100%; display: block; border-radius: 8px; background: #0d0d10; image-rendering: pixelated; }
 
+/* ---- run videos (js/video.js) ---- */
+.vids { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 22px 18px; }
+.vid { margin: 0; min-width: 0; }
+.vid video { display: block; width: 100%; aspect-ratio: 1 / 1; background: #0d0d10; border-radius: 8px; }
+.vid figcaption { display: grid; gap: 2px; font-size: 14px; margin-top: 6px; }
+.vid .vid-sub { color: var(--fg); }
+.vid .vid-len { font-size: 12.5px; color: var(--muted); }
+.vid .vid-rate { margin: 6px 0 0; gap: 4px; }
+.vid .vid-rate button { padding: 2px 9px; font-size: 13px; }
+.vid .vid-chapters { margin: 6px 0 0; }
+.vid .vid-chapters .mono { font-size: 11.5px; color: var(--muted); }
+.vid-err[hidden] { display: none; }
+
 /* ---- failure gallery ---- */
 .fail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; padding: 26px 0; border-top: 1px solid var(--line); }
 .fail:first-of-type { border-top: none; }
@@ -216,7 +229,9 @@ table.heat { border-collapse: separate; border-spacing: 1px; }
 .timeline ul { margin: 4px 0; padding-left: 18px; }
 @media (max-width: 640px) {
   .timeline::before { left: 6px; }
-  .timeline > li { grid-template-columns: 1fr; gap: 2px; padding-left: 24px; }
+  .timeline > li { grid-template-columns: minmax(0, 1fr); gap: 2px; padding-left: 24px; }
+  .timeline > li > * { min-width: 0; overflow-wrap: anywhere; }
+  p code, li code, .note code { overflow-wrap: anywhere; }
   .timeline > li::before { left: 1px; }
   .timeline .when { text-align: left; }
 }

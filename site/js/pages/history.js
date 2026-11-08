@@ -26,7 +26,10 @@ const REPORTS = {
   "notebooks/v8_env_results_2026_10_31.ipynb": "v8 environment-knob results (source of the RL page data)",
   "viz/README.md": "The simulator and policy in the browser",
   "experiments/tml-speed-20261107/README.md": "How fast real Terraria (tModLoader 1.4.4) ticks headless",
-  "docs/ENV_V9_DESIGN.md": "v9 design spec (draft)",
+  "docs/ENV_V9_DESIGN.md": "v9 design spec and v10 implementation notes",
+  "docs/reports/LLM_V9_CAMPAIGN_2026_11_08.md": "LLM campaign on Terraria-Lite v9",
+  "docs/reports/FIDELITY_V8FID_2026_11.md": "Real-Terraria behaviour ports on v8 (v8fid)",
+  "DECISIONS.md": "Decision register: release version, metrics, reference agents, Craftax calibration",
 };
 const SOURCES = {
   v1: ["tools/freeze_v1.sh"],
@@ -39,14 +42,19 @@ const SOURCES = {
   v8: ["notebooks/v8_env_results_2026_10_31.ipynb"],
   viz: ["viz/README.md"],
   tml: ["experiments/tml-speed-20261107/README.md"],
-  v9: ["docs/ENV_V9_DESIGN.md"],
+  v9: ["docs/ENV_V9_DESIGN.md", "docs/reports/LLM_V9_CAMPAIGN_2026_11_08.md", "DECISIONS.md"],
+  craftax: ["DECISIONS.md"],
+  fidelity: ["docs/reports/FIDELITY_V8FID_2026_11.md"],
+  v10: ["docs/ENV_V9_DESIGN.md", "DECISIONS.md"],
 };
 /* Pages of this site that continue a version's story. */
 const PAGES = {
   v8: [["rl.html", "What helped RL"], ["lite.html", "Leaderboard"]],
   viz: [["viz/index.html", "Open the visualisation"]],
   tml: [["terraria.html", "Official Terraria track"]],
-  v9: [["environment.html", "Environment"]],
+  v9: [["lite.html?v=v9", "Leaderboard"], ["environment.html", "Environment"]],
+  craftax: [["method.html#calibration", "Calibration"]],
+  v10: [["lite.html?v=v10", "Leaderboard and port ablations"]],
 };
 
 const KIND = {
