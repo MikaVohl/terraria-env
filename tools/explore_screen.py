@@ -139,6 +139,9 @@ ARMS["mem_lstm256_pot0_nov01_unimix_ep6000"] = ARMS["max2_pot0_nov01_unimix_ep60
 for _prefix in ("v9", "v9map"):
     ARMS[f"{_prefix}_gen_g9999"] = ARMS["max2_pot0_nov01_unimix_g9999"]       # generic (no recipe shaping)
     ARMS[f"{_prefix}_shaped_g9999"] = ARMS["max2_fn_unimix_g9999"]            # frontier recipe/boss-chain potential
+# v8fid (variants/v8fid): real-behaviour ports run 4 game ticks per action, so a
+# 3,000-step episode covers less game progress; this arm controls for that.
+ARMS["max2_pot0_nov01_unimix_g9998_ep10000"] = ARMS["max2_pot0_nov01_unimix_g9998"] + ["--episode-steps", "10000"]
 # Go-Explore restarts from the policy's own archived states (archive.py), now
 # on the fast path: 20% of training episodes start from an archived cell.
 for _k in ("max2_pot0_nov01_unimix", "max2_frontier_nov01_unimix", "max2_pot0_nov01_unimix_ep6000"):

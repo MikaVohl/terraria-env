@@ -1,0 +1,128 @@
+[
+ {
+  "name": "fid_all_gen-2001",
+  "lib": "build-v8fid-all",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_all_shaped-2001",
+  "lib": "build-v8fid-all",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_physics_gen-2001",
+  "lib": "build-v8fid-physics",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_mobcombat_gen-2001",
+  "lib": "build-v8fid-mobcombat",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_off_gen-2001",
+  "lib": "build-v8fid-off",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_all_gen_ep10k-2001",
+  "lib": "build-v8fid-all",
+  "arm": "max2_pot0_nov01_unimix_g9998_ep10000",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 10000
+ },
+ {
+  "name": "fid_all_gen-2002",
+  "lib": "build-v8fid-all",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_all_shaped-2002",
+  "lib": "build-v8fid-all",
+  "arm": "max2_fn_unimix_g9998",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_physics_gen-2002",
+  "lib": "build-v8fid-physics",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_mobcombat_gen-2002",
+  "lib": "build-v8fid-mobcombat",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_off_gen-2002",
+  "lib": "build-v8fid-off",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_all_gen_ep10k-2002",
+  "lib": "build-v8fid-all",
+  "arm": "max2_pot0_nov01_unimix_g9998_ep10000",
+  "seed": 2002,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 10000
+ },
+ {
+  "name": "fid_mining_gen-2001",
+  "lib": "build-v8fid-mining",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "fid_trees_gen-2001",
+  "lib": "build-v8fid-trees",
+  "arm": "max2_pot0_nov01_unimix_g9998",
+  "seed": 2001,
+  "steps": 2147483648,
+  "interval": 268435456,
+  "max_steps": 0
+ }
+]
