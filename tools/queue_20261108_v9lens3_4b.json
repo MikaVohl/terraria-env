@@ -1,0 +1,29 @@
+[
+ {
+  "name": "v9lens3_shaped_4B-3001",
+  "lib": "build-v9-lens3",
+  "arm": "v9_shaped_g9999",
+  "seed": 3001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v9lens3_shaped_4B-3003",
+  "lib": "build-v9-lens3",
+  "arm": "v9_shaped_g9999",
+  "seed": 3003,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ },
+ {
+  "name": "v9lens3_gen_4B-3001",
+  "lib": "build-v9-lens3",
+  "arm": "v9_gen_g9999",
+  "seed": 3001,
+  "steps": 4294967296,
+  "interval": 268435456,
+  "max_steps": 0
+ }
+]
