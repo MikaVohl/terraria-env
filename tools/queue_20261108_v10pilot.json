@@ -1,0 +1,110 @@
+[
+ {
+  "name": "v10_gen_1B-3001",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_1B-3001",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_gen_1B-3002",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_1B-3002",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_gen_1B-3003",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_1B-3003",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_gen_0p25B-3001",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_0p25B-3001",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3001,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_gen_0p25B-3002",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3002,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v10_shaped_0p25B-3002",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3002,
+  "steps": 268435456,
+  "interval": 33554432,
+  "max_steps": 0
+ },
+ {
+  "name": "v10noport_gen_1B-3001",
+  "lib": "build-v10-noport",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10noport_gen_1B-3002",
+  "lib": "build-v10-noport",
+  "arm": "v10_gen_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]
