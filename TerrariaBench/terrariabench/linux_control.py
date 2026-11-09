@@ -7,6 +7,7 @@ import io
 import json
 import os
 from pathlib import Path
+import resource
 import signal
 import subprocess
 import threading
@@ -129,10 +130,28 @@ def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEI
     args = ["bash", "LaunchUtils/ScriptCaller.sh", "-tmlsavedirectory", str(profile)]
     if skipselect:
         args += ["-skipselect"]
+    quiet_desktop()
     with log.open("w") as stream:
+        # No core dumps: tModLoader often segfaults/aborts during teardown (94 dotnet dumps of ~125 MB on
+        # 2026-11-08), and each dump made omarchy-crash-watch raise a DND-bypassing toast that appeared in recordings.
         proc = subprocess.Popen(args, cwd=tml, env=env, stdin=subprocess.DEVNULL,
-                                stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
+                                stdout=stream, stderr=subprocess.STDOUT, start_new_session=True,
+                                preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)))
     return proc.pid
+
+
+def quiet_desktop():
+    """Keep desktop notifications out of game screenshots/recordings: turn on the Omarchy shell's do-not-disturb mode
+    and dismiss visible popups. Best effort and idempotent (other desktops simply lack omarchy-shell); restore with
+    `omarchy-shell notifications setDnd false`."""
+    env = {**desktop_environment(), "OMARCHY_PATH": os.environ.get("OMARCHY_PATH", "/usr/share/omarchy")}
+    for cmd in (["omarchy-shell", "-q", "notifications", "setDnd", "true"],
+                ["omarchy-shell", "-q", "notifications", "dismissAll"]):
+        try:
+            subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, timeout=10, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
 
 
 def stop_owned_game(pid, profile, timeout=5):
