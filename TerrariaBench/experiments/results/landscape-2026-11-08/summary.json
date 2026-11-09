@@ -1,0 +1,2587 @@
+[
+ {
+  "run": "a1-haiku-think-pa-w401",
+  "setup": "Haiku (medium), unforced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1196,
+  "wall_total_s": 2095,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 6.3,
+   "wood_10": 6.6,
+   "wood_25": 7.9
+  },
+  "extended_count": 3,
+  "extended_game_s": {
+   "gel_1": 228.0,
+   "layer_underground": 102.0,
+   "ore_iron_lead": 608.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 1,
+  "max_depth_tiles": 80,
+  "continuations": 0,
+  "no_action_turns": 69,
+  "censored": false,
+  "calls": 310,
+  "calls_by_role": null,
+  "inputs": 935,
+  "latency_median_s": 2.413981708465144,
+  "screenshot_age_median_s": 2.51,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.37,
+  "usd_reported": "0.4592",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 31,
+   "Acorn": 3,
+   "item 307": 2,
+   "Dirt Block": 70,
+   "Clay Block": 36,
+   "Stone Block": 88,
+   "Iron Ore": 2,
+   "Torch": 5,
+   "item 5": 1,
+   "Bomb": 4,
+   "item 42": 10,
+   "Gel": 1,
+   "item 313": 1,
+   "Silver Coin": 4,
+   "Copper Coin": 14
+  }
+ },
+ {
+  "run": "a2-haiku-forced-pa-w401",
+  "setup": "Haiku (none), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 967,
+  "wall_s": 960,
+  "wall_total_s": 3009,
+  "stop": "RuntimeError: dollar reservation limit reached",
+  "published_score": 0,
+  "published_game_s": {},
+  "extended_count": 1,
+  "extended_game_s": {
+   "gel_1": 84.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 16,
+  "max_depth_tiles": 24,
+  "continuations": 0,
+  "no_action_turns": 1,
+  "censored": true,
+  "calls": 819,
+  "calls_by_role": null,
+  "inputs": 1338,
+  "latency_median_s": 2.1336067020893097,
+  "screenshot_age_median_s": 2.18,
+  "screenshot_age_game_median_s": 0.04,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.66,
+  "usd_reported": "1.4738",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 2322": 1,
+   "Glowstick": 5,
+   "Fallen Star": 1,
+   "Gel": 2,
+   "Copper Coin": 92
+  }
+ },
+ {
+  "run": "a3-luna-pa-w401",
+  "setup": "Luna (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1199,
+  "wall_total_s": 2509,
+  "stop": "game_time_limit",
+  "published_score": 1,
+  "published_game_s": {
+   "wood_1": 7.9
+  },
+  "extended_count": 3,
+  "extended_game_s": {
+   "gel_1": 30.0,
+   "layer_underground": 247.0,
+   "ore_copper_tin": 132.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 3,
+  "max_depth_tiles": 56,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 183,
+  "calls_by_role": null,
+  "inputs": 665,
+  "latency_median_s": 6.242353370995261,
+  "screenshot_age_median_s": 6.3,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.23,
+  "usd_reported": "0.2161",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 2,
+   "Dirt Block": 263,
+   "Stone Block": 92,
+   "Copper Ore": 5,
+   "Gel": 3,
+   "Copper Coin": 73
+  }
+ },
+ {
+  "run": "a4-terra-pa-w401",
+  "setup": "Terra (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1203,
+  "wall_total_s": 1701,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 207.3,
+   "wood_10": 207.5,
+   "wood_25": 208.4
+  },
+  "extended_count": 4,
+  "extended_game_s": {
+   "gel_1": 141.0,
+   "layer_underground": 677.0,
+   "ore_copper_tin": 1151.0,
+   "ore_iron_lead": 530.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 4,
+  "max_depth_tiles": 79,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 68,
+  "calls_by_role": null,
+  "inputs": 592,
+  "latency_median_s": 6.957723784493282,
+  "screenshot_age_median_s": 7.02,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.02,
+  "usd_reported": "0.7174",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 307": 5,
+   "Bomb": 6,
+   "Stone Block": 250,
+   "Dirt Block": 561,
+   "Acorn": 9,
+   "item 5": 3,
+   "Wood": 38,
+   "Copper Ore": 7,
+   "Lesser Healing Potion": 2,
+   "Clay Block": 1,
+   "Iron Ore": 19,
+   "item 169": 1,
+   "Torch": 5,
+   "Gel": 8,
+   "item 313": 3,
+   "Copper Coin": 90
+  }
+ },
+ {
+  "run": "b01-luna-rt-w401",
+  "setup": "Luna (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1205,
+  "wall_total_s": 1200,
+  "stop": "game_time_limit",
+  "published_score": 5,
+  "published_game_s": {
+   "wood_1": 371.1,
+   "wood_10": 371.8,
+   "wood_25": 372.3,
+   "wood_100": 602.9,
+   "torch_10": 1132.0
+  },
+  "extended_count": 3,
+  "extended_game_s": {
+   "gel_1": 132.0,
+   "torch_crafted": 404.2,
+   "ore_iron_lead": 203.0
+  },
+  "crafted": {
+   "Torch": 3
+  },
+  "placed_tile_types": {
+   "4": 1
+  },
+  "deaths": 7,
+  "max_depth_tiles": 24,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 90,
+  "calls_by_role": null,
+  "inputs": 325,
+  "latency_median_s": 6.428480973932892,
+  "screenshot_age_median_s": 6.49,
+  "screenshot_age_game_median_s": 6.49,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.99,
+  "usd_reported": "0.0859",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 5": 2,
+   "item 307": 3,
+   "Acorn": 20,
+   "Dirt Block": 218,
+   "Stone Block": 11,
+   "Iron Ore": 5,
+   "item 2350": 1,
+   "item 1173": 1,
+   "Fallen Star": 3,
+   "item 4293": 1,
+   "item 4009": 1,
+   "Bomb": 1,
+   "Torch": 20,
+   "Wood": 288,
+   "Gel": 13,
+   "item 313": 3,
+   "Silver Coin": 3,
+   "Copper Coin": 58
+  }
+ },
+ {
+  "run": "b02-terra-rt-w401",
+  "setup": "Terra (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1205,
+  "wall_total_s": 1200,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 34.7,
+   "wood_10": 169.6,
+   "wood_25": 1008.4
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 348.0,
+   "ore_copper_tin": 607.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 14,
+  "max_depth_tiles": 35,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 77,
+  "calls_by_role": null,
+  "inputs": 359,
+  "latency_median_s": 6.97304379590787,
+  "screenshot_age_median_s": 7.03,
+  "screenshot_age_game_median_s": 7.03,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.99,
+  "usd_reported": "0.7860",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Clay Block": 1,
+   "item 307": 4,
+   "Wood": 41,
+   "Copper Ore": 8,
+   "Dirt Block": 89,
+   "item 169": 3,
+   "Acorn": 6,
+   "item 1173": 1,
+   "item 5": 1,
+   "item 3272": 8,
+   "Fallen Star": 4,
+   "Gel": 8,
+   "Bomb": 4,
+   "Stone Block": 33,
+   "item 313": 2,
+   "Copper Coin": 42
+  }
+ },
+ {
+  "run": "b03-luna-rt-w402",
+  "setup": "Luna (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000402",
+  "game_s": 1200,
+  "wall_s": 1205,
+  "wall_total_s": 1200,
+  "stop": "game_time_limit",
+  "published_score": 0,
+  "published_game_s": {},
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 79.0,
+   "eoc_summon_or_lens": 844.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 13,
+  "max_depth_tiles": 26,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 89,
+  "calls_by_role": null,
+  "inputs": 334,
+  "latency_median_s": 6.11696480284445,
+  "screenshot_age_median_s": 6.17,
+  "screenshot_age_game_median_s": 6.17,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.0,
+  "usd_reported": "0.0821",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 5": 1,
+   "Acorn": 1,
+   "Dirt Block": 46,
+   "Stone Block": 10,
+   "item 290": 1,
+   "item 42": 14,
+   "Fallen Star": 1,
+   "item 38": 1,
+   "Gel": 8,
+   "Copper Coin": 19
+  }
+ },
+ {
+  "run": "b04-luna-pa-w402",
+  "setup": "Luna (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000402",
+  "game_s": 1200,
+  "wall_s": 1201,
+  "wall_total_s": 2921,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 33.6,
+   "wood_10": 40.5,
+   "wood_25": 265.6
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 560.0,
+   "ore_iron_lead": 594.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 11,
+  "max_depth_tiles": 40,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 236,
+  "calls_by_role": null,
+  "inputs": 727,
+  "latency_median_s": 6.767298586899415,
+  "screenshot_age_median_s": 6.83,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.13,
+  "usd_reported": "0.3018",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 169": 39,
+   "item 307": 6,
+   "Dirt Block": 395,
+   "Wood": 93,
+   "Rope": 30,
+   "Stone Block": 38,
+   "Clay Block": 34,
+   "item 216": 1,
+   "item 4293": 1,
+   "Fallen Star": 2,
+   "Acorn": 2,
+   "Iron Ore": 26,
+   "Gel": 12,
+   "item 317": 3,
+   "item 313": 2,
+   "Silver Coin": 2,
+   "Wooden Arrow": 9
+  }
+ },
+ {
+  "run": "b05-luna-rt-w403",
+  "setup": "Luna (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000403",
+  "game_s": 1200,
+  "wall_s": 1214,
+  "wall_total_s": 1209,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 391.5,
+   "wood_10": 391.7,
+   "wood_25": 784.2
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 210.0,
+   "ore_iron_lead": 258.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 17,
+  "max_depth_tiles": 18,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 95,
+  "calls_by_role": null,
+  "inputs": 363,
+  "latency_median_s": 6.397085790988058,
+  "screenshot_age_median_s": 6.45,
+  "screenshot_age_game_median_s": 6.45,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.54,
+  "usd_reported": "0.0906",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Dirt Block": 222,
+   "Lead Ore": 1,
+   "Acorn": 3,
+   "Wood": 45,
+   "item 1110": 1,
+   "Fallen Star": 1,
+   "Gel": 3,
+   "Copper Coin": 1
+  }
+ },
+ {
+  "run": "b06-luna-pa-w403",
+  "setup": "Luna (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000403",
+  "game_s": 35,
+  "wall_s": 38,
+  "wall_total_s": 418,
+  "stop": "ProviderError: unified transport/JSON failure (TimeoutError); charge uncertain",
+  "published_score": 0,
+  "published_game_s": {},
+  "extended_count": 0,
+  "extended_game_s": {},
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 0,
+  "max_depth_tiles": 2,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": true,
+  "calls": 13,
+  "calls_by_role": null,
+  "inputs": 14,
+  "latency_median_s": 6.240816683974117,
+  "screenshot_age_median_s": 6.3,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.25,
+  "usd_reported": "0.0071",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Dirt Block": 2,
+   "item 5": 1,
+   "Silver Coin": 17
+  }
+ },
+ {
+  "run": "b07-terra-rt-w403",
+  "setup": "Terra (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000403",
+  "game_s": 1200,
+  "wall_s": 1208,
+  "wall_total_s": 1203,
+  "stop": "game_time_limit",
+  "published_score": 1,
+  "published_game_s": {
+   "wood_1": 627.0
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 243.0,
+   "layer_underground": 477.0
+  },
+  "crafted": {
+   "Copper Coin": 100
+  },
+  "placed_tile_types": {},
+  "deaths": 15,
+  "max_depth_tiles": 181,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 65,
+  "calls_by_role": null,
+  "inputs": 417,
+  "latency_median_s": 6.469078798079863,
+  "screenshot_age_median_s": 6.53,
+  "screenshot_age_game_median_s": 6.53,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.99,
+  "usd_reported": "0.6772",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 307": 2,
+   "item 4290": 1,
+   "item 1176": 2,
+   "Dirt Block": 453,
+   "Clay Block": 26,
+   "Stone Block": 111,
+   "Torch": 2,
+   "Bomb": 2,
+   "item 832": 1,
+   "Wood": 3,
+   "Acorn": 11,
+   "Glowstick": 9,
+   "Mud Block": 4,
+   "Gel": 5,
+   "item 313": 1,
+   "Silver Coin": 1,
+   "Copper Coin": 10
+  }
+ },
+ {
+  "run": "b08-terra-pa-w403",
+  "setup": "Terra (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000403",
+  "game_s": 100,
+  "wall_s": 546,
+  "wall_total_s": 193,
+  "stop": "OperatorStop: SIGTERM",
+  "published_score": 1,
+  "published_game_s": {
+   "wood_1": 7.3
+  },
+  "extended_count": 0,
+  "extended_game_s": {},
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 0,
+  "max_depth_tiles": 6,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": true,
+  "calls": 97,
+  "calls_by_role": null,
+  "inputs": 326,
+  "latency_median_s": 6.436460733530112,
+  "screenshot_age_median_s": 6.5,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.13,
+  "usd_reported": "0.9628",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 3,
+   "item 307": 2,
+   "Acorn": 5,
+   "item 5": 7,
+   "item 313": 1,
+   "item 42": 36,
+   "Silver Coin": 1,
+   "Copper Coin": 12,
+   "Wooden Arrow": 20
+  }
+ },
+ {
+  "run": "b09-terra-rt-w402",
+  "setup": "Terra (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000402",
+  "game_s": 1200,
+  "wall_s": 1228,
+  "wall_total_s": 1224,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 8.2,
+   "wood_10": 659.3,
+   "wood_25": 713.0,
+   "torch_10": 919.5
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 89.0,
+   "layer_underground": 221.0
+  },
+  "crafted": {
+   "Wood Platform": 4
+  },
+  "placed_tile_types": {},
+  "deaths": 12,
+  "max_depth_tiles": 69,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 75,
+  "calls_by_role": null,
+  "inputs": 360,
+  "latency_median_s": 6.534531540935859,
+  "screenshot_age_median_s": 6.65,
+  "screenshot_age_game_median_s": 6.65,
+  "hz_median": 60.0,
+  "updates_per_running_s": 58.84,
+  "usd_reported": "0.7793",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Acorn": 10,
+   "item 94": 4,
+   "item 5": 2,
+   "item 307": 1,
+   "item 4290": 1,
+   "Dirt Block": 2,
+   "Torch": 16,
+   "item 4282": 1,
+   "Fallen Star": 2,
+   "Wood": 29,
+   "Gel": 19,
+   "item 313": 2,
+   "Copper Coin": 29,
+   "Silver Coin": 2,
+   "Wooden Arrow": 3
+  }
+ },
+ {
+  "run": "b06r-luna-pa-w403",
+  "setup": "Luna (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000403",
+  "game_s": 1200,
+  "wall_s": 1198,
+  "wall_total_s": 2921,
+  "stop": "game_time_limit",
+  "published_score": 5,
+  "published_game_s": {
+   "wood_1": 33.7,
+   "wood_10": 34.9,
+   "wood_25": 35.2,
+   "wood_100": 264.3,
+   "torch_10": 1105.3
+  },
+  "extended_count": 1,
+  "extended_game_s": {
+   "gel_1": 35.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 14,
+  "max_depth_tiles": 24,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 218,
+  "calls_by_role": null,
+  "inputs": 773,
+  "latency_median_s": 7.047949904343113,
+  "screenshot_age_median_s": 7.11,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.27,
+  "usd_reported": "0.2809",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Dirt Block": 349,
+   "Wood": 149,
+   "Acorn": 14,
+   "Fallen Star": 3,
+   "Stone Block": 56,
+   "Torch": 25,
+   "item 313": 2,
+   "Gel": 29,
+   "Silver Coin": 6,
+   "Copper Coin": 80
+  }
+ },
+ {
+  "run": "b10-terra-pa-w402",
+  "setup": "Terra (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000402",
+  "game_s": 1200,
+  "wall_s": 1202,
+  "wall_total_s": 1754,
+  "stop": "game_time_limit",
+  "published_score": 1,
+  "published_game_s": {
+   "wood_1": 33.9
+  },
+  "extended_count": 3,
+  "extended_game_s": {
+   "gel_1": 114.0,
+   "layer_underground": 218.0,
+   "ore_copper_tin": 240.0
+  },
+  "crafted": {
+   "Wood Platform": 8
+  },
+  "placed_tile_types": {},
+  "deaths": 1,
+  "max_depth_tiles": 90,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 78,
+  "calls_by_role": null,
+  "inputs": 633,
+  "latency_median_s": 6.824049719492905,
+  "screenshot_age_median_s": 6.88,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.09,
+  "usd_reported": "0.8186",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 5": 1,
+   "item 307": 1,
+   "item 4282": 1,
+   "Torch": 2,
+   "Wood": 3,
+   "Glowstick": 50,
+   "Rope": 64,
+   "item 94": 8,
+   "Tin Ore": 4,
+   "Cobweb": 7,
+   "Clay Block": 16,
+   "Bomb": 3,
+   "item 317": 3,
+   "item 169": 18,
+   "item 313": 1,
+   "Gel": 2,
+   "Stone Block": 28,
+   "Dirt Block": 140,
+   "item 298": 2,
+   "item 2350": 4,
+   "Lesser Healing Potion": 4,
+   "item 4345": 1,
+   "item 3068": 1,
+   "Copper Coin": 37
+  }
+ },
+ {
+  "run": "b11-haiku-rt-w401",
+  "setup": "Haiku (medium), unforced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1204,
+  "wall_total_s": 1199,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 19.1,
+   "wood_10": 19.3,
+   "wood_25": 20.6,
+   "workbench_1": 34.5
+  },
+  "extended_count": 1,
+  "extended_game_s": {
+   "gel_1": 56.0
+  },
+  "crafted": {
+   "Work Bench": 1
+  },
+  "placed_tile_types": {},
+  "deaths": 0,
+  "max_depth_tiles": 38,
+  "continuations": 0,
+  "no_action_turns": 4,
+  "censored": false,
+  "calls": 206,
+  "calls_by_role": null,
+  "inputs": 755,
+  "latency_median_s": 2.367967198952101,
+  "screenshot_age_median_s": 2.41,
+  "screenshot_age_game_median_s": 2.41,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.0,
+  "usd_reported": "0.2667",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 22,
+   "Acorn": 3,
+   "Work Bench": 1,
+   "Dirt Block": 156,
+   "Stone Block": 60,
+   "Gel": 4,
+   "Copper Coin": 13
+  }
+ },
+ {
+  "run": "b12-haiku-pa-w402",
+  "setup": "Haiku (medium), unforced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000402",
+  "game_s": 1200,
+  "wall_s": 1194,
+  "wall_total_s": 2458,
+  "stop": "game_time_limit",
+  "published_score": 5,
+  "published_game_s": {
+   "wood_1": 6.4,
+   "wood_10": 20.6,
+   "wood_25": 21.8,
+   "workbench_1": 24.7,
+   "torch_10": 946.8
+  },
+  "extended_count": 3,
+  "extended_game_s": {
+   "gel_1": 55.0,
+   "layer_underground": 74.0,
+   "ore_iron_lead": 45.0
+  },
+  "crafted": {
+   "Work Bench": 1
+  },
+  "placed_tile_types": {},
+  "deaths": 8,
+  "max_depth_tiles": 140,
+  "continuations": 0,
+  "no_action_turns": 50,
+  "censored": false,
+  "calls": 395,
+  "calls_by_role": null,
+  "inputs": 1161,
+  "latency_median_s": 2.534305495908484,
+  "screenshot_age_median_s": 2.53,
+  "screenshot_age_game_median_s": 0.05,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.48,
+  "usd_reported": "0.7004",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 5": 3,
+   "Acorn": 6,
+   "Wood": 45,
+   "item 4009": 1,
+   "Work Bench": 1,
+   "Dirt Block": 112,
+   "Clay Block": 17,
+   "Torch": 11,
+   "Fallen Star": 5,
+   "Cobweb": 4,
+   "Rope": 39,
+   "Bomb": 2,
+   "Mud Block": 10,
+   "Gel": 3,
+   "Stone Block": 127,
+   "Iron Ore": 3,
+   "Copper Coin": 9,
+   "Wooden Arrow": 17
+  }
+ },
+ {
+  "run": "b08r-terra-pa-w403",
+  "setup": "Terra (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000403",
+  "game_s": 1200,
+  "wall_s": 1202,
+  "wall_total_s": 2120,
+  "stop": "game_time_limit",
+  "published_score": 1,
+  "published_game_s": {
+   "wood_1": 133.8
+  },
+  "extended_count": 1,
+  "extended_game_s": {
+   "gel_1": 112.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 6,
+  "max_depth_tiles": 41,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 106,
+  "calls_by_role": null,
+  "inputs": 652,
+  "latency_median_s": 7.082569606951438,
+  "screenshot_age_median_s": 7.14,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.12,
+  "usd_reported": "1.2469",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Clay Block": 1,
+   "Dirt Block": 41,
+   "item 5": 6,
+   "Fallen Star": 4,
+   "Acorn": 5,
+   "item 4009": 1,
+   "Wood": 1,
+   "item 317": 2,
+   "item 169": 3,
+   "item 307": 2,
+   "Torch": 7,
+   "Gel": 16,
+   "item 313": 3,
+   "Copper Coin": 48,
+   "Wooden Arrow": 16
+  }
+ },
+ {
+  "run": "b13-haiku-rt-w402",
+  "setup": "Haiku (medium), unforced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000402",
+  "game_s": 1200,
+  "wall_s": 1203,
+  "wall_total_s": 1199,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 11.3,
+   "wood_10": 11.4,
+   "workbench_1": 39.2
+  },
+  "extended_count": 5,
+  "extended_game_s": {
+   "gel_1": 120.0,
+   "layer_underground": 339.0,
+   "layer_cavern": 611.0,
+   "ore_copper_tin": 424.0,
+   "ore_iron_lead": 493.0
+  },
+  "crafted": {
+   "Work Bench": 1
+  },
+  "placed_tile_types": {},
+  "deaths": 21,
+  "max_depth_tiles": 192,
+  "continuations": 0,
+  "no_action_turns": 7,
+  "censored": false,
+  "calls": 137,
+  "calls_by_role": null,
+  "inputs": 467,
+  "latency_median_s": 2.5778966611251235,
+  "screenshot_age_median_s": 2.61,
+  "screenshot_age_game_median_s": 2.61,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.0,
+  "usd_reported": "0.1394",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Acorn": 2,
+   "item 5": 2,
+   "Work Bench": 1,
+   "Wood": 14,
+   "Dirt Block": 93,
+   "Stone Block": 98,
+   "Tin Ore": 9,
+   "Fallen Star": 1,
+   "Glowstick": 4,
+   "Mud Block": 1,
+   "Clay Block": 7,
+   "Cobweb": 1,
+   "item 177": 1,
+   "Iron Ore": 9,
+   "Gel": 4,
+   "Copper Coin": 11
+  }
+ },
+ {
+  "run": "b14-haiku-pa-w403",
+  "setup": "Haiku (medium), unforced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000403",
+  "game_s": 1200,
+  "wall_s": 1192,
+  "wall_total_s": 2999,
+  "stop": "game_time_limit",
+  "published_score": 3,
+  "published_game_s": {
+   "wood_1": 16.1,
+   "wood_10": 17.0,
+   "workbench_1": 19.4
+  },
+  "extended_count": 1,
+  "extended_game_s": {
+   "gel_1": 83.0
+  },
+  "crafted": {
+   "Work Bench": 1
+  },
+  "placed_tile_types": {},
+  "deaths": 9,
+  "max_depth_tiles": 48,
+  "continuations": 0,
+  "no_action_turns": 338,
+  "censored": false,
+  "calls": 571,
+  "calls_by_role": null,
+  "inputs": 1261,
+  "latency_median_s": 2.5643822730053216,
+  "screenshot_age_median_s": 2.72,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.58,
+  "usd_reported": "1.1845",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Acorn": 2,
+   "Wood": 10,
+   "Work Bench": 1,
+   "Dirt Block": 170,
+   "Stone Block": 24,
+   "item 5": 1,
+   "Gel": 18,
+   "Copper Coin": 1
+  }
+ },
+ {
+  "run": "b15-haiku-rt-w403",
+  "setup": "Haiku (medium), unforced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000403",
+  "game_s": 1200,
+  "wall_s": 1206,
+  "wall_total_s": 1201,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 18.0,
+   "wood_10": 18.8,
+   "workbench_1": 55.0,
+   "wood_25": 86.6
+  },
+  "extended_count": 1,
+  "extended_game_s": {
+   "gel_1": 147.0
+  },
+  "crafted": {
+   "Work Bench": 1
+  },
+  "placed_tile_types": {},
+  "deaths": 11,
+  "max_depth_tiles": 38,
+  "continuations": 0,
+  "no_action_turns": 32,
+  "censored": false,
+  "calls": 195,
+  "calls_by_role": null,
+  "inputs": 600,
+  "latency_median_s": 2.636595309013501,
+  "screenshot_age_median_s": 2.68,
+  "screenshot_age_game_median_s": 2.68,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.99,
+  "usd_reported": "0.2385",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 37,
+   "Acorn": 4,
+   "Work Bench": 1,
+   "Dirt Block": 81,
+   "Stone Block": 21,
+   "Fallen Star": 2,
+   "Gel": 14,
+   "Copper Coin": 13
+  }
+ },
+ {
+  "run": "c1-opus-rt-w401",
+  "setup": "Opus (low), unforced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1204,
+  "wall_total_s": 1199,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 6.8,
+   "wood_10": 19.3,
+   "wood_25": 19.9,
+   "workbench_1": 54.8
+  },
+  "extended_count": 4,
+  "extended_game_s": {
+   "gel_1": 577.0,
+   "workbench_placed": 536.5,
+   "wood_armor_crafted": 565.8,
+   "layer_underground": 323.0
+  },
+  "crafted": {
+   "Work Bench": 1,
+   "Wood Greaves": 1,
+   "Wood Breastplate": 1
+  },
+  "placed_tile_types": {
+   "18": 1
+  },
+  "deaths": 17,
+  "max_depth_tiles": 127,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 104,
+  "calls_by_role": null,
+  "inputs": 622,
+  "latency_median_s": 4.423407623544335,
+  "screenshot_age_median_s": 4.46,
+  "screenshot_age_game_median_s": 4.46,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.99,
+  "usd_reported": "3.6507",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 37,
+   "Acorn": 6,
+   "item 5": 2,
+   "item 4009": 1,
+   "Dirt Block": 101,
+   "Clay Block": 17,
+   "Stone Block": 39,
+   "Fallen Star": 2,
+   "Gel": 8,
+   "Copper Coin": 4
+  }
+ },
+ {
+  "run": "c2-opus-pa-w401",
+  "setup": "Opus (low), unforced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 935,
+  "wall_s": 935,
+  "wall_total_s": 1526,
+  "stop": "RuntimeError: dollar reservation limit reached",
+  "published_score": 5,
+  "published_game_s": {
+   "wood_1": 6.4,
+   "wood_10": 6.7,
+   "wood_25": 7.8,
+   "workbench_1": 31.2,
+   "torch_10": 260.9
+  },
+  "extended_count": 7,
+  "extended_game_s": {
+   "gel_1": 55.0,
+   "torch_crafted": 260.6,
+   "workbench_placed": 31.6,
+   "layer_underground": 64.0,
+   "ore_copper_tin": 423.0,
+   "ore_iron_lead": 415.0,
+   "ore_silver_gold_tier": 838.0
+  },
+  "crafted": {
+   "Work Bench": 2,
+   "Torch": 12
+  },
+  "placed_tile_types": {
+   "18": 2,
+   "4": 13
+  },
+  "deaths": 4,
+  "max_depth_tiles": 183,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": true,
+  "calls": 136,
+  "calls_by_role": null,
+  "inputs": 696,
+  "latency_median_s": 3.9988156966865063,
+  "screenshot_age_median_s": 4.04,
+  "screenshot_age_game_median_s": 0.05,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.21,
+  "usd_reported": "4.9547",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 61,
+   "Glowstick": 8,
+   "Torch": 2,
+   "Dirt Block": 437,
+   "Clay Block": 33,
+   "Stone Block": 361,
+   "item 178": 4,
+   "Mud Block": 5,
+   "Tungsten Ore": 5,
+   "Acorn": 4,
+   "Copper Ore": 20,
+   "Iron Ore": 46,
+   "item 307": 2,
+   "item 313": 1,
+   "Gel": 7,
+   "Copper Coin": 44
+  }
+ },
+ {
+  "run": "c3-combo-rt-w401",
+  "setup": "Opus (low) planner + Jev executor, realtime, smart_cursor on",
+  "campaign_profile": "default-v2-combo",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1204,
+  "wall_total_s": 1199,
+  "stop": "game_time_limit",
+  "published_score": 6,
+  "published_game_s": {
+   "wood_1": 18.1,
+   "wood_10": 18.3,
+   "wood_25": 19.4,
+   "wood_100": 106.5,
+   "workbench_1": 139.4,
+   "torch_10": 839.7
+  },
+  "extended_count": 5,
+  "extended_game_s": {
+   "gel_1": 192.0,
+   "workbench_placed": 145.9,
+   "wood_armor_crafted": 172.8,
+   "layer_underground": 582.0,
+   "ore_iron_lead": 925.0
+  },
+  "crafted": {
+   "Work Bench": 2,
+   "Wood Breastplate": 1
+  },
+  "placed_tile_types": {
+   "18": 2
+  },
+  "deaths": 8,
+  "max_depth_tiles": 54,
+  "continuations": null,
+  "no_action_turns": 1,
+  "censored": false,
+  "calls": 665,
+  "calls_by_role": {
+   "planner": 59,
+   "executor": 606
+  },
+  "inputs": 1816,
+  "latency_median_s": {
+   "planner": 4.513464670162648,
+   "executor": 0.28953462303616107
+  },
+  "screenshot_age_median_s": 0.6,
+  "screenshot_age_game_median_s": 0.6,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.0,
+  "usd_reported": "1.2503",
+  "usd_by_role": {
+   "planner": "1.1539992000",
+   "executor": "0.096281808"
+  },
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 86,
+   "Acorn": 10,
+   "item 4293": 1,
+   "Glowstick": 6,
+   "Dirt Block": 164,
+   "Stone Block": 54,
+   "item 5": 2,
+   "Iron Ore": 1,
+   "item 1174": 3,
+   "Torch": 10,
+   "item 1173": 1,
+   "item 307": 3,
+   "Gel": 14,
+   "item 313": 1,
+   "Copper Coin": 28,
+   "Silver Coin": 1
+  }
+ },
+ {
+  "run": "c4-combo-pa-w401",
+  "setup": "Opus (low) planner + Jev executor, paused, smart_cursor on",
+  "campaign_profile": "default-v2-combo",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 1200,
+  "wall_s": 1892,
+  "wall_total_s": 1887,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 7.2,
+   "wood_10": 8.2,
+   "wood_25": 8.6,
+   "workbench_1": 145.9
+  },
+  "extended_count": 4,
+  "extended_game_s": {
+   "gel_1": 116.0,
+   "workbench_placed": 146.3,
+   "layer_underground": 322.0,
+   "ore_iron_lead": 715.0
+  },
+  "crafted": {
+   "Work Bench": 1,
+   "Wooden Sword": 2
+  },
+  "placed_tile_types": {
+   "18": 1,
+   "4": 2
+  },
+  "deaths": 7,
+  "max_depth_tiles": 154,
+  "continuations": null,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 886,
+  "calls_by_role": {
+   "planner": 94,
+   "executor": 792
+  },
+  "inputs": 2254,
+  "latency_median_s": {
+   "planner": 4.960434540873393,
+   "executor": 0.2838605048600584
+  },
+  "screenshot_age_median_s": 4.32,
+  "screenshot_age_game_median_s": 0.04,
+  "hz_median": 60.0,
+  "updates_per_running_s": 61.08,
+  "usd_reported": "1.9901",
+  "usd_by_role": {
+   "planner": "1.8639216000",
+   "executor": "0.126167160"
+  },
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 90,
+   "Acorn": 10,
+   "item 5": 1,
+   "item 24": 2,
+   "Torch": 3,
+   "Dirt Block": 291,
+   "item 178": 1,
+   "Mud Block": 9,
+   "item 511": 1,
+   "Iron Ore": 2,
+   "item 42": 17,
+   "Stone Block": 243,
+   "Gel": 24,
+   "Copper Coin": 80
+  }
+ },
+ {
+  "run": "d1-terra-pa-w401-40m",
+  "setup": "Terra (low), forced, paused, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 1656,
+  "wall_s": 1660,
+  "wall_total_s": 2802,
+  "stop": "RuntimeError: dollar reservation limit reached",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 152.0,
+   "wood_10": 153.0,
+   "wood_25": 153.1,
+   "workbench_1": 871.7
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 257.0,
+   "workbench_placed": 874.5
+  },
+  "crafted": {
+   "Work Bench": 1
+  },
+  "placed_tile_types": {
+   "18": 1
+  },
+  "deaths": 12,
+  "max_depth_tiles": 34,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": true,
+  "calls": 144,
+  "calls_by_role": null,
+  "inputs": 922,
+  "latency_median_s": 7.362727707601152,
+  "screenshot_age_median_s": 7.43,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.01,
+  "usd_reported": "2.0654",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "item 933": 1,
+   "Acorn": 8,
+   "Dirt Block": 94,
+   "item 307": 4,
+   "Clay Block": 3,
+   "Wood": 84,
+   "item 169": 2,
+   "item 1176": 1,
+   "Work Bench": 1,
+   "Fallen Star": 7,
+   "Stone Block": 25,
+   "item 317": 2,
+   "Gel": 16,
+   "item 5": 3,
+   "item 313": 2,
+   "Copper Coin": 13,
+   "Silver Coin": 2,
+   "Wooden Arrow": 4
+  }
+ },
+ {
+  "run": "d2-haiku-rt-w401-40m",
+  "setup": "Haiku (medium), unforced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 2400,
+  "wall_s": 2405,
+  "wall_total_s": 2400,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 28.6,
+   "wood_10": 29.6,
+   "wood_25": 30.2,
+   "workbench_1": 47.1
+  },
+  "extended_count": 4,
+  "extended_game_s": {
+   "gel_1": 65.0,
+   "workbench_placed": 53.9,
+   "ore_iron_lead": 92.0,
+   "ore_silver_gold_tier": 65.0
+  },
+  "crafted": {
+   "Work Bench": 4
+  },
+  "placed_tile_types": {
+   "18": 2
+  },
+  "deaths": 6,
+  "max_depth_tiles": 35,
+  "continuations": 0,
+  "no_action_turns": 296,
+  "censored": false,
+  "calls": 447,
+  "calls_by_role": null,
+  "inputs": 725,
+  "latency_median_s": 2.658789698034525,
+  "screenshot_age_median_s": 2.74,
+  "screenshot_age_game_median_s": 2.74,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.97,
+  "usd_reported": "0.8522",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Acorn": 7,
+   "Wood": 21,
+   "Gold Ore": 9,
+   "Dirt Block": 90,
+   "Iron Ore": 8,
+   "Stone Block": 21,
+   "Work Bench": 3,
+   "Rope": 35,
+   "Clay Block": 10,
+   "item 5": 2,
+   "Tungsten Ore": 5,
+   "Gel": 4,
+   "Copper Coin": 2
+  }
+ },
+ {
+  "run": "d3-luna-rt-w401-40m",
+  "setup": "Luna (low), forced, realtime, smart_cursor on",
+  "campaign_profile": "default-v2",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000401",
+  "game_s": 2400,
+  "wall_s": 2420,
+  "wall_total_s": 2417,
+  "stop": "game_time_limit",
+  "published_score": 5,
+  "published_game_s": {
+   "wood_1": 331.1,
+   "wood_10": 331.9,
+   "wood_25": 332.6,
+   "wood_100": 460.6,
+   "torch_10": 902.1
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "gel_1": 60.0,
+   "eoc_summon_or_lens": 1140.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "deaths": 33,
+  "max_depth_tiles": 24,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 177,
+  "calls_by_role": null,
+  "inputs": 650,
+  "latency_median_s": 6.568829558091238,
+  "screenshot_age_median_s": 6.62,
+  "screenshot_age_game_median_s": 6.62,
+  "hz_median": 60.0,
+  "updates_per_running_s": 59.59,
+  "usd_reported": "0.2110",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Dirt Block": 128,
+   "item 307": 3,
+   "Acorn": 42,
+   "Fallen Star": 1,
+   "Stone Block": 18,
+   "Wood": 456,
+   "Torch": 39,
+   "item 38": 1,
+   "Gel": 20,
+   "item 313": 1,
+   "Copper Coin": 14,
+   "Silver Coin": 1
+  }
+ },
+ {
+  "run": "c5-combo-rt-w403",
+  "setup": "Opus (low) planner + Jev executor, realtime, smart_cursor on",
+  "campaign_profile": "default-v2-combo",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "realtime",
+  "world_seed": "32000403",
+  "game_s": 636,
+  "wall_s": 639,
+  "wall_total_s": 635,
+  "stop": "RuntimeError: dollar reservation limit reached",
+  "published_score": 5,
+  "published_game_s": {
+   "wood_1": 12.8,
+   "wood_10": 13.8,
+   "wood_25": 14.2,
+   "workbench_1": 116.3,
+   "wood_100": 179.3
+  },
+  "extended_count": 5,
+  "extended_game_s": {
+   "gel_1": 118.0,
+   "workbench_placed": 125.8,
+   "wood_armor_crafted": 441.0,
+   "layer_underground": 570.0,
+   "ore_iron_lead": 516.0
+  },
+  "crafted": {
+   "Work Bench": 1,
+   "Wooden Bow": 1,
+   "Wood Breastplate": 1
+  },
+  "placed_tile_types": {
+   "18": 2
+  },
+  "deaths": 1,
+  "max_depth_tiles": 95,
+  "continuations": null,
+  "no_action_turns": 0,
+  "censored": true,
+  "calls": 251,
+  "calls_by_role": {
+   "planner": 40,
+   "executor": 211
+  },
+  "inputs": 895,
+  "latency_median_s": {
+   "planner": 5.144278482999653,
+   "executor": 0.295337017159909
+  },
+  "screenshot_age_median_s": 4.27,
+  "screenshot_age_game_median_s": 4.27,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.0,
+  "usd_reported": "0.8036",
+  "usd_by_role": {
+   "planner": "0.7699256000",
+   "executor": "0.033673290"
+  },
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Wood": 97,
+   "Acorn": 10,
+   "item 4291": 1,
+   "Dirt Block": 117,
+   "item 39": 1,
+   "Stone Block": 60,
+   "Lead Ore": 1,
+   "Gel": 5,
+   "Copper Coin": 7
+  }
+ }
+]

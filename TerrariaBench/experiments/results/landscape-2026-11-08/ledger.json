@@ -1,0 +1,254 @@
+{
+ "rows": [
+  {
+   "run": "a1-haiku-think-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.459232",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a2-haiku-forced-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.473824",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a3-luna-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.216063",
+   "uncertain": "0.045835"
+  },
+  {
+   "run": "a4-terra-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.717384",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b01-luna-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.085941",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b02-terra-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.785986",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b03-luna-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.082072",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b04-luna-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.301830",
+   "uncertain": "0.045835"
+  },
+  {
+   "run": "b05-luna-rt-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.090565",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b06-luna-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.007105",
+   "uncertain": "0.183340"
+  },
+  {
+   "run": "b06r-luna-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.280922",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b07-terra-rt-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.677238",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b08-terra-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.962789",
+   "uncertain": "0.458349"
+  },
+  {
+   "run": "b08r-terra-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.246935",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b09-terra-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.779302",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b10-terra-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.818584",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b11-haiku-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.266667",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b12-haiku-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.700387",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b13-haiku-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.139442",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b14-haiku-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "1.184530",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b15-haiku-rt-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.238513",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c1-opus-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "3.650702",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c2-opus-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "4.954660",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c3-combo-rt-w401",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "1.153999",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c3-combo-rt-w401",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.096282",
+   "uncertain": "0.001680"
+  },
+  {
+   "run": "c4-combo-pa-w401",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "1.863922",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c4-combo-pa-w401",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.126167",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c5-combo-rt-w403",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.769926",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "c5-combo-rt-w403",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.033673",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d1-terra-pa-w401-40m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "2.065396",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d2-haiku-rt-w401-40m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.852228",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d3-luna-rt-w401-40m",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.211017",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "dryrun-v2-paused",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "dryrun-v2-realtime",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  }
+ ],
+ "totals": {
+  "gateway": {
+   "reported": "27.037161",
+   "uncertain": "0.733358",
+   "conservative": "27.770519"
+  },
+  "openrouter": {
+   "reported": "0.256122",
+   "uncertain": "0.001680",
+   "conservative": "0.257802"
+  }
+ }
+}

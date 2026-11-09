@@ -48,6 +48,23 @@ TOOLS = [{"type": "function", "function": {
 # default-v1: the unmodified game, one act tool, goal + default controls as the system prompt (prompts/default_v1.txt).
 DEFAULT_PROFILE_ID = "default-v1"
 DEFAULT_PROMPT = "prompts/default_v1.txt"
+# default-v2 = default-v1 + the no-action rule: the prompt states the fixed session length and that every reply must
+# call act; the act call is forced where the API allows it; a reply without a valid act call is executed as a 1 s
+# wait and answered with a fresh screenshot and NO_ACTION_TEXT. No early stop: only the game-time budget or a cap.
+DEFAULT_V2_ID = "default-v2"
+DEFAULT_PROFILES = {DEFAULT_PROFILE_ID: DEFAULT_PROMPT, DEFAULT_V2_ID: "prompts/default_v2.txt"}
+NO_ACTION_TEXT = "No action was taken."
+NO_ACTION_WAIT = [{"ms": 1000}]
+
+
+def forced_tool_choice(provider, reasoning):
+    """default-v2 tool_choice per API: Responses "required"; Anthropic {"type": "any"} only with thinking off
+    (the API rejects forced tool use with thinking on, so those runs stay unforced = provider default auto)."""
+    if provider == "unified":
+        return "required"
+    if provider == "gateway":
+        return {"type": "any"} if reasoning == "none" else None
+    return None
 
 
 def default_tools(width, height):
@@ -113,6 +130,9 @@ class GameClock:
 
     def __init__(self, telemetry):
         self.dir, self.updates, self.handle, self.buffer = Path(telemetry), 0, None, ""
+        # The observer journal ends ("end" event) when the player leaves the world (e.g. the game's own Save & Exit);
+        # after a re-entry it records nothing more, so game time stops. default-v2 ends the run there.
+        self.left_world = False
 
     def read(self):
         if self.handle is None:
@@ -126,7 +146,9 @@ class GameClock:
             *lines, self.buffer = self.buffer.split("\n")
             for line in lines:
                 try:
-                    self.updates = max(self.updates, int(json.loads(line).get("game_updates") or 0))
+                    event = json.loads(line)
+                    self.updates = max(self.updates, int(event.get("game_updates") or 0))
+                    self.left_world = self.left_world or event.get("event") == "end"
                 except ValueError:
                     pass
         return self.updates
@@ -139,11 +161,19 @@ class GameClock:
             self.handle.close()
 
 
-def scripted_response(step, model, latency):
-    """Chat-shaped response of the operator dry-run policy, after `latency` seconds of simulated thinking."""
+def scripted_response(step, model, latency, tool_choice=None):
+    """Chat-shaped response of the operator dry-run policy, after `latency` seconds of simulated thinking.
+    tool_choice None (default-v1): always a valid act call. default-v2 dry runs exercise the no-action rule: every 9th
+    reply is an invalid act call and, when the tool call is not forced ("auto"), every 4th reply is text only."""
     time.sleep(latency)
     batch = SCRIPTED_BATCHES[step % len(SCRIPTED_BATCHES)]
-    return {"id": f"scripted-{step}", "model": model, "usage": {"prompt_tokens": 0, "completion_tokens": 0, "cost": 0},
+    usage = {"prompt_tokens": 0, "completion_tokens": 0, "cost": 0}
+    if tool_choice == "auto" and step % 4 == 2:
+        return {"id": f"scripted-{step}", "model": model, "usage": usage,
+                "choices": [{"message": {"role": "assistant", "content": "I have gathered some wood.", "tool_calls": []}}]}
+    if tool_choice is not None and step % 9 == 7:
+        batch = []  # invalid: act needs 1-16 actions
+    return {"id": f"scripted-{step}", "model": model, "usage": usage,
             "choices": [{"message": {"role": "assistant", "content": "", "tool_calls": [{
                 "id": f"call_{step}", "type": "function",
                 "function": {"name": "act", "arguments": json.dumps({"actions": batch})}}]}}]}
@@ -285,15 +315,21 @@ def run(args):
     # Background launches inherit SIGINT as ignored; install handlers explicitly.
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, _operator_stop)
-    default = args.profile == DEFAULT_PROFILE_ID
+    default, v2 = args.profile in DEFAULT_PROFILES, args.profile == DEFAULT_V2_ID
     if default:
         # The unmodified game: normal PvE, one act tool returning a JPEG screenshot, hidden scoring and time budget.
         if not args.game_seconds:
-            raise ValueError("default-v1 needs --game-seconds (the game-time budget)")
+            raise ValueError(f"{args.profile} needs --game-seconds (the game-time budget)")
         if args.interface_card or args.checkpoint_log != "published" or args.hostile_damage != "on":
-            raise ValueError("default-v1 fixes the prompt, tools and game rules")
+            raise ValueError(f"{args.profile} fixes the prompt, tools and game rules")
         args.pve, args.observe_after_act, args.hide_progress, args.hide_time = True, True, True, True
         args.image_format = "jpeg"
+    if v2:
+        # default-v2 freezes the default-v1 study's settings: 1024x1024, zoom 1, UI 0.9, Color lighting, framed minimap,
+        # Smart Cursor on.
+        if (args.window, args.zoom, args.ui_scale, args.lighting, args.minimap) != ("1024x1024", 1.0, .9, "color", "frame"):
+            raise ValueError("default-v2 fixes the display settings")
+        args.smart_cursor = "on"
     paused = args.clock in ("frozen", "paused")
     gw, uni, scripted = args.provider == "gateway", args.provider == "unified", args.provider == "scripted"
     if args.hostile_damage == "off" and not args.pve:
@@ -321,13 +357,13 @@ def run(args):
         model = {"id": args.model, "provider": "unified",
                  "pricing": {"prompt": f"{price['input']:.10f}", "completion": f"{price['output']:.10f}"},
                  "price_source": "fitted from gateway X-Token-Usage-Cost headers (unified.MODELS); reported cost = header",
-                 "request_shape": "OpenAI Responses API (/v1/responses), not streamed, store=false, encrypted reasoning items replayed, tool_choice auto",
+                 "request_shape": "OpenAI Responses API (/v1/responses), not streamed, store=false, encrypted reasoning items replayed",
                  "reasoning_fields": {"reasoning_effort": args.reasoning}, "max_tokens": unified.MAX_COMPLETION_TOKENS}
         budget = Budget(args.usd, model["pricing"], input_ceiling=180000, output_ceiling=unified.MAX_COMPLETION_TOKENS)
         key, session = gateway.load_key(), None
     elif scripted:
         if not default:
-            raise ValueError("the scripted operator policy is for default-v1 dry runs")
+            raise ValueError("the scripted operator policy is for default-v1/v2 dry runs")
         model = {"id": "scripted-operator", "provider": "scripted", "pricing": {"prompt": "0", "completion": "0"},
                  "simulated_latency_seconds": args.scripted_latency, "batches": SCRIPTED_BATCHES}
         args.model = model["id"]
@@ -339,6 +375,11 @@ def run(args):
             raise ValueError("selected route has no tool support")
         budget = Budget(args.usd, model["pricing"], input_ceiling=65536, output_ceiling=4096)
         key, session = hermes_key(), None
+    # default-v2: force the act call where the API allows it (manifest records the choice; None = provider default).
+    tool_choice = (args.scripted_tool_choice if scripted else forced_tool_choice(args.provider, args.reasoning)) if v2 else None
+    if scripted and v2:
+        model["simulated_tool_choice"] = tool_choice
+        tool_choice = None if tool_choice == "auto" else tool_choice
     output.mkdir(parents=True)
     shutil.copytree(fixture, output / "tml", ignore=shutil.ignore_patterns("Logs", "*.log", "*.bak"))
     shutil.copytree(Path(__file__).parent, output / "source/terrariabench", ignore=shutil.ignore_patterns("__pycache__"))
@@ -358,9 +399,9 @@ def run(args):
             "furniture you placed in the world (these evidence lines do not score). Diagnostic events do not score. "
             "No hidden map or inventory state is returned.")
     continue_message = CONTINUE_HIDDEN if hidden or args.hide_time else CONTINUE
-    prompt = (ROOT / (DEFAULT_PROMPT if default else HIDDEN_PROGRESS_PROMPT if hidden else profile["agent"]["task_prompt"])).read_text()
+    prompt = (ROOT / (DEFAULT_PROFILES[args.profile] if default else HIDDEN_PROGRESS_PROMPT if hidden else profile["agent"]["task_prompt"])).read_text()
     if default:
-        prompt = prompt.replace("{width}x{height}", f"{width}x{height}")
+        prompt = prompt.replace("{width}x{height}", f"{width}x{height}").replace("{minutes}", f"{args.game_seconds / 60:g}")
     if args.pve and args.hostile_damage == "off":
         prompt = prompt.replace("This scenario begins with hostile PvE disabled.",
                                 "Hostile enemies spawn and can be fought for their drops, but in this scenario "
@@ -381,7 +422,7 @@ def run(args):
     system_prompt = prompt if default else HARNESS
     reference_profile = profile  # observer journal mode and UI settings for the launch
     if default:
-        profile = {"profile_id": DEFAULT_PROFILE_ID, "game": "tModLoader 1.4.4 with only the TerrariaBenchObserver journal",
+        profile = {"profile_id": args.profile, "game": "tModLoader 1.4.4 with only the TerrariaBenchObserver journal",
                    "rules": "unmodified: normal PvE, hostile damage on, default settings; starter items' random prefixes "
                             "reset to none (as in every earlier profile)",
                    "observer_profile_env": profile["profile_id"],
@@ -419,7 +460,15 @@ def run(args):
                 "outage_policy": {"applies_to": "requests never sent (connection failures)",
                                   "game": "process group frozen (SIGSTOP) and run clock paused",
                                   "backoff_seconds": "5 doubling to 60", "max_outage_seconds": OUTAGE_LIMIT_SECONDS},
-                "continuation_policy": {"message": continue_message, "stop_after_consecutive_tool_less_replies": 5},
+                **({"no_action_policy": {
+                    "tool_choice": tool_choice if not scripted else model["simulated_tool_choice"],
+                    "tool_choice_note": "forced where the API allows it: Responses 'required'; Anthropic {'type': 'any'} "
+                                        "only with thinking off; None = provider default (auto, thinking on)",
+                    "reply_without_valid_act": f"executed as {json.dumps(NO_ACTION_WAIT)} (the game runs 1 s in both "
+                                               f"clock modes), then a fresh screenshot with '{NO_ACTION_TEXT}'",
+                    "early_stop": "none: only the game-time budget or a dollar/call cap (reported as censored)"}}
+                   if v2 else {"continuation_policy": {"message": continue_message,
+                                                       "stop_after_consecutive_tool_less_replies": 5}}),
                 "reasoning_effort": args.reasoning, "reasoning_mapping": (
                     f"omp --thinking {args.reasoning}: {json.dumps(model['reasoning_fields'])}" if gw else
                     f"reasoning_effort={args.reasoning}" if uni else "none (scripted operator policy)" if scripted
@@ -430,7 +479,7 @@ def run(args):
     messages = [{"role": "system", "content": system_prompt}] + ([] if default else [{"role": "user", "content": prompt}])
     image_refs = {}
     pid, game, frame_count, calls, commands, invalid, retries, streak = None, None, 0, 0, 0, 0, 0, 0
-    continuations = quiet = last_prompt = 0
+    continuations = quiet = last_prompt = no_action = 0
     frozen_at, freeze_reason, outage_total, think_frozen_total = None, None, 0.0, 0.0
     stop, started, started_unix = "startup", time.monotonic(), time.time()
     clock = GameClock(output / "telemetry")
@@ -480,6 +529,22 @@ def run(args):
         frame_count += 1
         return {"role": "user", "content": [{"type": "text", "text": "Current game screenshot:"}, {"type": "image_url", "image_url": {"url": url}}]}
 
+    def no_action_turn(step, reason):
+        """default-v2: a reply without a valid act call runs as a 1 s wait (game time advances in both clock modes);
+        returns the next user turn: a fresh screenshot introduced by the factual no-action line."""
+        nonlocal no_action, commands
+        no_action += 1
+        before = clock.read()
+        receipts = game.act(NO_ACTION_WAIT, actor="harness_no_action") if clock.seconds() < args.game_seconds else []
+        commands += len(receipts)
+        shot = observation()
+        shot["content"][0]["text"] = f"{NO_ACTION_TEXT}\nCurrent game screenshot:"
+        clock_log({"event": "no_action", "step": step, "reason": reason, "updates_before": before})
+        with (output / "no-action.jsonl").open("a") as stream:
+            stream.write(json.dumps({"step": step, "reason": reason, "updates_before": before,
+                                     "updates_after": clock.read(), "unix": time.time()}) + "\n")
+        return shot
+
     def archived(payload):
         data = copy.deepcopy(payload)
         for message in data["messages"]:
@@ -514,6 +579,7 @@ def run(args):
         messages.append(observation())
         started, started_unix = time.monotonic(), time.time()
         stop = "call_limit"
+        last_updates, last_advance = -1, 0.0
         for step in range(args.calls):
             remaining = args.seconds - (time.monotonic() - started)
             if remaining <= 0 or commands >= 65536 or budget.tokens >= args.max_tokens_total:
@@ -522,6 +588,18 @@ def run(args):
             if args.game_seconds and clock.seconds() >= args.game_seconds:
                 stop = "game_time_limit"
                 break
+            if v2:
+                # The run ends if the agent leaves the world (Save & Exit: the observer journal ends and game time
+                # stops) or the game clock makes no progress for 60 s of unfrozen time (e.g. a crash).
+                active = time.monotonic() - started  # unfrozen time: thaw() shifts `started` by every freeze
+                if clock.left_world:
+                    stop = "agent_left_world"
+                    break
+                if clock.read() != last_updates:
+                    last_updates, last_advance = clock.read(), active
+                elif active - last_advance > 60:
+                    stop = "game_clock_stalled"
+                    break
             if last_prompt > args.max_context_tokens:
                 messages, dropped = trim_turns(messages, last_prompt - .6 * args.max_context_tokens, last_prompt)
                 with (output / "context-trims.jsonl").open("a") as stream:
@@ -531,11 +609,12 @@ def run(args):
             context = cap_images(messages, args.keep_images, args.image_block)
             if gw:
                 anthropic_messages, anthropic_tools = gateway.convert(context, tools)
-                payload = gateway.body(args.model, args.reasoning, system_prompt, anthropic_messages, anthropic_tools, session)
+                payload = gateway.body(args.model, args.reasoning, system_prompt, anthropic_messages, anthropic_tools, session,
+                                       tool_choice=tool_choice)
                 dump(output / f"request-{step:03d}.json", {**archived({"messages": context}), "provider_body_omitted":
                      "Anthropic body is a deterministic conversion of these messages (gateway.convert/body)"})
             elif uni:
-                payload = unified.responses_body(args.model, args.reasoning, context, tools)
+                payload = unified.responses_body(args.model, args.reasoning, context, tools, tool_choice=tool_choice or "auto")
                 dump(output / f"request-{step:03d}.json", {**archived({"messages": context}), "provider_body_omitted":
                      "Responses body is a deterministic conversion of these messages (unified.responses_body)"})
             elif scripted:
@@ -565,7 +644,7 @@ def run(args):
                     elif uni:
                         response = unified.responses(payload, key=key, timeout=timeout)
                     elif scripted:
-                        response = scripted_response(step, args.model, args.scripted_latency)
+                        response = scripted_response(step, args.model, args.scripted_latency, model.get("simulated_tool_choice"))
                     else:
                         response = request("/chat/completions", key=key, payload=payload, timeout=timeout)
                     thaw()
@@ -609,9 +688,17 @@ def run(args):
                 raise RuntimeError("returned model differs from requested model")
             message = response["choices"][0]["message"]
             tool_calls = message.get("tool_calls") or []
+            if not tool_calls and v2:
+                # No-action rule: the reply is kept, the game runs 1 s, and the next turn is a fresh screenshot.
+                messages.append(copy.deepcopy(message))
+                messages.append(no_action_turn(step, "no_tool_call"))
+                if clock.seconds() >= args.game_seconds:
+                    stop = "game_time_limit"
+                    break
+                continue
             if not tool_calls:
-                # Continuation policy: a reply without a tool call before the budget ends gets one fixed
-                # message; five such replies in a row end the run.
+                # Continuation policy (default-v1 and earlier): a reply without a tool call before the budget ends
+                # gets one fixed message; five such replies in a row end the run.
                 quiet += 1
                 if quiet >= 5:
                     stop = "agent_stopped_without_tool_call"
@@ -683,10 +770,12 @@ def run(args):
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": json.dumps(value)})
                 with (output / "tool-results.jsonl").open("a") as stream:
                     stream.write(json.dumps({"call_id": call["id"], "name": name, "result": value, "unix_seconds": time.time()}) + "\n")
+            if v2 and not next_images:
+                next_images.append(no_action_turn(step, "invalid_act_call"))
             messages.extend(next_images)
-            # Three consecutive responses with an invalid tool call end the run; isolated mistakes do not.
+            # Three consecutive responses with an invalid tool call end the run (not in default-v2: no early stop).
             streak = streak + 1 if step_invalid else 0
-            if streak >= 3:
+            if streak >= 3 and not v2:
                 stop = "invalid_tool_limit"
                 break
             if args.game_seconds and clock.seconds() >= args.game_seconds:
@@ -722,7 +811,11 @@ def run(args):
                   "game_seconds": clock.read() / 60, "game_seconds_budget": args.game_seconds,
                   "wall_seconds_total": end - started_unix,
                   "accounting": budget.summary(), "score": reference_score(events, actions=receipts),
-                  "score_metrics": reference_metrics(receipts, frame_count, started_unix, end),
+                  "score_metrics": reference_metrics([r for r in receipts if r.get("actor") != "harness_no_action"],
+                                                     frame_count, started_unix, end),
+                  **({"no_action_turns": no_action, "tool_choice": manifest["no_action_policy"]["tool_choice"],
+                      # Leaving the world is the agent's own action (remaining game time forfeited), not a censoring.
+                      "censored": stop not in ("game_time_limit", "agent_left_world")} if v2 else {}),
                   "journal_closed": any(e.get("event") == "end" for e in events),
                   "calibration_probe_present": any(e.get("event") == "calibration_probe" for e in events)}
         dump(output / "result.json", result)
@@ -741,9 +834,12 @@ def main():
     parser.add_argument("--calls", type=int, default=12)
     parser.add_argument("--usd", type=float, default=.25)
     parser.add_argument("--provider", choices=("openrouter", "gateway", "unified", "scripted"), default="openrouter",
-                        help="scripted: operator dry run of default-v1 (fixed action cycle, simulated latency, no model)")
-    parser.add_argument("--profile", choices=("reference", DEFAULT_PROFILE_ID), default="reference",
-                        help="default-v1: unmodified game, one act tool, goal + default controls; needs --game-seconds")
+                        help="scripted: operator dry run of default-v1/v2 (fixed action cycle, simulated latency, no model)")
+    parser.add_argument("--profile", choices=("reference", *DEFAULT_PROFILES), default="reference",
+                        help="default-v1: unmodified game, one act tool, goal + default controls; needs --game-seconds. "
+                             "default-v2: + no-action rule, forced act call where supported, fixed display settings")
+    parser.add_argument("--scripted-tool-choice", choices=("required", "auto"), default="required",
+                        help="default-v2 dry run: auto also simulates text-only replies (unforced model)")
     parser.add_argument("--game-seconds", type=int, default=None,
                         help="game-time budget from the observer's game_updates (60 per game second); "
                              "--seconds stays a wall-clock safety cap on unfrozen time")

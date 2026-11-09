@@ -35,13 +35,16 @@ def settings_label(man):
 
 
 def setup(man):
-    if man.get("profile_id") == "default-v1" or (man.get("profile") or {}).get("profile_id") == "default-v1":
+    if (man.get("profile_id") or (man.get("profile") or {}).get("profile_id")) in ("default-v1", "default-v2"):
         if str(man.get("protocol", "")).startswith("combo-"):
             c = man["config"]
             head = f'{short(c["planner_model"])} ({c["planner_reasoning"]}) planner + {short(c["executor_model"])} executor'
             clock = c["clock"]
         else:
             head, clock = short(man["model"]["id"]) + f' ({man.get("reasoning_effort")})', man["clock"]
+            choice = (man.get("no_action_policy") or {}).get("tool_choice")
+            if "no_action_policy" in man:
+                head += ", forced" if choice not in (None, "auto") else ", unforced"
         return ", ".join(x for x in (head, clock, settings_label(man)) if x)
     if str(man.get("protocol", "")).startswith("combo-"):
         c = man["config"]
@@ -83,6 +86,7 @@ def row(run):
             "published_game_s": ext["published_milestones_game_s"], "extended_count": ext["extended_count"],
             "extended_game_s": ext["extended_game_s"], "crafted": ext["crafted"], "placed_tile_types": ext["placed_tile_types"],
             "deaths": ext["deaths"], "max_depth_tiles": ext["max_depth_tiles"], "continuations": res.get("continuations"),
+            "no_action_turns": res.get("no_action_turns"), "censored": res.get("censored"),
             "calls": calls, "calls_by_role": {k: r["calls"] for k, r in res["roles"].items()} if combo else None,
             "inputs": res.get("input_commands"), "latency_median_s": ev["latency_median_s"],
             "screenshot_age_median_s": clock.get("screenshot_age_wall_median_s", ev["screenshot_age_median_s"]),
@@ -106,9 +110,9 @@ def main():
                   key=lambda r: json.loads((r / "manifest.json").read_text())["started_unix"])
     rows = [row(r) for r in runs]
     print("| Run | Setup | World | Game min | Pub. score | " + " | ".join(PUBLISHED) + " | Ext. count | " +
-          " | ".join(EXTENDED) + " | Deaths | Depth | Contin. | Calls | Lat. (s) | Shot age (s) | Shot age game (s) | Hz | "
+          " | ".join(EXTENDED) + " | Deaths | Depth | Contin. | No-action | Calls | Lat. (s) | Shot age (s) | Shot age game (s) | Hz | "
           "Wall min | USD |")
-    print("|" + "---|" * (len(PUBLISHED) + len(EXTENDED) + 17))
+    print("|" + "---|" * (len(PUBLISHED) + len(EXTENDED) + 18))
     for r in rows:
         lat = r["latency_median_s"]
         lat = "/".join(f"{v:.1f}" for v in lat.values() if v) if isinstance(lat, dict) else f"{lat:.1f}"
@@ -117,6 +121,7 @@ def main():
               f' | {r["extended_count"]} | ' +
               " | ".join(mmss(r["extended_game_s"][k]) if k in r["extended_game_s"] else "–" for k in EXTENDED) +
               f' | {r["deaths"]} | {r["max_depth_tiles"]} | {r["continuations"] if r["continuations"] is not None else "–"} | '
+              f'{r["no_action_turns"] if r["no_action_turns"] is not None else "–"} | '
               f'{r["calls"]} | {lat} | {r["screenshot_age_median_s"]} | {r["screenshot_age_game_median_s"]} | {r["hz_median"]} | '
               f'{round(r["wall_total_s"] / 60, 1) if r["wall_total_s"] else "–"} | {r["usd_reported"]} |')
     if args.json:

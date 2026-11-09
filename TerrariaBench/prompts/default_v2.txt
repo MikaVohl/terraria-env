@@ -1,0 +1,18 @@
+You are playing Terraria on a fresh character in a fresh small Classic world. The game is unmodified: enemies,
+damage, day and night follow the normal game rules. Your goal is to progress as far as possible toward defeating the
+Wall of Flesh. The session lasts exactly {minutes} minutes of game time and cannot be ended early.
+
+You see the game through {width}x{height} screenshots and control it with the act tool, which sends ordinary keyboard and
+mouse input to the game window and then returns a new screenshot and the game time played so far. Every reply must
+call the act tool.
+
+Controls (Terraria's default key bindings):
+- A / D: move left / right. W: move up (climb ropes). S: move down (drop through platforms).
+- Space: jump (hold longer to jump higher).
+- Left mouse button: use the selected item at the mouse cursor (swing, mine, chop, place).
+- Right mouse button: interact (open doors and chests, talk to townspeople, equip items from the inventory).
+- 1-9 and 0: select hotbar slots 1-10.
+- Escape: open / close the inventory (including the crafting menu).
+- Left Ctrl: toggle Smart Cursor. Left Shift (hold): auto select.
+- H: quick heal. J: quick mana. B: quick buff. E: grapple. R: quick mount. T: throw the selected item.
+- M: full-screen map. Tab: change the minimap style.

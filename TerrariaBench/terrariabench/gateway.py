@@ -28,7 +28,9 @@ MODELS = {
         "price": {"input": 0.10e-6, "output": 0.50e-6, "cache_read": 0.01e-6, "cache_write": 0.125e-6},
         "max_tokens": 64000,
         "betas": "effort-2025-11-24,context-management-2025-06-27,interleaved-thinking-2025-05-14",
-        "reasoning": {"medium": {"thinking": {"type": "enabled", "budget_tokens": 8192, "display": "summarized"}}}},
+        "reasoning": {"medium": {"thinking": {"type": "enabled", "budget_tokens": 8192, "display": "summarized"}},
+                      # default-v2: thinking off, so the act call can be forced (tool_choice "any").
+                      "none": {"thinking": {"type": "disabled"}}}},
     **{model: {"price": price, "max_tokens": 128000,
                "betas": "effort-2025-11-24,context-management-2025-06-27",
                "reasoning": {level: {"thinking": {"type": "adaptive", "display": "summarized"},
@@ -67,13 +69,18 @@ def headers(key, session, model):
             "anthropic-version": "2023-06-01", "x-app": "cli"}
 
 
-def body(model, reasoning, system, messages, tools, session):
+def body(model, reasoning, system, messages, tools, session, tool_choice=None):
+    """tool_choice: None = provider default (auto); {"type": "any"} forces a tool call (thinking must be off)."""
     spec = MODELS[model]
+    fields = spec["reasoning"][reasoning]
+    if tool_choice and fields.get("thinking", {}).get("type") != "disabled":
+        raise ValueError("Anthropic rejects a forced tool_choice while thinking is on")
     return {"model": model, "messages": messages,
             "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
             "tools": tools, "metadata": {"user_id": json.dumps({"session_id": session}, separators=(",", ":"))},
-            "max_tokens": spec["max_tokens"], **spec["reasoning"][reasoning],
-            "context_management": CONTEXT_MANAGEMENT, "stream": True}
+            "max_tokens": spec["max_tokens"], **fields, **({"tool_choice": tool_choice} if tool_choice else {}),
+            **({} if fields.get("thinking", {}).get("type") == "disabled" else {"context_management": CONTEXT_MANAGEMENT}),
+            "stream": True}
 
 
 def convert(messages, tools):
@@ -88,7 +95,8 @@ def convert(messages, tools):
 
     for m in messages[1:]:
         if m["role"] == "assistant":
-            add("assistant", m["anthropic_content"])
+            if m["anthropic_content"]:  # an empty reply (no blocks) cannot be replayed
+                add("assistant", m["anthropic_content"])
         elif m["role"] == "tool":
             add("user", [{"type": "tool_result", "tool_use_id": m["tool_call_id"], "content": m["content"]}])
         elif isinstance(m["content"], str):

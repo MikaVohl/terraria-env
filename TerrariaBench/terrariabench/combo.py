@@ -22,8 +22,8 @@ from pathlib import Path
 from . import gateway, unified
 from .linux_control import KEY_NAMES, control, launch, stop_owned_game, validate_actions
 from .openrouter import Budget, ProviderError, decide, hermes_key
-from .reference_live import (DEFAULT_PROFILE_ID, DEFAULT_PROMPT, LIGHTING_MODES, ROOT, GameClock, digest, display_settings,
-                             dump, game_time, reference_metrics)
+from .reference_live import (DEFAULT_PROFILES, DEFAULT_V2_ID, LIGHTING_MODES, ROOT, GameClock, digest, display_settings, dump,
+                             game_time, reference_metrics)
 from .reference_scoring import checkpoint_view, load_reference_events, reference_score
 
 JEV_MODEL = "typesafe/jev-1.14"
@@ -39,18 +39,20 @@ PLANNER_SYSTEM = (
     "\"ui_actions\": optional list of 1-16 actions {\"keys\":[...],\"mouse\":\"left|right\",\"x\":0-1023,\"y\":0-1023,\"ms\":20-2000}}.")
 UI_SESSION_NOTE = (" After your ui_actions run you immediately get a new screenshot and can keep clicking; the executor stays "
                    "paused until you reply without ui_actions.")
-# default-v1 combination: the single-model system prompt's goal and default controls, the same act primitives for
+# default-v1/v2 combination: the single-model system prompt's goal and default controls, the same act primitives for
 # the planner's ui_actions, no checkpoint log and no statement about the clock (identical in both clock modes).
-_DEFAULT_PARAS = (ROOT / DEFAULT_PROMPT).read_text().split("\n\n")
-DEFAULT_GOAL, DEFAULT_CONTROLS = _DEFAULT_PARAS[0], _DEFAULT_PARAS[2]
+# default-v2's goal paragraph also states the fixed session length.
+def default_paras(profile, game_seconds):
+    paras = (ROOT / DEFAULT_PROFILES[profile]).read_text().split("\n\n")
+    return paras[0].replace("{minutes}", f"{game_seconds / 60:g}"), paras[2]
 
 
-def planner_default_system(width, height):
+def planner_default_system(width, height, goal, controls):
     return (
         "You are the PLANNER of a two-part agent playing Terraria. A fast EXECUTOR acts every few seconds from the newest "
         "screenshot and pursues the objective you give it with movement, jumping, mining, chopping, attacking and placing "
         "blocks. It cannot open menus or craft: you do inventory and crafting yourself with ui_actions (keyboard and mouse "
-        "actions, executed while the executor pauses).\n\n" + DEFAULT_GOAL + "\n\n" + DEFAULT_CONTROLS +
+        "actions, executed while the executor pauses).\n\n" + goal + "\n\n" + controls +
         f"\nScreenshots are {width}x{height} pixels. Reply with one JSON object only: {{\"objective\": concrete instruction "
         "for the executor (max 300 chars), \"replan_seconds\": 10-60 (game seconds until you look again), \"notes\": your "
         "memory for next time (max 1500 chars), \"ui_actions\": optional list of 1-16 actions {\"keys\":[...],"
@@ -189,13 +191,19 @@ def run(args):
                             "their drops, but in this scenario they cannot damage you.")
     elif args.pve:
         task = task.replace("This scenario begins with hostile PvE disabled.", "Hostile enemies are active under normal game rules.")
-    default, paused = args.profile == DEFAULT_PROFILE_ID, args.clock == "paused"
+    default, v2, paused = args.profile in DEFAULT_PROFILES, args.profile == DEFAULT_V2_ID, args.clock == "paused"
     if default:
         if not args.game_seconds or args.hostile_damage != "on":
-            raise ValueError("default-v1 needs --game-seconds and the unmodified game rules")
-        args.pve, task = True, DEFAULT_GOAL
+            raise ValueError(f"{args.profile} needs --game-seconds and the unmodified game rules")
+        goal, controls = default_paras(args.profile, args.game_seconds)
+        args.pve, task = True, goal
     elif paused:
-        raise ValueError("the paused clock is implemented for the default-v1 profile")
+        raise ValueError("the paused clock is implemented for the default-v1/v2 profiles")
+    if v2:
+        # Frozen default-v2 display settings (as in the single-model loop).
+        if (args.window, args.zoom, args.ui_scale, args.lighting, args.minimap) != ("1024x1024", 1.0, .9, "color", "frame"):
+            raise ValueError("default-v2 fixes the display settings")
+        args.smart_cursor = "on"
     gkey = gateway.load_key()
     root.mkdir(parents=True)
     (root / "calls").mkdir()
@@ -211,7 +219,7 @@ def run(args):
     width, height = settings["window"]
     if not default and (width, height) != (1024, 1024):
         raise ValueError("the reference combo keeps the 1024x1024 window")
-    planner_system = (planner_default_system(width, height) if default else PLANNER_SYSTEM) + (UI_SESSION_NOTE if args.ui_session else "")
+    planner_system = (planner_default_system(width, height, goal, controls) if default else PLANNER_SYSTEM) + (UI_SESSION_NOTE if args.ui_session else "")
     protocol = "combo-v2" if args.ui_session else "combo-v1"
     manifest = {"protocol": protocol, "config": {"planner_model": args.planner, "planner_reasoning": args.planner_reasoning,
                 "executor": args.executor, "executor_model": EXECUTOR_MODELS[args.executor],
@@ -221,7 +229,13 @@ def run(args):
                 "profile_id": args.profile, "game_seconds_budget": args.game_seconds, "display_settings": settings,
                 "task_prompt": task, "planner_system": planner_system, "executor_system": HAIKU_EXECUTOR_SYSTEM if args.executor != "jev" else None,
                 "privileged_state": False, "official_eligible": False, "started_unix": time.time(), "game_display": args.display,
-                "source_hashes": {p.name: digest(p) for p in Path(__file__).parent.glob("*.py")}}
+                "source_hashes": {p.name: digest(p) for p in Path(__file__).parent.glob("*.py")},
+                **({"no_action_policy": {
+                    "planner": "replies are JSON plans, not act calls; a reply the harness cannot use is shown back once "
+                               "(your_previous_reply_was_rejected), the executor keeps acting",
+                    "executor": "a turn without usable actions (provider/parse error) waits 1 s with the game running "
+                                "(both clock modes) and counts as a no-action turn",
+                    "early_stop": "none: only the game-time budget or a dollar cap (reported as censored)"}} if v2 else {})}
     dump(root / "manifest.json", manifest)
 
     lock, stop = threading.Lock(), threading.Event()
@@ -465,11 +479,13 @@ def run(args):
                 step += 1
             except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
                 errors += 1
-                log({"role": "executor", "step": step, "error": f"{type(error).__name__}: {error}"[:300], "unix": time.time()})
-                if errors >= 40:
+                log({"role": "executor", "step": step, "error": f"{type(error).__name__}: {error}"[:300],
+                     **({"no_action": True} if v2 else {}), "unix": time.time()})
+                if errors >= 40 and not v2:
                     stop_reason = "executor_error_limit"
                     return False
-                time.sleep(1 if not isinstance(error, ProviderError) or error.sent else 5)
+                # default-v2: a no-action executor turn = 1 s of game time in both clock modes (the game runs).
+                time.sleep(1 if v2 or not isinstance(error, ProviderError) or error.sent else 5)
             return True
 
         if paused:
@@ -480,13 +496,16 @@ def run(args):
                 if out_of_game_time():
                     stop_reason = "game_time_limit"
                     break
+                if v2 and clock.left_world:
+                    stop_reason = "agent_left_world"
+                    break
                 if clock.read() >= next_plan or replan_now.is_set():
                     try:
                         n, ui, replan = planner_step()
                     except (ProviderError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
                         planner_error(error)
                         planner_errors += 1
-                        if planner_errors >= 40:
+                        if planner_errors >= 40 and not v2:
                             stop_reason = "planner_error_limit"
                             break
                         time.sleep(3)
@@ -511,6 +530,9 @@ def run(args):
             while time.monotonic() - started < args.seconds:
                 if out_of_game_time():
                     stop_reason = "game_time_limit"
+                    break
+                if v2 and clock.left_world:
+                    stop_reason = "agent_left_world"
                     break
                 if stop.is_set():
                     stop_reason = fatal[0] if fatal else "planner_stopped"
@@ -552,7 +574,9 @@ def run(args):
                   "game_seconds": clock.read() / 60, "game_seconds_budget": args.game_seconds,
                   "evaluation_end_unix": end, "roles": {k: r.summary() for k, r in roles.items()},
                   "score": reference_score(events, actions=receipts),
-                  "score_metrics": reference_metrics(receipts, frame_n[0], started_unix, end), "official_eligible": False}
+                  "score_metrics": reference_metrics(receipts, frame_n[0], started_unix, end), "official_eligible": False,
+                  **({"no_action_turns": errors if started else 0,
+                      "censored": stop_reason not in ("game_time_limit", "agent_left_world")} if v2 else {})}
         dump(root / "result.json", result)
         print(json.dumps(result), flush=True)
     return result
@@ -572,9 +596,9 @@ def main():
     p.add_argument("--pve", action="store_true")
     p.add_argument("--hostile-damage", choices=("on", "off"), default="on")
     p.add_argument("--campaign-profile", default=None)
-    p.add_argument("--profile", choices=("reference", DEFAULT_PROFILE_ID), default="reference")
+    p.add_argument("--profile", choices=("reference", *DEFAULT_PROFILES), default="reference")
     p.add_argument("--clock", choices=("realtime", "paused"), default="realtime",
-                   help="paused (default-v1): the game is stopped during every planner/executor call; roles run in turn")
+                   help="paused (default-v1/v2): the game is stopped during every planner/executor call; roles run in turn")
     p.add_argument("--game-seconds", type=int, default=None, help="game-time budget (observer game_updates / 60)")
     p.add_argument("--display", default=None, help="isolated instance: rootful Xwayland display for the game")
     p.add_argument("--window", default="1024x1024")

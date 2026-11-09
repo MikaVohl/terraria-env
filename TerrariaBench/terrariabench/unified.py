@@ -48,7 +48,7 @@ def convert(messages):
     return out
 
 
-def responses_body(model, reasoning, messages, tools, max_tokens=MAX_COMPLETION_TOKENS):
+def responses_body(model, reasoning, messages, tools, max_tokens=MAX_COMPLETION_TOKENS, tool_choice="auto"):
     """Shared chat history -> Responses API request. The system message becomes `instructions`; assistant turns
     replay their raw output items (reasoning, function calls, text); tool results become function_call_output."""
     items = []
@@ -67,7 +67,7 @@ def responses_body(model, reasoning, messages, tools, max_tokens=MAX_COMPLETION_
             "include": ["reasoning.encrypted_content"], "reasoning": {"effort": reasoning, "summary": "auto"},
             "tools": [{"type": "function", "name": t["function"]["name"], "description": t["function"]["description"],
                        "parameters": t["function"]["parameters"]} for t in tools],
-            "tool_choice": "auto", "max_output_tokens": max_tokens}
+            "tool_choice": tool_choice, "max_output_tokens": max_tokens}
 
 
 def _post(path, payload, key, timeout):
