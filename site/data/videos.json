@@ -311,6 +311,50 @@
     20
    ],
    "size_mb": 20.3
+  },
+  {
+   "run": "d1-terra-pa-w401-40m",
+   "campaign": "landscape-2026-11-08",
+   "why": "Terra paused, 40 game-minutes",
+   "clock": "paused",
+   "src": "media/d1-terra-pa-w401-40m.mp4",
+   "poster": "media/d1-terra-pa-w401-40m.jpg",
+   "raw_s": 2827.0,
+   "trimmed_s": 1656.6,
+   "kept_s": 1656.7,
+   "game_s": 1656.0,
+   "freezes": 145,
+   "frozen_cut_s": 1151.8,
+   "offset_s": 0.5,
+   "freeze_recall": 0.9998,
+   "segments": 145,
+   "crop": [
+    20,
+    20
+   ],
+   "size_mb": 38.3
+  },
+  {
+   "run": "d2-haiku-rt-w401-40m",
+   "campaign": "landscape-2026-11-08",
+   "why": "Haiku real time, 40 game-minutes",
+   "clock": "realtime",
+   "src": "media/d2-haiku-rt-w401-40m.mp4",
+   "poster": "media/d2-haiku-rt-w401-40m.jpg",
+   "raw_s": 2425.9,
+   "trimmed_s": 2402.1,
+   "kept_s": 2402.1,
+   "game_s": 2400.0,
+   "freezes": 0,
+   "frozen_cut_s": 0,
+   "offset_s": 0.0,
+   "freeze_recall": null,
+   "segments": 1,
+   "crop": [
+    20,
+    20
+   ],
+   "size_mb": 30.9
   }
  ]
 }
