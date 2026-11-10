@@ -68,6 +68,6 @@ Last updated 2026-11-08 20:45 UTC.
 
 | ID | Decision | Options | Status |
 |---|---|---|---|
-| E1 | Art licensing | Original art / bring-your-own textures / abstract tiles | **Open**: blocks public replays and videos |
+| E1 | Art licensing | Keep official Terraria textures (site, replays, videos, player) | **Decided** (2026-11-10). Public release remains a separate question: Re-Logic owns the art; the repo itself still ships no game assets (textures load from a local install) |
 | E2 | Official-track pages | Two leaderboards, milestone timelines, per-run video, harness card, failure gallery, terrariabench.com context, cost/latency | **Recommended** |
 | E3 | Placeholders at launch | Only where no final data exists, visibly marked | **Recommended** |
