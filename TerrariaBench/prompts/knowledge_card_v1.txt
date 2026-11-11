@@ -1,0 +1,16 @@
+Game facts (Terraria 1.4.4 early game; recipes and stations, no strategy):
+- Wood: hold the left mouse button with the axe on a tree trunk next to you. Stone, dirt and ores: the pickaxe.
+- Crafting: open the inventory (Escape). The crafting list at the lower left shows only the items you can craft
+  right now with what you carry and the stations near you; click an item to craft it (it goes to the cursor or the
+  inventory).
+- Work Bench: 10 Wood, crafted by hand. To place it, select it in the hotbar and left-click an empty spot on solid
+  ground near you (it is 2 tiles wide). Recipes that need a station work only while you stand within a few tiles of
+  the placed station.
+- Torch: 1 Gel + 1 Wood -> 3 Torches, by hand. Gel drops from slimes.
+- At a placed Work Bench: wooden armour, sword, bow, platforms, table, chair, door (Wood).
+- Furnace: 20 Stone Block + 4 Wood + 3 Torch at a Work Bench; place it like the Work Bench.
+- Bars at a placed Furnace: 3 Copper/Tin/Iron/Lead Ore -> 1 bar; 4 Silver/Tungsten/Gold/Platinum Ore -> 1 bar.
+- Iron Anvil / Lead Anvil: 5 Iron / Lead Bar at a Work Bench. Metal tools, weapons and armour need bars and a placed
+  anvil.
+- Underground is dark: placed torches light it. Life Crystals (red hearts underground) raise maximum life.
+- Nights bring zombies and flying eyes on the surface.

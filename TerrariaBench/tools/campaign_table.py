@@ -21,7 +21,7 @@ def mmss(s):
 
 def short(model):
     return {"claude-haiku-5-5": "Haiku", "claude-sonnet-5-5": "Sonnet", "claude-opus-5-5": "Opus", "gpt-5.6-luna": "Luna",
-            "gpt-5.6-terra": "Terra", "gpt-5.6-sol": "Sol", "typesafe/jev-1.14": "Jev"}.get(model, model)
+            "gpt-5.6-terra": "Terra", "gpt-5.6-sol": "Sol", "gpt-6-luna": "Luna6", "typesafe/jev-1.14": "Jev"}.get(model, model)
 
 
 DEFAULT_SETTINGS = {"window": [1024, 1024], "zoom": 1.0, "ui_scale": 0.9, "lighting": "color", "smart_cursor": "off",
@@ -45,7 +45,8 @@ def setup(man):
             choice = (man.get("no_action_policy") or {}).get("tool_choice")
             if "no_action_policy" in man:
                 head += ", forced" if choice not in (None, "auto") else ", unforced"
-        return ", ".join(x for x in (head, clock, settings_label(man)) if x)
+        factors = ", ".join(f"{k} {v}" for k, v in (man.get("factors") or {}).items())
+        return ", ".join(x for x in (head, clock, settings_label(man), factors) if x)
     if str(man.get("protocol", "")).startswith("combo-"):
         c = man["config"]
         bits = [f'{short(c["planner_model"])} planner + {short(c["executor_model"])} executor', "realtime"]

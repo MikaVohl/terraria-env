@@ -36,20 +36,22 @@ def main():
     settings = extra or (json.loads(a.settings_file.read_text()) if a.settings_file else [])
     out = f"{a.campaign}/{a.name}"
     common = (f"--fixture runs/fixtures/{a.fixture} --output {out} --profile {a.profile} --clock {a.clock} "
-              f"--game-seconds {a.game_seconds} --display \"$TB_DISPLAY\" " + " ".join(shlex.quote(s) for s in settings))
+              f"--game-seconds {a.game_seconds} --display \"$TB_DISPLAY\"")
+    # Settings/factor flags go last so they override the defaults below (argparse: last value wins).
+    flags = " ".join(shlex.quote(s) for s in settings)
     if a.kind == "combo":
         # Paused: wall time includes every frozen model call, so the wall safety cap is generous.
         cap_line = f"# cap gateway={a.cap} openrouter={JEV_CAP}"
         command = (f".venv/bin/python -u -m terrariabench.combo {common} --planner {a.model} --planner-reasoning {a.reasoning} "
                    f"--executor jev --jev-frames 1 --ui-session --seconds {a.game_seconds * 9 if a.clock == 'paused' else a.game_seconds + 600} "
-                   f"--usd-planner {a.cap} --usd-executor {JEV_CAP} --campaign-profile {a.profile}-combo")
+                   f"--usd-planner {a.cap} --usd-executor {JEV_CAP} --campaign-profile {a.profile}-combo {flags}")
     else:
         cap_line = f"# cap gateway={a.cap}"
         reserve = " --reserve-output-tokens 16384" if a.kind == "gateway" else ""
         command = (f".venv/bin/python -u -m terrariabench run {common} --provider {a.kind} --model {a.model} "
                    f"--reasoning {a.reasoning} --mode calibration --seconds {a.game_seconds + 600} --calls 4096 --usd {a.cap}"
                    f"{reserve} --keep-images 8 --max-context-tokens 120000 --max-tokens-total 400000000 "
-                   f"--campaign-profile {a.profile}")
+                   f"--campaign-profile {a.profile} {flags}")
     a.jobs.mkdir(parents=True, exist_ok=True)
     job = a.jobs / f"{a.name}.sh"
     window = settings[settings.index("--window") + 1] if "--window" in settings else "1024x1024"

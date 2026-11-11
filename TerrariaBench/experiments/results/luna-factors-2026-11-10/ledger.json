@@ -1,0 +1,730 @@
+{
+ "rows": [
+  {
+   "run": "a00-base-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.005700",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a00-base-pa-w401-r2",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.029920",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a00-base-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.047789",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a00-base-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.031634",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a01-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.019566",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a01-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.013557",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a01-rt-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.014476",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a02-grace2-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.011305",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a02-grace2-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.020901",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "a02-grace2-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.017656",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a03-eff-none-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.043243",
+   "uncertain": "0.087738"
+  },
+  {
+   "run": "a03-eff-none-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.030826",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a03-eff-none-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.020725",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a04-eff-med-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.019594",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a04-eff-med-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.028151",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a04-eff-med-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.022787",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a05-eff-high-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.107318",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a05-eff-high-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.057189",
+   "uncertain": "0.065803"
+  },
+  {
+   "run": "a05-eff-high-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.018702",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a06-hostoff-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.009052",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a06-hostoff-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.031212",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "a06-hostoff-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.027847",
+   "uncertain": "0.065803"
+  },
+  {
+   "run": "a07-know-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.008915",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a07-know-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.018079",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a07-know-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.027064",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a08-feedback-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.024458",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a08-feedback-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.025127",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a08-feedback-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.045693",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a09-notes-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.042468",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a09-notes-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.028702",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "a09-notes-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.026825",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a10-keep1-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.020541",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a10-keep1-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.064956",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a10-keep1-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.014722",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a11-obs512-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.005923",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a11-obs512-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.020952",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a11-obs512-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.019802",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a12-norm-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.017726",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a12-norm-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.031109",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a12-norm-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.021470",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a13-max4-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.031311",
+   "uncertain": "0.087738"
+  },
+  {
+   "run": "a13-max4-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.031281",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a13-max4-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.031809",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a14-noctrl-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.048279",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a14-noctrl-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.036688",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a14-noctrl-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.030626",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a15-ctx30k-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.012507",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a15-ctx30k-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.037888",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a15-ctx30k-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.030905",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "a16-split-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.140707",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a16-split-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.138340",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a16-split-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.172249",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a17-luna56-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.068970",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a17-luna56-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.106575",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "a17-luna56-pa-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.093587",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b00-haiku-base-pa-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.205468",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b00-haiku-base-pa-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.567597",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b01-haiku-rt-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.067271",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b01-haiku-rt-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.091585",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b03-haiku-eff-none-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.150784",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b03-haiku-eff-none-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.203366",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b06-haiku-hostoff-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.107999",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b06-haiku-hostoff-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.184002",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b07-haiku-know-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.324321",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b07-haiku-know-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.382517",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b08-haiku-feedback-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.175886",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b08-haiku-feedback-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.262737",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b09-haiku-notes-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.216382",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "b09-haiku-notes-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.750602",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d01-combo-luna6-jev-rt-w401",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.008908",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d01-combo-luna6-jev-rt-w401",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.044166",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d01-combo-luna6-jev-rt-w402",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.006546",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "d01-combo-luna6-jev-rt-w402",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.048163",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d02-combo-luna6-jev-pa-w401",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.010974",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d02-combo-luna6-jev-pa-w401",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.067487",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "d02-combo-luna6-jev-pa-w402",
+   "role": "planner",
+   "provider": "gateway",
+   "reported": "0.014577",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "d02-combo-luna6-jev-pa-w402",
+   "role": "executor",
+   "provider": "openrouter",
+   "reported": "0.094931",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "dryrun-grace",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "dryrun-paused-off",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000000",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e01-low-pa-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.040840",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e01-low-pa-20m-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.027614",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e01-low-pa-20m-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.044250",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "e02-high-pa-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.338277",
+   "uncertain": "0.065803"
+  },
+  {
+   "run": "e02-high-pa-20m-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.107194",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e02-high-pa-20m-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.247586",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "e03-low-rt-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.026064",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e03-low-rt-20m-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.034983",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e03-low-rt-20m-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.023863",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e04-high-rt-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.061730",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "e04-high-rt-20m-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.050157",
+   "uncertain": "0.043869"
+  },
+  {
+   "run": "e04-high-rt-20m-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.027171",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e06-high-know-pa-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.212146",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "e06-high-know-pa-20m-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.146262",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "e06-high-know-pa-20m-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.150552",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "f01-high-grace2-rt-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.090543",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "f01-high-grace2-rt-20m-w402",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.388442",
+   "uncertain": "0.065803"
+  },
+  {
+   "run": "f01-high-grace2-rt-20m-w403",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.086300",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "f02-high-pa-20m-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.151009",
+   "uncertain": "0.087738"
+  },
+  {
+   "run": "f03-low-pa-20m-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.043674",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "smoke-notes-norm",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.000507",
+   "uncertain": "0.000000"
+  },
+  {
+   "run": "smoke-split",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.002432",
+   "uncertain": "0.021934"
+  },
+  {
+   "run": "gpt-6-luna model probes + price fit (5 calls)",
+   "role": "extra",
+   "provider": "gateway",
+   "reported": "0.001000",
+   "uncertain": "0.000000"
+  }
+ ],
+ "totals": {
+  "gateway": {
+   "reported": "8.139525",
+   "uncertain": "1.425736",
+   "conservative": "9.565261"
+  },
+  "openrouter": {
+   "reported": "0.254747",
+   "uncertain": "0.000000",
+   "conservative": "0.254747"
+  }
+ }
+}

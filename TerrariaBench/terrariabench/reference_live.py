@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import threading
 import time
 
 from . import gateway, unified
@@ -67,22 +68,122 @@ def forced_tool_choice(provider, reasoning):
     return None
 
 
-def default_tools(width, height):
-    """The single act tool; coordinate bounds follow the game window (screenshot) size."""
+def default_tools(width, height, max_actions=16, notes=False, normalized=False):
+    """The single act tool; coordinate bounds follow the coordinate space the model sees (screenshot pixels, or
+    0-1000 normalized). `max_actions`, `notes` and `normalized` are declared luna-factors harness factors; with the
+    defaults the tool is byte-identical to default-v1/v2."""
     schema = copy.deepcopy(ACTION_SCHEMA)
-    schema["items"]["properties"]["x"]["maximum"] = width - 1
-    schema["items"]["properties"]["y"]["maximum"] = height - 1
+    schema["maxItems"] = max_actions
+    schema["items"]["properties"]["x"]["maximum"] = 1000 if normalized else width - 1
+    schema["items"]["properties"]["y"]["maximum"] = 1000 if normalized else height - 1
+    space = ("normalized coordinates (x 0-1000 = left to right edge, y 0-1000 = top to bottom edge)" if normalized
+             else f"screenshot pixels (x 0-{width - 1}, y 0-{height - 1})")
+    scale_x, scale_y = (1000 / 1024, 1000 / 1024) if normalized else (width / 1024, height / 1024)
+    point = f"\"x\": {round(600 * scale_x)}, \"y\": {round(400 * scale_y)}"
+    limit = "" if max_actions == 16 else f" (at most {max_actions} per call)"
+    properties = {"actions": schema}
+    if notes:
+        properties["notes"] = {"type": "string", "maxLength": 2000, "description": (
+            "Optional. Your persistent notes (plan, progress, facts learned). The latest notes you wrote are shown "
+            "to you again with every screenshot; omit to keep them unchanged.")}
     return [{"type": "function", "function": {
         "name": "act",
         "description": ("Send keyboard and mouse input to the game, then return a new screenshot and the game time played. "
-                        "The actions run in order. Each action optionally moves the mouse to (x, y) in screenshot pixels "
-                        f"(x 0-{width - 1}, y 0-{height - 1}), then presses and holds the listed keys and/or the mouse "
+                        f"The actions run in order{limit}. Each action optionally moves the mouse to (x, y) in {space}, "
+                        "then presses and holds the listed keys and/or the mouse "
                         "button for ms milliseconds (20-2000, default 100) and releases everything. Examples: key press "
                         "{\"keys\": [\"3\"], \"ms\": 50}; key hold {\"keys\": [\"d\"], \"ms\": 1500}; mouse move "
-                        "{\"x\": 600, \"y\": 400}; click or hold at a point {\"x\": 600, \"y\": 400, \"mouse\": \"left\", "
+                        f"{{{point}}}; click or hold at a point {{{point}, \"mouse\": \"left\", "
                         "\"ms\": 800}; wait {\"ms\": 1000}."),
         "parameters": {"type": "object", "additionalProperties": False, "required": ["actions"],
-                       "properties": {"actions": schema}}}}]
+                       "properties": properties}}}]
+
+
+# luna-factors (declared harness factors on top of default-v2; recorded in manifest["factors"]).
+KNOWLEDGE_CARD = "prompts/knowledge_card_v1.txt"
+SPLIT_TOOL_NAMES = ("key", "mouse", "wait")
+FACTOR_DEFAULTS = {"hostile_damage": "on", "think_grace_s": None, "knowledge_card": False, "controls_card": "on",
+                   "progress_feedback": False, "notes": False, "obs_size": None, "coords": "pixels", "max_actions": 16,
+                   "tool_set": "act", "keep_images": 8, "image_block": 8, "max_context_tokens": 120000}
+
+
+def split_tools(width, height):
+    """--tool-set split: one tool per primitive kind instead of one act tool. Several calls may be made in one reply;
+    they run in order, and one screenshot follows the last of them."""
+    coord = {"type": "integer", "minimum": 0}
+    ms = {"type": "integer", "minimum": 20, "maximum": 2000}
+    return [
+        {"type": "function", "function": {
+            "name": "key", "description": "Press and hold the listed keys together for ms milliseconds (default 100), "
+                                         "then release them. Example: {\"keys\": [\"d\"], \"ms\": 1500}.",
+            "parameters": {"type": "object", "additionalProperties": False, "required": ["keys"], "properties": {
+                "keys": ACTION_SCHEMA["items"]["properties"]["keys"], "ms": ms}}}},
+        {"type": "function", "function": {
+            "name": "mouse", "description": f"Move the mouse to (x, y) in screenshot pixels (x 0-{width - 1}, y 0-{height - 1}); "
+                                           "with button, press and hold that button there for ms milliseconds (default 100). "
+                                           "Example: {\"x\": 600, \"y\": 400, \"button\": \"left\", \"ms\": 800}.",
+            "parameters": {"type": "object", "additionalProperties": False, "required": ["x", "y"], "properties": {
+                "x": {**coord, "maximum": width - 1}, "y": {**coord, "maximum": height - 1},
+                "button": {"type": "string", "enum": ["left", "right", "middle"]}, "ms": ms}}}},
+        {"type": "function", "function": {
+            "name": "wait", "description": "Let the game run for ms milliseconds without input.",
+            "parameters": {"type": "object", "additionalProperties": False, "required": ["ms"], "properties": {"ms": ms}}}}]
+
+
+def split_action(name, parameters):
+    """One split-tool call -> one act primitive (validated afterwards like any act action)."""
+    if name == "key" and set(parameters) <= {"keys", "ms"} and "keys" in parameters:
+        return {"keys": parameters["keys"], "ms": parameters.get("ms", 100)}
+    if name == "mouse" and {"x", "y"} <= set(parameters) <= {"x", "y", "button", "ms"}:
+        action = {"x": parameters["x"], "y": parameters["y"]}
+        if "button" in parameters:
+            action.update(mouse=parameters["button"], ms=parameters.get("ms", 100))
+        elif "ms" in parameters:
+            action["ms"] = parameters["ms"]
+        return action
+    if name == "wait" and set(parameters) == {"ms"}:
+        return {"ms": parameters["ms"]}
+    raise ValueError("unknown tool or arguments")
+
+
+def factor_prompt(prompt, args):
+    """Declared prompt factors on the default-v2 text; each replacement must hit."""
+    def sub(old, new):
+        if old not in prompt:
+            raise ValueError(f"prompt factor anchor missing: {old[:40]!r}")
+        return prompt.replace(old, new)
+    if args.hostile_damage == "off":
+        prompt = sub("The game is unmodified: enemies,\ndamage, day and night follow the normal game rules.",
+                     "The game is unmodified except for one rule: hostile enemies spawn and can be fought for their\n"
+                     "drops, but they cannot damage you. Day and night follow the normal game rules.")
+    if args.tool_set == "split":
+        prompt = sub("control it with the act tool, which sends ordinary keyboard and\nmouse input to the game window "
+                     "and then returns a new screenshot and the game time played so far. Every reply must\ncall the act tool.",
+                     "control it with the key, mouse and wait tools, which send ordinary\nkeyboard and mouse input to the "
+                     "game window; after your calls you get a new screenshot and the game time played\nso far. Every reply "
+                     "must call at least one of these tools.")
+    if args.controls_card == "off":
+        head, sep, _ = prompt.partition("\nControls (Terraria's default key bindings):")
+        if not sep:
+            raise ValueError("prompt factor anchor missing: controls")
+        prompt = head.rstrip("\n") + "\n"
+    if args.knowledge_card:
+        prompt += "\n" + (ROOT / KNOWLEDGE_CARD).read_text()
+    return prompt
+
+
+def to_window(action, space, width, height):
+    """Map a model action from its coordinate space to window pixels. `space` = (w, h, normalized): screenshot pixels
+    of a w x h observation, or 0-1000 on both axes when normalized."""
+    w, h, normalized = space
+    if not isinstance(action, dict) or "x" not in action or "y" not in action or (not normalized and (w, h) == (width, height)):
+        return action
+    span_x, span_y = (1000, 1000) if normalized else (w, h)
+    limit_x, limit_y = (1001, 1001) if normalized else (w, h)
+    if not (type(action["x"]) is int and type(action["y"]) is int and 0 <= action["x"] < limit_x and 0 <= action["y"] < limit_y):
+        raise ValueError("pointer outside screenshot")
+    return {**action, "x": min(width - 1, round(action["x"] * width / span_x)),
+            "y": min(height - 1, round(action["y"] * height / span_y))}
 
 
 # Stock player options of the default-v1 display-settings study (config.json values / stock key presses at setup).
@@ -320,7 +421,7 @@ def run(args):
         # The unmodified game: normal PvE, one act tool returning a JPEG screenshot, hidden scoring and time budget.
         if not args.game_seconds:
             raise ValueError(f"{args.profile} needs --game-seconds (the game-time budget)")
-        if args.interface_card or args.checkpoint_log != "published" or args.hostile_damage != "on":
+        if args.interface_card or args.checkpoint_log != "published" or (args.hostile_damage != "on" and not v2):
             raise ValueError(f"{args.profile} fixes the prompt, tools and game rules")
         args.pve, args.observe_after_act, args.hide_progress, args.hide_time = True, True, True, True
         args.image_format = "jpeg"
@@ -330,6 +431,19 @@ def run(args):
         if (args.window, args.zoom, args.ui_scale, args.lighting, args.minimap) != ("1024x1024", 1.0, .9, "color", "frame"):
             raise ValueError("default-v2 fixes the display settings")
         args.smart_cursor = "on"
+    # luna-factors: declared deviations from default-v2 (empty dict = plain default-v2). Only on default-v2.
+    factors = {k: v for k, v in {
+        "hostile_damage": args.hostile_damage, "think_grace_s": args.think_grace, "knowledge_card": args.knowledge_card,
+        "controls_card": args.controls_card, "progress_feedback": args.progress_feedback, "notes": args.notes,
+        "obs_size": args.obs_size, "coords": args.coords, "max_actions": args.max_actions, "tool_set": args.tool_set,
+        "keep_images": args.keep_images, "image_block": args.image_block, "max_context_tokens": args.max_context_tokens,
+    }.items() if v != FACTOR_DEFAULTS[k]}
+    if set(factors) - {"keep_images", "image_block", "max_context_tokens"} and not v2:
+        raise ValueError("luna-factors options need --profile default-v2")
+    if args.think_grace is not None and args.clock != "realtime":
+        raise ValueError("--think-grace is a real-time clock policy")
+    if args.tool_set == "split" and (args.notes or args.coords != "pixels" or args.max_actions != 16):
+        raise ValueError("--tool-set split is tested alone")
     paused = args.clock in ("frozen", "paused")
     gw, uni, scripted = args.provider == "gateway", args.provider == "unified", args.provider == "scripted"
     if args.hostile_damage == "off" and not args.pve:
@@ -358,6 +472,7 @@ def run(args):
                  "pricing": {"prompt": f"{price['input']:.10f}", "completion": f"{price['output']:.10f}"},
                  "price_source": "fitted from gateway X-Token-Usage-Cost headers (unified.MODELS); reported cost = header",
                  "request_shape": "OpenAI Responses API (/v1/responses), not streamed, store=false, encrypted reasoning items replayed",
+                 **({"deployment": spec["deployment"]} if "deployment" in spec else {}),
                  "reasoning_fields": {"reasoning_effort": args.reasoning}, "max_tokens": unified.MAX_COMPLETION_TOKENS}
         budget = Budget(args.usd, model["pricing"], input_ceiling=180000, output_ceiling=unified.MAX_COMPLETION_TOKENS)
         key, session = gateway.load_key(), None
@@ -392,7 +507,17 @@ def run(args):
     width, height = settings["window"]
     if not default and (width, height) != (1024, 1024):
         raise ValueError("the reference profile keeps the 1024x1024 window")
-    tools = default_tools(width, height) if default else TOOLS[:2] if hidden else copy.deepcopy(TOOLS)
+    # Coordinate space the model sees: the observation size (--obs-size downscales the screenshot) or 0-1000.
+    obs_w, obs_h = (args.obs_size, args.obs_size) if args.obs_size else (width, height)
+    space = (obs_w, obs_h, args.coords == "normalized")
+    if args.obs_size and (width, height) != (1024, 1024):
+        raise ValueError("--obs-size assumes the square 1024x1024 window")
+    if not default:
+        tools = TOOLS[:2] if hidden else copy.deepcopy(TOOLS)
+    elif args.tool_set == "split":
+        tools = split_tools(obs_w, obs_h)
+    else:
+        tools = default_tools(obs_w, obs_h, args.max_actions, args.notes, args.coords == "normalized")
     if args.checkpoint_log == "extended" and not hidden:
         tools[2]["function"]["description"] = (
             "Read the game's checkpoint log. It also lists every item you crafted and every station, torch or piece of "
@@ -401,7 +526,9 @@ def run(args):
     continue_message = CONTINUE_HIDDEN if hidden or args.hide_time else CONTINUE
     prompt = (ROOT / (DEFAULT_PROFILES[args.profile] if default else HIDDEN_PROGRESS_PROMPT if hidden else profile["agent"]["task_prompt"])).read_text()
     if default:
-        prompt = prompt.replace("{width}x{height}", f"{width}x{height}").replace("{minutes}", f"{args.game_seconds / 60:g}")
+        prompt = prompt.replace("{width}x{height}", f"{obs_w}x{obs_h}").replace("{minutes}", f"{args.game_seconds / 60:g}")
+    if v2:
+        prompt = factor_prompt(prompt, args)
     if args.pve and args.hostile_damage == "off":
         prompt = prompt.replace("This scenario begins with hostile PvE disabled.",
                                 "Hostile enemies spawn and can be fought for their drops, but in this scenario "
@@ -436,7 +563,9 @@ def run(args):
                                        "screenshot_after_act": args.observe_after_act,
                                        "checkpoint_log": "published + crafted/placed evidence" if args.checkpoint_log == "extended" else "published"},
                 "pve_enabled": args.pve, "hostile_contact_damage": args.hostile_damage,
-                "clock": "paused" if default and paused else args.clock, "interface_card": args.interface_card,
+                "clock": ("paused" if default and paused else f"realtime-grace-{args.think_grace:g}s"
+                          if args.think_grace is not None else args.clock), "interface_card": args.interface_card,
+                "factors": factors, "factor_defaults": FACTOR_DEFAULTS if factors else None,
                 "campaign_profile": args.campaign_profile, "game_seconds_budget": args.game_seconds,
                 "game_time_in_act_results": default,
                 "exact_reference_reproduction": False, "official_eligible": False,
@@ -448,7 +577,8 @@ def run(args):
                            "input_commands": 65536, "reported_tokens": args.max_tokens_total},
                 "observation_encoding": {"format": args.image_format,
                                          "jpeg_quality": args.jpeg_quality if args.image_format == "jpeg" else None,
-                                         "resolution": [width, height]},
+                                         "resolution": [obs_w, obs_h], "window": [width, height],
+                                         "coords": args.coords},
                 "context_policy": {"keep_images": args.keep_images, "image_block": args.image_block,
                                    "text_and_tool_results": "all until the limit",
                                    "max_context_tokens": args.max_context_tokens,
@@ -513,21 +643,29 @@ def run(args):
                 think_frozen_total += paused
             started, frozen_at, freeze_reason = started + paused, None, None
 
+    notes_text = None  # --notes: the latest notes the agent wrote, repeated with every screenshot
+
     def observation():
         nonlocal frame_count
         path = output / "frames" / f"{frame_count:05d}.png"
         meta = game.capture(path)
         if args.image_format == "jpeg":
-            # The PNG stays on disk as the record; the model receives the same pixels as JPEG.
+            # The PNG stays on disk as the record; the model receives the same pixels as JPEG (--obs-size: downscaled).
             from PIL import Image
             buffer = io.BytesIO()
-            Image.open(path).convert("RGB").save(buffer, "JPEG", quality=args.jpeg_quality)
+            image = Image.open(path).convert("RGB")
+            if args.obs_size:
+                image = image.resize((obs_w, obs_h), Image.LANCZOS)
+            image.save(buffer, "JPEG", quality=args.jpeg_quality)
             url = "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode()
         else:
             url = "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode()
         image_refs[url] = {"artifact": str(path.relative_to(output)), "sha256": digest(path), "capture": meta}
         frame_count += 1
-        return {"role": "user", "content": [{"type": "text", "text": "Current game screenshot:"}, {"type": "image_url", "image_url": {"url": url}}]}
+        text = "Current game screenshot:"
+        if args.notes:
+            text = f"Your notes: {notes_text or '(none yet)'}\n{text}"
+        return {"role": "user", "content": [{"type": "text", "text": text}, {"type": "image_url", "image_url": {"url": url}}]}
 
     def no_action_turn(step, reason):
         """default-v2: a reply without a valid act call runs as a 1 s wait (game time advances in both clock modes);
@@ -538,7 +676,7 @@ def run(args):
         receipts = game.act(NO_ACTION_WAIT, actor="harness_no_action") if clock.seconds() < args.game_seconds else []
         commands += len(receipts)
         shot = observation()
-        shot["content"][0]["text"] = f"{NO_ACTION_TEXT}\nCurrent game screenshot:"
+        shot["content"][0]["text"] = f"{NO_ACTION_TEXT}\n" + shot["content"][0]["text"]
         clock_log({"event": "no_action", "step": step, "reason": reason, "updates_before": before})
         with (output / "no-action.jsonl").open("a") as stream:
             stream.write(json.dumps({"step": step, "reason": reason, "updates_before": before,
@@ -634,6 +772,10 @@ def run(args):
                 budget.reserve()
                 calls += 1
                 t0 = time.monotonic()
+                # --think-grace S: real time for the first S s of a model call, then the game is frozen until the reply.
+                grace = threading.Timer(args.think_grace, freeze, ("think_grace",)) if args.think_grace is not None else None
+                if grace:
+                    grace.start()
                 try:
                     # Clock is paused while frozen, so a real request always gets the normal budget.
                     elapsed = time.monotonic() - started - (time.monotonic() - frozen_at if frozen_at is not None else 0)
@@ -647,9 +789,15 @@ def run(args):
                         response = scripted_response(step, args.model, args.scripted_latency, model.get("simulated_tool_choice"))
                     else:
                         response = request("/chat/completions", key=key, payload=payload, timeout=timeout)
+                    if grace:
+                        grace.cancel()
+                        grace.join()
                     thaw()
                     break
                 except ProviderError as error:
+                    if grace:
+                        grace.cancel()
+                        grace.join()
                     budget.abandon(error.sent)
                     outage_so_far = outage_total + (time.monotonic() - frozen_at if freeze_reason == "outage" else 0)
                     if not error.sent and outage_so_far < OUTAGE_LIMIT_SECONDS:
@@ -714,7 +862,7 @@ def run(args):
             # Preserve provider reasoning/signature metadata for tool continuations.
             messages.append(copy.deepcopy(message))
             # All tool messages must precede the next user image in chat format.
-            next_images, step_invalid = [], 0
+            next_images, step_invalid, split_shot = [], 0, False
             for call in tool_calls:
                 name = call["function"]["name"]
                 try:
@@ -724,8 +872,19 @@ def run(args):
                     if time.monotonic() - started >= args.seconds:
                         stop = "wall_limit_before_tool"
                         raise TimeoutError(stop)
-                    if name == "act" and set(parameters) == {"actions"}:
-                        actions = validate_actions(parameters["actions"], width=width, height=height, max_hold_ms=2000)
+                    act_keys = {"actions", "notes"} if args.notes else {"actions"}
+                    split = default and args.tool_set == "split" and name in SPLIT_TOOL_NAMES
+                    if split or (name == "act" and args.tool_set == "act" and "actions" in parameters
+                                 and set(parameters) <= act_keys):
+                        if "notes" in parameters:
+                            if not isinstance(parameters["notes"], str):
+                                raise ValueError("notes must be a string")
+                            notes_text = parameters["notes"][:2000]
+                        raw = [split_action(name, parameters)] if split else parameters["actions"]
+                        if not isinstance(raw, list) or len(raw) > args.max_actions:
+                            raise ValueError(f"actions must contain 1..{args.max_actions} primitive inputs")
+                        actions = validate_actions([to_window(a, space, width, height) for a in raw],
+                                                   width=width, height=height, max_hold_ms=2000)
                         if commands + len(actions) > 65536:
                             stop = "input_command_limit"
                             raise TimeoutError(stop)
@@ -737,9 +896,14 @@ def run(args):
                                     break
                                 receipts += game.act([action])
                             commands += len(receipts)
-                            next_images.append(observation())
+                            if split:
+                                split_shot = True  # one screenshot after the last split-tool call of this reply
+                            else:
+                                next_images.append(observation())
                             value = {"dispatched_commands": len(receipts), "game_time_played": game_time(clock.read()),
                                      "image_follows": True}
+                            if args.progress_feedback:
+                                value["crafted_and_placed"] = evidence_view(load_reference_events(output / "telemetry"))
                             clock_log({"event": "act", "step": step, "updates_before": before, "wall_before": wall_before,
                                        "actions": len(receipts)})
                         else:
@@ -770,6 +934,8 @@ def run(args):
                 messages.append({"role": "tool", "tool_call_id": call["id"], "content": json.dumps(value)})
                 with (output / "tool-results.jsonl").open("a") as stream:
                     stream.write(json.dumps({"call_id": call["id"], "name": name, "result": value, "unix_seconds": time.time()}) + "\n")
+            if split_shot:
+                next_images.append(observation())
             if v2 and not next_images:
                 next_images.append(no_action_turn(step, "invalid_act_call"))
             messages.extend(next_images)
@@ -882,6 +1048,24 @@ def main():
     parser.add_argument("--interface-card", nargs="?", const="v1", choices=("v1", "v2", "v3"), default=None,
                         help="append key bindings and screen geometry (no strategy) to the task prompt; "
                              "v2 adds tile mechanics (placement target, 2-tile body); v3 adds the Smart Cursor key")
+    factors = parser.add_argument_group("luna-factors (declared deviations from default-v2; recorded in manifest['factors'])")
+    factors.add_argument("--think-grace", type=float, default=None,
+                         help="real-time clock policy: the game runs during the first S s of every model call, then is "
+                              "frozen until the reply (bounded staleness)")
+    factors.add_argument("--knowledge-card", action="store_true", help=f"append {KNOWLEDGE_CARD} (recipes/stations facts)")
+    factors.add_argument("--controls-card", choices=("on", "off"), default="on", help="off: drop the key-bindings list")
+    factors.add_argument("--progress-feedback", action="store_true",
+                         help="every act result lists the agent's crafted items and placed tiles (observer journal)")
+    factors.add_argument("--notes", action="store_true",
+                         help="act takes an optional notes string; the latest notes are repeated with every screenshot")
+    factors.add_argument("--obs-size", type=int, default=None,
+                         help="send the screenshot downscaled to SxS; coordinates are in that space (mapped to the window)")
+    factors.add_argument("--coords", choices=("pixels", "normalized"), default="pixels",
+                         help="normalized: x, y in 0-1000 across the screenshot")
+    factors.add_argument("--max-actions", type=int, default=16, choices=range(1, 17), metavar="1..16",
+                         help="maximum primitives per act call")
+    factors.add_argument("--tool-set", choices=("act", "split"), default="act",
+                         help="split: separate key / mouse / wait tools (several calls per reply, one screenshot after)")
     run(parser.parse_args())
 
 

@@ -1,4 +1,4 @@
-"""OpenAI-compatible client for the gateway's Unified route (GPT-5.6 Luna/Terra/Sol).
+"""OpenAI-compatible client for the gateway's Unified route (GPT-5.6 Luna/Terra/Sol, GPT-6 Luna).
 
 Same local 0600 config as gateway.py (~/.config/terrariabench/gateway.json); the Unified base URL is
 `unified_base_url` if present, else the Anthropic `base_url` with `/anthropic` replaced by `/Unified/v1`.
@@ -21,10 +21,13 @@ from .openrouter import RETRYABLE_HTTP, ProviderError
 # USD/token list prices fitted on 2026-11-08 from the gateway's own X-Token-Usage-Cost on two probes per
 # model (2,110 prompt + 4 output tokens; 17 prompt + 602 output tokens), rounded up. Used only for the
 # per-call reservation and the list-price cross-check; reported cost comes from the header.
+# gpt-6-luna: fitted 2026-11-10 the same way (2,110 prompt + 5 output = $0.000181; 13 + 661 = $0.000226).
 MODELS = {
     "gpt-5.6-luna": {"price": {"input": 0.18e-6, "output": 0.82e-6}},
     "gpt-5.6-terra": {"price": {"input": 1.8e-6, "output": 8.2e-6}},
     "gpt-5.6-sol": {"price": {"input": 3.4e-6, "output": 13.6e-6}},
+    # Chat completions report the deployment as gpt-6-luna-2026-09-22; Responses as dvue-aoai-006-gpt-6-luna.
+    "gpt-6-luna": {"price": {"input": 0.09e-6, "output": 0.35e-6}, "deployment": "gpt-6-luna-2026-09-22"},
 }
 REASONING = ("none", "low", "medium", "high")
 MAX_COMPLETION_TOKENS = 16384
