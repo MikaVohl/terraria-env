@@ -1,0 +1,4 @@
+{"lanes":1024,"workers":16,"steps":100000,"ms_per_step":0.2941,"steps_per_s":3481961,"resets_per_step":0.2303,"ms_per_step_with_reset":0.5857,"ms_per_step_without":0.2198,"ms_tl_reset":0.3041,"parity":"identical"}
+rc 0
+{"lanes":512,"workers":16,"steps":100000,"ms_per_step":0.2266,"steps_per_s":2259155,"resets_per_step":0.4171,"ms_per_step_with_reset":0.4721,"ms_per_step_without":0.1058,"ms_tl_reset":0.3048,"parity":"identical"}
+rc 0

@@ -58,6 +58,7 @@ Last updated 2026-11-08 20:45 UTC.
 | C3 | Seeds / statistics | 5 training seeds; IQM + bootstrap 95% CI; reserved test worlds once | Established practice in our studies | **Decided** |
 | C4 | Reference agents | PPO generic ("bitter lesson") and PPO shaped ("maximally good"); behaviour cloning optional | v8, runs of 4B+ steps at γ ≥ 0.9998: shaped arm crafts the iron pickaxe in 4 of 11 runs (4 of 13 counting two frontier-surface runs), generic 0 of 9 | **Recommended** (BC: open) |
 | C5 | Cost reporting | GPU-hours × stated rental rate (date-stamped) | Site currently assumes $2.50/MI350X-hour (placeholder) | **Open**: pick a public rate source |
+| C6 | PPO training speed on v10 (shaped arm) | Exact host-side speedups; learner/algorithm changes only after a learning check | Time split was 12% simulator, 19% recipe potential, 21% sampling/H2D, 43% update; GPU busy only 15% / 35% of collection / update, so training is host-latency-bound, not network-bound (refines B3). Exact changes (reset prefetch in `capi.c`, `logf` skip, two-level potential memo, shaping overlapped with sampling and the C step) give 1.18× wall / 1.22× steps/s solo and 1.22× / 1.26× at 2 runs per GPU, with a bit-identical trainer fingerprint; `--minibatches 8` loses score at matched steps; `--envs 2048 --rollout 64` is 1.10× faster with no loss at 134M (2 seeds) (`docs/reports/TRAIN_SPEED_V10_2026_11.md`) | **Recommended**: merge `train-speed`; study `--envs 2048 --rollout 64` at 1B before adopting |
 
 ## D. LLM on Terraria-Lite
 

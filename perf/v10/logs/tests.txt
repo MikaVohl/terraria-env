@@ -1,0 +1,7 @@
+# Mac (arm64), branch tree, 2026-11-10
+v10 selftest (cc -O2 ... tests/selftest.c; /tmp/v10-selftest 512): PASSED: 193/193 checks passed (incl. scripted EoC gate)
+v10 fid_test: 102/102 checks passed
+check_v10.py (perf/v7/build-v10): v10 Python checks passed
+tools/v10_noport_parity.py build-v9 build-v10-noport 16 25000: 400000 steps over 16 lanes identical
+perf/check_shaping.py --envs 512 --steps 1500: OK live compact and live flat (all three potential modes, novelty)
+sim_bench parity (Mac): -n 256 -w 8 -s 20000 4ef5afa vs branch: identical

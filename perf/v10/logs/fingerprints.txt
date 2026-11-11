@@ -1,0 +1,10 @@
+# perf/v10/fingerprint.sh on eg18 GPU 4, cores 136-159: perf/bench_trainer.py --envs 1024 --iters 6 --seed 901
+# --set native_autoreset=1 compact_obs=1 potential_mode=frontier novelty_coef=0.01 unimix=0.01 gamma=0.9999
+# label  python-tree / library            sha256[:16]       steady sps  collect s/it  learn s/it
+base     4ef5afa / 4ef5afa                10e562162c02ceda  217236      0.318         0.285
+base2    4ef5afa / 4ef5afa                10e562162c02ceda  220324      0.312         0.283
+new      L1+L2+deferral / 4ef5afa         10e562162c02ceda  242223      0.255         0.286
+base     4ef5afa / S1+S2                  10e562162c02ceda  220538      0.309         0.285
+new      L1+L2+deferral / S1+S2           10e562162c02ceda  249588      0.240         0.285
+newpy    L1+L2+deferral / 4ef5afa         10e562162c02ceda  241511      0.256         0.287
+final    L1+L2+L3 (worker) / S1+S2        10e562162c02ceda  260936      0.219         0.283

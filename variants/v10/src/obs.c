@@ -131,9 +131,12 @@ void env_obs(const Env *e, Obs *o)
     for (i = 0; i < ACH_COUNT; i++)
         o->status[OBS_ACH_0 + i] = has_ach(e, i) ? 1.0f : 0.0f;
 #if INV_LOG
+    /* An empty slot encodes logf(1) / logf(1000) = +0 (C99 F.9.3.7: log(1) is
+       +0), which the memset above already wrote: skip the libm calls. */
     for (i = 0; i < ITEM_COUNT; i++) {
         int n = e->inv[i] < OBS_INV_CLIP ? e->inv[i] : OBS_INV_CLIP;
-        o->status[OBS_INVLOG_0 + i] = logf(1.0f + (float)n) / logf(1.0f + (float)OBS_INV_CLIP);
+        if (n > 0)
+            o->status[OBS_INVLOG_0 + i] = logf(1.0f + (float)n) / logf(1.0f + (float)OBS_INV_CLIP);
     }
 #endif
 #if EXPLICIT_TOOLS
