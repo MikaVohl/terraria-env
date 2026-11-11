@@ -25,12 +25,13 @@ Step kinds (Step.kind; Step.frm / Step.to are nodes, Step.cost in game ticks):
     door    walk one column through a closed door, opening it first (Step.doors)
     dig     walk / step-up / move down after mining Step.mine (solid or unrevealed cells) with the best pickaxe
     pillar  jump and place a block under the feet (Step.place) to rise one row; may mine Step.mine above first
-    swim    walk off a bank into water and cross it at the surface (head above water) to the first dry standing
-            node at most 4 rows above the surface, at most 20 columns away
+    swim    walk off a bank into water and cross it at the surface (head above water) to the first standing node
+            with dry feet at most 4 rows above the surface, at most 20 columns away
 
-Water: no node may have water in its head rows (y-2, y-1); water in the feet row is fine (shallow wading). Falls
-    must not end with the head under water, jump arcs never cross water, and cells next to water or lava are never
-    mined (they would flood the tunnel). Deep water is only crossed by `swim`.
+Water: no node may have water in its head rows (y-2, y-1); water in the feet row is fine (shallow wading), but a
+    wading node needs an unsloped floor tile (the player slides off a slope into the water). Falls must not end with
+    the head under water, jump arcs never cross water, and cells next to water or lava are never mined (they would
+    flood the tunnel). Deep water is only crossed by `swim`.
 
 Costs (ticks, roughly the time the move takes): walk 6, step 9, jump = simulated air time + 8, fall
     sqrt(80*rows) + 6 (+400 + 60/row beyond 25 rows), drop 10 + fall time, climb 8/row, door +30, mining +40 per
@@ -48,7 +49,7 @@ import time as _time
 from dataclasses import dataclass
 from typing import Optional
 
-from .grid import HONEY, LAVA, PLATFORM, SOLID, UNKNOWN, WATER
+from .grid import HONEY, LAVA, PLATFORM, SLOPE, SOLID, UNKNOWN, WATER
 
 tb = sys.modules[__package__]  # the tb package (always initialised before this submodule is imported)
 
@@ -77,10 +78,10 @@ DOES
   platform there is kept and stood on). Running out of blocks stops goto with last_error 'out of blocks...'; a
   plan that would need more blocks than held fails with 'out of blocks: the path needs N blocks...'.
 - lava is never entered. Water (traversal only): the head (top two body rows) is never planned under water;
-  wading with only the feet in water is fine; falls must not end with the head under water; a body of water is
-  entered only by a surface swim that has a dry exit: walk in, tap jump while wet to keep the head up, cross up to
-  20 columns and climb out onto a bank at most 4 rows above the surface. Deep pools or flooded shafts with no
-  such exit are never entered; cells next to water or lava are never mined.
+  wading with only the feet in water is fine (not on a slope alone); falls must not end with the head under water;
+  a body of water is entered only by a surface swim that has a dry exit: walk in, tap jump while wet to keep the
+  head up, cross up to 20 columns and climb out onto a dry bank at most 4 rows above the surface. Deep pools or
+  flooded shafts with no such exit are never entered; cells next to water or lava are never mined.
 - closed-loop execution: short input bursts, aligns before jumps/climbs/pillars, keeps running across
   consecutive walk steps, replans after any deviation, failure or stall (~1.5 s without progress), up to a budget;
   far goals (window > 40000 cells) are approached by planning to the nearest reachable point and replanning.
@@ -95,8 +96,8 @@ DOES NOT
 - place ropes or platforms, build bridges over gaps, or place blocks anywhere except straight under the feet.
 - dig while jumping, dig diagonally downward, or dig through tiles it knows need high pickaxe power (dungeon
   and lihzahrd bricks, altars, ebonstone/crimstone/pearlstone, hellstone, obsidian, meteorite, hardmode ores).
-- treat half blocks / slopes specially (they count as full solid blocks), or stand on solid-top furniture
-  (tables, work benches) unless the tile carries the PLATFORM flag.
+- treat half blocks / slopes specially (they count as full solid blocks, except that a slope alone never holds a
+  wading player), or stand on solid-top furniture (tables, work benches) unless the tile carries the PLATFORM flag.
 - avoid enemies, traps, falling sand, or liquid that reaches a dug tunnel from further away; model fall damage
   beyond 'more than 25 rows hurts'; account for tiles it placed or mined earlier in the same plan.
 - see unrevealed tiles: plans assume they are solid and replan as they are revealed.
@@ -267,12 +268,15 @@ class _Map:
         self.start = start
         names = grid.names
         codes = bytearray(self.w * self.h)
+        self.slopes = set()
         for k, (t, f) in enumerate(zip(grid.types, grid.flags)):
             if t == UNKNOWN:
                 c = UNK
             elif f & SOLID:
                 n = names.get(t, "")
                 c = DOOR_C if n in DOOR_KINDS else HARD if n in HARD_KINDS else SOLID_C
+                if f & SLOPE:
+                    self.slopes.add((self.x0 + k % self.w, self.y0 + k // self.w))
             elif f & LAVA:
                 c = LAVA_C
             elif f & PLATFORM:
@@ -321,6 +325,10 @@ class _Map:
         v = self._sup.get(k)
         if v is None:
             v = self.code(x, y + 1) in STAND or self.code(x + 1, y + 1) in STAND
+            if v and not self.dry(((x, y), (x + 1, y))):
+                # wading: a slope alone does not hold the player, who slides off it into the deeper water (live: the
+                # sloped rim of a pond)
+                v = any(self.code(c, y + 1) in STAND and (c, y + 1) not in self.slopes for c in (x, x + 1))
             if not v and k == self.start and not self.rope(x, y):
                 v = True  # the caller says the player stands there (it only plans when on the ground/rope)
             self._sup[k] = v
@@ -373,8 +381,9 @@ class _Map:
                     WATER_C not in (self.code(c, s), self.code(c + 1, s)):
                 return None
             c2 = c + d
+            # exit with dry feet too: a wading node on the pond's (often sloped) rim is not a bank
             for yy in range(s, s - 4, -1):
-                if self.clear(c2, yy) and self.supported(c2, yy):
+                if self.clear(c2, yy) and self.supported(c2, yy) and self.dry(((c2, yy), (c2 + 1, yy))):
                     return (c2, yy), n
             c = c2
         return None
@@ -773,8 +782,9 @@ def _grab(step):
 
 
 def _swim(step):
-    """Cross water at the surface: hold the direction, tap jump (hold 6, release 2) while wet to keep the head up,
-    and jump out onto the target bank."""
+    """Cross water at the surface: walk to the water (execute folds the walk/step/fall steps leading to the swim in
+    here), hold the direction, tap jump (hold 6, release 2) while wet to keep the head up, jump out onto the target
+    bank and walk to the exit node on it."""
     tx, ty = step.to[0] + 1.0, step.to[1]
     best, idle, t = math.inf, 0, 0
     while t < 1800:
@@ -783,8 +793,8 @@ def _swim(step):
         if p["on_ground"] and p["foot_y"] <= ty and abs(err) < 12:
             return
         keys = _key(_sign(err) if abs(err) >= 4 else 0)
-        if p["on_ground"] and not p.get("wet") and (t == 0 or abs(p["vx"]) >= 0.3):
-            _hold(keys, 4)  # on dry ground (near bank, or out on the far one): walk
+        if p["on_ground"] and not p.get("wet") and (t == 0 or abs(p["vx"]) >= 0.3 or p["foot_y"] <= ty):
+            _hold(keys, 4)  # on dry ground (near bank, or out on the far bank at the exit row): walk
             t += 4
         else:
             _hold(keys + ["jump"], 6)
@@ -1026,6 +1036,12 @@ class _Exec:
         while i < len(steps):
             if _time.monotonic() > self.deadline:
                 return
+            k = i
+            while k < len(steps) and steps[k].kind in ("walk", "step", "fall"):
+                k += 1
+            if i < k < len(steps) and steps[k].kind == "swim" and all(
+                    _sign(s.to[0] - s.frm[0]) == _sign(steps[k].to[0] - steps[k].frm[0]) for s in steps[i:k]):
+                i = k  # the swim walks to the water itself: on a sloped rim the player slips in before the edge node
             st, j = steps[i], i
             if st.kind in ("walk", "step"):
                 d = _sign(st.to[0] - st.frm[0])

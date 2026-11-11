@@ -5,13 +5,14 @@ import unittest
 
 import terrariabench.tb as tb
 from terrariabench.tb import path
-from terrariabench.tb.grid import LAVA, PLATFORM, SOLID, WATER, Grid
+from terrariabench.tb.grid import LAVA, PLATFORM, SLOPE, SOLID, WATER, Grid
 
-# '#' solid, '.' air, '-' platform, '?' unknown, 'H' rope, '~' water, 'L' lava, 'D' closed door, 'T' tree and
-# 't' other non-solid tile (both passable), '@' start (feet cell of the start node's left column), 'G' goal tile
+# '#' solid, '/' sloped solid, '.' air, '-' platform, '?' unknown, 'H' rope, '~' water, 'L' lava, 'D' closed door,
+# 'T' tree and 't' other non-solid tile (both passable), '@' start (feet cell of the start node's left column), 'G'
+# goal tile
 NAMES = {0: "Dirt", 3: "Plants", 5: "Trees", 10: "ClosedDoor", 19: "Platforms", 213: "Rope"}
-CELLS = {"#": (0, SOLID), ".": (-1, 0), "-": (19, PLATFORM), "?": (-2, 0), "H": (213, 0), "~": (-1, WATER),
-         "L": (-1, LAVA), "D": (10, SOLID), "T": (5, 0), "t": (3, 0), "@": (-1, 0), "G": (-1, 0)}
+CELLS = {"#": (0, SOLID), "/": (0, SOLID | SLOPE), ".": (-1, 0), "-": (19, PLATFORM), "?": (-2, 0), "H": (213, 0),
+         "~": (-1, WATER), "L": (-1, LAVA), "D": (10, SOLID), "T": (5, 0), "t": (3, 0), "@": (-1, 0), "G": (-1, 0)}
 
 
 def sky(n, w):
@@ -238,6 +239,30 @@ class PlannerTests(unittest.TestCase):
         steps = plan(rows, dig=False, place=False)
         self.assertNotIn("swim", kinds(steps))
         self.assertTrue(reaches(steps, rows))
+
+    def test_swim_exits_onto_dry_bank(self):
+        # live shape (world 41100108, pond 2307..2312): the last surface water column sits on a sloped rim tile one
+        # row down. In the game the player standing there (feet in water) slid off the slope into the pond, so
+        # that is no node, and the swim ends on the dry bank above it
+        rows = sky(4, 18) + [".@..............G.",
+                             "###~~~~~~#########",
+                             "###~~~~~/#########",
+                             "###~~~~###########",
+                             "##################"]
+        g, s, goal = grid_of(rows)
+        steps = path.plan(g, s, goal, dig=False, place=False)
+        swims = [st for st in steps if st.kind == "swim"]
+        self.assertEqual(len(swims), 1)
+        x, y = swims[0].to
+        self.assertEqual((x, y), (8, 4))
+        self.assertFalse(g.liquid(x, y) or g.liquid(x + 1, y))
+        self.assertTrue(reaches(steps, rows))
+        # wading on the rim: not on the slope, fine on an unsloped tile
+        self.assertIsNone(path.plan(g, s, (8, 5), dig=False, place=False))
+        part = path.plan(g, s, (6, 7), dig=False, place=False, partial=True)  # pond bottom: approach on dry ground
+        self.assertTrue(all(not g.liquid(*st.to) and not g.liquid(st.to[0] + 1, st.to[1]) for st in part), part)
+        flat, s, _ = grid_of([r.replace("/", "#") for r in rows])
+        self.assertTrue(reaches(path.plan(flat, s, (8, 5), dig=False, place=False), (8, 5)))
 
     def test_door(self):
         rows = self.tunnel(".D")
@@ -696,6 +721,19 @@ class ExecutorTests(unittest.TestCase):
         self.assertTrue(ok)
         self.assert_at_goal(game)
         self.assertGreater(game.life, 50)
+
+    def test_swim_onto_bank_next_to_the_rim(self):
+        # the exit is the dry bank right of the pond (goal at the exit): landing past it, the executor walks back
+        # on the bank instead of jumping back into the water
+        rows = sky(6, 18) + [".@......G.........",
+                             "###~~~~~~#########",
+                             "###~~~~~##########",
+                             "###~~~~###########",
+                             "##################"]
+        game, steps, ok = self.run_game(rows, dig=False, place=False)
+        self.assertIn("swim", kinds(steps))
+        self.assertTrue(ok)
+        self.assert_at_goal(game)
 
 
 if __name__ == "__main__":

@@ -13,8 +13,11 @@ Summary:
 - **Breath is exposed, never managed.** `me()` has `breath`, `breath_max`, `breath_ticks_per_point` and `submerged`
   (checked live). `CAPABILITIES`, `CONTRACT.md` and the agent prompt say that staying alive in water is the agent's
   job.
-- **Swim step still not tested live.** No open-air pond was reachable in the dev sessions. See the limits section.
-- **Unpaid proof: still no placed anvil.** proof-11 reached furnace and torches, then hit a harness crash. Not rerun.
+- **Swim step now verified live** (follow-up below): 10/10 crossings of a natural open-air pond (world 41100108),
+  0 deaths, after three `path.py` fixes for sloped banks. Before the fixes it failed every time. Before those
+  fixes, the first live attempt in this session had not exercised the swim step at all (no reachable open-air pond).
+- **Unpaid proof: anvil placed** in proof-16 (world 41100107, 681.2 game-s, scripted, not test mode, audit clean).
+  Earlier attempts proof-11 to proof-15 failed (listed below).
 - **Paid pilot (Opus 5.5, 16 wall-min): $1.737.** Published 7 (furnace placed, 5 bars), 0 deaths, audit clean.
 
 ## Changes (tb-api-1.0-rc1)
@@ -106,7 +109,9 @@ goto calls in these runs returned False:
   ($2.4788 before).
 
 ## Remaining limits
-- **Swim step:** tested offline only. `goto` cannot leave deep water once in it; getting out is the agent's job.
+- **Swim step:** verified live on one natural pond (10/10, world 41100108). The wide-pool case (> 20 columns, no
+  exit) was not recorded live: the player died about 10 times at night on the 1,200-column walk there. `goto`
+  cannot leave deep water once in it; getting out is the agent's job.
 - **Map memory gaps:** remembered cells lack slopes, half blocks, liquid under a tile and walls behind a tile, as
   the map does. The game itself refreshes revealed map cells when a tile is re-framed anywhere (the full-screen map
   shows such changes too).
@@ -114,3 +119,54 @@ goto calls in these runs returned False:
 - **Scripted proof:** a placed anvil is still missing. Ore finding (13/15 iron) and the harness python must be fixed
   before a rerun.
 - **Live test flakiness:** `live_tests.py` assumes an undisturbed fresh spawn. Slimes can break 3 checks.
+
+## Follow-up 2026-11-11 (afternoon): live swim and placed anvil (unpaid)
+### Swim (run `runs/terrabot-swim-02`, world 41100108)
+**The pond:**
+- Natural, open-air: surface row 239, columns 2307–2312 (6 wide), 3 deep, open sky for 92 rows. Its rim has
+  **sloped** tiles.
+- Found with a test-only `truth_tiles` scan of the surface band of worlds 05–08; the other candidates were in
+  caves, more than 20 columns wide, or could only be swum one way.
+- Reaching it took `goto(dig=True, place=True)` with test-only `truth_give` torches/dirt, because there is no
+  path over a hill with an overhang without digging. All test cases used `dig=False, place=False`.
+
+| Case | Before fixes | After fixes |
+|---|---|---|
+| Cross and back (`swim` in every plan) | 0/2 (stuck in the pond, no path) | **10/10** (round trips 4 + 1): across 3.0–8.7 s, back 2.6–3.7 s, min breath 199, head under for 0–2 reads, 0 deaths |
+| Goal at the pond bottom (2309,241) | `path_to` None, but `goto` walked the player into the water | ✓ ×3: `path_to` None, `goto` False, player stayed dry |
+| Goal in the enclosed channel (2299,242) | – | ✓ None / False / dry |
+| Breath while sunk | – | ✓ ×2: `submerged` true, breath 200→183, 1 point per 7 ticks |
+
+**`path.py` fixes:**
+1. The swim exit must have dry feet. The planner used to end the swim on a node held up only by the sloped rim,
+   and the player slid into 2-deep water.
+2. A slope alone no longer holds a node whose feet are in water.
+3. `_swim` walks once the player is out of the water at or above the exit row. Walk/step/fall steps that lead
+   into a swim run inside `_swim`, so the player no longer slips off the sloped bank before the swim starts.
+
+Offline tests: `/` (sloped solid) added to the fixtures, plus `test_swim_exits_onto_dry_bank` and
+`test_swim_onto_bank_next_to_the_rim`. 35/35 pass, and the planner test fails on the old `path.py`.
+
+**Dev-session drowning:** the player drowned once outside any recorded case, after a debugging script left it in
+the pond. A `.jsonl` line where the player never reached the bank is marked invalid.
+
+### Scripted proof to a placed anvil (world 41100107, scripted mode, public `tb` API only)
+| Run | Bench | 10 torches | Furnace placed | 5 bars | Anvil placed | Deaths | Published / ext. | Failure |
+|---|---|---|---|---|---|---|---|---|
+| proof-13 | 53.7 | 446.7 | – | – | – | 0 | 6 / 6 | `04_dig` looped on "shaft wet" with both sides wet; 9 gel, 4 iron; killed after 859 s wall |
+| proof-14 | 37.1 | 296.8 | 705.1 | 720.6 | – | 0 | 7 / 10 | furnace placed 12 columns from the bench, so the anvil craft had no bench in reach |
+| proof-15 | 34.4 | 293.0 | crafted 788.5, not placed | – | – | 0 | 6 / 5 | no 3×2 spot at the shaft bottom; room torches blocked the furnace |
+| **proof-16** | 34.8 | 414.1 | 680.2 | 680.6 | **681.2 (Iron Anvil at 2108,319)** | 1 (Pinky) | **7 / 10** | – (all programs ok, audit clean) |
+
+Proof-16's extended score has `anvil_held` 681.0 and `anvil_placed` 681.2; the published list has no anvil entry.
+It succeeded once, on one world; it was not repeated on worlds 05, 06 or 08.
+
+**Strategy changes in `tools/terrabot/proof/`:**
+- **Wood and bench:** gather 85 wood; pick the bench back up and verify it is in the inventory, or craft a spare
+  from wood.
+- **Gel and night:** collect gel with rests when hurt, and go underground before dusk.
+- **Digging for ore:** dig to the underground layer, then zigzag tunnels. Mine revealed iron/lead found with
+  `find_tiles` until 15 of one metal. Torches go only where darkness stops the dig.
+- **Survival underground:** rest when hurt, leave water, craft torches underground.
+- **Building:** carve the room first, and remove torches from its low rows. Place a second bench next to the
+  furnace when needed.
