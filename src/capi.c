@@ -92,7 +92,7 @@ TL_API int tl_entity_channels(void) { return OBS_ENTITY_CHANNELS; }
 TL_API int tl_status_held0(void) { return EXPLICIT_TOOLS ? OBS_HELD_0 : -1; }
 TL_API int tl_wall_channel(void) { return BG_WALLS ? OBS_WALL_CHANNEL : -1; }
 #if HELD_PLACE
-/* v10 HELD_PLACE: place actions hold the use over the step (masked on stock). */
+/* v10 HELD_PLACE: place actions hold the use over the step (masked on the step's no-input path). */
 TL_API int tl_held_place(void) { return 1; }
 #endif
 #endif

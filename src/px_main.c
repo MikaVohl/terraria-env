@@ -411,13 +411,7 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
         uint8_t mask[ACT_COUNT];
         env_action_mask(e, mask);
         v->can_mine  = mask[ACT_MINE_FIRST + best] && t != TILE_AIR;
-#if HELD_PLACE
-        /* A held place is legal on stock alone; holding the button only
-           repeats it over an open cell (where it can land). */
-        v->can_place = mask[ACT_PLACE_FIRST + best] && t == TILE_AIR;
-#else
         v->can_place = mask[ACT_PLACE_FIRST + best];
-#endif
 #else
         v->can_mine  = !e->mine_cd && t != TILE_AIR && tile_tier(t) != TIER_NEVER &&
                        e->tool_tier >= tile_tier(t);

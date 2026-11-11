@@ -176,7 +176,8 @@ if SPEC.wall_channel is not None:
 if SPEC.held_place:
     GUIDE += ("\nHeld place (this build): a 'place' action holds the use button for the whole action: it places at once "
               "if the cell takes the block, else at the first moment during the action when it does (one block per action). "
-              "Place actions are listed as legal whenever the selected item is in stock, even if nothing can be placed. "
+              "A place action is listed as legal when the block fits at once or would fit at some moment of the action "
+              "if you do nothing else (e.g. while falling); enemies knocking you back can still make it miss. "
               "Pillar up: 'jump', then 'place down' (repeat until the block lands under your feet).")
 if "attack up" in SPEC.action_names:
     GUIDE += ("\nAimed attacks (this build): 'attack' aims forward (the way you face); 'attack up-forward', 'attack up', "

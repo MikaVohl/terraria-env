@@ -4,8 +4,9 @@ Two Terraria input semantics for v10's standalone actions, each a compile-time k
 with the ports (`HELD_PLACE` = `FID_PHYSICS`, `AIM_ATTACK` = `FID_COMBAT`, so `build-v10-noport`
 is unchanged and still equals v9). With a knob at 0 the preprocessed sources (sim, worldgen,
 light, obs, mobs, boss) are token-identical to `7947630`, so that build is bit-identical.
-Details: `variants/v10/README.md` ("Held place and aimed attacks"). PPO validation: pending (1B
-round on GPU 7 after review).
+Details: `variants/v10/README.md` ("Held place and aimed attacks"). PPO validation:
+`docs/reports/V10_HELD_AIM_1B_2026_11.md` (the stock-only mask below caused place spam; the mask
+was tightened, next section).
 
 ## Held place (DECISIONS B12, B14)
 
@@ -19,10 +20,30 @@ skipped while the body position and the stock are unchanged since the last try (
 `do_place` reads changes within a place step); a 320,000-step random-play hash with and without
 the skip is identical (combos off and on).
 
-**Mask:** a place action is legal iff the selected placeable is stocked (as the place combos): a
-held place may land on any tick, so step-start legality no longer decides it. Consequence: the
-mask no longer tells the policy where a block fits. Python: `SPEC.held_place`; the LLM guide
-says so.
+**Mask (original, superseded):** a place action was legal iff the selected placeable is stocked
+(as the place combos): a held place may land on any tick, so step-start legality no longer
+decides it. Consequence: the mask no longer told the policy where a block fits, and PPO at 1B
+spent about 40% of its steps on place actions, 87% of which failed (V10_HELD_AIM_1B report).
+
+**Mask (current, 2026-11-11):** a place action is legal iff it is legal at the step start or
+after some tick of the step on the body's predicted path (`held_place_mask` in `sim.c`): a place
+step holds no movement, so the path is `player_tick` with no input from the current state, run on
+the body itself with every written field restored (fall damage kept out of reach); a tick that
+changes nothing ends it. Mobs are ignored, so a contact knockback can still make a masked-in
+place miss or a masked-out one land; hidden cells permit attempts as before. Place combos keep
+the stock mask. Gates: computing the mask leaves the Env byte-identical (selftest, 8,000 random
+steps on 4 worlds); on those steps, trying every place slot on a copy: masked in 25,613 placed /
+9,099 failed (all 9,099 next to a hidden cell), masked out 21 placed / 94,307 failed; with no
+mobs in the open-air arena the mask predicts every `place down` outcome. Scripted climb with the
+new mask (table below has the original numbers): naive (place whenever legal, else jump) now
+climbs shaft 32/32 in 30.0 steps (0.97 per row) and open air 32/32 in 80.0 (4.00 per row, as
+timed); random play shaft 32/32 in 63.7, open 32/32 in 151.9; timed unchanged. Cost: same
+uniform action stream with and without the prediction, 64 lanes x 20,000 steps on eg18: 556k vs
+582k steps/s (-4.5% raw simulation); `sim_throughput` (random legal actions, different mixes):
+413k tight vs 451k stock-only vs 426k `HELD_PLACE=0`. Checks: selftest 199/199 (also with
+combos), 193/193 both knobs off, 99/99 noport, 203/203 `ENV_FX=1`, fid_test 106/106, combo_test
+35/35 (31/31 both off), `check_v10.py`, `v10_noport_parity.py` 400,000 steps identical,
+`make check-pixel-v10`; with `HELD_PLACE=0` the six sources are token-identical to `2314765`.
 
 ### Scripted climb (`combo_test.c`, 32 worlds, 200 dirt, <= 400 steps)
 

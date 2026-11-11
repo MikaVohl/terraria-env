@@ -183,7 +183,7 @@ All compile-time (`VARIANT="-DNAME=value"`). v9's knobs keep their meaning
 | `TOOL_DAMAGE` | `FID_COMBAT && FID_MINING` | pickaxe/axe uses swing a real melee hitbox (below) |
 | `BG_WALLS` | 1 | background walls from worldgen; Terraria's neighbour-or-wall block placement (below) |
 | `COMBO_ACTIONS` | 0 | 15 appended actions holding a movement and doing a use in one step (`docs/reports/COMBO_ACTIONS_2026_11.md`) |
-| `HELD_PLACE` | `FID_PHYSICS` (1) | standalone place actions hold the use over the step; masked on stock (below) |
+| `HELD_PLACE` | `FID_PHYSICS` (1) | standalone place actions hold the use over the step; masked on the step's predicted path (below) |
 | `AIM_ATTACK` | `FID_COMBAT` (1) | `attack` + 7 appended aimed attacks (8 directions, below) |
 | `SLIME_HP/DMG/DEF` | 25 / 7 / 2 | Blue Slime |
 | `BAT_HP/DMG/DEF` | 16 / 13 / 2 | Cave Bat (v9 damage 12 without mob/combat ports) |
@@ -270,8 +270,12 @@ off gives preprocessed sources token-identical to the build before it. Report:
   step-start placement when legal (result unchanged), else after the first game tick where
   the target cell, relative to the body at that tick, takes the item; at most one per step.
   `jump`, then `place down` (until it lands) pillars in open air under `BG_WALLS`. **Mask:** a
-  place action is legal iff the selected placeable is stocked (it may still do nothing);
-  `SPEC.held_place` / `tl_held_place` flag the build.
+  place action is legal iff it is legal at the step start or after some tick of the step on
+  the body's predicted no-input path (`held_place_mask`: `player_tick` from the current state,
+  mobs ignored, every field restored; hidden cells permit attempts as before), so a contact
+  knockback can still make a masked-in place miss or a masked-out one land. Until 2026-11-11
+  the mask was "selected placeable stocked", which PPO turned into place spam
+  (`docs/reports/V10_HELD_AIM_1B_2026_11.md`). `SPEC.held_place` / `tl_held_place` flag the build.
 - **`AIM_ATTACK`**: `attack` (id 66) aims forward; ids 86-92 are `attack up-forward`, `attack
   up`, `attack up-back`, `attack back`, `attack down-back`, `attack down`, `attack
   down-forward`, relative to the facing (so all 8 absolute directions exist in every state

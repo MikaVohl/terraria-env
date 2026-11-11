@@ -706,7 +706,8 @@ static bool can_mine(const Env *e, int r) {
     return tool_reaches(e, t);
 }
 
-#if !HELD_PLACE   /* HELD_PLACE masks a place on stock alone (env.h) */
+/* The place mask's legality (hidden cells permit attempts). HELD_PLACE takes
+   it at the step start and along the step's predicted body path. */
 static bool can_place(const Env *e, int r) {
     Placeable p = PLACEABLES[e->selected];
     int tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
@@ -730,6 +731,8 @@ static bool can_place(const Env *e, int r) {
     return true;
 #endif
 }
+#if HELD_PLACE
+static void held_place_mask(const Env *e, uint8_t *mask);
 #endif
 
 /* Cycling only means something when a slot other than the current one holds
@@ -827,13 +830,11 @@ void env_action_mask(const Env *e, uint8_t *mask) {
 
     for (int r = 0; r < REACH_COUNT; r++) {
         mask[ACT_MINE_FIRST  + r] = (uint8_t)can_mine(e, r);
-#if HELD_PLACE
-        /* A held place may land on any tick of the step (env.h). */
-        mask[ACT_PLACE_FIRST + r] = (uint8_t)(e->inv[PLACEABLES[e->selected].item] > 0);
-#else
         mask[ACT_PLACE_FIRST + r] = (uint8_t)can_place(e, r);
-#endif
     }
+#if HELD_PLACE
+    held_place_mask(e, mask);
+#endif
     uint32_t stations=station_mask(e);
     for (int i = 0; i < RECIPE_COUNT; i++)
         mask[RECIPE_FIRST_ACTION + i] = (uint8_t)can_craft(e, i,stations);
@@ -1083,6 +1084,44 @@ static void player_tick(Env *e) {
     e->fall_dist = fallen > 0 ? fallen : 0;
     ph_sync(e);
 }
+#if HELD_PLACE
+/* HELD_PLACE mask: a held place is legal iff it is legal at the step start
+   (can_place, already in mask) or after some tick of the step at the body's
+   position then, where the held use retries it (env_step). A place step
+   holds no movement, so that path is player_tick with no input from the
+   current state. Mobs are ignored: a contact knockback in the real step can
+   still make a masked-in place miss or a masked-out one land. The path runs
+   on the body itself and every field player_tick writes is restored; fall
+   damage stays out of reach (fall_start below the world each tick). A tick
+   that changes nothing is a fixed point and ends the path. */
+static void held_place_mask(const Env *ce, uint8_t *mask) {
+    int open = 0;
+    for (int r = 0; r < REACH_COUNT; r++) open += !mask[ACT_PLACE_FIRST + r];
+    if (!open || ce->inv[PLACEABLES[ce->selected].item] <= 0) return;
+    Env *e = (Env *)ce;   /* body fields only, all restored below */
+    const fix_t pos_x = e->pos_x, pos_y = e->pos_y, vel_x = e->vel_x, vel_y = e->vel_y;
+    const int px = e->px, py = e->py, jump = e->jump, fall_start = e->fall_start, fall_dist = e->fall_dist;
+    const bool release_jump = e->release_jump, pulley = e->pulley, air_jump_used = e->air_jump_used;
+    const bool hl = e->hold_left, hr = e->hold_right, hj = e->hold_jump, hd = e->hold_down, hu = e->hold_up;
+    e->hold_left = e->hold_right = e->hold_jump = e->hold_down = e->hold_up = false;
+    for (int t = 0; t < FID_TICKS && open; t++) {
+        const fix_t x0 = e->pos_x, y0 = e->pos_y, vx0 = e->vel_x, vy0 = e->vel_y;
+        const int j0 = e->jump;
+        const bool rj0 = e->release_jump, pu0 = e->pulley, aj0 = e->air_jump_used;
+        e->fall_start = WORLD_H + 1;
+        player_tick(e);
+        if (e->pos_x != x0 || e->pos_y != y0) {
+            for (int r = 0; r < REACH_COUNT; r++)
+                if (!mask[ACT_PLACE_FIRST + r] && can_place(e, r)) { mask[ACT_PLACE_FIRST + r] = 1; open--; }
+        } else if (e->vel_x == vx0 && e->vel_y == vy0 && e->jump == j0 && e->release_jump == rj0
+                   && e->pulley == pu0 && e->air_jump_used == aj0) break;
+    }
+    e->pos_x = pos_x; e->pos_y = pos_y; e->vel_x = vel_x; e->vel_y = vel_y;
+    e->px = px; e->py = py; e->jump = jump; e->fall_start = fall_start; e->fall_dist = fall_dist;
+    e->release_jump = release_jump; e->pulley = pulley; e->air_jump_used = air_jump_used;
+    e->hold_left = hl; e->hold_right = hr; e->hold_jump = hj; e->hold_down = hd; e->hold_up = hu;
+}
+#endif
 #endif
 
 /* ---- API ---------------------------------------------------------------- */

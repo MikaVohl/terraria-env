@@ -527,10 +527,9 @@ static void test_worldgen(int worlds) {
 #if SUPPORT_RULES || ENV_FX
 static bool mask_of(const Env *e, int act) { uint8_t m[ACT_COUNT]; env_action_mask(e, m); return m[act]; }
 #endif
-/* A rejected place: its mask says so, except under HELD_PLACE, which masks a
-   place on stock alone (the held use may land later in the step), so the
-   mask stays 1 and only the handler refuses. */
-#define REFUSED(legal, ok) ((HELD_PLACE ? (legal) : !(legal)) && !(ok))
+/* A rejected place: its mask says so (HELD_PLACE: these fixtures stand still,
+   so no tick of the step reaches the cell either). */
+#define REFUSED(legal, ok) (!(legal) && !(ok))
 
 #if SUPPORT_RULES
 static void relight(Env *e) { e->terrain_dirty = true; light_full(e); }
@@ -938,7 +937,9 @@ static void test_info_rows(void) {
    In the open-air arena (no walls), after a jump the cell under the feet
    floats, so the step-start place is refused; held, `place down` lands later
    in the step once the falling feet are one row above the floor or the
-   pillar top. Masks: stock alone. */
+   pillar top. Masks: legal at the step start or on the step's no-input body
+   path; with no mobs the mask predicts every place-down outcome, and
+   computing it leaves the state untouched. */
 static void test_held_place(void) {
 #if HELD_PLACE
     Env *e = new_env(1000000);
@@ -950,10 +951,12 @@ static void test_held_place(void) {
     env_action_mask(e, m);
     int legal = 0;
     for (int r = 0; r < REACH_COUNT; r++) legal += m[ACT_PLACE_FIRST + r];
+    const int down_standing = m[ACT_PLACE_DOWN];
     e->inv[ITEM_DIRT] = 0; env_action_mask(e, m);
     int legal0 = 0;
     for (int r = 0; r < REACH_COUNT; r++) legal0 += m[ACT_PLACE_FIRST + r];
-    CHECK(legal == REACH_COUNT && legal0 == 0, "held place masks: %d legal with dirt (stone floor below), %d without", legal, legal0);
+    CHECK(legal < REACH_COUNT && !down_standing && legal0 == 0,
+          "held place masks standing: %d legal with dirt (place down %d), %d without", legal, down_standing, legal0);
 
     /* Standing still: place down into the floor never lands, no stock used. */
     e->inv[ITEM_DIRT] = 50;
@@ -965,36 +968,45 @@ static void test_held_place(void) {
     /* Later tick: jump, then place down; the step-start cell under the feet
        has no neighbour (refused), the block lands lower in the same step or
        the next place step; each step places at most one block. */
-    int later = 0, one_each = 1, placed_steps = 0;
+    int later = 0, one_each = 1, placed_steps = 0, predicted = 1, untouched = 1;
     int py0 = e->py;
+    Env *snap = malloc(sizeof *e);
     env_step(e, ACT_JUMP);
     for (int s = 0; s < 4 && e->inv[ITEM_DIRT] == 50; s++) {
         int start_py = e->py, before = e->inv[ITEM_DIRT];
         bool floating = start_py + 2 < FLOOR;
+        memcpy(snap, e, sizeof *e);
+        env_action_mask(e, m);
+        untouched &= memcmp(snap, e, sizeof *e) == 0;
         env_step(e, ACT_PLACE_DOWN);
         one_each &= before - e->inv[ITEM_DIRT] <= 1;
+        predicted &= m[ACT_PLACE_DOWN] == (e->inv[ITEM_DIRT] < before);
         placed_steps++;
         if (e->inv[ITEM_DIRT] < before) later = floating && tile_at(e, e->px, start_py + 1) == TILE_AIR;
     }
+    free(snap);
     for (int s = 0; s < 8 && e->vel_y != 0; s++) env_step(e, ACT_NOOP);
     dirt_tiles = 0;
     for (int y = 0; y < FLOOR; y++) for (int x = 0; x < WORLD_W; x++) dirt_tiles += e->tiles[y][x] == TILE_DIRT;
-    CHECK(later && one_each && e->inv[ITEM_DIRT] == 49 && dirt_tiles == 1 && tile_at(e, e->px, FLOOR - 1) == TILE_DIRT
-          && e->py == py0 - 1, "held place lands on a later tick: %d place steps, later %d, dirt %d, tiles %d, py %d -> %d",
-          placed_steps, later, e->inv[ITEM_DIRT], dirt_tiles, py0, e->py);
+    CHECK(later && one_each && predicted && untouched && e->inv[ITEM_DIRT] == 49 && dirt_tiles == 1
+          && tile_at(e, e->px, FLOOR - 1) == TILE_DIRT && e->py == py0 - 1,
+          "held place lands on a later tick: %d place steps, later %d, mask predicted %d, state untouched %d, dirt %d, tiles %d, py %d -> %d",
+          placed_steps, later, predicted, untouched, e->inv[ITEM_DIRT], dirt_tiles, py0, e->py);
 
-    /* Open-air pillar with standalone actions: jump, place down until a block
-       lands, settle; 10 rows, one block per row. */
+    /* Open-air pillar with standalone actions: jump, place down while the
+       mask allows it (no timing), settle; 10 rows, one block per row. */
     int rows = 0, steps = 0, used = 0;
     for (int k = 0; k < 10; k++) {
         int start = e->py, inv = e->inv[ITEM_DIRT];
         env_step(e, ACT_JUMP); steps++;
-        for (int s = 0; s < 4 && e->inv[ITEM_DIRT] == inv; s++) { env_step(e, ACT_PLACE_DOWN); steps++; }
+        for (int s = 0; s < 8 && e->inv[ITEM_DIRT] == inv; s++) {
+            env_action_mask(e, m); env_step(e, m[ACT_PLACE_DOWN] ? ACT_PLACE_DOWN : ACT_NOOP); steps++;
+        }
         for (int s = 0; s < 8 && e->vel_y != 0; s++) { env_step(e, ACT_NOOP); steps++; }
         used += inv - e->inv[ITEM_DIRT];
         rows += e->py == start - 1;
     }
-    printf("held place: open-air pillar %d/10 rows in %d steps (jump, place down until placed, settle)\n", rows, steps);
+    printf("held place: open-air pillar %d/10 rows in %d steps (jump, place down when masked in, settle)\n", rows, steps);
     CHECK(rows == 10 && used == 10 && !e->terminated, "open-air pillar with jump + place down: %d/10 rows, %d dirt, %d steps",
           rows, used, steps);
 #endif
@@ -1014,6 +1026,41 @@ static void test_held_place(void) {
     CHECK(tile_at(e, tx, ty) == TILE_DIRT && dirt_tiles == 1 && e->inv[ITEM_DIRT] == 49,
           "held place legal at the step start places there once: tile %d, tiles %d", tile_at(e, tx, ty), dirt_tiles);
     free(e);
+#endif
+}
+
+/* HELD_PLACE mask on real worlds under random play: computing it never
+   changes the state, and it predicts whether each place action would place
+   (tried on a copy). Misses come from mobs (contact knockback changes the
+   path) and from the darkness rule (hidden cells permit attempts). */
+static void test_held_place_mask_random(void) {
+#if HELD_PLACE
+    Env *e = new_env(2000), *c = malloc(sizeof *e), *snap = malloc(sizeof *e);
+    uint64_t rng = 77;
+    long untouched = 0, steps = 0, in_ok = 0, in_fail = 0, out_ok = 0, out_fail = 0;
+    uint8_t m[ACT_COUNT];
+    for (uint64_t seed = 1; seed <= 4; seed++) {
+        env_reset(e, seed);
+        while (!e->terminated && !e->truncated) {
+            memcpy(snap, e, sizeof *e);
+            env_action_mask(e, m);
+            untouched += memcmp(snap, e, sizeof *e) == 0; steps++;
+            const int item = PLACEABLES[e->selected].item;
+            if (e->inv[item] > 0) for (int r = 0; r < REACH_COUNT; r++) {
+                memcpy(c, e, sizeof *e);
+                env_step(c, ACT_PLACE_FIRST + r);
+                const bool ok = c->inv[item] < e->inv[item];
+                if (m[ACT_PLACE_FIRST + r]) { if (ok) in_ok++; else in_fail++; }
+                else { if (ok) out_ok++; else out_fail++; }
+            }
+            env_step(e, legal_action(e, &rng));
+        }
+    }
+    printf("held place mask, random play (%ld steps): masked in %ld placed / %ld failed, masked out %ld placed / %ld failed\n",
+           steps, in_ok, in_fail, out_ok, out_fail);
+    CHECK(untouched == steps && out_ok * 100 <= in_ok, "held place mask leaves the state untouched (%ld/%ld) and misses few landings (%ld of %ld)",
+          untouched, steps, out_ok, in_ok + out_ok);
+    free(e); free(c); free(snap);
 #endif
 }
 
@@ -1039,6 +1086,7 @@ int main(int argc, char **argv) {
     test_tools();
     test_walls();
     test_held_place();
+    test_held_place_mask_random();
     printf("%s: %d/%d checks passed\n", failures ? "FAILED" : "PASSED", checks - failures, checks);
     return failures != 0;
 }

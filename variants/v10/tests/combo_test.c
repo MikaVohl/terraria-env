@@ -210,8 +210,9 @@ static void test_one_step(void) {
 
 /* Masks over random play on real worlds: attack/mine combos equal their
    use's mask, running jumps jump's, place combos "selected item stocked"
-   (with HELD_PLACE the standalone places too); jump + place down stays legal
-   standing on a floor (the held place lands once the jump lifts the feet)
+   (with HELD_PLACE a standalone place is never legal without stock); jump +
+   place down stays legal standing on a floor (the held place lands once the
+   jump lifts the feet) while place down alone does not (no input, no path),
    and goes illegal with no blocks left. */
 static void test_masks(void) {
     uint64_t rng = 99; long mism = 0, n = 0, combos_legal = 0;
@@ -227,7 +228,7 @@ static void test_masks(void) {
         }
 #if HELD_PLACE
         for (int r = 0; r < REACH_COUNT; r++) {
-            mism += mask[ACT_PLACE_FIRST + r] != (A.inv[PLACEABLES[A.selected].item] > 0); n++;
+            mism += mask[ACT_PLACE_FIRST + r] && A.inv[PLACEABLES[A.selected].item] <= 0; n++;
         }
 #endif
         int legal[ACT_COUNT], k = 0;
@@ -239,7 +240,7 @@ static void test_masks(void) {
     flat_world(&A, 100); env_action_mask(&A, mask);
     int ground = mask[ACT_JUMP_PLACE_DOWN], alone = mask[ACT_PLACE_DOWN];
     A.inv[ITEM_DIRT] = 0; env_action_mask(&A, mask);
-    check(ground && alone == HELD_PLACE && !mask[ACT_JUMP_PLACE_DOWN] && !mask[ACT_PLACE_DOWN] && mask[ACT_LEFT_JUMP] && mask[ACT_LEFT_ATTACK],
+    check(ground && !alone && !mask[ACT_JUMP_PLACE_DOWN] && !mask[ACT_PLACE_DOWN] && mask[ACT_LEFT_JUMP] && mask[ACT_LEFT_ATTACK],
           "jump + place down legality", "standing %d (place down alone %d), no dirt %d", ground, alone, mask[ACT_JUMP_PLACE_DOWN]);
 }
 
@@ -344,6 +345,7 @@ static void test_pillar(void) {
         if (open && p == POL_NAIVE && combos) check(ok == 32, "open-air pillar with jump + place down", "%d/32", ok);
 #if HELD_PLACE && BG_WALLS
         if (p == POL_TIMED && !combos) check(ok == 32, open ? "open-air pillar with standalone held place" : "shaft pillar with standalone held place", "%d/32", ok);
+        if (p == POL_NAIVE && !combos) check(ok == 32, open ? "open-air pillar, naive standalone (mask tightness)" : "shaft pillar, naive standalone (mask tightness)", "%d/32", ok);
 #endif
     }
 }

@@ -176,8 +176,8 @@ class _Spec:
         # background wall), after the mob channels; None without walls.
         wall = _optional_int("tl_wall_channel", default=-1)
         self.wall_channel = wall if wall >= 0 else None
-        # v10 HELD_PLACE: place actions hold the use over the step and are
-        # masked on stock alone (a place may still do nothing).
+        # v10 HELD_PLACE: place actions hold the use over the step; masked
+        # legal at the step start or on the step's predicted no-input path.
         self.held_place = bool(_optional_int("tl_held_place", default=0))
         # Mob features per cell: kind one-hot, then health, then phase.
         self.mob_channels = self.entity_channels - (self.wall_channel is not None)

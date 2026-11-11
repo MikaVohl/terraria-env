@@ -134,8 +134,11 @@
    the block; at most one block per step. A `place down` step after a jump
    step thus places under the falling feet once the cell below them touches
    the floor or the pillar top (the BG_WALLS-legal pillar, no wall needed).
-   The place masks become "the selected placeable is stocked" (a held place
-   may land on any tick).
+   A place mask is legal iff the place is legal at the step start or after
+   some tick of the step on the body's predicted path: player_tick with no
+   input (a place step holds none) from the current state, mobs ignored, so
+   a contact knockback can still make a masked-in place miss or a masked-out
+   one land (sim.c held_place_mask). Hidden cells permit attempts as before.
    Needs the tick loop with ported physics; default on with FID_PHYSICS, so
    the noport control keeps v9's step-start place. HELD_PLACE=0 restores the
    step-start-only place (bit-identical to the build before the knob). */
