@@ -1,0 +1,83 @@
+[
+ {
+  "name": "v10ht_gen_1B-3001",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10ht_shaped_1B-3001",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10ht_gen_1B-3002",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10ht_shaped_1B-3002",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10ht_gen_1B-3003",
+  "lib": "build-v10",
+  "arm": "v10_gen_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10ht_shaped_1B-3003",
+  "lib": "build-v10",
+  "arm": "v10_shaped_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10aim_shaped_1B-3001",
+  "lib": "build-v10-held0",
+  "arm": "v10_shaped_g9999",
+  "seed": 3001,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10aim_shaped_1B-3002",
+  "lib": "build-v10-held0",
+  "arm": "v10_shaped_g9999",
+  "seed": 3002,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ },
+ {
+  "name": "v10aim_shaped_1B-3003",
+  "lib": "build-v10-held0",
+  "arm": "v10_shaped_g9999",
+  "seed": 3003,
+  "steps": 1073741824,
+  "interval": 134217728,
+  "max_steps": 0
+ }
+]

@@ -18,6 +18,11 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
     probability=np.zeros(SPEC.n_actions,np.float64); maxes=[]; records=[]
     held_steps=np.zeros(SPEC.n_items,np.int64)   # v10 EXPLICIT_TOOLS: item in hand per step
     inv0=SPEC.cells*(SPEC.tile_kinds+1)+SPEC.status_inv0
+    # Place outcomes: a place step succeeded iff the stock of the item in hand after it (do_place
+    # selects it) dropped; nothing else changes a placeable's stock within a place step. Counts at
+    # or above OBS_INV_CLIP are not observable ("unknown").
+    place_ids=np.array([i for i,n in enumerate(SPEC.action_names) if n.startswith("place ")])
+    place_out=np.zeros(3,np.int64)   # placed, failed, unknown
     for base in range(0,len(seeds),64):
         cohort=seeds[base:base+64]; envs=[TerrariaLite(max_steps=max_steps or None) for _ in cohort]
         try:
@@ -34,6 +39,7 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
             for t in range(max_steps or SPEC.default_steps):
                 inv=np.rint(obs[:,inv0:inv0+SPEC.n_items]**2*SPEC.inventory_clip).astype(np.int32)
                 peak[active]=np.maximum(peak[active],inv[active])
+                pre=inv
                 x=torch.from_numpy(obs); m=torch.from_numpy(mask)
                 if recurrent:
                     features,state=agent.core_step(x,state,done)
@@ -55,6 +61,14 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
                 # Include pickups/crafts on an episode's final action too.
                 inv=np.rint(obs[:,inv0:inv0+SPEC.n_items]**2*SPEC.inventory_clip).astype(np.int32)
                 peak[active]=np.maximum(peak[active],inv[active])
+                if SPEC.status_held0 is not None and len(place_ids):
+                    pl=np.flatnonzero(active & np.isin(actions,place_ids))
+                    if len(pl):
+                        h=obs[pl,h0:h0+SPEC.n_items].argmax(1)
+                        before=pre[pl,h]; after=inv[pl,h]
+                        unknown=before>=SPEC.inventory_clip
+                        placed=~unknown & (after<before)
+                        place_out+=[placed.sum(),(~unknown & ~placed).sum(),unknown.sum()]
                 for i in np.flatnonzero(active & (te|tr)):
                     rec={"seed":cohort[i],"info":envs[i]._info(),
                          "inventory_peak":peak[i].tolist(),"legal_steps":opportunities[i].tolist()}
@@ -87,7 +101,8 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
                                                   for r in records]))}
                if "find a Demon Altar" in SPEC.achievement_names else {}),
             # v10: share of steps each item was in hand (absent without EXPLICIT_TOOLS)
-            **({"held_fraction":{name:float(v) for name,v in zip(SPEC.item_names,held_steps/max(1,held_steps.sum())) if v}}
+            **({"held_fraction":{name:float(v) for name,v in zip(SPEC.item_names,held_steps/max(1,held_steps.sum())) if v},
+                "place_outcomes":dict(zip(("placed","failed","unknown"),place_out.tolist()))}
                if SPEC.status_held0 is not None else {})}
 
 
