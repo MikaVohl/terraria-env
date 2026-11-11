@@ -1,0 +1,5 @@
+2026-11-11T09:14:59-05:00 queue started: 1 slots, budget {'gateway': Decimal('10'), 'openrouter': Decimal('0')}
+2026-11-11T09:15:00-05:00 start p00-med-pa-probe-w404 on :11/HEADLESS-25 (spent {"gateway": "0", "openrouter": "0"}, running caps {"gateway": "0", "openrouter": "0"}, cap {"gateway": "3.0", "openrouter": "0"})
+2026-11-11T09:20:30-05:00 done p00-med-pa-probe-w404 slot :11 exit=0 after 5.5 min (spent {"gateway": "0.8633973600", "openrouter": "0"})
+2026-11-11T09:21:31-05:00 start m01-medium-pa-20m-w401 on :11/HEADLESS-25 (spent {"gateway": "0.8633973600", "openrouter": "0"}, running caps {"gateway": "0", "openrouter": "0"}, cap {"gateway": "9.13", "openrouter": "0"})
+2026-11-11T09:58:41-05:00 done m01-medium-pa-20m-w401 slot :11 exit=0 after 37.2 min (spent {"gateway": "7.9093010000", "openrouter": "0"})

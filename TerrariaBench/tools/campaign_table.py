@@ -21,7 +21,8 @@ def mmss(s):
 
 def short(model):
     return {"claude-haiku-5-5": "Haiku", "claude-sonnet-5-5": "Sonnet", "claude-opus-5-5": "Opus", "gpt-5.6-luna": "Luna",
-            "gpt-5.6-terra": "Terra", "gpt-5.6-sol": "Sol", "gpt-6-luna": "Luna6", "typesafe/jev-1.14": "Jev"}.get(model, model)
+            "gpt-5.6-terra": "Terra", "gpt-5.6-sol": "Sol", "gpt-6-luna": "Luna6", "gpt-6-astra": "Astra",
+            "typesafe/jev-1.14": "Jev"}.get(model, model)
 
 
 DEFAULT_SETTINGS = {"window": [1024, 1024], "zoom": 1.0, "ui_scale": 0.9, "lighting": "color", "smart_cursor": "off",

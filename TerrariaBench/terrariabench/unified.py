@@ -1,4 +1,4 @@
-"""OpenAI-compatible client for the gateway's Unified route (GPT-5.6 Luna/Terra/Sol, GPT-6 Luna).
+"""OpenAI-compatible client for the gateway's Unified route (GPT-5.6 Luna/Terra/Sol, GPT-6 Luna/Astra).
 
 Same local 0600 config as gateway.py (~/.config/terrariabench/gateway.json); the Unified base URL is
 `unified_base_url` if present, else the Anthropic `base_url` with `/anthropic` replaced by `/Unified/v1`.
@@ -22,12 +22,16 @@ from .openrouter import RETRYABLE_HTTP, ProviderError
 # model (2,110 prompt + 4 output tokens; 17 prompt + 602 output tokens), rounded up. Used only for the
 # per-call reservation and the list-price cross-check; reported cost comes from the header.
 # gpt-6-luna: fitted 2026-11-10 the same way (2,110 prompt + 5 output = $0.000181; 13 + 661 = $0.000226).
+# gpt-6-astra: fitted 2026-11-10 by tools/terrabot/probe_price.py (2,114 prompt + 4 output = $0.0180999; 14 + 584 =
+# $0.0199512 -> $8.50/M in, $33.96/M out, rounded up to $34). /models lists $6.80/M list input, but the header bills
+# input at the cache-creation rate ($8.50/M).
 MODELS = {
     "gpt-5.6-luna": {"price": {"input": 0.18e-6, "output": 0.82e-6}},
     "gpt-5.6-terra": {"price": {"input": 1.8e-6, "output": 8.2e-6}},
     "gpt-5.6-sol": {"price": {"input": 3.4e-6, "output": 13.6e-6}},
     # Chat completions report the deployment as gpt-6-luna-2026-09-22; Responses as dvue-aoai-006-gpt-6-luna.
     "gpt-6-luna": {"price": {"input": 0.09e-6, "output": 0.35e-6}, "deployment": "gpt-6-luna-2026-09-22"},
+    "gpt-6-astra": {"price": {"input": 8.5e-6, "output": 34.0e-6}, "deployment": "gpt-6-astra-2026-09-03"},
 }
 REASONING = ("none", "low", "medium", "high")
 MAX_COMPLETION_TOKENS = 16384

@@ -1,0 +1,30 @@
+{
+ "rows": [
+  {
+   "run": "m01-medium-pa-20m-w401",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "4.958848",
+   "uncertain": "2.087056"
+  },
+  {
+   "run": "p00-med-pa-probe-w404",
+   "role": "single",
+   "provider": "gateway",
+   "reported": "0.863397",
+   "uncertain": "0.000000"
+  }
+ ],
+ "totals": {
+  "gateway": {
+   "reported": "5.822245",
+   "uncertain": "2.087056",
+   "conservative": "7.909301"
+  },
+  "openrouter": {
+   "reported": "0.000000",
+   "uncertain": "0.000000",
+   "conservative": "0.000000"
+  }
+ }
+}

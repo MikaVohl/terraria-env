@@ -1,0 +1,213 @@
+[
+ {
+  "run": "p00-med-pa-probe-w404",
+  "setup": "Astra (medium), forced, paused, smart_cursor on",
+  "campaign_profile": "astra-probe",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000404",
+  "game_s": 90,
+  "wall_s": 88,
+  "wall_total_s": 309,
+  "stop": "game_time_limit",
+  "published_score": 4,
+  "published_game_s": {
+   "wood_1": 7.1,
+   "wood_10": 8.2,
+   "wood_25": 8.6,
+   "workbench_1": 19.4
+  },
+  "extended_count": 2,
+  "extended_game_s": {
+   "workbench_placed": 21.1,
+   "wood_armor_crafted": 24.9
+  },
+  "crafted": {
+   "Work Bench": 2,
+   "Sign": 1,
+   "Wooden Sword": 1,
+   "Wood Helmet": 1,
+   "Wood Greaves": 1,
+   "Wood Breastplate": 1
+  },
+  "placed_tile_types": {
+   "18": 1
+  },
+  "deaths": 0,
+  "max_depth_tiles": 35,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": false,
+  "calls": 27,
+  "calls_by_role": null,
+  "inputs": 109,
+  "latency_median_s": 6.182921357918531,
+  "screenshot_age_median_s": 6.24,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.43,
+  "usd_reported": "0.8634",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Shortsword": 1,
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Dirt Block": 11,
+   "Acorn": 6,
+   "Work Bench": 1,
+   "item 171": 1,
+   "item 24": 1
+  }
+ },
+ {
+  "run": "m01-medium-pa-20m-w401",
+  "setup": "Astra (medium), forced, paused, smart_cursor on",
+  "campaign_profile": "astra-probe",
+  "display_settings": {
+   "window": [
+    1024,
+    1024
+   ],
+   "zoom": 1.0,
+   "ui_scale": 0.9,
+   "lighting": "color",
+   "smart_cursor": "on",
+   "minimap": "frame",
+   "config_json": {
+    "Zoom": 1.0,
+    "UIScale": 0.9,
+    "LightingMode": 3,
+    "DisplayWidth": 1024,
+    "DisplayHeight": 1024
+   },
+   "setup_keys": [
+    {
+     "keys": [
+      "leftctrl"
+     ],
+     "ms": 80
+    },
+    {
+     "ms": 250
+    }
+   ]
+  },
+  "clock": "paused",
+  "world_seed": "32000401",
+  "game_s": 1106,
+  "wall_s": 1102,
+  "wall_total_s": 2210,
+  "stop": "RuntimeError: dollar reservation limit reached",
+  "published_score": 7,
+  "published_game_s": {
+   "wood_1": 11.2,
+   "wood_10": 11.7,
+   "wood_25": 12.3,
+   "wood_100": 33.5,
+   "workbench_1": 47.9,
+   "furnace_1": 623.0,
+   "torch_10": 1084.7
+  },
+  "extended_count": 12,
+  "extended_game_s": {
+   "gel_1": 136.0,
+   "torch_crafted": 381.4,
+   "workbench_placed": 48.7,
+   "wood_armor_crafted": 53.2,
+   "layer_underground": 415.0,
+   "layer_cavern": 579.0,
+   "ore_copper_tin": 450.0,
+   "ore_silver_gold_tier": 484.0,
+   "furnace_crafted": 623.0,
+   "furnace_placed": 913.0,
+   "bar_smelted": 914.8,
+   "eoc_summon_or_lens": 821.0
+  },
+  "crafted": {
+   "Wood Platform": 2,
+   "Wood": 1,
+   "Work Bench": 1,
+   "Wooden Sword": 1,
+   "Wood Helmet": 2,
+   "Wood Breastplate": 1,
+   "Wood Greaves": 1,
+   "Torch": 24,
+   "Furnace": 1,
+   "Gold Bar": 1,
+   "Tungsten Bar": 1
+  },
+  "placed_tile_types": {
+   "18": 1,
+   "4": 8,
+   "17": 1
+  },
+  "deaths": 12,
+  "max_depth_tiles": 208,
+  "continuations": 0,
+  "no_action_turns": 0,
+  "censored": true,
+  "calls": 88,
+  "calls_by_role": null,
+  "inputs": 748,
+  "latency_median_s": 8.364922124892473,
+  "screenshot_age_median_s": 8.44,
+  "screenshot_age_game_median_s": 0.06,
+  "hz_median": 60.0,
+  "updates_per_running_s": 60.12,
+  "usd_reported": "4.9588",
+  "usd_by_role": null,
+  "final_inventory": {
+   "Copper Pickaxe": 1,
+   "Copper Axe": 1,
+   "Acorn": 11,
+   "item 5": 1,
+   "Wood": 26,
+   "Glowstick": 3,
+   "Dirt Block": 344,
+   "item 24": 1,
+   "Torch": 14,
+   "Copper Shortsword": 1,
+   "Gold Bar": 1,
+   "Tungsten Bar": 1,
+   "item 169": 3,
+   "item 38": 1,
+   "Mud Block": 4,
+   "Tungsten Ore": 2,
+   "Gold Ore": 3,
+   "Copper Ore": 6,
+   "Stone Block": 161,
+   "item 307": 1,
+   "item 313": 1,
+   "Wood Helmet": 1,
+   "Copper Coin": 23
+  }
+ }
+]
