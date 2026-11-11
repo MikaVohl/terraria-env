@@ -1,0 +1,2394 @@
+{
+ "study": "eg18-v10ppo1b-20261110",
+ "previous": {
+  "gen": {
+   "3001": {
+    "w": 32.1,
+    "died": 38,
+    "furn": 123,
+    "anvil": 22,
+    "surf": 0,
+    "lens": 0,
+    "altar": 17,
+    "ipick": 0,
+    "tiers": [
+     99,
+     57,
+     31,
+     2
+    ]
+   },
+   "3002": {
+    "w": 32.84,
+    "died": 28,
+    "furn": 119,
+    "anvil": 20,
+    "surf": 0,
+    "lens": 0,
+    "altar": 33,
+    "ipick": 0,
+    "tiers": [
+     99,
+     57,
+     31,
+     4
+    ]
+   },
+   "3003": {
+    "w": 32.19,
+    "died": 24,
+    "furn": 123,
+    "anvil": 17,
+    "surf": 0,
+    "lens": 0,
+    "altar": 29,
+    "ipick": 0,
+    "tiers": [
+     98,
+     56,
+     30,
+     3
+    ]
+   }
+  },
+  "shaped": {
+   "3001": {
+    "w": 34.85,
+    "died": 30,
+    "furn": 125,
+    "anvil": 56,
+    "surf": 0,
+    "lens": 0,
+    "altar": 31,
+    "ipick": 0,
+    "tiers": [
+     99,
+     62,
+     33,
+     3
+    ]
+   },
+   "3002": {
+    "w": 33.61,
+    "died": 29,
+    "furn": 123,
+    "anvil": 39,
+    "surf": 0,
+    "lens": 0,
+    "altar": 33,
+    "ipick": 0,
+    "tiers": [
+     99,
+     59,
+     32,
+     4
+    ]
+   },
+   "3003": {
+    "w": 33.74,
+    "died": 33,
+    "furn": 123,
+    "anvil": 40,
+    "surf": 0,
+    "lens": 0,
+    "altar": 28,
+    "ipick": 0,
+    "tiers": [
+     98,
+     60,
+     32,
+     3
+    ]
+   }
+  }
+ },
+ "previous_curve": {
+  "gen": {
+   "512": {
+    "3001": 27.47,
+    "3002": 21.41,
+    "3003": 22.96
+   }
+  },
+  "shaped": {
+   "384": {
+    "3001": 26.72,
+    "3002": 27.02,
+    "3003": 25.47
+   }
+  }
+ },
+ "previous_gen3001_curve_M": {
+  "128": 21.4,
+  "256": 20.83,
+  "384": 25.98,
+  "512": 27.47,
+  "640": 30.44,
+  "768": 29.41,
+  "896": 30.69,
+  "1024": 32.1
+ },
+ "summary": {
+  "gen": {
+   "seeds": [
+    3001,
+    3002,
+    3003,
+    3004,
+    3005
+   ],
+   "scores": [
+    32.92564655172414,
+    34.94612068965517,
+    33.696120689655174,
+    32.61853448275862,
+    34.956896551724135
+   ],
+   "mean": 33.828663793103445,
+   "iqm": 33.85596264367816,
+   "iqm_ci95": [
+    32.720905172413794,
+    34.95330459770114
+   ],
+   "crafter_mean": 20.396328419789278,
+   "tiers_mean": [
+    0.9891826923076923,
+    0.58671875,
+    0.3298828125,
+    0.033482142857142856
+   ],
+   "death_rate_mean": 0.50625,
+   "depth_mean": 117.68125,
+   "hits_total": {
+    "craft furnace": 610,
+    "craft anvil": 240,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 106,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 150,
+    "survive a night": 557,
+    "reach the caverns": 635,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "worlds": 640,
+   "gpu_hours": 5.0602887358791335,
+   "matched_3001_3003_mean": 33.85596264367816,
+   "paired_diff_vs_prev": [
+    0.8256465517241409,
+    2.106120689655164,
+    1.5061206896551766
+   ],
+   "paired_diff_mean": 1.4792959770114937,
+   "paired_diff_ci95": [
+    0.8256465517241409,
+    2.106120689655164
+   ]
+  },
+  "shaped": {
+   "seeds": [
+    3001,
+    3002,
+    3003,
+    3004,
+    3005
+   ],
+   "scores": [
+    34.07327586206897,
+    34.008620689655174,
+    34.81142241379311,
+    35.053879310344826,
+    33.1573275862069
+   ],
+   "mean": 34.220905172413794,
+   "iqm": 34.29777298850575,
+   "iqm_ci95": [
+    33.44109195402299,
+    34.97306034482759
+   ],
+   "crafter_mean": 20.281968876085568,
+   "tiers_mean": [
+    0.9918269230769232,
+    0.6031250000000001,
+    0.3322265625,
+    0.03080357142857143
+   ],
+   "death_rate_mean": 0.5375,
+   "depth_mean": 118.51875,
+   "hits_total": {
+    "craft furnace": 623,
+    "craft anvil": 289,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 121,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 138,
+    "survive a night": 571,
+    "reach the caverns": 638,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "worlds": 640,
+   "gpu_hours": 6.624744060220934,
+   "matched_3001_3003_mean": 34.29777298850575,
+   "paired_diff_vs_prev": [
+    -0.7767241379310335,
+    0.39862068965517494,
+    1.0714224137931083
+   ],
+   "paired_diff_mean": 0.23110632183908328,
+   "paired_diff_ci95": [
+    -0.7767241379310335,
+    1.0714224137931083
+   ]
+  },
+  "shaped_nowalls": {
+   "seeds": [
+    3001,
+    3002,
+    3003,
+    3004,
+    3005
+   ],
+   "scores": [
+    39.39655172413793,
+    38.47521551724138,
+    35.38793103448276,
+    37.85560344827586,
+    38.03879310344827
+   ],
+   "mean": 37.83081896551723,
+   "iqm": 38.1232040229885,
+   "iqm_ci95": [
+    36.21048850574713,
+    39.08943965517241
+   ],
+   "crafter_mean": 22.3337214531356,
+   "tiers_mean": [
+    0.9900240384615385,
+    0.6436197916666667,
+    0.4119140625,
+    0.04174107142857143
+   ],
+   "death_rate_mean": 0.459375,
+   "depth_mean": 120.6859375,
+   "hits_total": {
+    "craft furnace": 625,
+    "craft anvil": 351,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 181,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 187,
+    "survive a night": 594,
+    "reach the caverns": 635,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "worlds": 640,
+   "gpu_hours": 6.4103143469363895,
+   "matched_3001_3003_mean": 37.75323275862069
+  },
+  "prev_gen": {
+   "scores": [
+    32.1,
+    32.84,
+    32.19
+   ],
+   "mean": 32.376666666666665,
+   "iqm": 32.376666666666665,
+   "iqm_ci95": [
+    32.1,
+    32.84
+   ]
+  },
+  "prev_shaped": {
+   "scores": [
+    34.85,
+    33.61,
+    33.74
+   ],
+   "mean": 34.06666666666667,
+   "iqm": 34.06666666666666,
+   "iqm_ci95": [
+    33.61,
+    34.85
+   ]
+  },
+  "walls_effect_shaped": {
+   "diffs": [
+    -5.323275862068961,
+    -4.466594827586206,
+    -0.5765086206896513,
+    -2.801724137931032,
+    -4.881465517241374
+   ],
+   "mean": -3.609913793103445,
+   "ci95": [
+    -4.894181034482753,
+    -1.9116379310344798
+   ]
+  }
+ },
+ "runs": {
+  "gen-3001": {
+   "arm": "gen",
+   "seed": 3001,
+   "steps": 1073741824,
+   "score": 32.92564655172414,
+   "crafter": 19.5975501437525,
+   "tiers": [
+    0.9915865384615384,
+    0.572265625,
+    0.3046875,
+    0.036830357142857144
+   ],
+   "death_rate": 0.53125,
+   "mean_peak_depth": 117.1640625,
+   "mean_length": 7185.8515625,
+   "mean_achievements": 22.453125,
+   "hits": {
+    "craft furnace": 124,
+    "craft anvil": 43,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 16,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 33,
+    "survive a night": 108,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 308617,
+   "wall_hours": 0.9781707193430177,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 25.88900862068966,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 14
+    },
+    {
+     "steps": 268435456,
+     "score": 29.229525862068968,
+     "death_rate": 0.4453125,
+     "surface": 0,
+     "anvil": 24
+    },
+    {
+     "steps": 402653184,
+     "score": 27.866379310344826,
+     "death_rate": 0.6015625,
+     "surface": 0,
+     "anvil": 26
+    },
+    {
+     "steps": 536870912,
+     "score": 29.644396551724135,
+     "death_rate": 0.5,
+     "surface": 0,
+     "anvil": 39
+    },
+    {
+     "steps": 671088640,
+     "score": 32.1875,
+     "death_rate": 0.5,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 805306368,
+     "score": 32.51616379310345,
+     "death_rate": 0.5,
+     "surface": 0,
+     "anvil": 38
+    },
+    {
+     "steps": 939524096,
+     "score": 33.85775862068966,
+     "death_rate": 0.6015625,
+     "surface": 0,
+     "anvil": 56
+    },
+    {
+     "steps": 1073741824,
+     "score": 32.92564655172414,
+     "death_rate": 0.53125,
+     "surface": 0,
+     "anvil": 43
+    }
+   ],
+   "diag": {
+    "score": 32.92564655172414,
+    "deaths_at_night": 30,
+    "layer_step_fraction": {
+     "surface": 0.14637922393070585,
+     "underground": 0.11893488615323732,
+     "caverns": 0.7346858899160569
+    },
+    "altar_found_rate": 0.2578125,
+    "checkpoint_sha256": "c8c0f7517316dc8d8fd799b08dce22d0ad3bd61e85abb9cdbf8fa047fb525137",
+    "top_actions": [
+     [
+      "noop",
+      40770
+     ],
+     [
+      "left",
+      40602
+     ],
+     [
+      "select next",
+      38709
+     ],
+     [
+      "right",
+      38128
+     ],
+     [
+      "mine down-right",
+      36607
+     ],
+     [
+      "cycle weapon",
+      35782
+     ],
+     [
+      "select rope",
+      35575
+     ],
+     [
+      "mine down-left",
+      35245
+     ]
+    ]
+   }
+  },
+  "gen-3002": {
+   "arm": "gen",
+   "seed": 3002,
+   "steps": 1073741824,
+   "score": 34.94612068965517,
+   "crafter": 21.50861252409275,
+   "tiers": [
+    0.9927884615384616,
+    0.6009114583333334,
+    0.3720703125,
+    0.022321428571428572
+   ],
+   "death_rate": 0.6015625,
+   "mean_peak_depth": 117.6484375,
+   "mean_length": 7025.046875,
+   "mean_achievements": 23.25,
+   "hits": {
+    "craft furnace": 124,
+    "craft anvil": 54,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 21,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 20,
+    "survive a night": 110,
+    "reach the caverns": 127,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 303216,
+   "wall_hours": 0.9951364272113683,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 25.005387931034484,
+     "death_rate": 0.6875,
+     "surface": 0,
+     "anvil": 21
+    },
+    {
+     "steps": 268435456,
+     "score": 29.946120689655174,
+     "death_rate": 0.6328125,
+     "surface": 0,
+     "anvil": 39
+    },
+    {
+     "steps": 402653184,
+     "score": 29.967672413793103,
+     "death_rate": 0.515625,
+     "surface": 0,
+     "anvil": 45
+    },
+    {
+     "steps": 536870912,
+     "score": 31.77801724137931,
+     "death_rate": 0.46875,
+     "surface": 0,
+     "anvil": 46
+    },
+    {
+     "steps": 671088640,
+     "score": 32.96336206896552,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 46
+    },
+    {
+     "steps": 805306368,
+     "score": 33.539870689655174,
+     "death_rate": 0.46875,
+     "surface": 0,
+     "anvil": 46
+    },
+    {
+     "steps": 939524096,
+     "score": 33.80926724137931,
+     "death_rate": 0.578125,
+     "surface": 0,
+     "anvil": 54
+    },
+    {
+     "steps": 1073741824,
+     "score": 34.94612068965517,
+     "death_rate": 0.6015625,
+     "surface": 0,
+     "anvil": 54
+    }
+   ],
+   "diag": {
+    "score": 34.94612068965517,
+    "deaths_at_night": 35,
+    "layer_step_fraction": {
+     "surface": 0.14193966677268613,
+     "underground": 0.11538624075017292,
+     "caverns": 0.7426740924771409
+    },
+    "altar_found_rate": 0.15625,
+    "checkpoint_sha256": "c0fa5dca2fb13143b2f02dac9327e6a77607b7c7753b4fb6232f14920269625d",
+    "top_actions": [
+     [
+      "left",
+      40913
+     ],
+     [
+      "noop",
+      40662
+     ],
+     [
+      "right",
+      38905
+     ],
+     [
+      "cycle weapon",
+      37561
+     ],
+     [
+      "mine down-left",
+      35571
+     ],
+     [
+      "select next",
+      34700
+     ],
+     [
+      "mine down",
+      34518
+     ],
+     [
+      "select torch",
+      33454
+     ]
+    ]
+   }
+  },
+  "gen-3003": {
+   "arm": "gen",
+   "seed": 3003,
+   "steps": 1073741824,
+   "score": 33.696120689655174,
+   "crafter": 20.210861344091906,
+   "tiers": [
+    0.9861778846153846,
+    0.5852864583333334,
+    0.31640625,
+    0.041294642857142856
+   ],
+   "death_rate": 0.5546875,
+   "mean_peak_depth": 116.9453125,
+   "mean_length": 6936.4765625,
+   "mean_achievements": 22.6640625,
+   "hits": {
+    "craft furnace": 121,
+    "craft anvil": 47,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 25,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 37,
+    "survive a night": 113,
+    "reach the caverns": 126,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 303902,
+   "wall_hours": 0.9926521574044213,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 22.82866379310345,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 13
+    },
+    {
+     "steps": 268435456,
+     "score": 28.78771551724138,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 30
+    },
+    {
+     "steps": 402653184,
+     "score": 28.63146551724138,
+     "death_rate": 0.65625,
+     "surface": 0,
+     "anvil": 28
+    },
+    {
+     "steps": 536870912,
+     "score": 28.189655172413794,
+     "death_rate": 0.6328125,
+     "surface": 0,
+     "anvil": 36
+    },
+    {
+     "steps": 671088640,
+     "score": 29.046336206896548,
+     "death_rate": 0.609375,
+     "surface": 0,
+     "anvil": 31
+    },
+    {
+     "steps": 805306368,
+     "score": 31.433189655172413,
+     "death_rate": 0.546875,
+     "surface": 0,
+     "anvil": 44
+    },
+    {
+     "steps": 939524096,
+     "score": 32.397629310344826,
+     "death_rate": 0.5859375,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 1073741824,
+     "score": 33.696120689655174,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 47
+    }
+   ],
+   "diag": {
+    "score": 33.696120689655174,
+    "deaths_at_night": 21,
+    "layer_step_fraction": {
+     "surface": 0.14188241733859386,
+     "underground": 0.12579107953988708,
+     "caverns": 0.732326503121519
+    },
+    "altar_found_rate": 0.2890625,
+    "checkpoint_sha256": "b4e8231e058fd0d3254e14e3a4344b2fc869736ee106baa87bbf9a8d5a2a91c9",
+    "top_actions": [
+     [
+      "left",
+      39302
+     ],
+     [
+      "right",
+      39160
+     ],
+     [
+      "cycle weapon",
+      37476
+     ],
+     [
+      "noop",
+      36944
+     ],
+     [
+      "select next",
+      35707
+     ],
+     [
+      "mine down-right",
+      35483
+     ],
+     [
+      "select rope",
+      34560
+     ],
+     [
+      "mine down-left",
+      34129
+     ]
+    ]
+   }
+  },
+  "gen-3004": {
+   "arm": "gen",
+   "seed": 3004,
+   "steps": 1073741824,
+   "score": 32.61853448275862,
+   "crafter": 19.326409940750054,
+   "tiers": [
+    0.9831730769230769,
+    0.5768229166666666,
+    0.296875,
+    0.033482142857142856
+   ],
+   "death_rate": 0.3984375,
+   "mean_peak_depth": 117.5703125,
+   "mean_length": 7692.2734375,
+   "mean_achievements": 22.3125,
+   "hits": {
+    "craft furnace": 118,
+    "craft anvil": 48,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 21,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 30,
+    "survive a night": 113,
+    "reach the caverns": 126,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 276945,
+   "wall_hours": 1.0900311662133189,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 22.5,
+     "death_rate": 0.7109375,
+     "surface": 0,
+     "anvil": 4
+    },
+    {
+     "steps": 268435456,
+     "score": 29.051724137931032,
+     "death_rate": 0.5625,
+     "surface": 0,
+     "anvil": 26
+    },
+    {
+     "steps": 402653184,
+     "score": 30.307112068965516,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 536870912,
+     "score": 30.210129310344833,
+     "death_rate": 0.453125,
+     "surface": 0,
+     "anvil": 30
+    },
+    {
+     "steps": 671088640,
+     "score": 28.69612068965517,
+     "death_rate": 0.59375,
+     "surface": 0,
+     "anvil": 33
+    },
+    {
+     "steps": 805306368,
+     "score": 31.379310344827587,
+     "death_rate": 0.4296875,
+     "surface": 0,
+     "anvil": 40
+    },
+    {
+     "steps": 939524096,
+     "score": 31.934267241379313,
+     "death_rate": 0.515625,
+     "surface": 0,
+     "anvil": 47
+    },
+    {
+     "steps": 1073741824,
+     "score": 32.61853448275862,
+     "death_rate": 0.3984375,
+     "surface": 0,
+     "anvil": 48
+    }
+   ],
+   "diag": {
+    "score": 32.61853448275862,
+    "deaths_at_night": 20,
+    "layer_step_fraction": {
+     "surface": 0.13968968455562653,
+     "underground": 0.11825990162612443,
+     "caverns": 0.742050413818249
+    },
+    "altar_found_rate": 0.234375,
+    "checkpoint_sha256": "1e96997c0ccacfbebd2e0c3e5d80fb7d5385f596a686674d015dbfc7621e6dee",
+    "top_actions": [
+     [
+      "left",
+      46558
+     ],
+     [
+      "select next",
+      41863
+     ],
+     [
+      "right",
+      41637
+     ],
+     [
+      "cycle weapon",
+      41184
+     ],
+     [
+      "noop",
+      39968
+     ],
+     [
+      "mine down-right",
+      38540
+     ],
+     [
+      "select torch",
+      38048
+     ],
+     [
+      "select workbench",
+      37806
+     ]
+    ]
+   }
+  },
+  "gen-3005": {
+   "arm": "gen",
+   "seed": 3005,
+   "steps": 1073741824,
+   "score": 34.956896551724135,
+   "crafter": 21.33820814625917,
+   "tiers": [
+    0.9921875,
+    0.5983072916666666,
+    0.359375,
+    0.033482142857142856
+   ],
+   "death_rate": 0.4453125,
+   "mean_peak_depth": 119.078125,
+   "mean_length": 7550.21875,
+   "mean_achievements": 23.1875,
+   "hits": {
+    "craft furnace": 123,
+    "craft anvil": 48,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 23,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 30,
+    "survive a night": 113,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 300424,
+   "wall_hours": 1.0042982657070065,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 25.60344827586207,
+     "death_rate": 0.53125,
+     "surface": 0,
+     "anvil": 18
+    },
+    {
+     "steps": 268435456,
+     "score": 28.852370689655174,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 34
+    },
+    {
+     "steps": 402653184,
+     "score": 29.41271551724138,
+     "death_rate": 0.515625,
+     "surface": 0,
+     "anvil": 34
+    },
+    {
+     "steps": 536870912,
+     "score": 29.908405172413794,
+     "death_rate": 0.4296875,
+     "surface": 0,
+     "anvil": 32
+    },
+    {
+     "steps": 671088640,
+     "score": 29.461206896551722,
+     "death_rate": 0.5078125,
+     "surface": 0,
+     "anvil": 37
+    },
+    {
+     "steps": 805306368,
+     "score": 31.880387931034484,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 36
+    },
+    {
+     "steps": 939524096,
+     "score": 31.68103448275862,
+     "death_rate": 0.4296875,
+     "surface": 0,
+     "anvil": 42
+    },
+    {
+     "steps": 1073741824,
+     "score": 34.956896551724135,
+     "death_rate": 0.4453125,
+     "surface": 0,
+     "anvil": 48
+    }
+   ],
+   "diag": {
+    "score": 34.956896551724135,
+    "deaths_at_night": 23,
+    "layer_step_fraction": {
+     "surface": 0.12638706659989157,
+     "underground": 0.10226938789025153,
+     "caverns": 0.771343545509857
+    },
+    "altar_found_rate": 0.234375,
+    "checkpoint_sha256": "3568c1583838b6fecec47e5adde8dcbed49b9dc6ad35900ed59933f0d068b331",
+    "top_actions": [
+     [
+      "left",
+      44608
+     ],
+     [
+      "right",
+      41898
+     ],
+     [
+      "noop",
+      40685
+     ],
+     [
+      "cycle weapon",
+      38691
+     ],
+     [
+      "select workbench",
+      37976
+     ],
+     [
+      "mine down-right",
+      37748
+     ],
+     [
+      "mine down-left",
+      36889
+     ],
+     [
+      "select next",
+      36851
+     ]
+    ]
+   }
+  },
+  "shaped-3001": {
+   "arm": "shaped",
+   "seed": 3001,
+   "steps": 1073741824,
+   "score": 34.07327586206897,
+   "crafter": 19.76376879465164,
+   "tiers": [
+    0.9873798076923077,
+    0.599609375,
+    0.326171875,
+    0.03459821428571429
+   ],
+   "death_rate": 0.5546875,
+   "mean_peak_depth": 118.0859375,
+   "mean_length": 7186.8359375,
+   "mean_achievements": 22.8828125,
+   "hits": {
+    "craft furnace": 122,
+    "craft anvil": 58,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 19,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 31,
+    "survive a night": 113,
+    "reach the caverns": 127,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 237788,
+   "wall_hours": 1.2655702024517166,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 28.42133620689655,
+     "death_rate": 0.6640625,
+     "surface": 0,
+     "anvil": 21
+    },
+    {
+     "steps": 268435456,
+     "score": 28.189655172413794,
+     "death_rate": 0.609375,
+     "surface": 0,
+     "anvil": 27
+    },
+    {
+     "steps": 402653184,
+     "score": 30.910560344827587,
+     "death_rate": 0.5390625,
+     "surface": 0,
+     "anvil": 41
+    },
+    {
+     "steps": 536870912,
+     "score": 30.45797413793104,
+     "death_rate": 0.4765625,
+     "surface": 0,
+     "anvil": 35
+    },
+    {
+     "steps": 671088640,
+     "score": 31.648706896551722,
+     "death_rate": 0.578125,
+     "surface": 0,
+     "anvil": 44
+    },
+    {
+     "steps": 805306368,
+     "score": 32.23599137931035,
+     "death_rate": 0.515625,
+     "surface": 0,
+     "anvil": 45
+    },
+    {
+     "steps": 939524096,
+     "score": 32.925646551724135,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 49
+    },
+    {
+     "steps": 1073741824,
+     "score": 34.07327586206897,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 58
+    }
+   ],
+   "diag": {
+    "score": 34.07327586206897,
+    "deaths_at_night": 29,
+    "layer_step_fraction": {
+     "surface": 0.1341178261034987,
+     "underground": 0.11364310833066099,
+     "caverns": 0.7522390655658403
+    },
+    "altar_found_rate": 0.2421875,
+    "checkpoint_sha256": "ebc1bb0e5bbf090d7af6aa5d7c367edd4f325a363163368b68ca0d6b92bce223",
+    "top_actions": [
+     [
+      "left",
+      40838
+     ],
+     [
+      "noop",
+      40459
+     ],
+     [
+      "right",
+      40025
+     ],
+     [
+      "select workbench",
+      39544
+     ],
+     [
+      "cycle weapon",
+      38717
+     ],
+     [
+      "mine down-right",
+      38056
+     ],
+     [
+      "select next",
+      35850
+     ],
+     [
+      "mine down-left",
+      35255
+     ]
+    ]
+   }
+  },
+  "shaped-3002": {
+   "arm": "shaped",
+   "seed": 3002,
+   "steps": 1073741824,
+   "score": 34.008620689655174,
+   "crafter": 19.724186493276083,
+   "tiers": [
+    0.9915865384615384,
+    0.5989583333333334,
+    0.333984375,
+    0.026785714285714284
+   ],
+   "death_rate": 0.5390625,
+   "mean_peak_depth": 117.2734375,
+   "mean_length": 7107.5,
+   "mean_achievements": 22.9375,
+   "hits": {
+    "craft furnace": 124,
+    "craft anvil": 65,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 23,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 24,
+    "survive a night": 108,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 225742,
+   "wall_hours": 1.3331299246866386,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 25.82435344827586,
+     "death_rate": 0.5390625,
+     "surface": 0,
+     "anvil": 26
+    },
+    {
+     "steps": 268435456,
+     "score": 28.42133620689655,
+     "death_rate": 0.5859375,
+     "surface": 0,
+     "anvil": 27
+    },
+    {
+     "steps": 402653184,
+     "score": 29.035560344827587,
+     "death_rate": 0.6015625,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 536870912,
+     "score": 30.748922413793103,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 44
+    },
+    {
+     "steps": 671088640,
+     "score": 31.34698275862069,
+     "death_rate": 0.578125,
+     "surface": 0,
+     "anvil": 50
+    },
+    {
+     "steps": 805306368,
+     "score": 32.57543103448276,
+     "death_rate": 0.6171875,
+     "surface": 0,
+     "anvil": 46
+    },
+    {
+     "steps": 939524096,
+     "score": 33.081896551724135,
+     "death_rate": 0.515625,
+     "surface": 0,
+     "anvil": 55
+    },
+    {
+     "steps": 1073741824,
+     "score": 34.008620689655174,
+     "death_rate": 0.5390625,
+     "surface": 0,
+     "anvil": 65
+    }
+   ],
+   "diag": {
+    "score": 34.008620689655174,
+    "deaths_at_night": 29,
+    "layer_step_fraction": {
+     "surface": 0.1325074744987689,
+     "underground": 0.1038119943721421,
+     "caverns": 0.763680531129089
+    },
+    "altar_found_rate": 0.1875,
+    "checkpoint_sha256": "e441bbbbb99497f9f9b26922407a1cc7a585e7e8d34fdb2360362faaa7d222f3",
+    "top_actions": [
+     [
+      "right",
+      40909
+     ],
+     [
+      "select next",
+      40167
+     ],
+     [
+      "left",
+      39650
+     ],
+     [
+      "select workbench",
+      37806
+     ],
+     [
+      "cycle weapon",
+      37704
+     ],
+     [
+      "noop",
+      37674
+     ],
+     [
+      "mine down",
+      34486
+     ],
+     [
+      "mine down-left",
+      34124
+     ]
+    ]
+   }
+  },
+  "shaped-3003": {
+   "arm": "shaped",
+   "seed": 3003,
+   "steps": 1073741824,
+   "score": 34.81142241379311,
+   "crafter": 20.539726432957522,
+   "tiers": [
+    0.9909855769230769,
+    0.6087239583333334,
+    0.3388671875,
+    0.03794642857142857
+   ],
+   "death_rate": 0.484375,
+   "mean_peak_depth": 119.5546875,
+   "mean_length": 7591.5234375,
+   "mean_achievements": 23.1640625,
+   "hits": {
+    "craft furnace": 125,
+    "craft anvil": 55,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 29,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 34,
+    "survive a night": 116,
+    "reach the caverns": 127,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 223902,
+   "wall_hours": 1.3457204467961694,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 26.950431034482758,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 16
+    },
+    {
+     "steps": 268435456,
+     "score": 29.245689655172416,
+     "death_rate": 0.5859375,
+     "surface": 0,
+     "anvil": 38
+    },
+    {
+     "steps": 402653184,
+     "score": 30.102370689655174,
+     "death_rate": 0.59375,
+     "surface": 0,
+     "anvil": 27
+    },
+    {
+     "steps": 536870912,
+     "score": 29.148706896551722,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 33
+    },
+    {
+     "steps": 671088640,
+     "score": 31.03448275862069,
+     "death_rate": 0.5078125,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 805306368,
+     "score": 31.52478448275862,
+     "death_rate": 0.5703125,
+     "surface": 0,
+     "anvil": 44
+    },
+    {
+     "steps": 939524096,
+     "score": 33.4051724137931,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 52
+    },
+    {
+     "steps": 1073741824,
+     "score": 34.81142241379311,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 55
+    }
+   ],
+   "diag": {
+    "score": 34.81142241379311,
+    "deaths_at_night": 22,
+    "layer_step_fraction": {
+     "surface": 0.14427481308819973,
+     "underground": 0.117204118491533,
+     "caverns": 0.7385210684202672
+    },
+    "altar_found_rate": 0.265625,
+    "checkpoint_sha256": "18d8be4a9adc5a59b95c77a4a50fdf9e5e5c4e8f9b3024e0f49ad673e3faf63d",
+    "top_actions": [
+     [
+      "left",
+      42951
+     ],
+     [
+      "noop",
+      41000
+     ],
+     [
+      "select workbench",
+      40838
+     ],
+     [
+      "right",
+      40420
+     ],
+     [
+      "cycle weapon",
+      39976
+     ],
+     [
+      "select rope",
+      37912
+     ],
+     [
+      "mine down-right",
+      37438
+     ],
+     [
+      "select next",
+      37043
+     ]
+    ]
+   }
+  },
+  "shaped-3004": {
+   "arm": "shaped",
+   "seed": 3004,
+   "steps": 1073741824,
+   "score": 35.053879310344826,
+   "crafter": 21.560401267156717,
+   "tiers": [
+    0.9915865384615384,
+    0.6087239583333334,
+    0.3662109375,
+    0.024553571428571428
+   ],
+   "death_rate": 0.5546875,
+   "mean_peak_depth": 118.984375,
+   "mean_length": 7289.296875,
+   "mean_achievements": 23.296875,
+   "hits": {
+    "craft furnace": 125,
+    "craft anvil": 64,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 29,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 22,
+    "survive a night": 116,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 220675,
+   "wall_hours": 1.363415418192227,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 27.564655172413794,
+     "death_rate": 0.578125,
+     "surface": 0,
+     "anvil": 26
+    },
+    {
+     "steps": 268435456,
+     "score": 30.021551724137932,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 38
+    },
+    {
+     "steps": 402653184,
+     "score": 31.89116379310345,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 44
+    },
+    {
+     "steps": 536870912,
+     "score": 32.252155172413794,
+     "death_rate": 0.53125,
+     "surface": 0,
+     "anvil": 49
+    },
+    {
+     "steps": 671088640,
+     "score": 32.05818965517241,
+     "death_rate": 0.578125,
+     "surface": 0,
+     "anvil": 48
+    },
+    {
+     "steps": 805306368,
+     "score": 32.27370689655172,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 55
+    },
+    {
+     "steps": 939524096,
+     "score": 35.46336206896552,
+     "death_rate": 0.5,
+     "surface": 0,
+     "anvil": 64
+    },
+    {
+     "steps": 1073741824,
+     "score": 35.053879310344826,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 64
+    }
+   ],
+   "diag": {
+    "score": 35.053879310344826,
+    "deaths_at_night": 25,
+    "layer_step_fraction": {
+     "surface": 0.12194891911299743,
+     "underground": 0.10968350428174871,
+     "caverns": 0.7683675766052539
+    },
+    "altar_found_rate": 0.171875,
+    "checkpoint_sha256": "947fcf49ef366c3ddd579d54684f3d8b34958102d3e3bc4a0ee54503fab42680",
+    "top_actions": [
+     [
+      "right",
+      44094
+     ],
+     [
+      "left",
+      42054
+     ],
+     [
+      "noop",
+      40544
+     ],
+     [
+      "select workbench",
+      39458
+     ],
+     [
+      "select next",
+      37190
+     ],
+     [
+      "cycle weapon",
+      36803
+     ],
+     [
+      "select rope",
+      36004
+     ],
+     [
+      "mine down-left",
+      35664
+     ]
+    ]
+   }
+  },
+  "shaped-3005": {
+   "arm": "shaped",
+   "seed": 3005,
+   "steps": 1073741824,
+   "score": 33.1573275862069,
+   "crafter": 19.82176139238588,
+   "tiers": [
+    0.9975961538461539,
+    0.599609375,
+    0.2958984375,
+    0.030133928571428572
+   ],
+   "death_rate": 0.5546875,
+   "mean_peak_depth": 118.6953125,
+   "mean_length": 7076.4921875,
+   "mean_achievements": 22.7421875,
+   "hits": {
+    "craft furnace": 127,
+    "craft anvil": 47,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 21,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 27,
+    "survive a night": 118,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 228547,
+   "wall_hours": 1.3169080680941827,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 24.41810344827586,
+     "death_rate": 0.5859375,
+     "surface": 0,
+     "anvil": 4
+    },
+    {
+     "steps": 268435456,
+     "score": 29.17025862068966,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 32
+    },
+    {
+     "steps": 402653184,
+     "score": 26.30387931034483,
+     "death_rate": 0.6015625,
+     "surface": 0,
+     "anvil": 25
+    },
+    {
+     "steps": 536870912,
+     "score": 30.484913793103452,
+     "death_rate": 0.5859375,
+     "surface": 0,
+     "anvil": 39
+    },
+    {
+     "steps": 671088640,
+     "score": 31.74030172413793,
+     "death_rate": 0.671875,
+     "surface": 0,
+     "anvil": 37
+    },
+    {
+     "steps": 805306368,
+     "score": 32.33836206896552,
+     "death_rate": 0.4296875,
+     "surface": 0,
+     "anvil": 49
+    },
+    {
+     "steps": 939524096,
+     "score": 33.011853448275865,
+     "death_rate": 0.5078125,
+     "surface": 0,
+     "anvil": 47
+    },
+    {
+     "steps": 1073741824,
+     "score": 33.1573275862069,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 47
+    }
+   ],
+   "diag": {
+    "score": 33.1573275862069,
+    "deaths_at_night": 27,
+    "layer_step_fraction": {
+     "surface": 0.14034694537702405,
+     "underground": 0.11714512508956261,
+     "caverns": 0.7425079295334134
+    },
+    "altar_found_rate": 0.2109375,
+    "checkpoint_sha256": "82582c4360571c12b895b2651948ef8e28368105322ad9c3adcbffa6b1907293",
+    "top_actions": [
+     [
+      "noop",
+      40562
+     ],
+     [
+      "left",
+      40099
+     ],
+     [
+      "select workbench",
+      38971
+     ],
+     [
+      "mine down-right",
+      36408
+     ],
+     [
+      "cycle weapon",
+      36189
+     ],
+     [
+      "right",
+      36048
+     ],
+     [
+      "mine down-left",
+      35268
+     ],
+     [
+      "select torch",
+      35110
+     ]
+    ]
+   }
+  },
+  "shaped_nowalls-3001": {
+   "arm": "shaped_nowalls",
+   "seed": 3001,
+   "steps": 1073741824,
+   "score": 39.39655172413793,
+   "crafter": 23.413591726749516,
+   "tiers": [
+    0.9981971153846154,
+    0.6627604166666666,
+    0.4462890625,
+    0.04352678571428571
+   ],
+   "death_rate": 0.390625,
+   "mean_peak_depth": 121.234375,
+   "mean_length": 8205.265625,
+   "mean_achievements": 24.8046875,
+   "hits": {
+    "craft furnace": 127,
+    "craft anvil": 75,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 37,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 39,
+    "survive a night": 120,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 232465,
+   "wall_hours": 1.294741265875572,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 29.498922413793107,
+     "death_rate": 0.6328125,
+     "surface": 0,
+     "anvil": 32
+    },
+    {
+     "steps": 268435456,
+     "score": 30.13469827586207,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 27
+    },
+    {
+     "steps": 402653184,
+     "score": 33.23275862068965,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 536870912,
+     "score": 32.97952586206897,
+     "death_rate": 0.453125,
+     "surface": 0,
+     "anvil": 45
+    },
+    {
+     "steps": 671088640,
+     "score": 33.87931034482759,
+     "death_rate": 0.453125,
+     "surface": 0,
+     "anvil": 50
+    },
+    {
+     "steps": 805306368,
+     "score": 34.48275862068965,
+     "death_rate": 0.4609375,
+     "surface": 0,
+     "anvil": 47
+    },
+    {
+     "steps": 939524096,
+     "score": 37.203663793103445,
+     "death_rate": 0.4609375,
+     "surface": 0,
+     "anvil": 58
+    },
+    {
+     "steps": 1073741824,
+     "score": 39.39655172413793,
+     "death_rate": 0.390625,
+     "surface": 0,
+     "anvil": 75
+    }
+   ],
+   "diag": {
+    "score": 39.39655172413793,
+    "deaths_at_night": 26,
+    "layer_step_fraction": {
+     "surface": 0.14929818314078042,
+     "underground": 0.07967444685862927,
+     "caverns": 0.7710273700005903
+    },
+    "altar_found_rate": 0.3046875,
+    "checkpoint_sha256": "f4948346bbaca51e275c3d77b202e92953b4030345d392a3f777fd8176974fd5",
+    "top_actions": [
+     [
+      "right",
+      52291
+     ],
+     [
+      "select workbench",
+      42900
+     ],
+     [
+      "noop",
+      41666
+     ],
+     [
+      "mine down-right",
+      41105
+     ],
+     [
+      "left",
+      41011
+     ],
+     [
+      "select rope",
+      40594
+     ],
+     [
+      "jump",
+      40198
+     ],
+     [
+      "cycle weapon",
+      39603
+     ]
+    ]
+   }
+  },
+  "shaped_nowalls-3002": {
+   "arm": "shaped_nowalls",
+   "seed": 3002,
+   "steps": 1073741824,
+   "score": 38.47521551724138,
+   "crafter": 22.946568146729447,
+   "tiers": [
+    0.9855769230769231,
+    0.6471354166666666,
+    0.4248046875,
+    0.04799107142857143
+   ],
+   "death_rate": 0.484375,
+   "mean_peak_depth": 120.21875,
+   "mean_length": 7881.7734375,
+   "mean_achievements": 24.3125,
+   "hits": {
+    "craft furnace": 124,
+    "craft anvil": 73,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 34,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 43,
+    "survive a night": 119,
+    "reach the caverns": 126,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 232002,
+   "wall_hours": 1.2975890729058301,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 27.45689655172414,
+     "death_rate": 0.3828125,
+     "surface": 0,
+     "anvil": 21
+    },
+    {
+     "steps": 268435456,
+     "score": 32.03125,
+     "death_rate": 0.3046875,
+     "surface": 0,
+     "anvil": 39
+    },
+    {
+     "steps": 402653184,
+     "score": 32.13900862068965,
+     "death_rate": 0.4140625,
+     "surface": 0,
+     "anvil": 44
+    },
+    {
+     "steps": 536870912,
+     "score": 33.4375,
+     "death_rate": 0.3125,
+     "surface": 0,
+     "anvil": 48
+    },
+    {
+     "steps": 671088640,
+     "score": 34.213362068965516,
+     "death_rate": 0.4453125,
+     "surface": 0,
+     "anvil": 50
+    },
+    {
+     "steps": 805306368,
+     "score": 35.78125,
+     "death_rate": 0.390625,
+     "surface": 0,
+     "anvil": 53
+    },
+    {
+     "steps": 939524096,
+     "score": 37.57004310344828,
+     "death_rate": 0.4375,
+     "surface": 0,
+     "anvil": 64
+    },
+    {
+     "steps": 1073741824,
+     "score": 38.47521551724138,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 73
+    }
+   ],
+   "diag": {
+    "score": 38.47521551724138,
+    "deaths_at_night": 21,
+    "layer_step_fraction": {
+     "surface": 0.11791742618204382,
+     "underground": 0.08603413532209894,
+     "caverns": 0.7960484384958573
+    },
+    "altar_found_rate": 0.3359375,
+    "checkpoint_sha256": "fb7feecbd727a97a97aaf18886f02a8ca3bea505e4ef3b3767371cd17f0a2489",
+    "top_actions": [
+     [
+      "right",
+      46758
+     ],
+     [
+      "noop",
+      41976
+     ],
+     [
+      "left",
+      41302
+     ],
+     [
+      "select workbench",
+      40976
+     ],
+     [
+      "mine down-right",
+      40045
+     ],
+     [
+      "cycle weapon",
+      39098
+     ],
+     [
+      "select next",
+      38403
+     ],
+     [
+      "mine down-left",
+      37663
+     ]
+    ]
+   }
+  },
+  "shaped_nowalls-3003": {
+   "arm": "shaped_nowalls",
+   "seed": 3003,
+   "steps": 1073741824,
+   "score": 35.38793103448276,
+   "crafter": 20.612243177728356,
+   "tiers": [
+    0.9849759615384616,
+    0.6184895833333334,
+    0.3623046875,
+    0.03125
+   ],
+   "death_rate": 0.5234375,
+   "mean_peak_depth": 119.2265625,
+   "mean_length": 7471.8515625,
+   "mean_achievements": 23.34375,
+   "hits": {
+    "craft furnace": 124,
+    "craft anvil": 68,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 37,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 28,
+    "survive a night": 113,
+    "reach the caverns": 127,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 232395,
+   "wall_hours": 1.294591757908347,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 27.489224137931032,
+     "death_rate": 0.390625,
+     "surface": 0,
+     "anvil": 28
+    },
+    {
+     "steps": 268435456,
+     "score": 32.1551724137931,
+     "death_rate": 0.4140625,
+     "surface": 0,
+     "anvil": 45
+    },
+    {
+     "steps": 402653184,
+     "score": 29.073275862068964,
+     "death_rate": 0.3984375,
+     "surface": 0,
+     "anvil": 39
+    },
+    {
+     "steps": 536870912,
+     "score": 32.2198275862069,
+     "death_rate": 0.4921875,
+     "surface": 0,
+     "anvil": 57
+    },
+    {
+     "steps": 671088640,
+     "score": 34.71443965517241,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 61
+    },
+    {
+     "steps": 805306368,
+     "score": 34.703663793103445,
+     "death_rate": 0.3515625,
+     "surface": 0,
+     "anvil": 66
+    },
+    {
+     "steps": 939524096,
+     "score": 34.66056034482759,
+     "death_rate": 0.3984375,
+     "surface": 0,
+     "anvil": 62
+    },
+    {
+     "steps": 1073741824,
+     "score": 35.38793103448276,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 68
+    }
+   ],
+   "diag": {
+    "score": 35.38793103448276,
+    "deaths_at_night": 24,
+    "layer_step_fraction": {
+     "surface": 0.11704344534748645,
+     "underground": 0.09628532920952282,
+     "caverns": 0.7866712254429907
+    },
+    "altar_found_rate": 0.21875,
+    "checkpoint_sha256": "21339ce20b97c4ef3bbb2027741990d9b0eb133c9162aec6c96008d0be89bc94",
+    "top_actions": [
+     [
+      "left",
+      44410
+     ],
+     [
+      "right",
+      43102
+     ],
+     [
+      "noop",
+      42408
+     ],
+     [
+      "select workbench",
+      40037
+     ],
+     [
+      "cycle weapon",
+      38083
+     ],
+     [
+      "mine down",
+      37511
+     ],
+     [
+      "mine down-left",
+      37409
+     ],
+     [
+      "select next",
+      37120
+     ]
+    ]
+   }
+  },
+  "shaped_nowalls-3004": {
+   "arm": "shaped_nowalls",
+   "seed": 3004,
+   "steps": 1073741824,
+   "score": 37.85560344827586,
+   "crafter": 21.884192347400568,
+   "tiers": [
+    0.9939903846153846,
+    0.6634114583333334,
+    0.3896484375,
+    0.044642857142857144
+   ],
+   "death_rate": 0.4609375,
+   "mean_peak_depth": 122.7734375,
+   "mean_length": 8250.90625,
+   "mean_achievements": 24.3125,
+   "hits": {
+    "craft furnace": 126,
+    "craft anvil": 74,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 41,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 40,
+    "survive a night": 123,
+    "reach the caverns": 128,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 227087,
+   "wall_hours": 1.326048837882182,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 29.051724137931032,
+     "death_rate": 0.5078125,
+     "surface": 0,
+     "anvil": 34
+    },
+    {
+     "steps": 268435456,
+     "score": 31.993534482758623,
+     "death_rate": 0.3671875,
+     "surface": 0,
+     "anvil": 43
+    },
+    {
+     "steps": 402653184,
+     "score": 32.73168103448276,
+     "death_rate": 0.359375,
+     "surface": 0,
+     "anvil": 51
+    },
+    {
+     "steps": 536870912,
+     "score": 31.896551724137932,
+     "death_rate": 0.375,
+     "surface": 0,
+     "anvil": 41
+    },
+    {
+     "steps": 671088640,
+     "score": 33.96551724137931,
+     "death_rate": 0.4296875,
+     "surface": 0,
+     "anvil": 51
+    },
+    {
+     "steps": 805306368,
+     "score": 34.81681034482759,
+     "death_rate": 0.375,
+     "surface": 0,
+     "anvil": 58
+    },
+    {
+     "steps": 939524096,
+     "score": 36.04525862068965,
+     "death_rate": 0.4296875,
+     "surface": 0,
+     "anvil": 62
+    },
+    {
+     "steps": 1073741824,
+     "score": 37.85560344827586,
+     "death_rate": 0.4609375,
+     "surface": 0,
+     "anvil": 74
+    }
+   ],
+   "diag": {
+    "score": 37.85560344827586,
+    "deaths_at_night": 21,
+    "layer_step_fraction": {
+     "surface": 0.11548068583375311,
+     "underground": 0.0892894341151919,
+     "caverns": 0.795229880051055
+    },
+    "altar_found_rate": 0.3125,
+    "checkpoint_sha256": "449d8425961fa2b43f08bc9937cf0b4d63cfc2efb260ef73d1749ce258c164ec",
+    "top_actions": [
+     [
+      "right",
+      48926
+     ],
+     [
+      "noop",
+      45326
+     ],
+     [
+      "select workbench",
+      43096
+     ],
+     [
+      "left",
+      42938
+     ],
+     [
+      "mine down-right",
+      42505
+     ],
+     [
+      "cycle weapon",
+      41341
+     ],
+     [
+      "mine down-left",
+      40219
+     ],
+     [
+      "select rope",
+      39183
+     ]
+    ]
+   }
+  },
+  "shaped_nowalls-3005": {
+   "arm": "shaped_nowalls",
+   "seed": 3005,
+   "steps": 1073741824,
+   "score": 38.03879310344827,
+   "crafter": 22.812011867070094,
+   "tiers": [
+    0.9873798076923077,
+    0.6263020833333334,
+    0.4365234375,
+    0.041294642857142856
+   ],
+   "death_rate": 0.4375,
+   "mean_peak_depth": 119.9765625,
+   "mean_length": 7853.2578125,
+   "mean_achievements": 24.1328125,
+   "hits": {
+    "craft furnace": 124,
+    "craft anvil": 61,
+    "craft iron pickaxe": 0,
+    "craft metal sword": 32,
+    "return to surface": 0,
+    "collect lens": 0,
+    "find a Demon Altar": 37,
+    "survive a night": 119,
+    "reach the caverns": 126,
+    "defeat Demon Eye": 0,
+    "defeat Zombie": 0,
+    "craft Suspicious Looking Eye": 0
+   },
+   "episodes": 128,
+   "sps": 251657,
+   "wall_hours": 1.197343412364458,
+   "curve": [
+    {
+     "steps": 134217728,
+     "score": 28.038793103448274,
+     "death_rate": 0.4453125,
+     "surface": 0,
+     "anvil": 35
+    },
+    {
+     "steps": 268435456,
+     "score": 32.203663793103445,
+     "death_rate": 0.484375,
+     "surface": 0,
+     "anvil": 41
+    },
+    {
+     "steps": 402653184,
+     "score": 30.614224137931036,
+     "death_rate": 0.359375,
+     "surface": 0,
+     "anvil": 38
+    },
+    {
+     "steps": 536870912,
+     "score": 34.29418103448276,
+     "death_rate": 0.359375,
+     "surface": 0,
+     "anvil": 51
+    },
+    {
+     "steps": 671088640,
+     "score": 36.616379310344826,
+     "death_rate": 0.3984375,
+     "surface": 0,
+     "anvil": 64
+    },
+    {
+     "steps": 805306368,
+     "score": 37.29525862068965,
+     "death_rate": 0.5234375,
+     "surface": 0,
+     "anvil": 64
+    },
+    {
+     "steps": 939524096,
+     "score": 37.047413793103445,
+     "death_rate": 0.5546875,
+     "surface": 0,
+     "anvil": 63
+    },
+    {
+     "steps": 1073741824,
+     "score": 38.03879310344827,
+     "death_rate": 0.4375,
+     "surface": 0,
+     "anvil": 61
+    }
+   ],
+   "diag": {
+    "score": 38.03879310344827,
+    "deaths_at_night": 17,
+    "layer_step_fraction": {
+     "surface": 0.12117980495753654,
+     "underground": 0.0825553089531912,
+     "caverns": 0.7962648860892723
+    },
+    "altar_found_rate": 0.2890625,
+    "checkpoint_sha256": "27c973ed22f6f77314837190d10f8993c962fa97ef97ea1e17d56bfa37263dbe",
+    "top_actions": [
+     [
+      "right",
+      44931
+     ],
+     [
+      "select workbench",
+      42382
+     ],
+     [
+      "mine down-right",
+      40521
+     ],
+     [
+      "noop",
+      40046
+     ],
+     [
+      "left",
+      39681
+     ],
+     [
+      "mine down-left",
+      37533
+     ],
+     [
+      "cycle weapon",
+      36701
+     ],
+     [
+      "mine below right column",
+      35177
+     ]
+    ]
+   }
+  }
+ }
+}
