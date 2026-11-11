@@ -527,6 +527,10 @@ static void test_worldgen(int worlds) {
 #if SUPPORT_RULES || ENV_FX
 static bool mask_of(const Env *e, int act) { uint8_t m[ACT_COUNT]; env_action_mask(e, m); return m[act]; }
 #endif
+/* A rejected place: its mask says so, except under HELD_PLACE, which masks a
+   place on stock alone (the held use may land later in the step), so the
+   mask stays 1 and only the handler refuses. */
+#define REFUSED(legal, ok) ((HELD_PLACE ? (legal) : !(legal)) && !(ok))
 
 #if SUPPORT_RULES
 static void relight(Env *e) { e->terrain_dirty = true; light_full(e); }
@@ -581,7 +585,7 @@ static void test_support(void) {
     /* Torch: mid-air illegal (mask and handler agree); on the floor legal. */
     arena(e, 0);
     ok = place_at(e, SLOT_TORCH, X, F - 4, &legal);
-    CHECK(!legal && !ok && e->inv[ITEM_TORCH] == 5, "torch in mid-air: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok) && e->inv[ITEM_TORCH] == 5, "torch in mid-air: mask %d placed %d", legal, ok);
     ok = place_at(e, SLOT_TORCH, X, F - 1, &legal);
     CHECK(legal && ok, "torch on the floor: mask %d placed %d", legal, ok);
     /* Anchored only below: mining the block drops the torch into the pack. */
@@ -603,7 +607,7 @@ static void test_support(void) {
     /* Rope: hangs below a block or rope; the chain falls with its anchor. */
     arena(e, 0);
     ok = place_at(e, SLOT_ROPE, X, F - 3, &legal);
-    CHECK(!legal && !ok, "rope in mid-air: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "rope in mid-air: mask %d placed %d", legal, ok);
     e->tiles[F - 4][X] = TILE_STONE; relight(e);
     bool l1, l2, l3;
     ok = place_at(e, SLOT_ROPE, X, F - 3, &l1) && place_at(e, SLOT_ROPE, X, F - 2, &l2) && place_at(e, SLOT_ROPE, X, F - 1, &l3);
@@ -622,11 +626,11 @@ static void test_support(void) {
     /* Platform: beside a platform or block, or on a block; not in mid-air. */
     arena(e, 0);
     ok = place_at(e, SLOT_PLATFORM, X, F - 3, &legal);
-    CHECK(!legal && !ok, "platform in mid-air: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "platform in mid-air: mask %d placed %d", legal, ok);
     ok = place_at(e, SLOT_PLATFORM, X, F - 1, &legal);
     CHECK(legal && ok, "platform on the floor");
     ok = place_at(e, SLOT_PLATFORM, X, F - 2, &legal);
-    CHECK(!legal && !ok, "platform on a platform needs a side anchor: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "platform on a platform needs a side anchor: mask %d placed %d", legal, ok);
     e->tiles[F - 3][X + 1] = TILE_PLATFORM; relight(e);
     ok = place_at(e, SLOT_PLATFORM, X, F - 3, &legal);
     CHECK(legal && ok, "platform beside a platform");
@@ -634,17 +638,17 @@ static void test_support(void) {
     /* Furniture: solid under every bottom cell; a workbench also on platforms. */
     arena(e, 0);
     ok = place_at(e, SLOT_WORKBENCH, X, F - 2, &legal);
-    CHECK(!legal && !ok, "workbench in mid-air: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "workbench in mid-air: mask %d placed %d", legal, ok);
     for (int x = X; x < X + 3; x++) e->tiles[F - 2][x] = TILE_PLATFORM;
     relight(e);
     ok = place_at(e, SLOT_FURNACE, X, F - 3, &legal);
-    CHECK(!legal && !ok, "furnace on platforms: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "furnace on platforms: mask %d placed %d", legal, ok);
     ok = place_at(e, SLOT_WORKBENCH, X, F - 3, &legal);
     CHECK(legal && ok, "workbench on platforms: mask %d placed %d", legal, ok);
     arena(e, 0);
     e->tiles[F][X + 1] = TILE_AIR; relight(e);
     ok = place_at(e, SLOT_WORKBENCH, X, F - 1, &legal);
-    CHECK(!legal && !ok, "workbench over a hole: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "workbench over a hole: mask %d placed %d", legal, ok);
     arena(e, 0);
     ok = place_at(e, SLOT_WORKBENCH, X, F - 1, &legal);
     CHECK(legal && ok, "workbench on the floor");
@@ -861,7 +865,7 @@ static void test_walls(void) {
        enough; a floor neighbour still makes a bridge. */
     arena(e, 0);
     ok = tw_place(e, SLOT_STONE, X, F - 4, &legal);
-    CHECK(!legal && !ok, "block in open sky: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "block in open sky: mask %d placed %d", legal, ok);
     ok = tw_place(e, SLOT_STONE, X, F - 1, &legal);
     CHECK(legal && ok, "block on the floor: mask %d placed %d", legal, ok);
     arena(e, 0);
@@ -890,7 +894,7 @@ static void test_walls(void) {
     /* Torch on the wall alone. */
     arena(e, 0);
     ok = tw_place(e, SLOT_TORCH_, X, F - 4, &legal);
-    CHECK(!legal && !ok, "torch in open sky: mask %d placed %d", legal, ok);
+    CHECK(REFUSED(legal, ok), "torch in open sky: mask %d placed %d", legal, ok);
     e->wall[F - 4][X] = WALL_DIRT;
     ok = tw_place(e, SLOT_TORCH_, X, F - 4, &legal);
     CHECK(legal && ok, "torch on a wall: mask %d placed %d", legal, ok);
@@ -930,6 +934,89 @@ static void test_info_rows(void) {
     free(e);
 }
 
+/* HELD_PLACE (env.h): a standalone place holds the use button over the step.
+   In the open-air arena (no walls), after a jump the cell under the feet
+   floats, so the step-start place is refused; held, `place down` lands later
+   in the step once the falling feet are one row above the floor or the
+   pillar top. Masks: stock alone. */
+static void test_held_place(void) {
+#if HELD_PLACE
+    Env *e = new_env(1000000);
+    int dirt = 0;
+    for (int i = 0; i < PLACEABLE_COUNT; i++) if (PLACEABLES[i].item == ITEM_DIRT) dirt = i;
+    uint8_t m[ACT_COUNT];
+    arena(e, 1);
+    e->selected = (uint8_t)dirt; e->inv[ITEM_DIRT] = 50;
+    env_action_mask(e, m);
+    int legal = 0;
+    for (int r = 0; r < REACH_COUNT; r++) legal += m[ACT_PLACE_FIRST + r];
+    e->inv[ITEM_DIRT] = 0; env_action_mask(e, m);
+    int legal0 = 0;
+    for (int r = 0; r < REACH_COUNT; r++) legal0 += m[ACT_PLACE_FIRST + r];
+    CHECK(legal == REACH_COUNT && legal0 == 0, "held place masks: %d legal with dirt (stone floor below), %d without", legal, legal0);
+
+    /* Standing still: place down into the floor never lands, no stock used. */
+    e->inv[ITEM_DIRT] = 50;
+    env_step(e, ACT_PLACE_DOWN);
+    CHECK(e->inv[ITEM_DIRT] == 50 && e->py == FLOOR - 1, "held place into the floor: dirt %d", e->inv[ITEM_DIRT]);
+
+    int dirt_tiles;
+#if BG_WALLS   /* without walls rules a block may float, the step start places */
+    /* Later tick: jump, then place down; the step-start cell under the feet
+       has no neighbour (refused), the block lands lower in the same step or
+       the next place step; each step places at most one block. */
+    int later = 0, one_each = 1, placed_steps = 0;
+    int py0 = e->py;
+    env_step(e, ACT_JUMP);
+    for (int s = 0; s < 4 && e->inv[ITEM_DIRT] == 50; s++) {
+        int start_py = e->py, before = e->inv[ITEM_DIRT];
+        bool floating = start_py + 2 < FLOOR;
+        env_step(e, ACT_PLACE_DOWN);
+        one_each &= before - e->inv[ITEM_DIRT] <= 1;
+        placed_steps++;
+        if (e->inv[ITEM_DIRT] < before) later = floating && tile_at(e, e->px, start_py + 1) == TILE_AIR;
+    }
+    for (int s = 0; s < 8 && e->vel_y != 0; s++) env_step(e, ACT_NOOP);
+    dirt_tiles = 0;
+    for (int y = 0; y < FLOOR; y++) for (int x = 0; x < WORLD_W; x++) dirt_tiles += e->tiles[y][x] == TILE_DIRT;
+    CHECK(later && one_each && e->inv[ITEM_DIRT] == 49 && dirt_tiles == 1 && tile_at(e, e->px, FLOOR - 1) == TILE_DIRT
+          && e->py == py0 - 1, "held place lands on a later tick: %d place steps, later %d, dirt %d, tiles %d, py %d -> %d",
+          placed_steps, later, e->inv[ITEM_DIRT], dirt_tiles, py0, e->py);
+
+    /* Open-air pillar with standalone actions: jump, place down until a block
+       lands, settle; 10 rows, one block per row. */
+    int rows = 0, steps = 0, used = 0;
+    for (int k = 0; k < 10; k++) {
+        int start = e->py, inv = e->inv[ITEM_DIRT];
+        env_step(e, ACT_JUMP); steps++;
+        for (int s = 0; s < 4 && e->inv[ITEM_DIRT] == inv; s++) { env_step(e, ACT_PLACE_DOWN); steps++; }
+        for (int s = 0; s < 8 && e->vel_y != 0; s++) { env_step(e, ACT_NOOP); steps++; }
+        used += inv - e->inv[ITEM_DIRT];
+        rows += e->py == start - 1;
+    }
+    printf("held place: open-air pillar %d/10 rows in %d steps (jump, place down until placed, settle)\n", rows, steps);
+    CHECK(rows == 10 && used == 10 && !e->terminated, "open-air pillar with jump + place down: %d/10 rows, %d dirt, %d steps",
+          rows, used, steps);
+#endif
+
+    /* Step-start legal (a wall behind every cell): the block lands at the
+       step start under the feet, exactly one, as the step-start place did. */
+    arena(e, 1);
+    e->selected = (uint8_t)dirt; e->inv[ITEM_DIRT] = 50;
+#if BG_WALLS
+    memset(e->wall, WALL_DIRT, sizeof e->wall);
+#endif
+    env_step(e, ACT_JUMP);
+    int tx = e->px, ty = e->py + 1;
+    env_step(e, ACT_PLACE_DOWN);
+    dirt_tiles = 0;
+    for (int y = 0; y < FLOOR; y++) for (int x = 0; x < WORLD_W; x++) dirt_tiles += e->tiles[y][x] == TILE_DIRT;
+    CHECK(tile_at(e, tx, ty) == TILE_DIRT && dirt_tiles == 1 && e->inv[ITEM_DIRT] == 49,
+          "held place legal at the step start places there once: tile %d, tiles %d", tile_at(e, tx, ty), dirt_tiles);
+    free(e);
+#endif
+}
+
 int main(int argc, char **argv) {
     int worlds = argc > 1 ? atoi(argv[1]) : 512;
     printf("v10 selftest (FID_MOBS=%d COMBAT=%d PHYSICS=%d MINING=%d TREES=%d, FID_TICKS=%d, TREE_LEAF_VISUAL=%d "
@@ -951,6 +1038,7 @@ int main(int argc, char **argv) {
     test_fx();
     test_tools();
     test_walls();
+    test_held_place();
     printf("%s: %d/%d checks passed\n", failures ? "FAILED" : "PASSED", checks - failures, checks);
     return failures != 0;
 }

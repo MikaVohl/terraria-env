@@ -320,10 +320,15 @@ static Mob *place_mob(Env *e, int kind, int dx_px, int dy_px) {
     return m;
 }
 
+#if AIM_ATTACK
+#define ATTACK_FORWARD(e) attack_start(e, 0)   /* `attack`: aim forward */
+#else
+#define ATTACK_FORWARD(e) attack_start(e)
+#endif
 /* Hits landed on a 1000-hp target by one full use of the current weapon. */
 static int hits_one_use(Env *e, Mob *m) {
     int n = 0;
-    attack_start(e);
+    ATTACK_FORWARD(e);
     for (int t = 0; t < 40; t++) {
         int before = m->hp; swing_tick(e);
         if (m->hp < before) n++;
@@ -334,6 +339,22 @@ static int hits_one_use(Env *e, Mob *m) {
     }
     return n;
 }
+#if AIM_ATTACK
+/* The same with an aim (0 = forward, AIM_FX/AIM_FY order). */
+static int hits_aim(Env *e, Mob *m, int aim) {
+    int n = 0;
+    attack_start(e, aim);
+    for (int t = 0; t < 40; t++) {
+        int before = m->hp; swing_tick(e);
+        if (m->hp < before) n++;
+        if (m->immune > 0) m->immune--;
+#if FID_MOBS
+        m->vx = m->vy = 0;
+#endif
+    }
+    return n;
+}
+#endif
 
 static void test_combat(void) {
     Env *e = &env;
@@ -379,7 +400,8 @@ static void test_combat(void) {
     }
     flat_world(e, 60); e->weapon = 3; m = place_mob(e, MOB_BLUE_SLIME, 0, -40); overhead = hits_one_use(e, m) == 1;
     check(front && far && overhead, "combat broadsword hitbox", "foot-level hits by x offset %s; overhead %d", row, overhead);
-    /* copper shortsword stab: reach ~ 2.1*14 + 12.6 + 5 px past the centre */
+    /* copper shortsword stab: reach ~ 2.1*14 + 12.6 + 5 px past the centre
+       (AIM_ATTACK: the exact segment test, 2.1*14 + 12.6 = 42) */
     int reach = 0;
     for (int dx = 8; dx <= 96; dx += 4) {
         flat_world(e, 60); e->weapon = 0;
@@ -389,6 +411,74 @@ static void test_combat(void) {
         if (hits_one_use(e, m) && left > reach) reach = left;
     }
     check(reach > 47 - 16 && reach <= 52, "combat shortsword stab reach", "hits up to %d px past centre (AI_161: 2.1*14 + 12.6 + 5 = 47)", reach);
+#if AIM_ATTACK
+    /* Aimed stabs (AI_161 velocity = 2.1 x the aim): a cave bat 30 px along
+       each aim (diagonals 22, 22) from the player centre, open air around it
+       (the floor removed for down aims): the aimed stab hits it, `attack`
+       (forward) only when it is ahead. The player turns to the aim's side. */
+    {
+        static const int AX[AIM_COUNT] = {1, 1, 0, -1, -1, -1, 0, 1}, AY[AIM_COUNT] = {0, -1, -1, -1, 0, 1, 1, 1};
+        static const int TURN[AIM_COUNT] = {1, 1, 1, -1, -1, -1, 1, 1};
+        int good = 0; char got[200] = "";
+        for (int a = 0; a < AIM_COUNT; a++) {
+            int hits[2], facing = 0;
+            for (int k = 0; k < 2; k++) {
+                flat_world(e, 60); e->weapon = 0; e->facing = 1;
+                if (AY[a] > 0) for (int y = e->py + 1; y < e->py + 6; y++) for (int x = e->px - 4; x < e->px + 6; x++) e->tiles[y][x] = TILE_AIR;
+                int d = AX[a] && AY[a] ? 22 : 30;
+                m = place_mob(e, MOB_CAVE_BAT, AX[a] * d, AY[a] * d);
+                hits[k] = hits_aim(e, m, k ? a : 0);
+                if (k) facing = e->facing;
+            }
+            char c[24]; snprintf(c, sizeof c, "%d:%d/%d/%+d ", a, hits[1], hits[0], facing); strcat(got, c);
+            good += hits[1] == 1 && hits[0] == (a == 0) && facing == TURN[a];
+        }
+        check(good == AIM_COUNT, "combat aimed stab, 8 directions", "aim:aimed/forward hits/facing %s", got);
+    }
+    /* A Demon Eye straight above: `attack up` hits, `attack` misses. */
+    {
+        int h[2];
+        for (int k = 0; k < 2; k++) {
+            flat_world(e, 60); e->weapon = 0; e->facing = 1;
+            m = place_mob(e, MOB_DEMON_EYE, 0, -36);
+            h[k] = hits_aim(e, m, k ? 2 : 0);
+        }
+        check(h[1] == 1 && h[0] == 0 && e->facing == 1, "combat attack up hits a Demon Eye overhead", "up %d, forward %d", h[1], h[0]);
+    }
+    /* A slime below a one-tile ledge ahead: `attack down-forward` hits it,
+       `attack` passes over it. */
+    {
+        int h[2];
+        for (int k = 0; k < 2; k++) {
+            flat_world(e, 60); e->weapon = 0; e->facing = 1;
+            for (int x = e->px + PLAYER_W; x < WORLD_W; x++) e->tiles[e->py + 1][x] = TILE_AIR;
+            m = place_mob(e, MOB_BLUE_SLIME, 36, 37 - MOB_H[MOB_BLUE_SLIME] / 2);
+            h[k] = hits_aim(e, m, k ? 7 : 0);
+        }
+        check(h[1] == 1 && h[0] == 0, "combat attack down-forward hits a slime below a ledge", "down-forward %d, forward %d", h[1], h[0]);
+    }
+    /* Broadsword: the aim only picks the side. `attack back` turns and hits
+       a foot-level slime 32 px behind (the forward arc starts overhead
+       behind the head and misses it); `attack up` keeps the facing and
+       swings exactly as `attack` (same hits on a zombie ahead). */
+    {
+        int h[3];
+        for (int k = 0; k < 2; k++) {
+            flat_world(e, 60); e->weapon = 3; e->facing = 1;
+            m = place_mob(e, MOB_BLUE_SLIME, -32, 12);
+            h[k] = hits_aim(e, m, k ? 4 : 0);
+        }
+        flat_world(e, 60); e->weapon = 3; e->facing = 1;
+        m = place_mob(e, MOB_ZOMBIE, 28, 0);
+        h[2] = hits_aim(e, m, 2);
+        int up_facing = e->facing;
+        flat_world(e, 60); e->weapon = 3; e->facing = 1;
+        m = place_mob(e, MOB_ZOMBIE, 28, 0);
+        int fwd = hits_aim(e, m, 0);
+        check(h[1] == 1 && h[0] == 0 && h[2] == fwd && fwd == 1 && up_facing == 1, "combat broadsword aim picks the side",
+              "back %d (forward %d), up %d = forward %d, facing after up %+d", h[1], h[0], h[2], fwd, up_facing);
+    }
+#endif
     /* crit rate and NPC damage vs defense: copper broadsword 9 on a slime (2) -> 7..9; on a skeleton (8) -> 4..6 */
     for (int k = MOB_BLUE_SLIME; k <= MOB_SKELETON; k += MOB_SKELETON - MOB_BLUE_SLIME) {
         flat_world(e, 60);
@@ -424,7 +514,7 @@ static void test_combat(void) {
     b->x = e->px + 1; b->y = e->py - 2; b->mode = BOSS_PAUSE; b->timer = 1000;
     for (int y = b->y; y < b->y + EOC_SIZE; y++) e->tiles[y][b->x + 2] = TILE_STONE;   /* partly inside a wall */
     int bh0 = b->hp, bhits = 0;
-    attack_start(e);
+    ATTACK_FORWARD(e);
     for (int t = 0; t < 40; t++) { int before = b->hp; swing_tick(e); if (b->immune > 0) b->immune--; bhits += b->hp < before; }
     check(bhits == 1 && b->hp < bh0, "combat boss one hit per swing", "%d hits, hp %d -> %d", bhits, bh0, b->hp);
     e->immune_ticks = 0; e->health = e->max_health = HEALTH_CAP; int bc = 0;

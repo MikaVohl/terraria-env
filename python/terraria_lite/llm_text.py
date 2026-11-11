@@ -173,6 +173,16 @@ if SPEC.wall_channel is not None:
     GUIDE += (f"\nWalls (this build): cells under the surface dirt, some enclosed caves and cabins have background walls "
               f"('{WALL_AIR}' on open cells). Mining never removes a wall. A block needs a tile beside, above or below it, "
               "or a wall behind it or a neighbour: no floating blocks in the open sky. Torches and platforms may also hang on a wall.")
+if SPEC.held_place:
+    GUIDE += ("\nHeld place (this build): a 'place' action holds the use button for the whole action: it places at once "
+              "if the cell takes the block, else at the first moment during the action when it does (one block per action). "
+              "Place actions are listed as legal whenever the selected item is in stock, even if nothing can be placed. "
+              "Pillar up: 'jump', then 'place down' (repeat until the block lands under your feet).")
+if "attack up" in SPEC.action_names:
+    GUIDE += ("\nAimed attacks (this build): 'attack' aims forward (the way you face); 'attack up-forward', 'attack up', "
+              "'attack up-back', 'attack back', 'attack down-back', 'attack down', 'attack down-forward' aim relative to "
+              "your facing; you turn to the aimed side (up/down keep your facing). The shortsword stabs along the aim; "
+              "broadswords swing their arc on the aimed side.")
 
 
 ACTION_RE = re.compile(r"^\s*(.+?)(?:\s*(?:x|\*)\s*(\d+))?\s*$", re.IGNORECASE)

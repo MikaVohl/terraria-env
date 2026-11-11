@@ -120,16 +120,23 @@ static void test_one_step(void) {
 
     /* Held place in open air (no walls): from a standing start, jump + place
        down drops one dirt into the cell the feet just left (anchored on the
-       floor) and the body lands on it, one row up. The standalone pair can't:
-       place down is blocked on the ground, and after a jump step the cell
-       under the feet floats. */
+       floor) and the body lands on it, one row up, in one step. Step-start
+       standalone places can't: place down is blocked on the ground, and after
+       a jump step the cell under the feet floats. With HELD_PLACE the
+       standalone place down holds the use too and lands while the feet come
+       back down (one more place step), so the pair also climbs the row. */
     flat_world(&base, 100);
     A = base; act(&A, ACT_JUMP_PLACE_DOWN);
     int placed_tick = A.tiles[99][60] == TILE_DIRT || A.tiles[99][61] == TILE_DIRT;
     for (int i = 0; i < 6; i++) act(&A, ACT_NOOP);
     B = base; act(&B, ACT_PLACE_DOWN); act(&B, ACT_JUMP); act(&B, ACT_PLACE_DOWN);
+#if HELD_PLACE
+    act(&B, ACT_PLACE_DOWN);
+#endif
     for (int i = 0; i < 6; i++) act(&B, ACT_NOOP);
-    check(placed_tick && A.inv[ITEM_DIRT] == 49 && A.py == 98 && B.inv[ITEM_DIRT] == 50 && B.py == 99,
+    check(placed_tick && A.inv[ITEM_DIRT] == 49 && A.py == 98
+          && (!BG_WALLS   /* without walls rules the step-start place floats a block */
+              || (HELD_PLACE ? B.inv[ITEM_DIRT] == 49 && B.py == 98 : B.inv[ITEM_DIRT] == 50 && B.py == 99)),
           "jump + place down pillars one row in open air", "combo: placed %d, dirt %d, py %d; alone: dirt %d, py %d",
           placed_tick, A.inv[ITEM_DIRT], A.py, B.inv[ITEM_DIRT], B.py);
 
@@ -202,9 +209,10 @@ static void test_one_step(void) {
 }
 
 /* Masks over random play on real worlds: attack/mine combos equal their
-   use's mask, running jumps jump's, place combos "selected item stocked";
-   jump + place down stays legal standing on a floor (the held place lands
-   once the jump lifts the feet) and goes illegal with no blocks left. */
+   use's mask, running jumps jump's, place combos "selected item stocked"
+   (with HELD_PLACE the standalone places too); jump + place down stays legal
+   standing on a floor (the held place lands once the jump lifts the feet)
+   and goes illegal with no blocks left. */
 static void test_masks(void) {
     uint64_t rng = 99; long mism = 0, n = 0, combos_legal = 0;
     uint8_t mask[ACT_COUNT];
@@ -217,6 +225,11 @@ static void test_masks(void) {
             int want = place ? A.inv[PLACEABLES[A.selected].item] > 0 : mask[u];
             mism += mask[ACT_COMBO_FIRST + i] != want; n++; combos_legal += mask[ACT_COMBO_FIRST + i];
         }
+#if HELD_PLACE
+        for (int r = 0; r < REACH_COUNT; r++) {
+            mism += mask[ACT_PLACE_FIRST + r] != (A.inv[PLACEABLES[A.selected].item] > 0); n++;
+        }
+#endif
         int legal[ACT_COUNT], k = 0;
         for (int a = 0; a < ACT_COUNT; a++) if (mask[a]) legal[k++] = a;
         env_step(&A, legal[rng_below(&rng, (uint32_t)k)]);
@@ -226,7 +239,7 @@ static void test_masks(void) {
     flat_world(&A, 100); env_action_mask(&A, mask);
     int ground = mask[ACT_JUMP_PLACE_DOWN], alone = mask[ACT_PLACE_DOWN];
     A.inv[ITEM_DIRT] = 0; env_action_mask(&A, mask);
-    check(ground && !alone && !mask[ACT_JUMP_PLACE_DOWN] && mask[ACT_LEFT_JUMP] && mask[ACT_LEFT_ATTACK],
+    check(ground && alone == HELD_PLACE && !mask[ACT_JUMP_PLACE_DOWN] && !mask[ACT_PLACE_DOWN] && mask[ACT_LEFT_JUMP] && mask[ACT_LEFT_ATTACK],
           "jump + place down legality", "standing %d (place down alone %d), no dirt %d", ground, alone, mask[ACT_JUMP_PLACE_DOWN]);
 }
 
@@ -317,6 +330,7 @@ static int pillar(uint64_t seed, bool open, bool combos, int policy, bool *died)
 }
 static void test_pillar(void) {
     static const char *const pol[] = {"timed", "naive", "random"};
+    printf("PILLAR build: HELD_PLACE=%d BG_WALLS=%d (rows to climb: shaft 31, open 20)\n", HELD_PLACE, BG_WALLS);
     for (int open = 0; open < 2; open++) for (int p = 0; p < 3; p++) for (int combos = 0; combos < 2; combos++) {
         int ok = 0, deaths = 0; long total = 0;
         for (uint64_t seed = 1; seed <= 32; seed++) {
@@ -324,9 +338,13 @@ static void test_pillar(void) {
             if (s >= 0) { ok++; total += s; }
             deaths += died;
         }
-        printf("PILLAR %-5s %-6s %-9s: %2d/32 out, mean %.1f steps, %d deaths\n", open ? "open" : "shaft",
-               pol[p], combos ? "combos" : "no combos", ok, ok ? (double)total / ok : 0.0, deaths);
+        double mean = ok ? (double)total / ok : 0.0;
+        printf("PILLAR %-5s %-6s %-9s: %2d/32 out, mean %.1f steps (%.2f per row), %d deaths\n", open ? "open" : "shaft",
+               pol[p], combos ? "combos" : "no combos", ok, mean, mean / (open ? 20 : 31), deaths);
         if (open && p == POL_NAIVE && combos) check(ok == 32, "open-air pillar with jump + place down", "%d/32", ok);
+#if HELD_PLACE && BG_WALLS
+        if (p == POL_TIMED && !combos) check(ok == 32, open ? "open-air pillar with standalone held place" : "shaft pillar with standalone held place", "%d/32", ok);
+#endif
     }
 }
 

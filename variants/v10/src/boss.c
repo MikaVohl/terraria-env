@@ -160,7 +160,11 @@ void boss_stab(Env *e,fix_t x0,fix_t y0,fix_t x1,fix_t y1,int damage) {
     Boss *b=&e->boss;
     if(!b->active || (e->stab_hits>>MAX_MOBS&1u)) return;
     fix_t bx=b->x*TILE_FIX,by=b->y*TILE_FIX;
+#if AIM_ATTACK
+    if(!fid_line_hits(x0,y0,x1,y1,e->stab_ux,e->stab_uy,10*FIX_ONE,bx,by,BOSS_PX,BOSS_PX)) return;
+#else
     if(!(bx<x1 && x0<bx+BOSS_PX*FIX_ONE && by<y1 && y0<by+BOSS_PX*FIX_ONE)) return;
+#endif
     e->stab_hits|=1u<<MAX_MOBS;
     boss_strike(e,damage);
 }

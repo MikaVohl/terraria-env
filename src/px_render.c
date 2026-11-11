@@ -2072,17 +2072,19 @@ static void draw_swing(PxUi *ui, int k, int dir, double px, double py, double p)
 }
 
 /* The copper shortsword (useStyle 13): its stab projectile (AI_161_RapierStabs)
-   thrusts the blade out from the body centre at 2.1 px per tick along the
-   facing for PX_STAB_TICKS, fading over the last quarter. */
-static void draw_stab(PxUi *ui, int dir, double px, double py, double p)
+   thrusts the blade out from the body centre at 2.1 px per tick along its
+   aim (ux, uy; the facing without AIM_ATTACK) for PX_STAB_TICKS, fading over
+   the last quarter. The sprite's blade points up-right (up-left flipped). */
+static void draw_stab(PxUi *ui, int dir, double ux, double uy, double px, double py, double p)
 {
     int w = ui->held_w[0], h = ui->held_h[0];
-    double hx = px + PLAYER_PX_W / 2.0 + dir * (2.1 * p * PX_STAB_TICKS - 4.0), hy = py + PLAYER_PX_H / 2.0;
+    double reach = 2.1 * p * PX_STAB_TICKS - 4.0, deg = atan2(uy, ux) * 180.0 / M_PI;
+    double hx = px + PLAYER_PX_W / 2.0 + ux * reach, hy = py + PLAYER_PX_H / 2.0 + uy * reach;
     SDL_Point pivot = {dir > 0 ? 0 : w, h};
     SDL_Rect dst = {(int)lround(hx) - pivot.x, (int)lround(hy) - pivot.y, w, h};
     SDL_SetTextureColorMod(ui->held[0], 255, 255, 255);
     SDL_SetTextureAlphaMod(ui->held[0], (Uint8)(p > 0.75 ? 255.0 * (1.0 - p) / 0.25 : 255.0));
-    SDL_RenderCopyEx(ui->ren, ui->held[0], NULL, &dst, dir > 0 ? 45.0 : -45.0, &pivot,
+    SDL_RenderCopyEx(ui->ren, ui->held[0], NULL, &dst, dir > 0 ? deg + 45.0 : deg + 135.0, &pivot,
                      dir > 0 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL);
     SDL_SetTextureAlphaMod(ui->held[0], 255);
 }
@@ -2092,7 +2094,11 @@ static void draw_tools(PxUi *ui, const Env *e, const PxView *v)
     double px, py, p = v->swing_len > 0.0 ? (v->clock - v->swing_t0) / v->swing_len : 1.0;
     player_box(v, &px, &py);
     if (p >= 0.0 && p < 1.0) {
-        if (v->swing_weapon == 0) draw_stab(ui, e->facing, px, py, p);
+#if AIM_ATTACK
+        if (v->swing_weapon == 0) draw_stab(ui, e->facing, e->stab_ux / 65536.0, e->stab_uy / 65536.0, px, py, p);
+#else
+        if (v->swing_weapon == 0) draw_stab(ui, e->facing, e->facing, 0.0, px, py, p);
+#endif
         else draw_swing(ui, v->swing_weapon, e->facing, px, py, p);
         return;
     }
@@ -2232,7 +2238,11 @@ static void draw_help(PxUi *ui)
         "left click       mine the highlighted cell (hold)",
         "right click      place the selected block there",
         "e / wheel        cycle placeable;  click a hotbar slot",
+#if AIM_ATTACK
+        "f                attack toward the cursor (8 directions; hold)",
+#else
         "f                attack (hold to keep swinging)",
+#endif
         "t                cycle owned weapons",
         "z                open an adjacent chest",
         "c / v / b        potion / mushroom / life crystal",

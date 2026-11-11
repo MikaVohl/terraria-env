@@ -212,6 +212,32 @@ int main(int argc, char **argv)
         shot(ui, &e, &v, prefix, "combat");
     }
 
+#if AIM_ATTACK
+    /* 6b. Aimed stab: the copper shortsword stabs straight up into a Demon
+       Eye hovering over the head (`attack up`; `attack` would miss it). */
+    env_reset(&e, SEED);
+    for (int i = 0; i < MAX_MOBS; i++) e.mobs[i].kind = MOB_NONE;
+    e.weapon = 0; e.facing = 1;
+    {
+        int hits = 0;
+        double t0 = 10.0, tick_s = 0.25 / FID_TICKS;
+        memset(&v, 0, sizeof v);
+        v.hover_reach = v.hover_recipe = v.hover_ach = v.hover_slot = v.hover_item = -1;
+        for (int s = 0; s < 8 && !hits; s++, t0 += 0.25) {
+            mob_place(&e.mobs[0], MOB_DEMON_EYE, mob_max_hp(MOB_DEMON_EYE), e.px, e.py - 3);
+            env_action_mask(&e, mask);
+            env_step(&e, mask[ACT_ATTACK_UP] ? ACT_ATTACK_UP : ACT_NOOP);
+            px_fx_step(&v, &e, t0, tick_s);
+            hits = e.fx.n_hits;
+        }
+        assert(hits > 0 && e.stab_uy < 0 && e.stab_ux == 0);
+        sync(&v, &e);
+        v.swing_t0 = t0 - 0.25; v.swing_len = 16 * tick_s;   /* the stab mid-thrust */
+        v.clock = v.swing_t0 + 0.5 * v.swing_len;
+        shot(ui, &e, &v, prefix, "aimed-stab");
+    }
+#endif
+
 #if TOOL_DAMAGE
     /* 7. A pickaxe use: mining the ground beside a Blue Slime swings the
        copper pickaxe sprite through it (damage number from fx). */

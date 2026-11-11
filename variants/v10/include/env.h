@@ -122,9 +122,49 @@
    target cell takes the block (one per step: pillar while jumping). Legal iff
    the use is (place combos: the selected item is stocked; the two running
    jumps: iff jump is). Off by default: the 86 standalone actions and their
-   behaviour are unchanged either way. */
+   behaviour are unchanged by it. */
 #ifndef COMBO_ACTIONS
 #define COMBO_ACTIONS 0
+#endif
+/* HELD_PLACE: every standalone place action (ACT_PLACE_FIRST .. +REACH_COUNT)
+   holds the use button with the selected block for the whole 15-tick step,
+   as Terraria's held use and the place combos: it places at the step start
+   when that is legal (the result is then the old one), else after the first
+   game tick where the target cell, relative to the body at that tick, takes
+   the block; at most one block per step. A `place down` step after a jump
+   step thus places under the falling feet once the cell below them touches
+   the floor or the pillar top (the BG_WALLS-legal pillar, no wall needed).
+   The place masks become "the selected placeable is stocked" (a held place
+   may land on any tick).
+   Needs the tick loop with ported physics; default on with FID_PHYSICS, so
+   the noport control keeps v9's step-start place. HELD_PLACE=0 restores the
+   step-start-only place (bit-identical to the build before the knob). */
+#ifndef HELD_PLACE
+#define HELD_PLACE FID_PHYSICS
+#endif
+#if HELD_PLACE && !FID_PHYSICS
+#error "HELD_PLACE needs FID_PHYSICS (held inputs over the tick loop)"
+#endif
+/* AIM_ATTACK: attacks aim in 8 directions, as Terraria's cursor. `attack`
+   (id unchanged) aims forward (the facing side); 7 appended actions after
+   ACT_SUMMON aim up-forward, up, up-back, back, down-back, down and
+   down-forward, relative to the facing at the action. The player first
+   turns to the aim's side (back: turn around; up/down: keep the facing),
+   then uses the weapon exactly as `attack`: the copper shortsword's stab
+   (useStyle 13, Projectile AI_161_RapierStabs) flies along the aim's unit
+   vector, centre = player centre + 2.1*dir*(ai0-1), and hits through
+   Collision.CheckAABBvLineCollision(centre, centre + 6*velocity, width 10)
+   (also forward: the exact segment test replaces the box approximation of
+   the horizontal stab); broadswords swing their useStyle 1 arc on the
+   chosen side. A use still running ignores the action (no turn). Masks: as
+   `attack`. Needs FID_COMBAT; default on with it, so the noport control is
+   unchanged. AIM_ATTACK=0: horizontal stabs only, bit-identical to the
+   build before the knob. */
+#ifndef AIM_ATTACK
+#define AIM_ATTACK FID_COMBAT
+#endif
+#if AIM_ATTACK && !FID_COMBAT
+#error "AIM_ATTACK needs FID_COMBAT (ported swings and the stab projectile)"
 #endif
 /* ENV_FX: the observational side channel Env.fx (hits, swing start, bodies
    per game tick) for the pixel frontend, which builds with ENV_FX=1. Never
@@ -440,6 +480,10 @@ typedef enum {
  ACT_SELECT_STONE,ACT_SELECT_DIRT,ACT_SELECT_WOOD,ACT_SELECT_TORCH,
  ACT_SELECT_CAMPFIRE,ACT_SELECT_WORKBENCH,ACT_SELECT_FURNACE,ACT_SELECT_ANVIL,
  ACT_SELECT_PLATFORM,ACT_SELECT_ROPE,ACT_SUMMON,
+#if AIM_ATTACK
+ ACT_ATTACK_UP_FORWARD,ACT_ATTACK_UP,ACT_ATTACK_UP_BACK,ACT_ATTACK_BACK,
+ ACT_ATTACK_DOWN_BACK,ACT_ATTACK_DOWN,ACT_ATTACK_DOWN_FORWARD,
+#endif
 #if COMBO_ACTIONS
  ACT_LEFT_ATTACK,ACT_RIGHT_ATTACK,ACT_JUMP_ATTACK,ACT_JUMP_PLACE_DOWN,
  ACT_LEFT_MINE_HEAD_LEFT,ACT_LEFT_MINE_MIDDLE_LEFT,ACT_LEFT_MINE_FOOT_LEFT,
@@ -452,6 +496,11 @@ typedef enum {
 #define ACT_SELECT_FIRST ACT_SELECT_STONE
 #define ACT_MINE_FIRST ACT_MINE_UP_LEFT
 #define ACT_PLACE_FIRST ACT_PLACE_UP_LEFT
+#if AIM_ATTACK
+/* Aim index 0 = ACT_ATTACK (forward), 1..7 = ACT_AIM_FIRST + i - 1. */
+#define ACT_AIM_FIRST ACT_ATTACK_UP_FORWARD
+#define AIM_COUNT 8
+#endif
 #if COMBO_ACTIONS
 #if !FID_PHYSICS
 #error "COMBO_ACTIONS needs FID_PHYSICS (held inputs)"
@@ -708,6 +757,12 @@ typedef struct Env {
     mobs (bit i) and boss (bit MAX_MOBS) it already hit. kb_left/kb_dir:
     knockback still to apply to the grid player, one cell per action. */
  int item_anim,item_anim_max,attack_cd_ticks,immune_ticks,stab_tick,stab_dir,kb_left,kb_dir; uint32_t stab_hits;
+#if AIM_ATTACK
+ /* The stab's aim, a unit vector (Q16; diagonals 0.7071): its velocity is
+    shootSpeed 2.1 times it. stab_dir stays the facing at the stab (the
+    knockback side). */
+ fix_t stab_ux,stab_uy;
+#endif
 #if TOOL_DAMAGE
  /* What the running itemAnimation swings: 0 the weapon, else TOOL_INFO
     index + 1 (a pickaxe / axe use). */

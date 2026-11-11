@@ -83,6 +83,7 @@ typedef struct {
     bool tap_left, tap_right, tap_jump, tap_attack;
     bool lmb, rmb;
     int  mx, my;          /* window pixels */
+    int  aim_sx, aim_sy;  /* v10 AIM_ATTACK: cursor direction from the body, one of 8 (0, 0 = forward) */
 } Input;
 
 /* ---- Agent tape --------------------------------------------------------- *
@@ -227,6 +228,9 @@ static void usage(FILE *out, const char *prog)
         "  t             cycle weapons            j/l climb rope\n"
         "  ;             drop through platform    F2 pause/resume\n"
 #if PX_V10
+#if AIM_ATTACK
+        "  f             attacks toward the mouse cursor (nearest of 8 directions)\n"
+#endif
         "  enter         use the Suspicious Looking Eye (night): summon the boss\n"
         "  click item    use a potion, mushroom, life crystal or the Eye\n"
         "  F1            controls overlay (shown at start)\n"
@@ -271,7 +275,9 @@ static int key_recipe(SDL_Keycode k) { return kb_slot(KB_CRAFT, (int)k); }
    empty cell or an ore your pickaxe cannot touch would otherwise bank one
    failed step per tick for as long as you leaned on it, and the step budget is
    the scarce resource here. Deliberate failures still go through: those come
-   from the key queue, which is never filtered. */
+   from the key queue, which is never filtered.
+
+   With AIM_ATTACK, F attacks toward the cursor (aim_at_cursor). */
 static int continuous_action(const Env *e, const PxView *v, const Input *in)
 {
 #if PX_V10
@@ -288,7 +294,17 @@ static int continuous_action(const Env *e, const PxView *v, const Input *in)
     env_action_mask(e, mask);
     bool left = in->left || in->tap_left, right = in->right || in->tap_right;
     bool jump = in->jump || in->tap_jump;
-    if ((in->attack || in->tap_attack) && mask[ACT_ATTACK]) return ACT_ATTACK;
+#if AIM_ATTACK
+    /* The cursor's direction, relative to the facing now (attack back turns). */
+    static const int AIM[3][3] = {           /* [forward + 1][down + 1] */
+        {ACT_ATTACK_UP_BACK, ACT_ATTACK_BACK, ACT_ATTACK_DOWN_BACK},
+        {ACT_ATTACK_UP, ACT_ATTACK, ACT_ATTACK_DOWN},
+        {ACT_ATTACK_UP_FORWARD, ACT_ATTACK, ACT_ATTACK_DOWN_FORWARD}};
+    const int attack = AIM[in->aim_sx * e->facing + 1][in->aim_sy + 1];
+#else
+    const int attack = ACT_ATTACK;
+#endif
+    if ((in->attack || in->tap_attack) && mask[attack]) return attack;
     if (v->hover_reach >= 0) {
         if (in->lmb && v->can_mine)  return ACT_MINE_FIRST + v->hover_reach;
         if (in->rmb && v->can_place) return ACT_PLACE_FIRST + v->hover_reach;
@@ -395,7 +411,13 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
         uint8_t mask[ACT_COUNT];
         env_action_mask(e, mask);
         v->can_mine  = mask[ACT_MINE_FIRST + best] && t != TILE_AIR;
+#if HELD_PLACE
+        /* A held place is legal on stock alone; holding the button only
+           repeats it over an open cell (where it can land). */
+        v->can_place = mask[ACT_PLACE_FIRST + best] && t == TILE_AIR;
+#else
         v->can_place = mask[ACT_PLACE_FIRST + best];
+#endif
 #else
         v->can_mine  = !e->mine_cd && t != TILE_AIR && tile_tier(t) != TIER_NEVER &&
                        e->tool_tier >= tile_tier(t);
@@ -403,6 +425,27 @@ static void update_hover(PxView *v, const Env *e, const PxUi *ui, const Input *i
 #endif
     }
 }
+
+#if PX_V10 && AIM_ATTACK
+/* F attacks toward the cursor, as Terraria's useStyle 13 stab aims at the
+   mouse: the nearest of the 8 directions from the body centre to the
+   cursor (45-degree sectors). Outside the world viewport it attacks
+   forward. Absolute here; continuous_action makes it relative per tick, so a
+   turn by the first attack is seen by the next. */
+static void aim_at_cursor(const Env *e, const PxView *v, const PxUi *ui, Input *in)
+{
+    int ax, ay, cx, cy;
+    in->aim_sx = in->aim_sy = 0;
+    px_to_art(ui, in->mx, in->my, &ax, &ay);
+    if (ax < 0 || ay < 0 || ax >= PX_VIEW_W || ay >= PX_VIEW_H) return;
+    px_cell_centre(v, e->px, e->py - 1, &cx, &cy);
+    cx += PX_TILE / 2;                       /* the 2-cell body's centre */
+    long dx = ax - cx, dy = ay - cy, adx = labs(dx), ady = labs(dy);
+    in->aim_sx = (dx > 0) - (dx < 0); in->aim_sy = (dy > 0) - (dy < 0);
+    if (70 * ady < 29 * adx) in->aim_sy = 0;        /* within 22.5 deg (tan ~ 29/70) of horizontal */
+    else if (70 * adx < 29 * ady) in->aim_sx = 0;   /* ... of vertical */
+}
+#endif
 
 typedef struct {
     char   text[64];
@@ -847,6 +890,9 @@ int main(int argc, char **argv)
         /* Hover has to be current before the tick loop reads it, or a held
            mouse button would act on where the player was last frame. */
         update_hover(&view, e, ui, &in);
+#if PX_V10 && AIM_ATTACK
+        aim_at_cursor(e, &view, ui, &in);
+#endif
 
         if (over) {
             next_tick = now + tick;

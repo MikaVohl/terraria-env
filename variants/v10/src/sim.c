@@ -43,6 +43,10 @@ static const char *const ACTION_NAME[ACT_COUNT] = {
     "select stone","select dirt","select wood","select torch","select campfire",
     "select workbench","select furnace","select anvil","select platform","select rope",
     "use summon item",
+#if AIM_ATTACK
+    "attack up-forward","attack up","attack up-back","attack back",
+    "attack down-back","attack down","attack down-forward",
+#endif
 #if COMBO_ACTIONS
     "left + attack","right + attack","jump + attack","jump + place down",
     "left + mine head-left","left + mine middle-left","left + mine foot-left",
@@ -702,6 +706,7 @@ static bool can_mine(const Env *e, int r) {
     return tool_reaches(e, t);
 }
 
+#if !HELD_PLACE   /* HELD_PLACE masks a place on stock alone (env.h) */
 static bool can_place(const Env *e, int r) {
     Placeable p = PLACEABLES[e->selected];
     int tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
@@ -725,6 +730,7 @@ static bool can_place(const Env *e, int r) {
     return true;
 #endif
 }
+#endif
 
 /* Cycling only means something when a slot other than the current one holds
    stock; otherwise do_select lands back where it started. */
@@ -798,6 +804,9 @@ void env_action_mask(const Env *e, uint8_t *mask) {
         mask[ACT_SELECT_FIRST+i]=(uint8_t)(e->inv[PLACEABLES[i].item]>0);
 #if FID_COMBAT
     mask[ACT_ATTACK] = e->item_anim == 0; /* a new swing once the last ends */
+#if AIM_ATTACK
+    for (int i = 0; i < AIM_COUNT - 1; i++) mask[ACT_AIM_FIRST + i] = mask[ACT_ATTACK];
+#endif
 #else
     mask[ACT_ATTACK] = e->attack_cd==0; /* legal even without a target */
 #endif
@@ -818,7 +827,12 @@ void env_action_mask(const Env *e, uint8_t *mask) {
 
     for (int r = 0; r < REACH_COUNT; r++) {
         mask[ACT_MINE_FIRST  + r] = (uint8_t)can_mine(e, r);
+#if HELD_PLACE
+        /* A held place may land on any tick of the step (env.h). */
+        mask[ACT_PLACE_FIRST + r] = (uint8_t)(e->inv[PLACEABLES[e->selected].item] > 0);
+#else
         mask[ACT_PLACE_FIRST + r] = (uint8_t)can_place(e, r);
+#endif
     }
     uint32_t stations=station_mask(e);
     for (int i = 0; i < RECIPE_COUNT; i++)
@@ -1097,14 +1111,32 @@ static const fix_t FID_KNOCKBACK[WEAPON_COUNT] = {FIXC(4), FIXC(5), FIXC(5.5), F
 
 /* Player.ItemCheck: a use starts itemAnimation = useAnimation; the copper
    shortsword also spawns its stab projectile (ai[0] counts from 1). */
+#if AIM_ATTACK
+/* Aims relative to the facing (env.h): forward x and down y of the unit
+   vector, index 0 = ACT_ATTACK, 1..7 = ACT_AIM_FIRST... */
+#define AIM_DIAG 46341   /* sqrt(1/2) in Q16 */
+static const fix_t AIM_FX[AIM_COUNT] = {FIX_ONE, AIM_DIAG, 0, -AIM_DIAG, -FIX_ONE, -AIM_DIAG, 0, AIM_DIAG};
+static const fix_t AIM_FY[AIM_COUNT] = {0, -AIM_DIAG, -FIX_ONE, -AIM_DIAG, 0, AIM_DIAG, FIX_ONE, AIM_DIAG};
+/* The player turns to the cursor's side when the use starts (Player
+   direction; up/down keep it), then the stab flies along the aim. */
+static void attack_start(Env *e, int aim) {
+    if (e->item_anim > 0) return;
+    const fix_t ux = AIM_FX[aim] * e->facing;
+    if (ux) e->facing = ux > 0 ? 1 : -1;
+#else
 static void attack_start(Env *e) {
     if (e->item_anim > 0) return;
+#endif
     e->item_anim = e->item_anim_max = FID_USE_ANIM[e->weapon];
     FX_SET(e->fx.swing = true; e->fx.swing_tick = e->fx.tick; e->fx.swing_tool = -1);
 #if TOOL_DAMAGE
     e->swing_tool = 0;
 #endif
+#if AIM_ATTACK
+    if (e->weapon == 0) { e->stab_tick = 1; e->stab_dir = e->facing; e->stab_hits = 0; e->stab_ux = ux; e->stab_uy = AIM_FY[aim]; }
+#else
     if (e->weapon == 0) { e->stab_tick = 1; e->stab_dir = e->facing; e->stab_hits = 0; }
+#endif
 }
 
 #if TOOL_DAMAGE
@@ -1158,12 +1190,22 @@ static void swing_tick(Env *e) {
     }
     if (e->stab_tick > 0) {
         const int sd = e->stab_dir;
+#if AIM_ATTACK
+        /* Centre = player centre + velocity*(ai0-1); mobs_stab / boss_stab
+           take the segment centre .. centre + 6*velocity (fid_line_hits). */
+        const fix_t vx = fmul(FID_STAB_SPEED, e->stab_ux), vy = fmul(FID_STAB_SPEED, e->stab_uy);
+        fix_t ax = ppx + (PLAYER_PX_W / 2) * FIX_ONE + vx * (e->stab_tick - 1);
+        fix_t ay = ppy + (PLAYER_PX_H / 2) * FIX_ONE + vy * (e->stab_tick - 1);
+        mobs_stab(e, ax, ay, ax + 6 * vx, ay + 6 * vy, WEAPON_DAMAGE[0], FID_KNOCKBACK[0], sd);
+        boss_stab(e, ax, ay, ax + 6 * vx, ay + 6 * vy, WEAPON_DAMAGE[0]);
+#else
         fix_t a = ppx + (PLAYER_PX_W / 2) * FIX_ONE + FID_STAB_SPEED * (e->stab_tick - 1) * sd;
         fix_t b = a + FID_STAB_SPEED * 6 * sd;
         fix_t x0 = (a < b ? a : b) - 5 * FIX_ONE, x1 = (a < b ? b : a) + 5 * FIX_ONE;
         fix_t y0 = ppy + (PLAYER_PX_H / 2 - 5) * FIX_ONE, y1 = y0 + 10 * FIX_ONE;
         mobs_stab(e, x0, y0, x1, y1, WEAPON_DAMAGE[0], FID_KNOCKBACK[0], sd);
         boss_stab(e, x0, y0, x1, y1, WEAPON_DAMAGE[0]);
+#endif
         if (++e->stab_tick >= FID_STAB_TICKS) e->stab_tick = 0;
     }
     if (e->item_anim > 0) e->item_anim--;
@@ -1373,6 +1415,12 @@ void env_step(Env *e, int action) {
     const bool jump_was_held = e->hold_jump && e->jump > 0;
     e->hold_left = e->hold_right = e->hold_jump = e->hold_down = e->hold_up = false;
 #endif
+#if COMBO_ACTIONS || HELD_PLACE
+    int held_place_r = -1;   /* reach slot of a place held over the step, or -1 */
+    /* What a held place's last try saw: the step start's body and stock. */
+    fix_t tried_x = e->pos_x, tried_y = e->pos_y;
+    int tried_n = e->inv[PLACEABLES[e->selected].item];
+#endif
 #if COMBO_ACTIONS
     /* A combo holds its movement exactly as left/right/jump alone would (left
        or right without jump keeps a running jump going), then performs its use
@@ -1382,10 +1430,10 @@ void env_step(Env *e, int action) {
        A place combo holds the use button with the block for the whole step:
        it places at the step start when the standalone place would, else at
        the end of the first tick where the target cell (relative to the body
-       then) takes the block, at most one block per step. Jumping off a floor
+       then) takes the block, at most one block per step (the tick loop below,
+       shared with HELD_PLACE's standalone places). Jumping off a floor
        thus drops a block into the cell the feet just left (Terraria's
        one-block-per-jump pillar), which no step-start placement can reach. */
-    int combo_place_r = -1;
     if (action >= ACT_COMBO_FIRST) {
         const Combo c = COMBOS[action - ACT_COMBO_FIRST];
         e->hold_left = (c.move & COMBO_L) != 0;
@@ -1398,8 +1446,16 @@ void env_step(Env *e, int action) {
         if (c.use == ACT_ATTACK && e->item_anim == 0 && (c.move & (COMBO_L | COMBO_R)))
             e->facing = (c.move & COMBO_L) ? -1 : 1;
 #endif
-        if (c.use >= ACT_PLACE_FIRST && c.use < ACT_PLACE_FIRST + REACH_COUNT) combo_place_r = c.use - ACT_PLACE_FIRST;
+        if (c.use >= ACT_PLACE_FIRST && c.use < ACT_PLACE_FIRST + REACH_COUNT) held_place_r = c.use - ACT_PLACE_FIRST;
         action = c.use;
+    }
+#endif
+#if AIM_ATTACK
+    /* An aimed attack is `attack` with its aim (attack_start). */
+    int aim = 0;
+    if (action >= ACT_AIM_FIRST && action < ACT_AIM_FIRST + AIM_COUNT - 1) {
+        aim = action - ACT_AIM_FIRST + 1;
+        action = ACT_ATTACK;
     }
 #endif
     int mine_r = -1;    /* FID_MINING: the use button is held on this reach slot */
@@ -1423,8 +1479,12 @@ void env_step(Env *e, int action) {
 #endif
     } else if (action >= ACT_PLACE_FIRST && action < ACT_PLACE_FIRST + REACH_COUNT) {
         edited = do_place(e, action - ACT_PLACE_FIRST);
-#if COMBO_ACTIONS
-        if (edited) combo_place_r = -1;   /* placed at the step start, as alone */
+#if HELD_PLACE
+        /* Placed at the step start (the step-start-only result), else the
+           use button stays held over the tick loop (env.h). */
+        held_place_r = edited ? -1 : action - ACT_PLACE_FIRST;
+#elif COMBO_ACTIONS
+        if (edited) held_place_r = -1;   /* placed at the step start, as alone */
 #endif
     } else if (action >= RECIPE_FIRST_ACTION
                && action < RECIPE_FIRST_ACTION + RECIPE_COUNT) {
@@ -1459,7 +1519,11 @@ void env_step(Env *e, int action) {
 #if EXPLICIT_TOOLS
             if (e->item_anim == 0) e->held = (uint8_t)WEAPON_ITEM[e->weapon];
 #endif
+#if AIM_ATTACK
+            attack_start(e, aim); break;
+#else
             attack_start(e); break;
+#endif
 #else
         case ACT_ATTACK:
 #if EXPLICIT_TOOLS
@@ -1520,12 +1584,16 @@ void env_step(Env *e, int action) {
     for (int t = 0; t < FID_TICKS; t++) {
         FX_SET(e->fx.tick = (uint8_t)t);
         edited |= fid_tick(e, mine_r);
-#if COMBO_ACTIONS
-        if (combo_place_r >= 0) {
-            /* Held place: retry silently (keep the step-start message). */
+#if COMBO_ACTIONS || HELD_PLACE
+        if (held_place_r >= 0 && (e->pos_x != tried_x || e->pos_y != tried_y
+                                  || e->inv[PLACEABLES[e->selected].item] != tried_n)) {
+            /* Held place: retry silently (keep the step-start message). Within
+               a place step nothing else do_place reads changes (no mining,
+               no selection), so an unchanged body and stock would fail again. */
+            tried_x = e->pos_x; tried_y = e->pos_y; tried_n = e->inv[PLACEABLES[e->selected].item];
             char said[sizeof e->msg];
             memcpy(said, e->msg, sizeof said);
-            if (do_place(e, combo_place_r)) { edited = true; combo_place_r = -1; }
+            if (do_place(e, held_place_r)) { edited = true; held_place_r = -1; }
             else memcpy(e->msg, said, sizeof said);
         }
 #endif

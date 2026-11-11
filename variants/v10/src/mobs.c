@@ -576,14 +576,20 @@ void mobs_swing(Env *e, int X, int Y, int W, int H, int damage, fix_t kb, int di
     }
 }
 
-/* Projectile AI_161_RapierStabs collision: one hit per NPC per stab. */
+/* Projectile AI_161_RapierStabs collision: one hit per NPC per stab. With
+   AIM_ATTACK (x0, y0) .. (x1, y1) is the stab's segment, tested with
+   CheckAABBvLineCollision width 10 (fid_line_hits); else a box. */
 void mobs_stab(Env *e, fix_t x0, fix_t y0, fix_t x1, fix_t y1, int damage, fix_t kb, int dir) {
     const fix_t ppx = player_fx(e), ppy = player_fy(e);
     for (int i = 0; i < MAX_MOBS; i++) {
         Mob *m = &e->mobs[i];
         if (!m->kind || (e->stab_hits >> i & 1u)) continue;
         fix_t mx, my; int mw, mh; mob_rect(m, &mx, &my, &mw, &mh);
+#if AIM_ATTACK
+        if (!fid_line_hits(x0, y0, x1, y1, e->stab_ux, e->stab_uy, 10 * FIX_ONE, mx, my, mw, mh)) continue;
+#else
         if (!(mx < x1 && x0 < mx + mw * FIX_ONE && my < y1 && y0 < my + mh * FIX_ONE)) continue;
+#endif
         if (!fid_can_hit(e, ppx, ppy, PLAYER_PX_W, PLAYER_PX_H, mx, my, mw, mh)) continue;
         e->stab_hits |= 1u << i;
         mob_strike(e, m, damage, kb, dir);

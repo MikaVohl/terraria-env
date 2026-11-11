@@ -183,6 +183,8 @@ All compile-time (`VARIANT="-DNAME=value"`). v9's knobs keep their meaning
 | `TOOL_DAMAGE` | `FID_COMBAT && FID_MINING` | pickaxe/axe uses swing a real melee hitbox (below) |
 | `BG_WALLS` | 1 | background walls from worldgen; Terraria's neighbour-or-wall block placement (below) |
 | `COMBO_ACTIONS` | 0 | 15 appended actions holding a movement and doing a use in one step (`docs/reports/COMBO_ACTIONS_2026_11.md`) |
+| `HELD_PLACE` | `FID_PHYSICS` (1) | standalone place actions hold the use over the step; masked on stock (below) |
+| `AIM_ATTACK` | `FID_COMBAT` (1) | `attack` + 7 appended aimed attacks (8 directions, below) |
 | `SLIME_HP/DMG/DEF` | 25 / 7 / 2 | Blue Slime |
 | `BAT_HP/DMG/DEF` | 16 / 13 / 2 | Cave Bat (v9 damage 12 without mob/combat ports) |
 | `ZOMBIE_HP/DMG/DEF` | 45 / 14 / 6 | Zombie (v9: 30 / 10) |
@@ -257,9 +259,37 @@ Three more ports, each a knob (default on); `build-v10-noport` sets them 0 and s
 Observation (INV_LOG=1, all knobs): status 1090 (was 948): +2 items x 2 (inventory, log), +39
 held one-hot (`tl_status_held0`), +99 wall channel (`tl_wall_channel`, entity channels 9).
 
+## Held place and aimed attacks (2026-11-11)
+
+Two knobs, default on with the ports (`build-v10-noport` sets neither, still equals v9); each
+off gives preprocessed sources token-identical to the build before it. Report:
+`docs/reports/HELD_PLACE_AIM_2026_11.md`.
+
+- **`HELD_PLACE`**: the 20 `place` actions hold the use button with the selected item for the
+  step, as Terraria's held use (and the `COMBO_ACTIONS` place combos, same code path): the
+  step-start placement when legal (result unchanged), else after the first game tick where
+  the target cell, relative to the body at that tick, takes the item; at most one per step.
+  `jump`, then `place down` (until it lands) pillars in open air under `BG_WALLS`. **Mask:** a
+  place action is legal iff the selected placeable is stocked (it may still do nothing);
+  `SPEC.held_place` / `tl_held_place` flag the build.
+- **`AIM_ATTACK`**: `attack` (id 66) aims forward; ids 86-92 are `attack up-forward`, `attack
+  up`, `attack up-back`, `attack back`, `attack down-back`, `attack down`, `attack
+  down-forward`, relative to the facing (so all 8 absolute directions exist in every state
+  and existing ids keep their meaning; `COMBO_ACTIONS` ids move to 93+). The player turns to
+  the aim's side when the use starts (up/down keep the facing; a running use ignores the
+  action). The copper shortsword's stab (`AI_161_RapierStabs`) flies along the unit aim:
+  centre = player centre + 2.1·u·(ai0 − 1), 16 ticks, hits through
+  `Collision.CheckAABBvLineCollision(centre, centre + 6·velocity, 10)` against the NPC's
+  integer hitbox (`fid_line_hits`; forward too, so the forward stab reach is 42 px instead of
+  the old box's 47). Broadswords and tool swings: unchanged useStyle 1 arc on the chosen side.
+  Masks: every aimed attack = `attack`'s. `terraria-px-v10`: **F attacks toward the mouse
+  cursor** (nearest of 8 directions from the body centre; forward when the cursor is off the
+  world view); the stab sprite follows the aim.
+
 ## Contract summary
 
-- **Actions (86):** v9's, unchanged. With `FID_PHYSICS`, `left`/`right` are always legal
+- **Actions (93):** v9's 86, unchanged in id and meaning, plus the 7 aimed attacks
+  (`AIM_ATTACK`). With `FID_PHYSICS`, `left`/`right` are always legal
   and hold the direction for the action's 15 ticks; `jump` holds Jump (a held jump
   continues through `left`/`right`); `climb`/`drop` hold Up/Down. With `FID_MINING` a mine
   action holds the tool on its target (one hit every `useTime` ticks). With `FID_COMBAT`

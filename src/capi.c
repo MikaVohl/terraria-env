@@ -91,6 +91,10 @@ TL_API int tl_entity_channels(void) { return OBS_ENTITY_CHANNELS; }
    with BG_WALLS; -1 when the knob is off. */
 TL_API int tl_status_held0(void) { return EXPLICIT_TOOLS ? OBS_HELD_0 : -1; }
 TL_API int tl_wall_channel(void) { return BG_WALLS ? OBS_WALL_CHANNEL : -1; }
+#if HELD_PLACE
+/* v10 HELD_PLACE: place actions hold the use over the step (masked on stock). */
+TL_API int tl_held_place(void) { return 1; }
+#endif
 #endif
 #ifdef ACH_TIER_TABLE
 /* v9 scoring (design section 8): tier 1-4 per achievement, weights 1/3/5/8. */

@@ -118,4 +118,48 @@ static inline bool fid_rects(fix_t ax, fix_t ay, int aw, int ah, fix_t bx, fix_t
     return x2 < x1 + aw && x1 < x2 + bw && y2 < y1 + ah && y1 < y2 + bh;
 }
 
+#if AIM_ATTACK
+/* Collision.CheckAABBvLineCollision(objectPosition, objectDimensions,
+   lineStart a, lineEnd b, lineWidth lw) with the target as a Rectangle
+   (integer px, as NPC.Hitbox). (ux, uy) is the line's unit direction
+   (b - a is a multiple of it; len = (b - a).u). Broad phase: the
+   segment's box widened by lw/2 on every side (CheckAABBvAABBCollision);
+   narrow phase in the line's frame (rotated by -atan2(u)): a target corner
+   with 0 <= X < len and |Y| < lw/2, or a target edge crossing one of the
+   strip's long edges Y = +-lw/2 at 0 <= X <= len. Like the original it
+   misses a target that wholly contains the strip. Integer arithmetic
+   throughout (Q16 positions, int64 products). */
+static inline bool fid_line_hits(fix_t ax, fix_t ay, fix_t bx, fix_t by, fix_t ux, fix_t uy, fix_t lw,
+                                 fix_t ox, fix_t oy, int ow, int oh) {
+    const fix_t half = lw / 2;
+    ox = (ox >> 16) * FIX_ONE; oy = (oy >> 16) * FIX_ONE;
+    const fix_t ow_ = ow * FIX_ONE, oh_ = oh * FIX_ONE;
+    fix_t px = ax, py = ay, vx = bx - ax, vy = by - ay;
+    const int64_t len = fmul(vx, ux) + fmul(vy, uy);
+    if (vx > 0) { vx += lw; px -= half; } else { px += vx - half; vx = -vx + lw; }
+    if (vy > 0) { vy += lw; py -= half; } else { py += vy - half; vy = -vy + lw; }
+    if (!(ox < px + vx && oy < py + vy && ox + ow_ > px && oy + oh_ > py)) return false;
+    const fix_t cx[4] = {ox - ax, ox + ow_ - ax, ox + ow_ - ax, ox - ax};
+    const fix_t cy[4] = {oy - ay, oy - ay, oy + oh_ - ay, oy + oh_ - ay};
+    int64_t X[4], Y[4];
+    for (int i = 0; i < 4; i++) {
+        X[i] = fmul(cx[i], ux) + fmul(cy[i], uy);
+        Y[i] = fmul(cy[i], ux) - fmul(cx[i], uy);
+        if ((Y[i] < 0 ? -Y[i] : Y[i]) < half && X[i] < len && X[i] >= 0) return true;
+    }
+    for (int j = 0; j < 4; j++) {
+        const int k = (j + 1) & 3;
+        const int64_t dX = X[k] - X[j], dY = Y[k] - Y[j];
+        if (dY == 0 || len == 0) continue;
+        for (int s = -1; s <= 1; s += 2) {
+            const int64_t num = s * (int64_t)half - Y[j];        /* t = num / dY in [0, 1] */
+            const int64_t xc = X[j] * dY + num * dX;              /* crossing X times dY */
+            if (dY > 0 ? (num >= 0 && num <= dY && xc >= 0 && xc <= len * dY)
+                       : (num <= 0 && num >= dY && xc <= 0 && xc >= len * dY)) return true;
+        }
+    }
+    return false;
+}
+#endif
+
 #endif

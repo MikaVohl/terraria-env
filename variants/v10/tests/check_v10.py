@@ -28,7 +28,10 @@ TIERS = {
 
 def check_spec():
     assert SPEC.version == 10, SPEC.version
-    assert SPEC.n_achievements == 40 and SPEC.max_weighted_score == 145 and SPEC.n_actions == 86
+    # 86 standalone actions + 7 aimed attacks (AIM_ATTACK, default on)
+    assert SPEC.n_achievements == 40 and SPEC.max_weighted_score == 145 and SPEC.n_actions == 93
+    assert SPEC.action_names[86:93] == ["attack up-forward", "attack up", "attack up-back", "attack back",
+                                        "attack down-back", "attack down", "attack down-forward"], SPEC.action_names[86:]
     for tier, names in TIERS.items():
         for name in names:
             i = SPEC.achievement_names.index(name)
