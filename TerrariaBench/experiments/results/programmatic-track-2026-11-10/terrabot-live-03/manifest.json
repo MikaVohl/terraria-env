@@ -1,0 +1,21 @@
+{
+  "agent_kind": "test",
+  "purpose": "live API tests",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "harness": "tools/terrabot",
+  "fixture": "/home/mika/Projects/TerrariaBench/runs/terrabot-fixtures/tb-41100101",
+  "world_seed": "41100101",
+  "world_evil": "crimson",
+  "display": ":15",
+  "difficulty": "classic",
+  "pve": "normal",
+  "hostile_damage": "on",
+  "test_mode": true,
+  "started_unix": 1794361588.6487956,
+  "labels": {
+    "saw": "structured state via tb (map-revealed tiles + lit on-screen tiles, visible NPCs/items, own player and inventory), program output, events, optional screenshot",
+    "could_do": "write Python programs against tb-api-1.0: control flags for N ticks with a cursor, real item use, real recipes/stations, equip, chest UI transfers, pathfinder (library)",
+    "helped_by": "nobody"
+  }
+}

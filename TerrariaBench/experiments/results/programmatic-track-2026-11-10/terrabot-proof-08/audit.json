@@ -1,0 +1,56 @@
+{
+  "run": "terrabot-proof-08",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "agent_kind": "scripted",
+  "verdict": "flagged",
+  "flags": [
+    {
+      "kind": "gaming",
+      "what": "1 inventory gains without pickup/craft/chest event",
+      "examples": [
+        {
+          "item": "Silver Coin",
+          "gain": 1,
+          "at_game_s": 1138
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "observer journal has no end event (game killed at shutdown before world unload, or crashed)"
+  ],
+  "journal": {
+    "events": 1932,
+    "heartbeats": 1874,
+    "game_seconds": 1874,
+    "deaths": 1
+  },
+  "actions": {
+    "total": 9204,
+    "by_op": {
+      "craft": 7,
+      "input": 8385,
+      "select": 600,
+      "stop": 212
+    }
+  },
+  "published_score": 6,
+  "published_milestones": [
+    "wood_1",
+    "wood_10",
+    "wood_25",
+    "workbench_1",
+    "torch_10",
+    "furnace_1"
+  ],
+  "published_without_attribution": 0,
+  "programs": {
+    "total": 5,
+    "timeouts": [],
+    "errors": [
+      "05_build"
+    ],
+    "api_error_lines": 4
+  }
+}

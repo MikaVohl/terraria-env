@@ -1,0 +1,25 @@
+{
+  "agent_kind": "llm",
+  "model": "gpt-6-luna",
+  "reasoning": "low",
+  "usd_cap": 0.5,
+  "wall_minutes": 8.0,
+  "helped_by": "nobody (generic API + pathfinder library; no strategy hints)",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "harness": "tools/terrabot",
+  "fixture": "/home/mika/Projects/TerrariaBench/runs/terrabot-fixtures/tb-41100107",
+  "world_seed": "41100107",
+  "world_evil": "corruption",
+  "display": ":15",
+  "difficulty": "classic",
+  "pve": "normal",
+  "hostile_damage": "on",
+  "test_mode": false,
+  "started_unix": 1794374410.5781298,
+  "labels": {
+    "saw": "structured state via tb (map-revealed tiles + lit on-screen tiles, visible NPCs/items, own player and inventory), program output, events, optional screenshot",
+    "could_do": "write Python programs against tb-api-1.0: control flags for N ticks with a cursor, real item use, real recipes/stations, equip, chest UI transfers, pathfinder (library)",
+    "helped_by": "nobody (generic API + pathfinder library; no strategy hints)"
+  }
+}

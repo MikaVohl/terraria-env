@@ -1,0 +1,115 @@
+[
+ {
+  "case": "walk_right_25",
+  "ok": false,
+  "wall_s": 3.3,
+  "game_ticks": 195,
+  "end": [
+   2112,
+   268
+  ],
+  "life": 100,
+  "detail": {
+   "goal": [
+    2127,
+    258
+   ]
+  }
+ },
+ {
+  "case": "walk_back_home",
+  "ok": false,
+  "wall_s": 15.6,
+  "game_ticks": 937,
+  "end": [
+   2104,
+   270
+  ],
+  "life": 72,
+  "detail": null
+ },
+ {
+  "case": "walk_left_25",
+  "ok": false,
+  "wall_s": 3.7,
+  "game_ticks": 220,
+  "end": [
+   2102,
+   268
+  ],
+  "life": 8,
+  "detail": {
+   "goal": [
+    2077,
+    259
+   ]
+  }
+ },
+ {
+  "case": "walk_back_home_2",
+  "ok": true,
+  "wall_s": 0.1,
+  "game_ticks": 4,
+  "end": [
+   2102,
+   268
+  ],
+  "life": 6,
+  "detail": null
+ },
+ {
+  "case": "dig_down_8",
+  "ok": false,
+  "wall_s": 0.4,
+  "game_ticks": 20,
+  "end": [
+   2102,
+   268
+  ],
+  "life": 0,
+  "detail": {
+   "blocks": [
+    [
+     "Dirt Block",
+     1
+    ]
+   ]
+  }
+ },
+ {
+  "case": "pillar_up_8",
+  "ok": false,
+  "wall_s": 0.1,
+  "game_ticks": 3,
+  "end": [
+   2102,
+   268
+  ],
+  "life": 0,
+  "detail": null
+ },
+ {
+  "case": "over_3_high_wall",
+  "ok": false,
+  "wall_s": 0.1,
+  "game_ticks": 4,
+  "end": [
+   2102,
+   268
+  ],
+  "life": 0,
+  "detail": "not enough blocks"
+ },
+ {
+  "case": "unreachable_without_dig",
+  "ok": true,
+  "wall_s": 0.1,
+  "game_ticks": 3,
+  "end": [
+   2102,
+   268
+  ],
+  "life": 0,
+  "detail": "expected False"
+ }
+]

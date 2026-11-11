@@ -1,0 +1,19 @@
+{
+ "live_tests": {
+  "world": 2,
+  "me": 14,
+  "inventory": 5,
+  "time": 1,
+  "tiles": 8,
+  "truth_tiles": 2,
+  "find_tiles": 8,
+  "truth_npcs": 1,
+  "npcs": 1,
+  "craft": 2,
+  "recipes": 1,
+  "select": 2,
+  "input": 52,
+  "events": 2,
+  "wait": 2
+ }
+}

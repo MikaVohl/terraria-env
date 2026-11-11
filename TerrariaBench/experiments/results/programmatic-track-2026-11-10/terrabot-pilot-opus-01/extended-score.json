@@ -1,0 +1,64 @@
+{
+  "run": "terrabot-pilot-opus-01",
+  "observer_version": "0.7",
+  "published_score": 7,
+  "published_milestones_game_s": {
+    "wood_1": 15.0,
+    "wood_10": 15.7,
+    "wood_25": 16.3,
+    "workbench_1": 89.5,
+    "wood_100": 136.3,
+    "furnace_1": 983.0,
+    "early_bar_5": 1030.5
+  },
+  "extended_count": 15,
+  "extended_available": 19,
+  "extended_game_s": {
+    "gel_1": 145.0,
+    "torch_crafted": 165.0,
+    "workbench_placed": 116.6,
+    "wood_armor_crafted": 156.2,
+    "layer_underground": 583.0,
+    "ore_copper_tin": 1379.0,
+    "ore_iron_lead": 575.0,
+    "ore_silver_gold_tier": 948.0,
+    "furnace_crafted": 983.0,
+    "furnace_placed": 1030.0,
+    "bar_smelted": 1030.5,
+    "bar_5": 1709.0,
+    "anvil_held": 1031.0,
+    "anvil_placed": 1376.7,
+    "metal_gear_crafted": 1030.5
+  },
+  "extended_unavailable": [],
+  "deaths": 3,
+  "max_depth_tiles": 233,
+  "world": {
+    "seed": "41100108",
+    "evil": "crimson",
+    "surface_tile": 337.0,
+    "rock_layer_tile": 529.0
+  },
+  "crafted": {
+    "Work Bench": 3,
+    "Wood Helmet": 2,
+    "Wood Breastplate": 2,
+    "Wood Greaves": 1,
+    "Wooden Sword": 1,
+    "Wooden Bow": 1,
+    "Wooden Hammer": 1,
+    "Torch": 12,
+    "Furnace": 2,
+    "Lead Bar": 5,
+    "Platinum Bar": 1,
+    "Lead Anvil": 1,
+    "Copper Bar": 4
+  },
+  "placed_tile_types": {
+    "18": 4,
+    "4": 4,
+    "17": 2,
+    "16": 2
+  },
+  "game_seconds": 2103
+}

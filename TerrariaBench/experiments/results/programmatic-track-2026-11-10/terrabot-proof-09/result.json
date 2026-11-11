@@ -1,0 +1,92 @@
+{
+  "kind": "scripted",
+  "programs": [
+    {
+      "name": "01_wood",
+      "exit": "ok",
+      "seconds": 26.477,
+      "tail": "wood 18\nwood 32\nwood 71\nwood 71 ok at 2096.99 308.688 08:40\nbench at 2095 309 sword: 1 stations ['WorkBenches']\ncarrying bench: 1 wood 54\n"
+    },
+    {
+      "name": "02_gel",
+      "exit": "ok",
+      "seconds": 468.797,
+      "tail": "gel 0 life 100\ngel 0 life 100\ngel 0 life 100\ngel 0 life 100\ngel 0 life 100\ngel 1 life 100\ngel 5 life 71\ngel 5 life 72\ngel 5 life 72\ngel 5 life 72\ngel 6 life 73\ngel 6 life 87\ngel 6 life 90\ngel 6 life 93\ngel 6 life 95\ngel 6 life 95\ngel 6 life 96\ngel 6 life 96\ngel 8 life 86\ngel 8 life 91\ngel 10 life 88\ngel 10 wood 54 16:30\n"
+    },
+    {
+      "name": "03_bench",
+      "exit": "ok",
+      "seconds": 5.282,
+      "tail": "torches 30 wood 44 stations ['WorkBenches']\ncarrying bench: 1\n"
+    },
+    {
+      "name": "04_dig",
+      "exit": "ok",
+      "seconds": 1401.467,
+      "tail": "shaft at (2114, 315)\ntunnel dark at 2075 351 side -1\nleg done 35 -1 at 2069 351 stone 53 ore 0 190\ntunnel dark at 2141 351 side 1\nleg done 35 1 at 2159 366 stone 109 ore 0 878\ntunnel wet at 2121 376 side -1\ntunnel wet at 2151 386 side 1\ntunnel hard at 2139 391 side -1\ntunnel wet at 2143 396 side 1\ntunnel wet at 2135 410 side -1\nleg done 95 1 at 2159 414 stone 182 ore 0 1343\ndepth 115 stone 213 iron 0 lead 0 torches 41 life 100 1401 s 15:57\n"
+    },
+    {
+      "name": "05_build",
+      "exit": "error",
+      "seconds": 130.884,
+      "tail": "furnace at 2153 430 ['Furnaces', 'WorkBenches']\nunderground build failed: craft: cannot craft Lead Bar: missing station Anvils, Lead Fence 0/4 | missing Lead Ore 0/3\nclimbing to [2096, 309] False\nfurnace at 2148 430 ['Furnaces', 'WorkBenches']\n"
+    }
+  ],
+  "wall_seconds": 2032.9210708141327,
+  "ended_unix": 1794373488.864523,
+  "final_me": {
+    "x": 2149.996,
+    "y": 429.688,
+    "left": 2149.371,
+    "top": 428.375,
+    "width": 1.25,
+    "height": 2.625,
+    "tile_x": 2149,
+    "foot_y": 430,
+    "vx": 0,
+    "vy": 0,
+    "on_ground": true,
+    "dir": 1,
+    "fall_tiles": 0,
+    "life": 100,
+    "life_max": 100,
+    "mana": 20,
+    "mana_max": 20,
+    "defense": 0,
+    "dead": false,
+    "respawn_ticks": 0,
+    "breath": 200,
+    "breath_max": 200,
+    "wet": false,
+    "lava": false,
+    "immune_ticks": 0,
+    "potion_sickness_ticks": 0,
+    "held": null,
+    "selected_slot": 7,
+    "item_busy_ticks": 0,
+    "reach_tiles": [
+      5,
+      4
+    ],
+    "buffs": [],
+    "armor": [
+      null,
+      null,
+      null
+    ],
+    "accessories": [],
+    "layer": "underground",
+    "biomes": [],
+    "stations_near": [
+      "Furnaces",
+      "WorkBenches"
+    ],
+    "chest_open": false,
+    "inventory_open": false,
+    "spawn": [
+      2105,
+      310
+    ],
+    "tick": 122013
+  }
+}

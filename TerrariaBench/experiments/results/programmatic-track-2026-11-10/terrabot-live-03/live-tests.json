@@ -1,0 +1,164 @@
+[
+ {
+  "test": "basics",
+  "ok": true,
+  "detail": {
+   "spawn": [
+    2101,
+    259
+   ],
+   "me": [
+    2101.5,
+    257.688,
+    258
+   ],
+   "inventory": [
+    "Copper Axe",
+    "Copper Pickaxe",
+    "Copper Shortsword"
+   ],
+   "time": {
+    "day": true,
+    "clock": "08:15",
+    "ticks_into_phase": 13549,
+    "phase_length": 54000,
+    "moon_phase": 0,
+    "blood_moon": false,
+    "eclipse": false,
+    "game_updates": 49
+   }
+  },
+  "s": 0.04
+ },
+ {
+  "test": "no_xray_tiles",
+  "ok": true,
+  "detail": {
+   "rect": [
+    2001,
+    198,
+    2200,
+    397
+   ],
+   "known": 3157,
+   "total": 40000,
+   "deep_solid_truth": 14067,
+   "deep_known": 0
+  },
+  "s": 0.97
+ },
+ {
+  "test": "no_xray_find_tiles",
+  "ok": true,
+  "detail": {
+   "ore_cells_truth": 314,
+   "ore_cells_api": 0
+  },
+  "s": 1.06
+ },
+ {
+  "test": "no_xray_npcs",
+  "ok": true,
+  "detail": {
+   "truth": 1,
+   "api": 1,
+   "far_truth": 0
+  },
+  "s": 0.03
+ },
+ {
+  "test": "recipes_real_rules",
+  "ok": true,
+  "detail": {
+   "work_bench_refusal": "craft: cannot craft Work Bench: missing Wood 0/10",
+   "furnace_refusal": "craft: cannot craft Furnace: missing station WorkBenches, Stone Block 0/20, Any Wood 0/4, Torch 0/3",
+   "furnace_recipe": {
+    "item": "Furnace",
+    "stack": 1,
+    "ingredients": [
+     [
+      "Stone Block",
+      20
+     ],
+     [
+      "Any Wood",
+      4
+     ],
+     [
+      "Torch",
+      3
+     ]
+    ],
+    "stations": [
+     "WorkBenches"
+    ],
+    "conditions": []
+   }
+  },
+  "s": 0.03
+ },
+ {
+  "test": "mining_reach_and_pickup",
+  "ok": true,
+  "detail": {
+   "out_of_reach_tile_kept": [
+    2115,
+    259
+   ],
+   "mined": [
+    2101,
+    259
+   ],
+   "kind": "Grass",
+   "gained": {
+    "Dirt Block": 1
+   },
+   "events": [
+    "tile_broken",
+    "pickup"
+   ]
+  },
+  "s": 3.06
+ },
+ {
+  "test": "placement",
+  "ok": true,
+  "detail": {
+   "placed": "Dirt Block",
+   "at": [
+    2099,
+    258
+   ]
+  },
+  "s": 0.35
+ },
+ {
+  "test": "movement_limits",
+  "ok": true,
+  "detail": {
+   "max_vx": 3.06,
+   "moved_tiles": 3.98,
+   "jump_rise_single_hold": 5.22,
+   "jump_rise_5x3_holds": 5.22
+  },
+  "s": 5.73
+ },
+ {
+  "test": "proxy_rejects_unknown_ops",
+  "ok": true,
+  "detail": "teleport/spawn_item/set_tile refused",
+  "s": 0.0
+ },
+ {
+  "test": "inputs_journal",
+  "ok": true,
+  "detail": {
+   "actions": 77,
+   "ops": [
+    "craft",
+    "input",
+    "select"
+   ]
+  }
+ }
+]

@@ -1,0 +1,394 @@
+{
+ "t001": {
+  "me": 380,
+  "world": 10,
+  "find_tiles": 1,
+  "tiles": 216,
+  "inventory": 41,
+  "input": 607,
+  "stop": 12,
+  "select": 74,
+  "items": 1
+ },
+ "t002": {
+  "me": 5,
+  "recipes": 2,
+  "select": 2,
+  "inventory": 1,
+  "craft": 1,
+  "input": 1,
+  "tiles": 1
+ },
+ "t003": {
+  "me": 4,
+  "tiles": 2,
+  "find_tiles": 3,
+  "select": 1,
+  "input": 1,
+  "recipes": 1
+ },
+ "t004": {
+  "me": 1,
+  "tiles": 1,
+  "inventory": 1
+ },
+ "t005": {
+  "me": 20,
+  "world": 1,
+  "tiles": 7,
+  "inventory": 3,
+  "input": 22,
+  "select": 2,
+  "stop": 1,
+  "recipes": 1
+ },
+ "t006": {
+  "me": 6,
+  "tiles": 3,
+  "select": 2,
+  "input": 2,
+  "inventory": 4
+ },
+ "t007": {
+  "craft": 3,
+  "equip": 3,
+  "me": 119,
+  "inventory": 25,
+  "find_tiles": 1,
+  "select": 8,
+  "npcs": 18,
+  "world": 6,
+  "tiles": 56,
+  "input": 104,
+  "stop": 6,
+  "items": 1
+ },
+ "t008": {
+  "me": 11,
+  "world": 1,
+  "tiles": 1,
+  "inventory": 2,
+  "input": 30,
+  "stop": 1,
+  "craft": 6,
+  "equip": 3,
+  "recipes": 1
+ },
+ "t009": {
+  "craft": 1,
+  "me": 795,
+  "find_tiles": 56,
+  "world": 6,
+  "tiles": 225,
+  "inventory": 106,
+  "input": 560,
+  "select": 12,
+  "stop": 6,
+  "npcs": 6
+ },
+ "t010": {
+  "me": 12,
+  "tiles": 2,
+  "wait": 1,
+  "inventory": 1,
+  "select": 1,
+  "npcs": 1,
+  "find_tiles": 8
+ },
+ "t011": {
+  "me": 29,
+  "tiles": 17,
+  "wait": 4,
+  "inventory": 1,
+  "select": 1,
+  "npcs": 1,
+  "find_tiles": 8
+ },
+ "t012": {
+  "me": 16,
+  "select": 2,
+  "input": 7,
+  "tiles": 13,
+  "wait": 2,
+  "inventory": 5
+ },
+ "t013": {
+  "me": 557,
+  "inventory": 16,
+  "select": 16,
+  "tiles": 445,
+  "input": 412,
+  "wait": 32,
+  "npcs": 8,
+  "find_tiles": 64
+ },
+ "t014": {
+  "me": 3,
+  "select": 1,
+  "input": 1,
+  "tiles": 2,
+  "wait": 1,
+  "find_tiles": 8
+ },
+ "t015": {
+  "me": 348,
+  "world": 4,
+  "tiles": 155,
+  "inventory": 60,
+  "input": 1252,
+  "select": 53,
+  "stop": 4,
+  "npcs": 4,
+  "find_tiles": 32
+ },
+ "t016": {
+  "me": 179,
+  "inventory": 23,
+  "select": 3,
+  "tiles": 98,
+  "input": 84,
+  "wait": 4,
+  "npcs": 1,
+  "find_tiles": 88,
+  "stop": 2,
+  "world": 1
+ },
+ "t017": {
+  "find_tiles": 80,
+  "me": 885,
+  "inventory": 21,
+  "select": 20,
+  "tiles": 735,
+  "input": 694,
+  "wait": 40,
+  "npcs": 10
+ },
+ "t018": {
+  "find_tiles": 24,
+  "me": 292,
+  "inventory": 13,
+  "select": 6,
+  "tiles": 251,
+  "input": 240,
+  "wait": 10,
+  "npcs": 3,
+  "recipes": 1
+ },
+ "t019": {
+  "craft": 4,
+  "me": 38,
+  "tiles": 25,
+  "select": 9,
+  "input": 18,
+  "wait": 1
+ },
+ "t020": {
+  "me": 6,
+  "select": 2,
+  "input": 2,
+  "tiles": 3,
+  "wait": 2
+ },
+ "t021": {
+  "me": 27,
+  "select": 4,
+  "input": 12,
+  "tiles": 16,
+  "inventory": 10,
+  "wait": 2,
+  "craft": 3,
+  "recipes": 1
+ },
+ "t022": {
+  "me": 49,
+  "tiles": 48,
+  "inventory": 14,
+  "select": 6,
+  "input": 23,
+  "wait": 1,
+  "craft": 3
+ },
+ "t023": {
+  "me": 1360,
+  "inventory": 142,
+  "select": 342,
+  "input": 2097,
+  "tiles": 865,
+  "wait": 1,
+  "find_tiles": 81,
+  "world": 10,
+  "stop": 10
+ },
+ "t024": {
+  "me": 748,
+  "tiles": 502,
+  "inventory": 185,
+  "select": 90,
+  "input": 750,
+  "wait": 22,
+  "find_tiles": 81,
+  "world": 3,
+  "stop": 7,
+  "npcs": 44
+ },
+ "t025": {
+  "me": 664,
+  "tiles": 493,
+  "inventory": 105,
+  "select": 16,
+  "input": 459,
+  "find_tiles": 175,
+  "world": 2,
+  "stop": 6,
+  "wait": 23,
+  "npcs": 7
+ },
+ "t026": {
+  "craft": 5,
+  "me": 4,
+  "tiles": 3,
+  "inventory": 160,
+  "wait": 1,
+  "recipes": 1
+ },
+ "t027": {
+  "me": 259,
+  "tiles": 311,
+  "stop": 8,
+  "world": 7,
+  "inventory": 53,
+  "input": 634,
+  "select": 15,
+  "craft": 3,
+  "wait": 1,
+  "recipes": 1
+ },
+ "t028": {
+  "me": 20,
+  "world": 1,
+  "tiles": 102,
+  "inventory": 86,
+  "input": 207,
+  "stop": 1,
+  "craft": 2,
+  "wait": 1,
+  "recipes": 1
+ },
+ "t029": {
+  "me": 50,
+  "select": 9,
+  "input": 24,
+  "tiles": 40,
+  "wait": 2,
+  "inventory": 20,
+  "craft": 2,
+  "recipes": 1
+ },
+ "t030": {
+  "craft": 2,
+  "equip": 2,
+  "me": 102,
+  "tiles": 58,
+  "inventory": 12,
+  "select": 2,
+  "input": 47,
+  "wait": 1,
+  "recipes": 1
+ },
+ "t031": {
+  "me": 18,
+  "inventory": 7,
+  "select": 6,
+  "input": 8,
+  "tiles": 9,
+  "wait": 1,
+  "recipes": 1
+ },
+ "t032": {
+  "find_tiles": 9,
+  "me": 2,
+  "stop": 1,
+  "recipes": 8,
+  "inventory": 1
+ },
+ "t033": {
+  "me": 207,
+  "find_tiles": 135,
+  "world": 1,
+  "tiles": 81,
+  "inventory": 42,
+  "select": 1,
+  "input": 224,
+  "stop": 16,
+  "craft": 8,
+  "recipes": 1
+ },
+ "t034": {
+  "me": 130,
+  "find_tiles": 122,
+  "world": 122,
+  "tiles": 489,
+  "input": 4,
+  "stop": 122,
+  "wait": 122,
+  "inventory": 1
+ },
+ "t035": {
+  "me": 1,
+  "time": 1
+ },
+ "t036": {
+  "select": 1,
+  "npcs": 8,
+  "me": 5,
+  "input": 2
+ },
+ "t037": {
+  "inventory": 2,
+  "equip": 2,
+  "me": 1
+ },
+ "t038": {
+  "me": 1,
+  "npcs": 1
+ },
+ "t039": {
+  "select": 1,
+  "me": 14,
+  "npcs": 14,
+  "input": 4
+ },
+ "t040": {
+  "select": 1,
+  "me": 274,
+  "npcs": 273,
+  "wait": 273,
+  "time": 1
+ },
+ "t041": {
+  "select": 1,
+  "me": 243,
+  "npcs": 242,
+  "wait": 95,
+  "input": 49,
+  "time": 1
+ },
+ "t042": {
+  "me": 1
+ },
+ "t043": {
+  "select": 1,
+  "me": 54,
+  "npcs": 53,
+  "wait": 53
+ },
+ "t044": {
+  "me": 1
+ },
+ "t045": {
+  "wait": 1
+ },
+ "t046": {
+  "me": 1
+ }
+}

@@ -1,0 +1,22 @@
+{
+  "agent_kind": "scripted",
+  "programs_dir": "tools/terrabot/proof",
+  "helped_by": "human-written scripted programs (proof that the public API suffices); no LLM",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "harness": "tools/terrabot",
+  "fixture": "/home/mika/Projects/TerrariaBench/runs/terrabot-fixtures/tb-41100104",
+  "world_seed": "41100104",
+  "world_evil": "crimson",
+  "display": ":15",
+  "difficulty": "classic",
+  "pve": "normal",
+  "hostile_damage": "on",
+  "test_mode": false,
+  "started_unix": 1794366743.744412,
+  "labels": {
+    "saw": "structured state via tb (map-revealed tiles + lit on-screen tiles, visible NPCs/items, own player and inventory), program output, events, optional screenshot",
+    "could_do": "write Python programs against tb-api-1.0: control flags for N ticks with a cursor, real item use, real recipes/stations, equip, chest UI transfers, pathfinder (library)",
+    "helped_by": "human-written scripted programs (proof that the public API suffices); no LLM"
+  }
+}

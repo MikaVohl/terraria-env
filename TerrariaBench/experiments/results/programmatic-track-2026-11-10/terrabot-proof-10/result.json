@@ -1,0 +1,92 @@
+{
+  "kind": "scripted",
+  "programs": [
+    {
+      "name": "01_wood",
+      "exit": "ok",
+      "seconds": 26.644,
+      "tail": "wood 22\nwood 41\nwood 54\nwood 54 ok at 2091.978 277.688 08:38\nbench at 2092 278 sword: 1 stations ['WorkBenches']\ncarrying bench: 1 wood 37\n"
+    },
+    {
+      "name": "02_gel",
+      "exit": "ok",
+      "seconds": 548.629,
+      "tail": "gel 3 life 68\ngel 3 life 69\ngel 3 life 69\ngel 3 life 69\ngel 3 life 52\ngel 3 life 46\ngel 3 life 46\ngel 3 life 10\ngel 5 life 3\ngel 5 life 3\ngel 5 life 3\ngel 5 life 3\ngel 5 life 0\ngel 5 life 100\ngel 5 life 100\ngel 8 life 68\ngel 9 life 86\ngel 9 life 86\ngel 9 life 86\ngel 9 life 86\ngel 9 life 86\ngel 9 life 87\ngel 9 life 87\ngel 9 life 87\ngel 9 life 88\ngel 9 life 88\ngel 9 life 89\ngel 9 life 82\ngel 9 life 75\ngel 9 life 75\ngel 9 life 75\ngel 11 life 75\ngel 11 life 56\ngel 11 life 50\ngel 11 life 50\ngel 11 life 43\ngel 11 life 43\ngel 11 life 20\ngel 11 life 20\ngel 11 life 8\ngel 12 life 8\ngel 12 wood 37 17:50\n"
+    },
+    {
+      "name": "03_bench",
+      "exit": "ok",
+      "seconds": 15.652,
+      "tail": "torches 36 wood 25 stations ['WorkBenches']\ncarrying bench: 0\n"
+    },
+    {
+      "name": "04_dig",
+      "exit": "ok",
+      "seconds": 155.053,
+      "tail": "wet at 2077 318\nhead under water at 2077 323 -> back to (2077, 310)\nhead under water at 2077 323 -> back to (2077, 310)\nhead under water at 2077 323 -> back to (2077, 310)\nhead under water at 2077 323 -> back to (2077, 310)\nhead under water at 2077 323 -> back to (2077, 310)\nhead under water at 2082 321 -> back to (2077, 310)\nhead under water at 2082 321 -> back to (2077, 310)\nhead under water at 2082 321 -> back to (2077, 310)\nhead under water at 2082 321 -> back to (2077, 310)\nhead under water at 2082 321 -> back to (2077, 310)\ndepth 43 stone 25 iron 10 lead 0 torches 30 life 86 155 s 20:41\n"
+    },
+    {
+      "name": "05_build",
+      "exit": "error",
+      "seconds": 42.983,
+      "tail": "place_station failed near 2096 323 held Work Bench screenshot screens/latest.png\n~~~~~~~~~~~~#######??\n~~~~~~~~~~~~######???\n~~~~~~~~~~~~#####????\n#~~~~~~~~~~######????\n#~~~~~~~~~~#####?????\n#~~~~~~~~~@#####?????\n###~~~~~~######??????\n##############???????\nunderground build failed: could not place Work Bench; tried [(2085, 320), (2081, 321), (2079, 322), (2078, 322), (2089, 324), (2095, 323), (2089, 324), (2095, 323), (2089, 324), (2095, 323), (2089, 324), (2095, 323), (2089, 324)]\nclimbing to [2091, 278] False\nfurnace at 2063 279 ['Furnaces', 'WorkBenches']\n"
+    }
+  ],
+  "wall_seconds": 788.9672594070435,
+  "ended_unix": 1794374409.5086856,
+  "final_me": {
+    "x": 2064.975,
+    "y": 278.688,
+    "left": 2064.35,
+    "top": 277.375,
+    "width": 1.25,
+    "height": 2.625,
+    "tile_x": 2064,
+    "foot_y": 279,
+    "vx": 0,
+    "vy": 0,
+    "on_ground": true,
+    "dir": 1,
+    "fall_tiles": 0,
+    "life": 100,
+    "life_max": 100,
+    "mana": 20,
+    "mana_max": 20,
+    "defense": 0,
+    "dead": false,
+    "respawn_ticks": 0,
+    "breath": 200,
+    "breath_max": 200,
+    "wet": false,
+    "lava": false,
+    "immune_ticks": 0,
+    "potion_sickness_ticks": 0,
+    "held": null,
+    "selected_slot": 9,
+    "item_busy_ticks": 0,
+    "reach_tiles": [
+      5,
+      4
+    ],
+    "buffs": [],
+    "armor": [
+      null,
+      null,
+      null
+    ],
+    "accessories": [],
+    "layer": "surface",
+    "biomes": [],
+    "stations_near": [
+      "Furnaces",
+      "WorkBenches"
+    ],
+    "chest_open": false,
+    "inventory_open": false,
+    "spawn": [
+      2100,
+      279
+    ],
+    "tick": 47374
+  }
+}

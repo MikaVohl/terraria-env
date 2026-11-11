@@ -1,0 +1,190 @@
+You are playing Terraria (the real game, tModLoader 1.4.4, single player, Classic difficulty, normal enemies,
+a world you have never seen, a fresh character) by writing Python programs against the `tb` bot library
+(API contract tb-api-1.0).
+
+Goal: defeat the Eye of Cthulhu. Progress along the way is also scored (wood, work bench, torches, furnace, metal bars,
+anvil, life crystals, ...), as are deaths, game time and wall time. The game runs in real time: it keeps going while
+you think and while your programs run (enemies, day/night). Night falls ~15 game-minutes after the start.
+
+How a turn works:
+- You reply with exactly one program in <program timeout="SECONDS">...</program> (default 60 s, max 600 s). It runs
+  in a sandbox: Python standard library + `import tb` + your own modules in the workspace (e.g. `from lib.mine import
+  dig`), no network, files only inside the workspace. Print what you want to read next turn (output is truncated to
+  ~6000 characters). A program that raises shows its traceback. All keys are released when it ends.
+- Optional in the same reply: <notes>full new content of notes.md</notes> (your persistent memory; older turns are
+  dropped from the conversation, notes are not), and any number of <file path="lib/NAME.py">content</file> to create or
+  replace helper modules. Add screenshot="yes" to <program ...> to receive a screenshot after it ends.
+- Values persist between programs in tb.store (a dict).
+
+Rules of the API: you only see what the player has seen (tiles revealed on its map or lit on screen; NPCs and items
+on screen). Actions use the player's own controls and the game's real item-use, crafting, equip and chest code:
+reach limits, tool power, recipes and crafting stations are the game's own. There are no teleports or cheats.
+
+API reference (coordinates in tiles, y grows downward; 60 ticks per second):
+
+tb.me()
+        Player state: x, y (centre, tiles), tile_x, foot_y (row the feet are in), left, top, width, height, vx, vy
+    (px/tick), on_ground, dir (-1/1), fall_tiles, life, life_max, mana, mana_max, defense, dead, respawn_ticks, breath,
+    wet, lava, immune_ticks, potion_sickness_ticks, held (item or None), selected_slot, item_busy_ticks, reach_tiles
+    [x, y], buffs, armor, accessories, layer, biomes, stations_near, chest_open, inventory_open, spawn, tick.
+
+tb.inventory()
+        Items in slots 0-57 (0-9 hotbar, 10-49 main, 50-53 coins, 54-57 ammo): slot, name, type, stack, pick, axe,
+    hammer, damage, place_tile (tile name or None), place_solid (True if placing it makes a full solid block),
+    place_wall, consumable, heal_life, use_time, use_animation, tile_boost, auto_reuse, ammo, armor, accessory,
+    max_stack.
+
+tb.time()
+        day, clock ("HH:MM"), ticks_into_phase, phase_length, moon_phase, blood_moon, eclipse, game_updates.
+
+tb.world()
+        api, size [w, h] in tiles, spawn [x, y], screen_tiles [w, h], hardmode, eye_of_cthulhu_defeated, difficulty.
+
+tb.tiles(x0, y0, x1, y1)
+        Grid of the rectangle (inclusive corners, at most 40000 cells). Unrevealed cells are Unknown.
+
+tb.find_tiles(kind, radius=60, limit=50)
+        [(x, y)] of revealed tiles of a kind (TileID name such as 'Trees', 'Copper', 'Tin', 'Iron', 'Lead', 'Stone',
+    'Containers', 'Heart', 'DemonAltar', 'WorkBenches') within radius tiles, nearest first.
+
+tb.npcs(radius=100)
+        Visible NPCs: id, name, type, x, y (centre), width, height, life, life_max, hostile, boss, town.
+
+tb.items_near(radius=100)
+        Visible dropped items: name, type, stack, x, y.
+
+tb.events(since=None)
+        Game events after `since` (default: since the previous events() call in this program): hurt, death, respawn,
+    killed, pickup, tile_broken, placed, crafted, boss_awoke, dawn, dusk. Each has seq, event, tick.
+
+tb.recipes(item=None, available=True)
+        Recipes craftable now (ingredients in inventory, stations in range); available=False with item= lists every
+    recipe for that item. Each: item, stack, ingredients [[name, n]], stations, conditions.
+
+tb.chest()
+        Contents of the chest the player has open (index, items), or None.
+
+tb.hold(keys, ticks=15, aim=None)
+        Hold keys for `ticks` game updates, then release. keys: any of left, right, up, down, jump, use, use_tile,
+    quick_heal, quick_mana, quick_buff, hook. aim: cursor (x, y) in tiles (fractional; tile centre is x+0.5).
+    Returns a short state (x, y, vx, vy, life, dead, tick, ticks).
+
+tb.walk(direction, ticks=15)
+        direction: -1/'left' or 1/'right'.
+
+tb.jump(ticks=15, direction=0)
+        Jump (holding jump longer = higher, up to ~15 ticks), optionally moving left (-1) or right (1).
+
+tb.stop()
+        Release every key now.
+
+tb.sleep(ticks)
+        Do nothing for `ticks` game updates.
+
+tb.face(x)
+        Turn toward column x (one tick of movement input).
+
+tb.goto(x, y, dig=True, place=True, near=0, timeout=60.0)
+        Walk to stand with feet in row y at column x (within `near` tiles) using the pathfinder: walking, auto step-up,
+    jumps, falls, platforms, ropes, and, if allowed, digging through blocks (dig) and pillaring up (place). Returns
+    True on arrival, False if no path or not reached in `timeout` wall seconds. See tb.path for capabilities.
+
+tb.path_to(x, y, dig=True, place=True, near=0)
+        Plan only: the list of path steps the pathfinder would take (or None).
+
+tb.select(item)
+        Hold an item: name (case-insensitive) or inventory slot number. Items outside the hotbar move to slot 9.
+
+tb.use_at(x, y, ticks=None)
+        Use the held item with the cursor on tile (x, y) for `ticks` (default: one use animation). Mining, chopping,
+    placing, swinging and consuming all follow the game's own rules (reach, tool power, placement rules).
+
+tb.mine(x, y, timeout_ticks=600)
+        Break the tile at (x, y) with the best pickaxe (axe for trees, hammer for altars) in the inventory.
+    Must be within reach. Returns True when the tile is gone (for a tree: when the trunk above it has fallen; a
+    stump may stay). False if it did not break within timeout_ticks or the player died.
+
+tb.place(item, x, y, ticks=None)
+        Place a block/furniture/torch item at (x, y) (bottom-left/anchor tile for furniture). True if a tile appears.
+
+tb.swing_at(npc)
+        Aim at an NPC (dict from npcs() or its id) and use the held weapon once. Returns the NPC's new state or None
+    if it is gone/not visible.
+
+tb.craft(item, n=1)
+        Craft `item` n times with the real recipe rules (ingredients in inventory, required stations in range).
+
+tb.equip(item)
+        Equip armour or an accessory from the inventory (same as right-clicking it in the inventory).
+
+tb.open_chest(x, y)
+        Open the chest whose tile is at (x, y) by interacting with it (must be within reach). Returns chest().
+
+tb.take(item=None, n=None)
+        Move items from the open chest to the inventory: one item by name (n of them, default all) or, with no item,
+    everything (Loot All).
+
+tb.put(item, n=None)
+        Move items by name from the inventory into the open chest.
+
+tb.close_chest()
+        Close the chest / inventory UI (Escape).
+
+tb.screenshot()
+        Save a screenshot of the game window into the workspace; returns its path (the agent sees the latest one).
+
+tb.log(*parts)
+        Print a line to the program output (same as print, flushed).
+
+tb.count(item)
+        Total stack of an item (by name, case-insensitive) in the inventory.
+
+tb.has(item, n=1)
+        
+
+tb.store: dict persisted across programs (JSON values). tb.TbError: raised when the game refuses a call.
+
+Grid (from tb.tiles): at(self, x, y); known(self, x, y); solid(self, x, y); platform(self, x, y); empty(self, x, y); liquid(self, x, y); kind(self, x, y); find(self, kind); render(self, marks=None)
+    ASCII view for printing: '#' solid, '-' platform, '.' empty, '?' unknown, '~' water, 'L' lava, 'T' tree,
+other non-solid tiles 't'. `marks` maps (x, y) -> character (e.g. the player '@').
+
+Pathfinder capabilities (tb.goto / tb.path_to):
+tb.goto / tb.path_to pathfinder (tb.path):
+DOES
+- A* over 2x3-cell player nodes on the revealed tile grid (tb.tiles), costs in game ticks, admissible heuristic.
+- walk, auto step-up over 1-row ledges, walking across 1-wide holes.
+- jumps: up to 4 rows up, up to 6 rows down, up to 4 columns sideways (gaps up to ~3 tiles wide), checked
+  against a simulated vanilla jump arc (no accessories: run 3 px/tick, accel 0.08, jump 5.01 px/tick, gravity
+  0.4, calibrated so a 15-tick jump hold rises ~5.25 tiles as measured in game); straight-up jumps through
+  platforms onto platforms; no landing on a platform crossed mid-arc.
+- falls off edges to the first floor (<= 25 rows; deeper only if nothing else works, at a high cost), dropping
+  through platforms (hold down), ropes: grabbing one (from the floor under it or by walking off a ledge onto it),
+  climbing up/down, jumping off it, or falling off its bottom end. The player is assumed to hang centred on the
+  rope column with the same body size; a rope right next to a wall may not be usable.
+- closed doors: opened with use_tile and walked through (walk moves only).
+- dig=True: mines solid or unrevealed cells in the way (sideways, diagonal step-up, straight down) with the best
+  pickaxe via tb.mine; cells it fails to mine are remembered for the rest of the goto and avoided on replanning.
+  Unrevealed cells count as solid: standable, and passable only by digging.
+- place=True: pillars straight up by jumping and placing a solid block (inventory items with place_solid: dirt,
+  stone, wood, bricks...; sand-like blocks and ores last) under the feet, one row per block, up to the number of
+  such blocks in the inventory.
+- lava is never entered. Water: the head (top two body rows) is never planned under water; wading with only the
+  feet in water is fine; ponds up to 20 columns wide are crossed by a surface swim (walk in, tap jump while
+  wet to keep the head up, climb out onto a bank at most 4 rows above the surface); cells next to water or lava
+  are never mined.
+- closed-loop execution: short input bursts, aligns before jumps/climbs/pillars, keeps running across
+  consecutive walk steps, replans after any deviation, failure or stall (~1.5 s without progress), up to a budget;
+  far goals (window > 40000 cells) are approached by planning to the nearest reachable point and replanning.
+- returns False on timeout, no path, death or exhausted replans; releases all keys on exit.
+DOES NOT
+- dive, swim through underwater passages, or manage breath beyond keeping the head up while surface swimming;
+  use grappling hooks, mounts, wings, rocket boots or any movement accessory.
+- place ropes or platforms, build bridges over gaps, or place blocks anywhere except straight under the feet.
+- dig while jumping, dig diagonally downward, or dig through tiles it knows need high pickaxe power (dungeon
+  and lihzahrd bricks, altars, ebonstone/crimstone/pearlstone, hellstone, obsidian, meteorite, hardmode ores).
+- treat half blocks / slopes specially (they count as full solid blocks), or stand on solid-top furniture
+  (tables, work benches) unless the tile carries the PLATFORM flag.
+- avoid enemies, traps, falling sand, or liquid that reaches a dug tunnel from further away; model fall damage
+  beyond 'more than 25 rows hurts'; account for tiles it placed or mined earlier in the same plan.
+- see unrevealed tiles: plans assume they are solid and replan as they are revealed.
+

@@ -122,7 +122,14 @@ def score(run, write=True):
     for e in telemetry:
         if e.get("event") == "placed":
             places[str(e.get("tile_type"))] = places.get(str(e.get("tile_type")), 0) + 1
+    # Track label: programmatic (tb-api) runs journal their API actions in inputs.jsonl with actor "agent" and
+    # dispatch "tb-api", so the published scorer attributes their milestones exactly like XTEST receipts.
+    dispatch = {}
+    for a in actions:
+        dispatch[a.get("dispatch", "unknown")] = dispatch.get(a.get("dispatch", "unknown"), 0) + 1
     result = {"run": run.name, "observer_version": start.get("observer_version"),
+              "track": manifest.get("track", "screen"), "api": manifest.get("api"),
+              "agent_kind": manifest.get("agent_kind"), "input_dispatch": dispatch,
               "published_score": published["agency_score"],
               "published_milestones_game_s": {m: round(v.get("game_updates", 0) / 60, 1)
                                               for m, v in published["first_unlocks"].items()},

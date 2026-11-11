@@ -1,0 +1,42 @@
+{
+  "run": "terrabot-proof-01",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "agent_kind": "scripted",
+  "verdict": "clean",
+  "flags": [],
+  "notes": [
+    "observer journal has no end event (game killed at shutdown before world unload, or crashed)"
+  ],
+  "journal": {
+    "events": 562,
+    "heartbeats": 549,
+    "game_seconds": 549,
+    "deaths": 5
+  },
+  "actions": {
+    "total": 5578,
+    "by_op": {
+      "craft": 1,
+      "input": 5094,
+      "select": 4,
+      "stop": 479
+    }
+  },
+  "published_score": 4,
+  "published_milestones": [
+    "wood_1",
+    "wood_10",
+    "wood_25",
+    "workbench_1"
+  ],
+  "published_without_attribution": 0,
+  "programs": {
+    "total": 3,
+    "timeouts": [],
+    "errors": [
+      "03_bench"
+    ],
+    "api_error_lines": 2
+  }
+}

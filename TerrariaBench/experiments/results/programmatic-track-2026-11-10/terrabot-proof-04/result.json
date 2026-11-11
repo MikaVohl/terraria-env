@@ -1,0 +1,111 @@
+{
+  "kind": "scripted",
+  "programs": [
+    {
+      "name": "01_wood",
+      "exit": "ok",
+      "seconds": 17.728,
+      "tail": "wood 30\nwood 52\nwood 52 ok at 2094.978 293.688 08:31\nbench at 2094 294 sword: 1 stations ['WorkBenches']\ncarrying bench: 1 wood 35\n"
+    },
+    {
+      "name": "02_gel",
+      "exit": "ok",
+      "seconds": 307.078,
+      "tail": "gel 0 life 94\ngel 2 life 94\ngel 2 life 86\ngel 3 life 90\ngel 3 life 90\ngel 3 life 90\ngel 6 life 84\ngel 6 life 77\ngel 6 life 77\ngel 6 life 71\ngel 6 life 66\ngel 6 life 66\ngel 9 life 66\ngel 9 wood 35 13:40\n"
+    },
+    {
+      "name": "03_bench",
+      "exit": "ok",
+      "seconds": 1.923,
+      "tail": "torches 27 wood 26 stations ['WorkBenches']\ncarrying bench: 1\n"
+    },
+    {
+      "name": "04_dig",
+      "exit": "ok",
+      "seconds": 203.285,
+      "tail": "??##...#?\n?????????????#.t??\nblocked at 2075 390 fail 7 \n??###...~........#\n???###~~~~~~~~~~~#\n??###~~~~~~~~~~~~#\n???####~~~~~~~~~~#\n????####~~~~~~~~~#\n?????###@~~~~~~###\n??????###~~~~~####\n???????####~#####?\n????????#####.###?\n?????????#####.##?\n???????????##...#?\n?????????????#.t??\nblocked at 2075 390 fail 8 \n??###...~........#\n???###~~~~~~~~~~~#\n??###~~~~~~~~~~~~#\n???####~~~~~~~~~~#\n????####~~~~~~~~~#\n?????###@~~~~~~###\n??????###~~~~~####\n???????####~#####?\n????????#####.###?\n?????????#####.##?\n???????????##...#?\n?????????????#.t??\ndepth 96 stone 44 iron 0 lead 11 torches 19 life 100 17:05\n"
+    },
+    {
+      "name": "05_build",
+      "exit": "error",
+      "seconds": 28.48,
+      "tail": ""
+    }
+  ],
+  "wall_seconds": 558.5039246082306,
+  "ended_unix": 1794365013.3024487,
+  "final_me": {
+    "x": 2075.968,
+    "y": 389.188,
+    "left": 2075.343,
+    "top": 387.875,
+    "width": 1.25,
+    "height": 2.625,
+    "tile_x": 2075,
+    "foot_y": 390,
+    "vx": 0,
+    "vy": 0,
+    "on_ground": true,
+    "dir": -1,
+    "fall_tiles": 0,
+    "life": 0,
+    "life_max": 100,
+    "mana": 20,
+    "mana_max": 20,
+    "defense": 0,
+    "dead": true,
+    "respawn_ticks": 456,
+    "breath": 0,
+    "breath_max": 200,
+    "wet": true,
+    "lava": false,
+    "immune_ticks": 0,
+    "potion_sickness_ticks": 0,
+    "held": {
+      "slot": 7,
+      "name": "Work Bench",
+      "type": 36,
+      "stack": 1,
+      "pick": 0,
+      "axe": 0,
+      "hammer": 0,
+      "damage": -1,
+      "place_tile": "WorkBenches",
+      "place_wall": false,
+      "place_solid": false,
+      "consumable": true,
+      "heal_life": 0,
+      "use_time": 10,
+      "use_animation": 14,
+      "tile_boost": 0,
+      "auto_reuse": true,
+      "ammo": false,
+      "armor": false,
+      "accessory": false,
+      "max_stack": 9999
+    },
+    "selected_slot": 7,
+    "item_busy_ticks": 0,
+    "reach_tiles": [
+      5,
+      4
+    ],
+    "buffs": [],
+    "armor": [
+      null,
+      null,
+      null
+    ],
+    "accessories": [],
+    "layer": "underground",
+    "biomes": [],
+    "stations_near": [],
+    "chest_open": false,
+    "inventory_open": false,
+    "spawn": [
+      2100,
+      295
+    ],
+    "tick": 33545
+  }
+}

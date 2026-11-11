@@ -1,0 +1,46 @@
+{
+  "run": "terrabot-pilot-opus-01",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "agent_kind": "llm",
+  "verdict": "clean",
+  "flags": [],
+  "notes": [
+    "observer journal has no end event (game killed at shutdown before world unload, or crashed)"
+  ],
+  "journal": {
+    "events": 2157,
+    "heartbeats": 2103,
+    "game_seconds": 2103,
+    "deaths": 3
+  },
+  "actions": {
+    "total": 9548,
+    "by_op": {
+      "craft": 43,
+      "equip": 10,
+      "input": 8581,
+      "select": 711,
+      "stop": 203
+    }
+  },
+  "published_score": 7,
+  "published_milestones": [
+    "wood_1",
+    "wood_10",
+    "wood_25",
+    "workbench_1",
+    "wood_100",
+    "furnace_1",
+    "early_bar_5"
+  ],
+  "published_without_attribution": 0,
+  "programs": {
+    "total": 46,
+    "timeouts": [],
+    "errors": [
+      "t019"
+    ],
+    "api_error_lines": 2
+  }
+}

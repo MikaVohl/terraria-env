@@ -1,0 +1,89 @@
+{
+  "kind": "llm",
+  "model": "claude-opus-5-5",
+  "stop_reason": "wall_budget",
+  "turns": 47,
+  "usd": 2.4278804000000003,
+  "calls": 46,
+  "wall_seconds": 2103.700695991516,
+  "ended_unix": 1794377040.7838469,
+  "final_me": {
+    "x": 2102.375,
+    "y": 254.688,
+    "left": 2101.75,
+    "top": 253.375,
+    "width": 1.25,
+    "height": 2.625,
+    "tile_x": 2102,
+    "foot_y": 255,
+    "vx": 0,
+    "vy": 0,
+    "on_ground": true,
+    "dir": 1,
+    "fall_tiles": 0,
+    "life": 100,
+    "life_max": 100,
+    "mana": 20,
+    "mana_max": 20,
+    "defense": 3,
+    "dead": false,
+    "respawn_ticks": 0,
+    "breath": 200,
+    "breath_max": 200,
+    "wet": false,
+    "lava": false,
+    "immune_ticks": 0,
+    "potion_sickness_ticks": 0,
+    "held": {
+      "slot": 0,
+      "name": "Copper Shortsword",
+      "type": 3507,
+      "stack": 1,
+      "pick": 0,
+      "axe": 0,
+      "hammer": 0,
+      "damage": 5,
+      "place_tile": null,
+      "place_wall": false,
+      "place_solid": false,
+      "consumable": false,
+      "heal_life": 0,
+      "use_time": 13,
+      "use_animation": 13,
+      "tile_boost": 0,
+      "auto_reuse": false,
+      "ammo": false,
+      "armor": false,
+      "accessory": false,
+      "max_stack": 1
+    },
+    "selected_slot": 0,
+    "item_busy_ticks": 0,
+    "reach_tiles": [
+      5,
+      4
+    ],
+    "buffs": [
+      {
+        "name": "Happy!",
+        "ticks": 1
+      }
+    ],
+    "armor": [
+      "Wood Helmet",
+      "Wood Breastplate",
+      "Wood Greaves"
+    ],
+    "accessories": [],
+    "layer": "surface",
+    "biomes": [],
+    "stations_near": [],
+    "chest_open": false,
+    "inventory_open": false,
+    "spawn": [
+      2101,
+      231
+    ],
+    "tick": 126213
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "run": "terrabot-proof-09",
+  "observer_version": "0.7",
+  "published_score": 6,
+  "published_milestones_game_s": {
+    "wood_1": 6.5,
+    "wood_10": 6.7,
+    "wood_25": 14.5,
+    "workbench_1": 25.3,
+    "torch_10": 499.8,
+    "furnace_1": 1924.8
+  },
+  "extended_count": 7,
+  "extended_available": 19,
+  "extended_game_s": {
+    "gel_1": 279.0,
+    "torch_crafted": 499.8,
+    "workbench_placed": 25.4,
+    "layer_underground": 538.0,
+    "ore_copper_tin": 598.0,
+    "furnace_crafted": 1924.8,
+    "furnace_placed": 1926.1
+  },
+  "extended_unavailable": [],
+  "deaths": 0,
+  "max_depth_tiles": 121,
+  "world": {
+    "seed": "41100105",
+    "evil": "crimson",
+    "surface_tile": 337.0,
+    "rock_layer_tile": 541.0
+  },
+  "crafted": {
+    "Work Bench": 2,
+    "Wooden Sword": 1,
+    "Torch": 30,
+    "Furnace": 2
+  },
+  "placed_tile_types": {
+    "18": 4,
+    "4": 29,
+    "17": 2
+  },
+  "game_seconds": 2033
+}

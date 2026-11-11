@@ -1,0 +1,21 @@
+{
+  "run": "terrabot-live-03",
+  "observer_version": "0.7",
+  "published_score": 0,
+  "published_milestones_game_s": {},
+  "extended_count": 0,
+  "extended_available": 19,
+  "extended_game_s": {},
+  "extended_unavailable": [],
+  "deaths": 0,
+  "max_depth_tiles": 14,
+  "world": {
+    "seed": "41100101",
+    "evil": "crimson",
+    "surface_tile": 292.0,
+    "rock_layer_tile": 466.0
+  },
+  "crafted": {},
+  "placed_tile_types": {},
+  "game_seconds": 36
+}

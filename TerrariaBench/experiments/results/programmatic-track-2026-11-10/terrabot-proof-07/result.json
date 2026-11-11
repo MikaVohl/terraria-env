@@ -1,0 +1,91 @@
+{
+  "kind": "scripted",
+  "programs": [
+    {
+      "name": "01_wood",
+      "exit": "ok",
+      "seconds": 17.465,
+      "tail": "wood 31\nwood 51\nwood 51 ok at 2094.978 293.688 08:31\nbench at 2093 294 sword: 1 stations ['WorkBenches']\ncarrying bench: 1 wood 34\n"
+    },
+    {
+      "name": "02_gel",
+      "exit": "ok",
+      "seconds": 337.326,
+      "tail": "gel 0 life 83\ngel 2 life 77\ngel 2 life 71\ngel 3 life 71\ngel 3 life 100\ngel 5 life 100\ngel 5 life 77\ngel 5 life 77\ngel 5 life 77\ngel 5 life 77\ngel 5 life 77\ngel 5 life 77\ngel 6 life 70\ngel 6 life 64\ngel 6 life 64\ngel 6 life 51\ngel 8 life 51\ngel 8 wood 34 14:10\n"
+    },
+    {
+      "name": "03_bench",
+      "exit": "ok",
+      "seconds": 2.32,
+      "tail": "torches 24 wood 26 stations ['WorkBenches']\ncarrying bench: 1\n"
+    },
+    {
+      "name": "04_dig",
+      "exit": "ok",
+      "seconds": 284.987,
+      "tail": "shaft at (2043, 295)\nshaft hard at 2042 295\nleg done 35 -1 at 1997 330 stone 64 ore 7 220\ndepth 44 stone 87 iron 0 lead 15 torches 13 life 100 285 s 18:57\n"
+    },
+    {
+      "name": "05_build",
+      "exit": "error",
+      "seconds": 147.354,
+      "tail": "##########..######\n#############..######\n##########.tt.....###\n???#######.tt.tttt###\n????######@--..ttt###\n?????#########.######\n??????###############\nunderground build failed: could not place Lead Anvil; tried [(2034, 330), (2033, 330), (2032, 330), (2031, 330), (2030, 330), (2034, 330), (2033, 330), (2032, 330), (2031, 330), (2030, 330), (2034, 330), (2033, 330), (2032, 330), (2031, 330), (2030, 330), (2034, 330), (2033, 330), (2032, 330), (2031, 330), (2030, 330), (2034, 330), (2033, 330), (2032, 330), (2031, 330), (2030, 330)]\nclimbing to [2094, 294] False\nfurnace at 2101 294 ['Furnaces']\n"
+    }
+  ],
+  "wall_seconds": 789.461695432663,
+  "ended_unix": 1794369442.432206,
+  "final_me": {
+    "x": 2105.98,
+    "y": 293.688,
+    "left": 2105.355,
+    "top": 292.375,
+    "width": 1.25,
+    "height": 2.625,
+    "tile_x": 2105,
+    "foot_y": 294,
+    "vx": 0,
+    "vy": 0,
+    "on_ground": true,
+    "dir": 1,
+    "fall_tiles": 0,
+    "life": 100,
+    "life_max": 100,
+    "mana": 20,
+    "mana_max": 20,
+    "defense": 0,
+    "dead": false,
+    "respawn_ticks": 0,
+    "breath": 200,
+    "breath_max": 200,
+    "wet": false,
+    "lava": false,
+    "immune_ticks": 0,
+    "potion_sickness_ticks": 0,
+    "held": null,
+    "selected_slot": 9,
+    "item_busy_ticks": 0,
+    "reach_tiles": [
+      5,
+      4
+    ],
+    "buffs": [],
+    "armor": [
+      null,
+      null,
+      null
+    ],
+    "accessories": [],
+    "layer": "surface",
+    "biomes": [],
+    "stations_near": [
+      "Furnaces"
+    ],
+    "chest_open": false,
+    "inventory_open": false,
+    "spawn": [
+      2100,
+      295
+    ],
+    "tick": 47402
+  }
+}

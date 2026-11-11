@@ -1,0 +1,114 @@
+{
+  "kind": "scripted",
+  "programs": [
+    {
+      "name": "01_wood",
+      "exit": "ok",
+      "seconds": 26.044,
+      "tail": "wood 26\nwood 48\nwood 62\nwood 62 ok at 2091.001 293.688 08:39\nbench at 2090 294 sword: 1 stations ['WorkBenches']\ncarrying bench: 1 wood 45\n"
+    },
+    {
+      "name": "02_gel",
+      "exit": "ok",
+      "seconds": 124.32,
+      "tail": "gel 0 life 86\ngel 0 life 86\ngel 0 life 86\ngel 0 life 86\ngel 0 life 74\ngel 1 life 57\ngel 1 life 57\ngel 1 life 57\ngel 1 life 57\ngel 2 life 51\ngel 2 life 31\ngel 3 life 25\ngel 3 life 25\ngel 3 life 25\ngel 3 life 25\ngel 4 life 6\ngel 4 life 30\ngel 6 life 33\ngel 6 life 38\ngel 7 life 25\ngel 7 wood 45 10:45\n"
+    },
+    {
+      "name": "03_bench",
+      "exit": "ok",
+      "seconds": 1.975,
+      "tail": "torches 21 wood 38 stations ['WorkBenches']\ncarrying bench: 1\n"
+    },
+    {
+      "name": "04_dig",
+      "exit": "ok",
+      "seconds": 1423.05,
+      "tail": "####\nblocked at 2109 349 target (2101, 349) \n.#####t...#######?\n.#####...#######??\n.#####...#######??\n.#####....#######?\n.####...t.#######?\n.t......@.#######?\n.......#########??\n.......########???\n....##########????\n~~###########?????\n~~##########??????\n~~#########???????\nblocked at 2102 353 target (2094, 349) \n........####...t.#\n........t........#\n..............####\n..............####\n...........#######\n~~~~~~~~@#########\n~~~~~~~~~#########\n##~~~~~~~#########\n#~~~~~###########?\n~~~~~##########???\n~~~~#########?????\n~~~~########??????\ndepth 55 stone 51 iron 0 lead 12 torches 16 life 100 10:30\n"
+    },
+    {
+      "name": "05_build",
+      "exit": "error",
+      "seconds": 46.318,
+      "tail": "furnace at 2122 349 ['Furnaces', 'WorkBenches']\n"
+    }
+  ],
+  "wall_seconds": 1621.7143518924713,
+  "ended_unix": 1794366693.792659,
+  "final_me": {
+    "x": 2126.009,
+    "y": 348.688,
+    "left": 2125.384,
+    "top": 347.375,
+    "width": 1.25,
+    "height": 2.625,
+    "tile_x": 2126,
+    "foot_y": 349,
+    "vx": 0,
+    "vy": 0,
+    "on_ground": true,
+    "dir": -1,
+    "fall_tiles": 0,
+    "life": 100,
+    "life_max": 100,
+    "mana": 20,
+    "mana_max": 20,
+    "defense": 0,
+    "dead": false,
+    "respawn_ticks": 0,
+    "breath": 200,
+    "breath_max": 200,
+    "wet": false,
+    "lava": false,
+    "immune_ticks": 0,
+    "potion_sickness_ticks": 0,
+    "held": {
+      "slot": 7,
+      "name": "Lead Bar",
+      "type": 704,
+      "stack": 4,
+      "pick": 0,
+      "axe": 0,
+      "hammer": 0,
+      "damage": -1,
+      "place_tile": "MetalBars",
+      "place_wall": false,
+      "place_solid": false,
+      "consumable": true,
+      "heal_life": 0,
+      "use_time": 10,
+      "use_animation": 14,
+      "tile_boost": 0,
+      "auto_reuse": true,
+      "ammo": false,
+      "armor": false,
+      "accessory": false,
+      "max_stack": 9999
+    },
+    "selected_slot": 7,
+    "item_busy_ticks": 0,
+    "reach_tiles": [
+      5,
+      4
+    ],
+    "buffs": [],
+    "armor": [
+      null,
+      null,
+      null
+    ],
+    "accessories": [],
+    "layer": "underground",
+    "biomes": [],
+    "stations_near": [
+      "Furnaces",
+      "WorkBenches"
+    ],
+    "chest_open": false,
+    "inventory_open": false,
+    "spawn": [
+      2100,
+      295
+    ],
+    "tick": 97322
+  }
+}

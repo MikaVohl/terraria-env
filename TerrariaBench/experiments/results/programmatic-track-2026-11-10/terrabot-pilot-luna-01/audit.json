@@ -1,0 +1,45 @@
+{
+  "run": "terrabot-pilot-luna-01",
+  "track": "programmatic",
+  "api": "tb-api-1.0",
+  "agent_kind": "llm",
+  "verdict": "clean",
+  "flags": [],
+  "notes": [
+    "observer journal has no end event (game killed at shutdown before world unload, or crashed)"
+  ],
+  "journal": {
+    "events": 507,
+    "heartbeats": 487,
+    "game_seconds": 487,
+    "deaths": 2
+  },
+  "actions": {
+    "total": 1564,
+    "by_op": {
+      "craft": 5,
+      "input": 1500,
+      "select": 41,
+      "stop": 18
+    }
+  },
+  "published_score": 3,
+  "published_milestones": [
+    "wood_1",
+    "wood_10",
+    "workbench_1"
+  ],
+  "published_without_attribution": 0,
+  "programs": {
+    "total": 25,
+    "timeouts": [
+      "t021",
+      "t025"
+    ],
+    "errors": [
+      "t001",
+      "t012"
+    ],
+    "api_error_lines": 4
+  }
+}

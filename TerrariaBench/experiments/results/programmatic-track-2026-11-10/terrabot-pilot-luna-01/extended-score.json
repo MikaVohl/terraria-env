@@ -1,0 +1,36 @@
+{
+  "run": "terrabot-pilot-luna-01",
+  "observer_version": "0.7",
+  "published_score": 3,
+  "published_milestones_game_s": {
+    "wood_1": 14.9,
+    "wood_10": 15.8,
+    "workbench_1": 37.0
+  },
+  "extended_count": 3,
+  "extended_available": 19,
+  "extended_game_s": {
+    "gel_1": 214.0,
+    "torch_crafted": 239.1,
+    "workbench_placed": 145.6
+  },
+  "extended_unavailable": [],
+  "deaths": 2,
+  "max_depth_tiles": 1,
+  "world": {
+    "seed": "41100107",
+    "evil": "corruption",
+    "surface_tile": 337.0,
+    "rock_layer_tile": 415.0
+  },
+  "crafted": {
+    "Work Bench": 1,
+    "Wood Platform": 10,
+    "Torch": 9,
+    "Wooden Bow": 1
+  },
+  "placed_tile_types": {
+    "18": 1
+  },
+  "game_seconds": 487
+}

@@ -1,0 +1,37 @@
+{
+ "01_wood": {
+  "npcs": 5,
+  "inventory": 8,
+  "find_tiles": 2,
+  "me": 75,
+  "tiles": 92,
+  "stop": 8,
+  "select": 1,
+  "input": 55,
+  "wait": 8,
+  "items": 8,
+  "world": 7,
+  "time": 1
+ },
+ "02_gel": {
+  "inventory": 783,
+  "npcs": 1192,
+  "me": 4134,
+  "world": 198,
+  "tiles": 360,
+  "input": 5033,
+  "stop": 471,
+  "items": 472,
+  "select": 1,
+  "wait": 85,
+  "time": 1
+ },
+ "03_bench": {
+  "craft": 1,
+  "me": 13,
+  "tiles": 9,
+  "events": 3,
+  "select": 2,
+  "input": 6
+ }
+}

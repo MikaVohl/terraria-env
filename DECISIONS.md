@@ -76,3 +76,17 @@ Last updated 2026-11-08 20:45 UTC.
 | E1 | Art licensing | Keep official Terraria textures (site, replays, videos, player) | **Decided** (2026-11-10). Public release remains a separate question: Re-Logic owns the art; the repo itself still ships no game assets (textures load from a local install) |
 | E2 | Official-track pages | Two leaderboards, milestone timelines, per-run video, harness card, failure gallery, terrariabench.com context, cost/latency | **Recommended** |
 | E3 | Placeholders at launch | Only where no final data exists, visibly marked | **Recommended** |
+
+## F. Programmatic tracks
+
+Evidence: `TerrariaBench/experiments/programmatic-track-2026-11-10.md`.
+
+| ID | Decision | Options | Evidence | Status |
+|---|---|---|---|---|
+| F1 | Scope of the first programmatic track | Official Terraria only (TerrariaBench-API); Terraria-Lite-API and the multiplayer team variant later | Built and tested on the official game first; Lite-API and teams are future work | **Decided** |
+| F2 | API contract | `tb-api-1.0` (draft): reads limited to map-revealed or lit on-screen tiles and visible NPCs (position/type/health only); actions = control flags + cursor for N updates, real item use, `Main.CraftItem`, `ItemSlot.SwapEquip`, chest UI code; no teleport/spawn/tile edits; frozen per leaderboard | Live leakage tests pass (0 unrevealed cells or ores returned; NPC field whitelist); proxy refuses non-contract ops | **Recommended** (freeze at Gate 1) |
+| F3 | Input attribution | Proxy journals every API action to `inputs.jsonl` (`actor: agent`, `dispatch: tb-api`); published scoring unchanged | Scripted runs score 4–7 published checkpoints with attribution vs 0 without (the transfer-PoC gap) | **Decided** |
+| F4 | Pathfinder | Part of the frozen library (`tb/path.py`, published capability list): walk, step, jump ≤4 rows, falls, platforms, ropes, doors, surface swim, dig, pillar; never mines next to liquid | 30 offline tests; real game: walks, digs, pillars work; long climbs out of deep shafts and drowning in flooded caves were the main failures | **Recommended** |
+| F5 | Sandbox | `python -I -S` + audit hook + `unshare -rn` (no network namespace) + rlimits; imports stdlib + `tb` + workspace; files workspace-only; default 60 s per program | 18 sandbox tests pass on macOS and Linux (network namespace on Linux) | **Decided** |
+| F6 | Run audit | Scripted journal audit on every run (teleport, item provenance, craft provenance, attribution, forbidden ops, harness health); LLM auditor only with spare budget | All scripted proof runs audited; one false positive (coin conversion) fixed | **Decided** |
+| F7 | Pilot models / budgets | Opus 5.5 (cheapest strong model with prompt caching); GPT-6 Astra is on the gateway at ~$8.5/M in, $34/M out (probed) | Opus 5.5 pilot reached a placed anvil in 23 game-min for $2.43 (≈$4/game-hour); total spend $2.48 of $10 | **Recommended**: Opus 5.5 for EoC runs; Astra after a re-fit price probe |
