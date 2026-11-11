@@ -52,7 +52,7 @@ void env_obs(const Env *e, Obs *o)
     memset(o->status, 0, sizeof o->status);
 
     o->status[OBS_HEALTH] = clamp01((float)e->health / (float)e->max_health);
-    o->status[OBS_TIER]   = clamp01((float)e->tool_tier / (float)TIER_GOLD_PICK);
+    o->status[OBS_TIER]   = clamp01((float)pick_tier(e) / (float)TIER_GOLD_PICK);
     o->status[OBS_MAX_HEALTH]=(float)e->max_health/HEALTH_CAP;
     o->status[OBS_WEAPON]=(float)e->weapon/(WEAPON_COUNT-1);
     o->status[OBS_ARMOR]=(float)e->armor/(ARMOR_LEVELS-1);
@@ -122,14 +122,22 @@ void env_obs(const Env *e, Obs *o)
     if (e->selected < PLACEABLE_COUNT)
         o->status[OBS_SEL_0 + e->selected] = 1.0f;
 
-    for (i = 0; i < ITEM_COUNT; i++)
-        o->status[OBS_INV_0 + i] = sqrtf((float)e->inv[i]/OBS_INV_CLIP);
+    /* Counts saturate at OBS_INV_CLIP (EXPLICIT_TOOLS stacks reach 9,999). */
+    for (i = 0; i < ITEM_COUNT; i++) {
+        int n = e->inv[i] < OBS_INV_CLIP ? e->inv[i] : OBS_INV_CLIP;
+        o->status[OBS_INV_0 + i] = sqrtf((float)n/OBS_INV_CLIP);
+    }
 
     for (i = 0; i < ACH_COUNT; i++)
         o->status[OBS_ACH_0 + i] = has_ach(e, i) ? 1.0f : 0.0f;
 #if INV_LOG
-    for (i = 0; i < ITEM_COUNT; i++)
-        o->status[OBS_INVLOG_0 + i] = logf(1.0f + (float)e->inv[i]) / logf(1.0f + (float)OBS_INV_CLIP);
+    for (i = 0; i < ITEM_COUNT; i++) {
+        int n = e->inv[i] < OBS_INV_CLIP ? e->inv[i] : OBS_INV_CLIP;
+        o->status[OBS_INVLOG_0 + i] = logf(1.0f + (float)n) / logf(1.0f + (float)OBS_INV_CLIP);
+    }
+#endif
+#if EXPLICIT_TOOLS
+    o->status[OBS_HELD_0 + e->held] = 1.0f;
 #endif
 #if MINIMAP
     for (i = 0; i < MAP_CELLS; i++) {
@@ -142,8 +150,17 @@ void env_obs(const Env *e, Obs *o)
 #endif
     /* Per cell: kind one-hot (MOB_KINDS-1 regular kinds, then the boss),
        health fraction, movement phase. Regular mobs hide in darkness; the
-       3x3 boss is always drawn (its position is in the status block too). */
-    _Static_assert(OBS_ENTITY_CHANNELS==MOB_KINDS+2,"entity channel layout");
+       3x3 boss is always drawn (its position is in the status block too).
+       BG_WALLS: the wall channel of every lit in-world cell. */
+    _Static_assert(OBS_MOB_CHANNELS==MOB_KINDS+2,"entity channel layout");
+#if BG_WALLS
+    for (row = 0; row < VIEW_H; row++)
+        for (col = 0; col < VIEW_W; col++) {
+            const int x = x0 + col, y = y0 + row, k = row * VIEW_W + col;
+            if (in_bounds(x, y) && o->tile[k] != OBS_UNKNOWN && e->wall[y][x] != WALL_NONE)
+                o->status[OBS_ENTITY_0 + k * OBS_ENTITY_CHANNELS + OBS_WALL_CHANNEL] = 1.0f;
+        }
+#endif
     for(i=0;i<MAX_MOBS;i++) {
         const Mob *m=&e->mobs[i];
         int x=m->x-x0,y=m->y-y0;

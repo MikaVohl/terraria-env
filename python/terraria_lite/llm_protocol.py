@@ -70,7 +70,8 @@ class Session:
                 "scalars": dict(zip(STATUS_NAMES, map(float, status[:len(STATUS_NAMES)]))),
                 "inventory": inventory,
                 "achievements": [name for i, name in enumerate(SPEC.achievement_names) if status[SPEC.status_ach0+i] > .5],
-                "visible_entities": [{"cell": i, "features": x.tolist()} for i, x in enumerate(entities) if x.any()],
+                "visible_entities": [{"cell": i, "features": x[:SPEC.mob_channels].tolist()} for i, x in enumerate(entities)
+                                     if x[:SPEC.mob_channels].any()],
                 "legal_actions": np.flatnonzero(self.env.action_mask()).tolist(),
                 "invalid_requests": self.invalid_requests, "illegal_attempts": self.illegal_attempts}
         if SPEC.status_day_phase is not None:
@@ -82,6 +83,11 @@ class Session:
                                      "phase2": bool(status[boss+2] > .5), "dx_over_32": float(status[boss+3]),
                                      "dy_over_32": float(status[boss+4])},
                             "selected_slot_one_hot": status[boss+5:SPEC.status_inv0].tolist()}
+        if SPEC.wall_channel is not None:
+            # v10 BG_WALLS: 1 where a lit cell has a background wall (0 unlit or none).
+            result["walls"] = (entities[:, SPEC.wall_channel] > .5).astype(int).reshape(SPEC.view_h, SPEC.view_w).tolist()
+        if SPEC.status_held0 is not None:
+            result["held"] = SPEC.item_names[int(np.argmax(status[SPEC.status_held0:SPEC.status_held0+SPEC.n_items]))]
         return result
 
     def knowledge(self):
@@ -96,8 +102,14 @@ class Session:
                                   "entity_features": ["blue_slime_presence", "cave_bat_presence", "health", "movement_phase"]
                                   if SPEC.entity_channels == 4 else
                                   ["blue_slime_presence", "cave_bat_presence", "zombie_presence", "demon_eye_presence",
-                                   "skeleton_presence", "eye_of_cthulhu_presence", "health", "movement_phase"]},
-                "tool_rules": "Independent iron/gold pick ownership; duplicates consume ingredients; strongest mining tier used automatically" if SPEC.version >= 6 else "Legacy tier ownership; crafting lower tiers after higher tiers is blocked",
+                                   "skeleton_presence", "eye_of_cthulhu_presence", "health", "movement_phase"],
+                                  **({"walls": "view grid, 1 = lit cell with a background wall"}
+                                     if SPEC.wall_channel is not None else {})},
+                "tool_rules": ("Pickaxes and the axe are inventory items (starter copper pickaxe and copper axe); mining "
+                               "auto-selects the axe for trunks and the best owned pickaxe otherwise; 'held' is the item in hand"
+                               if SPEC.status_held0 is not None else
+                               "Independent iron/gold pick ownership; duplicates consume ingredients; strongest mining tier used automatically"
+                               if SPEC.version >= 6 else "Legacy tier ownership; crafting lower tiers after higher tiers is blocked"),
                 "action_budget": self.max_steps,
                 "clock": "One tick per primitive action, no ticks during model thinking. No reset or undo.",
                 "legality": "Masks are not strategy advice. Hidden-terrain attempts may fail; illegal actions still consume a tick."}

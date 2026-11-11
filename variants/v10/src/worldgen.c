@@ -559,6 +559,11 @@ static void gen_chests(Env *e, Rect *taken, int *n) {
             if (!place_room(e, taken, n, 7, 4, xlo, xhi, under ? 0 : CAVERN_Y + 3,
                             under ? CAVERN_Y - 2 : bedrock_top() - 3, &r)) continue;
             carve_room(e, r, TILE_WOOD);
+#if BG_WALLS
+            /* Underground cabins (CaveHouse, "Micro Biomes") are lined with
+               Planked Wall 27; the natural walls below never overwrite it. */
+            for (int y = r.y0; y <= r.y1; ++y) for (int x = r.x0; x <= r.x1; ++x) e->wall[y][x] = WALL_PLANKED;
+#endif
             c->x = r.x0 + 3; c->y = r.y1;
         }
         env_object_write(e, TILE_CHEST, c->x, c->y);
@@ -578,6 +583,85 @@ static int count_tiles(const Env *e, Tile t, int lo, int hi) {
     for (int y = lo; y <= hi; y++) for (int x = 0; x < WORLD_W; x++) n += e->tiles[y][x] == t;
     return n;
 }
+
+#if BG_WALLS
+/* ---- 8. Background walls (BG_WALLS) --------------------------------------
+   Two natural-wall passes of WorldGen.GenerateWorld, run on the finished
+   tiles with their own random stream (seeded from the world stream, which is
+   left untouched), so every tile equals the BG_WALLS=0 world. */
+
+/* WorldGen.nextCount (countTiles, maxTileCount 1500): flood fill over
+   non-solid cells; touching the world border or any cell that already has a
+   wall makes the region "too big". seen[i] == stamp marks this call's
+   visits (no per-call clear); cells lists the open cells counted. Regions are
+   disjoint and a verdict never changes, so a rejected region's cells are
+   marked in bad and later draws into it return at once (same outcome, no
+   repeated flood of the big cavern networks). */
+#define CAVE_WALL_MAX 1500
+static int cave_region(const Env *e, int sx, int sy, uint16_t *seen, uint16_t stamp, uint8_t *bad, int16_t *cells) {
+    int16_t stack[2 * (4 * CAVE_WALL_MAX + 4)];
+    int n = 0, top = 0;
+    if (bad[sy * WORLD_W + sx]) return 0;
+    stack[top++] = (int16_t)sx; stack[top++] = (int16_t)sy;
+    while (top > 0) {
+        int y = stack[--top], x = stack[--top];
+        if (x <= 1 || x >= WORLD_W - 1 || y <= 1 || y >= WORLD_H - 1 || e->wall[y][x] != WALL_NONE) goto reject;
+        if (seen[y * WORLD_W + x] == stamp || tile_solid((Tile)e->tiles[y][x])) continue;
+        seen[y * WORLD_W + x] = stamp;
+        cells[n++] = (int16_t)(y * WORLD_W + x);
+        if (n >= CAVE_WALL_MAX) goto reject;
+        static const int DX[4] = {-1, 1, 0, 0}, DY[4] = {0, 0, -1, 1};
+        for (int d = 0; d < 4; ++d) { stack[top++] = (int16_t)(x + DX[d]); stack[top++] = (int16_t)(y + DY[d]); }
+    }
+    if (n < 10) for (int i = 0; i < n; ++i) bad[cells[i]] = 1;
+    return n;
+reject:
+    for (int i = 0; i < n; ++i) bad[cells[i]] = 1;
+    return CAVE_WALL_MAX;
+}
+
+static void gen_walls(Env *e) {
+    uint64_t rng = e->rng ^ 0x57414C4C53ULL;   /* "WALLS" */
+    /* "Dirt Wall Backgrounds": per column a depth jitter d walks by
+       genRand.Next(-1, 2) within [0, 10]; going down, dirt walls start one
+       row below the first row where the column and both neighbours are solid
+       on two rows (here: under the highest of the three surface tiles, as the
+       pass runs before trees and houses) and end at worldSurface + d (rows
+       below worldSurface + 10). worldSurface is the bottom of this world's
+       surface layer, the column's dirt band (player_layer). Caves carved
+       later keep their walls (TileRunner leaves walls alone). */
+    int d = 0;
+    for (int x = 0; x < WORLD_W; ++x) {
+        d = clampi(d + rng_range(&rng, -1, 1), 0, 10);
+        int top = e->surface[x];
+        if (x > 0 && e->surface[x - 1] > top) top = e->surface[x - 1];
+        if (x + 1 < WORLD_W && e->surface[x + 1] > top) top = e->surface[x + 1];
+        int end = e->surface[x] + DIRT_DEPTH + (d < 9 ? d : 9);
+        for (int y = top + 1; y <= end && y < bedrock_top(); ++y)
+            if (e->wall[y][x] == WALL_NONE) e->wall[y][x] = WALL_DIRT;
+    }
+    /* "Cave Walls": maxTilesX * 0.04 enclosed cave regions (10 to 1499 open
+       cells, none walled yet) between (worldSurface + rockLayer) / 2 and the
+       bottom, up to 500 redraws each, filled by Spread.Wall (open cells only;
+       solid tiles stop it) with wall 59, 61, 170 or 171 (genRand.Next(4), the
+       case without mushroom, ice or lava). Other caves below the dirt walls
+       stay wall-less, as in Terraria. */
+    uint16_t seen[WORLD_W * WORLD_H] = {0}, stamp = 0;
+    uint8_t bad[WORLD_W * WORLD_H] = {0};
+    int16_t cells[CAVE_WALL_MAX];
+    const int ylo = (SURFACE_BASE + DIRT_DEPTH + CAVERN_Y) / 2, yhi = bedrock_top() - 1;
+    for (int k = 0; k < WORLD_W * 4 / 100; ++k) {
+        int n, tries = 0;
+        do {
+            int x = rng_range(&rng, 1, WORLD_W - 2), y = rng_range(&rng, ylo, yhi - 1);
+            n = cave_region(e, x, y, seen, ++stamp, bad, cells);
+        } while ((n >= CAVE_WALL_MAX || n < 10) && ++tries < 500);
+        if (tries >= 500) continue;
+        uint8_t w = (uint8_t)(WALL_CAVE_59 + rng_below(&rng, 4));
+        for (int i = 0; i < n; ++i) { e->wall[cells[i] / WORLD_W][cells[i] % WORLD_W] = w; bad[cells[i]] = 1; }
+    }
+}
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -625,5 +709,8 @@ void world_generate(Env *e) {
     for (int y = 0; y < WORLD_H; ++y)
         for (int x = 0; x < WORLD_W; ++x)
             if (e->tiles[y][x] == TILE_LEAVES) e->tiles[y][x] = TILE_AIR;
+#endif
+#if BG_WALLS
+    gen_walls(e);
 #endif
 }

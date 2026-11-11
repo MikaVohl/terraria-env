@@ -115,6 +115,14 @@ static const char *const MOB_SHEET[PX_MOBS] = {
 #define PX_POP_LIFE   1.0    /* damage number lifetime, seconds (CombatText ~60 ticks) */
 #define PX_STAB_TICKS 16     /* copper shortsword stab projectile life (AI_161) */
 #endif
+/* Mining tier: v10 derives it from the pickaxes owned (EXPLICIT_TOOLS); the
+   sprite index is never below the copper pickaxe. */
+#if PX_V10
+#define PX_PICK(e) (pick_tier(e) > 1 ? pick_tier(e) : 1)
+#else
+#define PX_PICK(e) ((e)->tool_tier)
+#endif
+
 
 struct PxUi {
     SDL_Window   *win;
@@ -137,6 +145,9 @@ struct PxUi {
     int           held_w[WEAPON_COUNT + 4], held_h[WEAPON_COUNT + 4];
     SDL_Texture  *tree_top;           /* Tree_Tops_0: 3 forest canopies, 80x80 */
     SDL_Texture  *tree_branch;        /* Tree_Branches_0: left / right x 3, 40x40 */
+#if BG_WALLS
+    SDL_Texture  *wall_sheet[WALL_COUNT]; /* original Wall_N sheets (36 px frames) */
+#endif
 #endif
     SDL_Texture  *pick[3];            /* copper, iron, gold: original item sprites */
     SDL_Texture  *axe;                /* starter Copper Axe, original Item_3506 */
@@ -1001,6 +1012,19 @@ PxUi *px_init(int scale, const char *tex_dir)
         ui.tree_branch = mk_tex(ui.ren, s.px, s.w, s.h); sheet_free(&s);
         if (!ui.tree_top || !ui.tree_branch) { px_shutdown(&ui); return NULL; }
     }
+#if BG_WALLS
+    {   /* Background walls: the original Wall_N sheets (13 x 5 frames of 36
+           px); draw_world samples the 16 px cores of the interior frames. */
+        char name[32];
+        Sheet s;
+        for (int w = WALL_NONE + 1; w < WALL_COUNT; w++) {
+            snprintf(name, sizeof name, "Wall_%d", WALL_TERRARIA_ID[w]);
+            if (!sheet_load(&ui, &s, dir, name)) { complain(dir, name); px_shutdown(&ui); return NULL; }
+            ui.wall_sheet[w] = mk_tex(ui.ren, s.px, s.w, s.h); sheet_free(&s);
+            if (!ui.wall_sheet[w]) { px_shutdown(&ui); return NULL; }
+        }
+    }
+#endif
 #endif
 
     ui.font = mk_font(ui.ren);
@@ -1056,6 +1080,9 @@ void px_shutdown(PxUi *ui)
     for(i=0;i<WEAPON_COUNT+4;i++) if(ui->held[i]) SDL_DestroyTexture(ui->held[i]);
     if(ui->tree_top) SDL_DestroyTexture(ui->tree_top);
     if(ui->tree_branch) SDL_DestroyTexture(ui->tree_branch);
+#if BG_WALLS
+    for(i=0;i<WALL_COUNT;i++) if(ui->wall_sheet[i]) SDL_DestroyTexture(ui->wall_sheet[i]);
+#endif
 #endif
     for(i=0;i<3;i++) if(ui->pick[i]) SDL_DestroyTexture(ui->pick[i]);
     if(ui->axe) SDL_DestroyTexture(ui->axe);
@@ -1301,6 +1328,20 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
                    lays down; stone starts below them. */
                 SDL_Texture *wall = ty <= e->surface[tx] + DIRT_DEPTH ? ui->bg_dirt
                                                                       : ui->bg_stone;
+                SDL_Rect base = {0, 0, PX_TILE, PX_TILE};
+                bool far_bg = false;
+#if PX_V10 && BG_WALLS
+                /* A real background wall: the 16 px core of one of Wall_N's
+                   six interior frames (columns 6-8, rows 1-2), varied per
+                   cell. Cells without one show the old rock backdrop pushed
+                   back (darkened), standing in for Terraria's distant
+                   underground background. */
+                if (e->wall[ty][tx] != WALL_NONE) {
+                    uint32_t h = hash2(tx, ty, 0x3A11u);
+                    wall = ui->wall_sheet[e->wall[ty][tx]];
+                    base = (SDL_Rect){36 * (6 + (int)(h % 3u)) + 8, 36 * (1 + (int)(h / 3u % 2u)) + 8, PX_TILE, PX_TILE};
+                } else far_bg = true;
+#endif
                 /* Same leak, general case: any block whose edge pixels are
                    partly transparent bleeds its backdrop out past itself where
                    it fronts sky. Lay the sky across the whole cell and pull the
@@ -1320,14 +1361,15 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
                 if (l || r || u) {
                     /* Crop the texture instead of squashing it, so the wall
                        stays pixel-aligned with the cells around it. */
-                    SDL_Rect wsrc = {l, u, PX_TILE - l - r, PX_TILE - u};
+                    SDL_Rect wsrc = {base.x + l, base.y + u, PX_TILE - l - r, PX_TILE - u};
                     SDL_Rect wdst = {sx + l, sy + u, wsrc.w, wsrc.h};
 
                     fill(ui, sx, sy, PX_TILE, PX_TILE, sky_col(e, ty));
                     SDL_RenderCopy(ui->ren, wall, &wsrc, &wdst);
                 } else {
-                    SDL_RenderCopy(ui->ren, wall, NULL, &dst);
+                    SDL_RenderCopy(ui->ren, wall, &base, &dst);
                 }
+                if (far_bg) fill(ui, sx + l, sy + u, PX_TILE - l - r, PX_TILE - u, 0x80000000u);
             }
 
             if (t == TILE_AIR) continue;
@@ -1540,14 +1582,20 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
     hearts=(e->max_health+19)/20;
     for(i=0;i<hearts&&i<20;i++) draw_heart(ui,6+(i%10)*9,HY+1+(i/10)*8,e->health>i*20);
 
+#if PX_V10 && EXPLICIT_TOOLS
+    /* The item in hand (Player.HeldItem): auto-selected tool, weapon or block. */
+    icon(ui, ui->item[e->held], 104, HY + 2, 16, 255);
+    text(ui, 123, HY + 5, UI_ACCENT, ITEM_NAME[e->held]);
+#else
 #if PX_V10 && FID_MINING
     bool chopping=e->mining_tree && e->tool_time>0;
 #else
     bool chopping=e->mining_tree && e->mine_cd;
 #endif
-    icon(ui,chopping?ui->axe:ui->pick[e->tool_tier-1],104,HY+2,16,255);
+    icon(ui,chopping?ui->axe:ui->pick[PX_PICK(e)-1],104,HY+2,16,255);
     text(ui, 123, HY + 5, UI_ACCENT,
-         chopping?"Copper Axe":TIER_NAME[e->tool_tier < 4 ? e->tool_tier : 3]);
+         chopping?"Copper Axe":TIER_NAME[PX_PICK(e) < 4 ? PX_PICK(e) : 3]);
+#endif
 
 #if PX_V10
     {   /* Terraria's clock: day 4:30 AM - 7:30 PM, night until 4:30 AM. */
@@ -1628,7 +1676,12 @@ static void draw_hud(PxUi *ui, const Env *e, const PxView *v)
         else if(it==ITEM_SUSPICIOUS_EYE) hint="[enter]/click summon the Eye (night)";
         else if(it==ITEM_LENS) hint=PX_STR(EYE_LENSES) " at a Demon Altar: [`] Suspicious Eye";
         else if(it==ITEM_DEMONITE_ORE) hint="dropped by the Eye of Cthulhu";
+#if EXPLICIT_TOOLS
+        else if(it==ITEM_COPPER_PICK || it==ITEM_IRON_PICK || it==ITEM_GOLD_PICK) hint="the best pickaxe is auto-selected for mining";
+        else if(it==ITEM_COPPER_AXE) hint="auto-selected for tree trunks";
+#else
         else if(it==ITEM_IRON_PICK || it==ITEM_GOLD_PICK) hint="crafting upgrades your pickaxe";
+#endif
         else if(it==ITEM_WOOD_ARMOR || it==ITEM_IRON_ARMOR || it==ITEM_GOLD_ARMOR) hint="crafting equips torso armor";
 #else
         if(it==ITEM_LESSER_POTION) hint="[c] heal 50; shared cooldown 60";
@@ -2043,6 +2096,10 @@ static void draw_tools(PxUi *ui, const Env *e, const PxView *v)
         else draw_swing(ui, v->swing_weapon, e->facing, px, py, p);
         return;
     }
+#if TOOL_DAMAGE
+    /* Tool uses arrive as real swings through the fx channel (above). */
+    (void)e;
+#else
 #if FID_MINING
     if (e->tool_time > 0) {
 #else
@@ -2051,9 +2108,10 @@ static void draw_tools(PxUi *ui, const Env *e, const PxView *v)
         /* Pickaxes and the axe swing like swords, one swing per use time
            (copper pickaxe 15 ticks, copper axe 21). */
         double use = (e->mining_tree ? 21 : 15) * (v->tick_s > 0.0 ? v->tick_s : 1.0 / 60.0);
-        draw_swing(ui, WEAPON_COUNT + (e->mining_tree ? 3 : e->tool_tier - 1), e->facing, px, py,
+        draw_swing(ui, WEAPON_COUNT + (e->mining_tree ? 3 : PX_PICK(e) - 1), e->facing, px, py,
                    fmod(v->clock, use) / use);
     }
+#endif
 }
 
 /* Glyphs at an integer scale. */
@@ -2136,10 +2194,12 @@ void px_fx_step(PxView *v, const Env *e, double t0, double tick_s)
 {
     v->tick_s = tick_s;
     if (e->fx.swing) {
-        v->swing_t0 = t0;
-        v->swing_weapon = e->weapon;
+        /* Weapon uses start on the action's first tick; pickaxe / axe uses
+           (TOOL_DAMAGE) at fx.swing_tick, with that tool's sprite. */
+        v->swing_t0 = t0 + e->fx.swing_tick * tick_s;
+        v->swing_weapon = e->fx.swing_tool >= 0 ? WEAPON_COUNT + e->fx.swing_tool : e->weapon;
 #if FID_COMBAT
-        v->swing_len = (e->weapon == 0 ? PX_STAB_TICKS : e->item_anim_max) * tick_s;
+        v->swing_len = (v->swing_weapon == 0 ? PX_STAB_TICKS : e->item_anim_max) * tick_s;
 #else
         v->swing_len = 20 * tick_s;
 #endif

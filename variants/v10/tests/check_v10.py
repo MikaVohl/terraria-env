@@ -38,9 +38,51 @@ def check_spec():
     assert "use summon item" in SPEC.action_names and "craft Suspicious Looking Eye" in SPEC.action_names
     for item in ("lens", "Suspicious Looking Eye", "demonite ore", "gold chainmail"):
         assert item in SPEC.item_names, item
-    assert "demon altar" in SPEC.tile_names and SPEC.entity_channels == 8 and SPEC.info_width == 5
+    walls = SPEC.wall_channel is not None
+    assert "demon altar" in SPEC.tile_names and SPEC.entity_channels == 8 + walls and SPEC.info_width == 5
+    assert SPEC.mob_channels == 8 and (not walls or SPEC.wall_channel == 8)
     assert SPEC.default_steps == 10_000 and SPEC.world_h == 128
-    assert SPEC.status_entity0 + SPEC.cells * 8 == SPEC.status_len, (SPEC.status_entity0, SPEC.status_len)
+    assert SPEC.status_entity0 + SPEC.cells * SPEC.entity_channels == SPEC.status_len, (SPEC.status_entity0, SPEC.status_len)
+
+
+def check_tools_and_walls():
+    """EXPLICIT_TOOLS: starter tools in the inventory, held item observed; BG_WALLS:
+    the wall channel and the text view's wall glyph (skipped for builds without them)."""
+    from terraria_lite.llm_protocol import Session
+    from terraria_lite.llm_text import text_observation, WALL_AIR
+    if SPEC.status_held0 is not None:
+        for item in ("copper pickaxe", "copper axe"):
+            assert item in SPEC.item_names, item
+        s = Session(23000001, max_steps=50)
+        p = s.packet()
+        assert p["inventory"]["copper pickaxe"] == 1 and p["inventory"]["copper axe"] == 1 and p["held"] == "copper shortsword", p
+        assert "Holding copper shortsword" in text_observation(p, 50, None)
+        s.close()
+    if SPEC.wall_channel is not None:
+        env = TerrariaLite()
+        obs, _ = env.reset(seed=23000001)
+        status = obs[SPEC.cells * (SPEC.tile_kinds + 1):]
+        ent = status[SPEC.status_entity0:].reshape(SPEC.cells, SPEC.entity_channels)
+        assert set(np.unique(ent[:, SPEC.wall_channel])) <= {0.0, 1.0}
+        # Dig straight down from spawn: the shaft through the dirt band shows walls.
+        down = SPEC.action_names.index("mine down"); right = SPEC.action_names.index("mine below right column")
+        seen = 0
+        for _ in range(60):
+            mask = env.action_mask()
+            act = down if mask[down] else right if mask[right] else 0
+            obs = env.step(act)[0]
+            status = obs[SPEC.cells * (SPEC.tile_kinds + 1):]
+            seen = max(seen, int(status[SPEC.status_entity0:].reshape(SPEC.cells, SPEC.entity_channels)[:, SPEC.wall_channel].sum()))
+        assert seen > 0, "no wall seen while digging down"
+        env.close()
+        s = Session(23000001, max_steps=200)
+        down_id = SPEC.action_names.index("mine down")
+        for _ in range(40):
+            s.act({"action": down_id if down_id in s.packet()["legal_actions"] else 0})
+        p = s.packet()
+        assert "walls" in p and any(any(r) for r in p["walls"]), "packet walls"
+        assert WALL_AIR in text_observation(p, 200, None).split("dx:")[1], "wall glyph in the text view"
+        s.close()
 
 
 def check_determinism_and_snapshots():
@@ -151,7 +193,7 @@ def check_evaluation():
 
 def main():
     torch.set_num_threads(4)
-    for check in (check_spec, check_determinism_and_snapshots, check_native_autoreset, check_scoring,
+    for check in (check_spec, check_tools_and_walls, check_determinism_and_snapshots, check_native_autoreset, check_scoring,
                   check_boss_potential, check_v10_potential, check_evaluation):
         check()
         print("ok", check.__name__, flush=True)

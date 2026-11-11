@@ -1,10 +1,16 @@
 /* Fixed taxonomy. Original Terraria asset IDs are distinct from simulator IDs.
    v9 appends the Demon Altar tile and the lens / Suspicious Looking Eye /
-   demonite / gold chainmail items to v8's lists (existing IDs unchanged). */
+   demonite / gold chainmail items to v8's lists (existing IDs unchanged).
+   v10 EXPLICIT_TOOLS appends the starter Copper Pickaxe and Copper Axe
+   (env.h documents the knob; its default lives here because the item list
+   depends on it and some translation units include this header alone). */
 #ifndef TILES_H
 #define TILES_H
 #include <stdbool.h>
 #include <stdint.h>
+#ifndef EXPLICIT_TOOLS
+#define EXPLICIT_TOOLS 1
+#endif
 typedef enum {
  TILE_AIR,TILE_DIRT,TILE_GRASS,TILE_STONE,TILE_LOG,TILE_WOOD,TILE_LEAVES,
  TILE_COPPER_ORE,TILE_IRON_ORE,TILE_GOLD_ORE,TILE_TORCH,TILE_CAMPFIRE,
@@ -20,7 +26,11 @@ typedef enum {
  ITEM_LIFE_CRYSTAL,ITEM_CLOUD_BOTTLE,ITEM_COPPER_SHORTSWORD,ITEM_WOOD_SWORD,
  ITEM_COPPER_SWORD,ITEM_IRON_SWORD,ITEM_GOLD_SWORD,ITEM_SILVER_SWORD,ITEM_WOOD_ARMOR,
  ITEM_IRON_ARMOR,ITEM_IRON_PICK,ITEM_GOLD_PICK,
- ITEM_GOLD_ARMOR,ITEM_LENS,ITEM_SUSPICIOUS_EYE,ITEM_DEMONITE_ORE,ITEM_COUNT
+ ITEM_GOLD_ARMOR,ITEM_LENS,ITEM_SUSPICIOUS_EYE,ITEM_DEMONITE_ORE,
+#if EXPLICIT_TOOLS
+ ITEM_COPPER_PICK,ITEM_COPPER_AXE,
+#endif
+ ITEM_COUNT
 } Item;
 #define TIER_HAND 0
 #define TIER_COPPER_PICK 1
@@ -59,12 +69,18 @@ static const char *const ITEM_NAME[ITEM_COUNT] = {
  "lesser healing potion","life crystal","Cloud in a Bottle","copper shortsword",
  "wooden sword","copper broadsword","iron broadsword","gold broadsword",
  "silver broadsword","wood breastplate","iron chainmail","iron pickaxe","gold pickaxe",
- "gold chainmail","lens","Suspicious Looking Eye","demonite ore"
+ "gold chainmail","lens","Suspicious Looking Eye","demonite ore",
+#if EXPLICIT_TOOLS
+ "copper pickaxe","copper axe",
+#endif
 };
 static const int ITEM_TERRARIA_ID[ITEM_COUNT] = {
  9,3,2,12,11,13,20,22,19,8,966,36,33,35,14,21,23,94,965,5,28,29,53,
  3507,24,3508,4,3520,3514,728,81,1,3521,
- 83,38,43,56
+ 83,38,43,56,
+#if EXPLICIT_TOOLS
+ 3509,3506,
+#endif
 };
 #define WEAPON_COUNT 6
 static const Item WEAPON_ITEM[WEAPON_COUNT] = {ITEM_COPPER_SHORTSWORD,ITEM_WOOD_SWORD,
@@ -73,6 +89,12 @@ static const int WEAPON_DAMAGE[WEAPON_COUNT] = {5,7,9,12,14,15};
 /* none, wood breastplate, iron chainmail, gold chainmail */
 #define ARMOR_LEVELS 4
 static const int ARMOR_DEFENSE[ARMOR_LEVELS] = {0,1,3,4};
+/* Background walls (BG_WALLS, env.h): sim wall ids and their Terraria WallID
+   (Wall_N sheets). Dirt wall 2 from "Dirt Wall Backgrounds", the four cave
+   walls of "Cave Walls" (59, 61, 170, 171), Planked Wall 27 in cabins. */
+typedef enum { WALL_NONE,WALL_DIRT,WALL_CAVE_59,WALL_CAVE_61,WALL_CAVE_170,WALL_CAVE_171,WALL_PLANKED,WALL_COUNT } Wall;
+static const int WALL_TERRARIA_ID[WALL_COUNT] = {0,2,59,61,170,171,27};
+static const char *const WALL_NAME[WALL_COUNT] = {"none","dirt wall","cave wall","cave wall","cave wall","cave wall","planked wall"};
 static inline bool tile_solid(Tile t) { return TILE_INFO[t].solid; }
 /* Terraria tables/benches/anvils are solid-top, not full collision blocks. */
 static inline bool tile_solid_top(Tile t) { return t==TILE_PLATFORM||t==TILE_WORKBENCH||t==TILE_ANVIL; }

@@ -110,7 +110,7 @@ Do **not** pass `LIGHT_WINDOW=1` (`light.c` already has the window refresh).
     make -C perf/v7 V7=$PWD/variants/v10 BUILD=build-v10 VARIANT="-DINV_LOG=1"
     # control: all ports and tile rules off = v9's rules plus the D24 achievements
     make -C perf/v7 V7=$PWD/variants/v10 BUILD=build-v10-noport \
-        VARIANT="-DINV_LOG=1 -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 -DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0"
+        VARIANT="-DINV_LOG=1 -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 -DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0 -DEXPLICIT_TOOLS=0 -DTOOL_DAMAGE=0 -DBG_WALLS=0"
 
     TERRARIA_LITE_LIB=$PWD/perf/v7/build-v10/libterraria.so PYTHONPATH=python ...
 
@@ -160,7 +160,7 @@ jolt. Trees draw `Tree_Tops` crowns and `Tree_Branches` leaves (`TREE_LEAF_VISUA
        perf/v7/build-v10-noport/libterraria.so perf/v7/build-v10/libterraria.so
 
 Add `-DENV_FX=1` to the first `cc` line for the side-channel fixture (`test_fx`). Add the
-noport flags (including `-DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0`) to the two `cc` lines to
+noport flags (including `-DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0 -DEXPLICIT_TOOLS=0 -DTOOL_DAMAGE=0 -DBG_WALLS=0`) to the two `cc` lines to
 test the control build. The scripted boss fight is gated (>= 90%) for the two shipped rule
 sets (combat and physics both on, or both off); mixed ablation builds only report it.
 
@@ -176,6 +176,9 @@ All compile-time (`VARIANT="-DNAME=value"`). v9's knobs keep their meaning
 | `TREE_LEAF_VISUAL` | 1 | canopies and branch leaves are tree sprites (frontend), no `TILE_LEAVES` cells (below) |
 | `SUPPORT_RULES` | 1 | tile anchors for placement and breaking (below) |
 | `ENV_FX` | 0 | observational side channel `Env.fx` for the pixel frontend (built with 1); never read by the game |
+| `EXPLICIT_TOOLS` | 1 | pickaxes/axe are items, starter set, Auto Select, `held` item observed, 9,999 stacks (below) |
+| `TOOL_DAMAGE` | `FID_COMBAT && FID_MINING` | pickaxe/axe uses swing a real melee hitbox (below) |
+| `BG_WALLS` | 1 | background walls from worldgen; Terraria's neighbour-or-wall block placement (below) |
 | `SLIME_HP/DMG/DEF` | 25 / 7 / 2 | Blue Slime |
 | `BAT_HP/DMG/DEF` | 16 / 13 / 2 | Cave Bat (v9 damage 12 without mob/combat ports) |
 | `ZOMBIE_HP/DMG/DEF` | 45 / 14 / 6 | Zombie (v9: 30 / 10) |
@@ -212,6 +215,43 @@ before them, and `build-v10-noport` sets both 0 to stay v9.
   - the block under an unopened chest cannot be mined;
   - the placement and mining masks follow; a dark anchor cell counts as present (no
     hidden-terrain leak).
+
+## Tools and walls (2026-11-10)
+
+Three more ports, each a knob (default on); `build-v10-noport` sets them 0 and still equals v9
+(`tools/v10_noport_parity.py`, 400,000 steps, 16 lanes).
+
+- **`EXPLICIT_TOOLS`**: Copper Pickaxe (3509) and Copper Axe (3506) are items; episodes start
+  with Terraria's starter set (Copper Shortsword, Copper Pickaxe, Copper Axe). No hidden tool
+  tier: mining power is the best pickaxe owned. A mine action auto-selects
+  (`Player.SmartSelect_GetToolStrategy`: axe for trunks, pickaxe otherwise; Terraria takes the
+  first such item in slot order, here the best pickaxe). `Env.held` (Player.HeldItem): the tool
+  while mining, the weapon on attack / weapon cycling, the placeable on place / select.
+  Stacks hold 9,999 (1.4.4 `maxStack`); the inventory observation still saturates at 999.
+- **`TOOL_DAMAGE`**: each tool use starts `itemAnimation = useAnimation` and swings the
+  useStyle 1 hitbox of the sword path (`ItemCheck_GetMeleeHitbox`, `ItemCheck_MeleeHitNPCs`:
+  immunity per swing, `Main.DamageVar`, defense, 4% crits, `StrikeNPC` knockback; boss too).
+  `Item.SetDefaults`: Copper Pickaxe damage 4 / useAnimation 23 / useTime 15 / kb 2 / pick 35;
+  Iron Pickaxe 5 / 20 / 13 / 2 / 40; Gold Pickaxe 6 / 20 / 17 / 2 / 55; Copper Axe 3 / 30 / 21 /
+  4.5 / axe 7. Tools autoReuse and useTurn; mining hits need the tool's use running (a sword
+  swing still running delays them), and a tool use running blocks `attack` (one item in hand).
+  Hits go to `Env.fx`; the player draws the tool sprite's swing and the damage numbers.
+- **`BG_WALLS`**: `Env.wall` per cell from `WorldGen` passes "Dirt Wall Backgrounds" (dirt wall
+  from one row below the surface to the dirt band's bottom + a 0-9 row jitter walk, none in the
+  sky) and "Cave Walls" (`maxTilesX*0.04` = 5 enclosed cave regions of 10-1499 open cells
+  between (worldSurface+rockLayer)/2 and the bottom, `countTiles`/`Spread.Wall`, walls 59 / 61 /
+  170 / 171), plus Planked Wall 27 in the underground chest cabins; deeper caves stay wall-less
+  as in Terraria. Own RNG stream: tiles are identical to `BG_WALLS=0`. Mining never removes a
+  wall. Placement (`Player.PlaceThing_Tiles_BlockPlacementForAssortedThings`): a block needs a
+  solid tile, platform or rope right/left/below/above, or a wall on such a neighbour or behind
+  the target (no floating blocks in the sky; pillars and bridges stay legal); torches
+  (`wall > 0` first) and platforms may also hang on the wall behind them. Walls do not change
+  lighting (not ported). The observation adds a 9th per-cell channel (1 = lit cell with a
+  wall); `llm_text` draws `,` for open cells in front of a wall; `terraria-px-v10` draws the
+  `Wall_N` textures (cells without a wall show the rock backdrop darkened).
+
+Observation (INV_LOG=1, all knobs): status 1090 (was 948): +2 items x 2 (inventory, log), +39
+held one-hot (`tl_status_held0`), +99 wall channel (`tl_wall_channel`, entity channels 9).
 
 ## Contract summary
 

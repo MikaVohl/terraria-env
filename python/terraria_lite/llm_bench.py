@@ -249,7 +249,7 @@ def model_observation(packet, c, max_steps=None, cycle=None):
 
 
 def mob_kinds(packet):
-    return {i for e in packet["visible_entities"] for i in range(SPEC.entity_channels-2) if e["features"][i] > .5}
+    return {i for e in packet["visible_entities"] for i in range(SPEC.mob_channels-2) if e["features"][i] > .5}
 
 
 def batch_events(before, after, illegal):

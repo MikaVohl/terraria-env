@@ -172,6 +172,12 @@ class _Spec:
                            for t in range(self.tile_kinds - 1)]
         # Per-cell entity features after status_entity0 (v7/v8: 4).
         self.entity_channels = _optional_int("tl_entity_channels", default=4)
+        # v10 BG_WALLS: one more per-cell channel (1 = lit cell with a
+        # background wall), after the mob channels; None without walls.
+        wall = _optional_int("tl_wall_channel", default=-1)
+        self.wall_channel = wall if wall >= 0 else None
+        # Mob features per cell: kind one-hot, then health, then phase.
+        self.mob_channels = self.entity_channels - (self.wall_channel is not None)
         # Episode-info row width of the native autoreset call.
         self.info_width = _optional_int("tl_info_width", default=4)
         self.world_w = _optional_int("tl_world_w", default=128)
@@ -195,6 +201,9 @@ class _Spec:
         self.map_w = _optional_int("tl_map_w", default=0)
         self.map_h = _optional_int("tl_map_h", default=0)
         self.cavern_row = _optional_int("tl_cavern_row")
+        # v10 EXPLICIT_TOOLS: held-item one-hot over the items (None without).
+        held = _optional_int("tl_status_held0", default=-1)
+        self.status_held0 = held if held >= 0 else None
 
     def __repr__(self):
         return (f"<terraria-lite v{self.version} {self.view_w}x{self.view_h} window, "
@@ -348,7 +357,7 @@ class TerrariaLite:
             for x,t in enumerate(row):
                 k=y*SPEC.view_w+x
                 c=SPEC.status_entity0+k*SPEC.entity_channels
-                mob=self._status[c:c+SPEC.entity_channels-2]
+                mob=self._status[c:c+SPEC.mob_channels-2]
                 # Bat before slime (v7/v8 precedence), then v9's zombie,
                 # demon eye, skeleton and Eye of Cthulhu.
                 glyph=next((g for i,g in ((1,"B"),(0,"S"),(2,"Z"),(3,"E"),(4,"K"),(5,"C"))

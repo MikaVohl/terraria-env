@@ -364,3 +364,20 @@ Facts of `variants/v10/` (D22-D24). Knobs, defaults, build and test commands:
   the per-tick path, so knockback reads as a jolt rather than a straight line per step.
   Throughput (64 lanes, 5 x 20,000 steps, three interleaved runs): `build-v10` with both
   rules on 0.95-1.03x the build before them (median 0.96x; run-to-run noise about +-3%).
+- **[IMPL] Tools and walls (2026-11-10; `EXPLICIT_TOOLS`, `TOOL_DAMAGE`, `BG_WALLS`, all
+  default on; details in the v10 README).** Copper Pickaxe/Axe are items and the episode
+  starts with Terraria's starter set; the hidden tool tier is gone (best owned pickaxe =
+  mining power; Auto Select per `Player.SmartSelect_GetToolStrategy`); `Env.held` is observed
+  (one-hot over items); stacks 9,999 with the observation saturating at 999. Every tool use
+  swings the sword path's useStyle 1 hitbox with `Item.SetDefaults` damage/useAnimation/
+  knockBack (copper pick 4/23/2, iron 5/20/2, gold 6/20/2, axe 3/30/4.5); mining speed is
+  unchanged (useTime). Walls come from "Dirt Wall Backgrounds" and "Cave Walls" (own RNG
+  stream; tiles identical with the knob off) plus Planked Wall 27 in cabins; no walls in the
+  sky or in deep open caves (as Terraria); about 87 cave-wall and 224 cabin-wall cells per
+  world, every dirt-band cell below surface+2 walled (64 worlds). Blocks need a solid /
+  platform / rope neighbour or a wall (`PlaceThing_Tiles_BlockPlacementForAssortedThings`);
+  torches and platforms may hang on a wall. Walls do not affect light (not ported). Status
+  1090 (INV_LOG, all knobs; was 948), entity channels 9. `build-v10-noport` with the three
+  knobs 0 still equals `build-v9` (400,000 steps, 16 lanes). Throughput (64 lanes, 5 x 20,000
+  steps): 0.92x the previous `build-v10` (tool swings run the NPC hit test every tick of a
+  mine action; worldgen memoizes rejected cave regions).

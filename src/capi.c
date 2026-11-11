@@ -83,6 +83,13 @@ TL_API int tl_info_width(void)  { return TL_INFO_WIDTH; }
 #ifdef OBS_ENTITY_CHANNELS
 TL_API int tl_entity_channels(void) { return OBS_ENTITY_CHANNELS; }
 #endif
+#ifdef OBS_HELD_0
+/* v10: held-item one-hot (ITEM_COUNT status entries) from this index with
+   EXPLICIT_TOOLS, and the wall channel inside each cell's entity features
+   with BG_WALLS; -1 when the knob is off. */
+TL_API int tl_status_held0(void) { return EXPLICIT_TOOLS ? OBS_HELD_0 : -1; }
+TL_API int tl_wall_channel(void) { return BG_WALLS ? OBS_WALL_CHANNEL : -1; }
+#endif
 #ifdef ACH_TIER_TABLE
 /* v9 scoring (design section 8): tier 1-4 per achievement, weights 1/3/5/8. */
 TL_API int tl_ach_tier(int i)   { return i>=0&&i<ACH_COUNT?ACH_TIER[i]:0; }

@@ -16,6 +16,7 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
     torch.manual_seed(sample_seed)
     totals=np.zeros(SPEC.n_actions,np.int64); legal=np.zeros_like(totals)
     probability=np.zeros(SPEC.n_actions,np.float64); maxes=[]; records=[]
+    held_steps=np.zeros(SPEC.n_items,np.int64)   # v10 EXPLICIT_TOOLS: item in hand per step
     inv0=SPEC.cells*(SPEC.tile_kinds+1)+SPEC.status_inv0
     for base in range(0,len(seeds),64):
         cohort=seeds[base:base+64]; envs=[TerrariaLite(max_steps=max_steps or None) for _ in cohort]
@@ -47,6 +48,9 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
                 if SPEC.status_layer0 is not None:
                     s0=SPEC.cells*(SPEC.tile_kinds+1)+SPEC.status_layer0
                     layer_steps[active]+=(obs[active,s0:s0+3]>.5)
+                if SPEC.status_held0 is not None:
+                    h0=SPEC.cells*(SPEC.tile_kinds+1)+SPEC.status_held0
+                    held_steps+=np.bincount(obs[active,h0:h0+SPEC.n_items].argmax(1),minlength=SPEC.n_items)
                 _,te,tr=native.step(actions,obs,mask)
                 # Include pickups/crafts on an episode's final action too.
                 inv=np.rint(obs[:,inv0:inv0+SPEC.n_items]**2*SPEC.inventory_clip).astype(np.int32)
@@ -81,7 +85,10 @@ def diagnose(agent, seeds, sample_seed=54321, max_steps=0):
             # v10: Demon Altar found (within crafting range) per episode
             **({"altar_found_rate":float(np.mean([r["info"]["achievement_mask"]>>SPEC.achievement_names.index("find a Demon Altar")&1
                                                   for r in records]))}
-               if "find a Demon Altar" in SPEC.achievement_names else {})}
+               if "find a Demon Altar" in SPEC.achievement_names else {}),
+            # v10: share of steps each item was in hand (absent without EXPLICIT_TOOLS)
+            **({"held_fraction":{name:float(v) for name,v in zip(SPEC.item_names,held_steps/max(1,held_steps.sum())) if v}}
+               if SPEC.status_held0 is not None else {})}
 
 
 def main():

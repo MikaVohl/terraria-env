@@ -561,8 +561,11 @@ static void mob_strike(Env *e, Mob *m, int base, fix_t kb, int dir) {
    (blocking further hits while it runs), Collision.CanHit line of sight. */
 void mobs_swing(Env *e, int X, int Y, int W, int H, int damage, fix_t kb, int dir, int anim) {
     const fix_t ppx = player_fx(e), ppy = player_fy(e);
+    if (e->attack_cd_ticks > 0) return;   /* attackCD blocks every NPC this tick */
     for (int i = 0; i < MAX_MOBS; i++) {
         Mob *m = &e->mobs[i];
+        /* The useStyle 1 box never reaches 8 cells from the body (cheap cull). */
+        if (m->kind && (abs(m->x - e->px) > 8 || abs(m->y - e->py) > 8)) continue;
         if (!m->kind || m->immune > 0 || e->attack_cd_ticks > 0) continue;
         fix_t mx, my; int mw, mh; mob_rect(m, &mx, &my, &mw, &mh);
         if (!fid_rects(X * FIX_ONE, Y * FIX_ONE, W, H, mx, my, mw, mh)) continue;

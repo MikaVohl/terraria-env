@@ -70,7 +70,7 @@ typedef struct {
     float  mob_x[MAX_MOBS], mob_y[MAX_MOBS];
     float  boss_x, boss_y;
     double swing_t0, swing_len; /* real-time melee swing, seconds on `clock` */
-    int    swing_weapon;        /* WEAPON_ITEM index of that swing */
+    int    swing_weapon;        /* held-sprite index: WEAPON_ITEM index, or WEAPON_COUNT + TOOL_INFO index */
     double tick_s;              /* real seconds per game tick */
     /* Combat feedback from the core's observational side channel (Env.fx),
        in seconds on `clock`: when each body was last hit (flash), when the

@@ -79,6 +79,40 @@
 #ifndef SUPPORT_RULES
 #define SUPPORT_RULES 1
 #endif
+/* ---- knobs: tools and walls (v10 fidelity, 2026-11-10) -------------------
+   Three more Terraria 1.4.4 behaviours, default on; with all three 0 a v10
+   build plays exactly as before them (build-v10-noport sets them 0).
+   EXPLICIT_TOOLS  the pickaxe and the axe are items (Copper Pickaxe 3509 and
+                   Copper Axe 3506 join ITEM_*; the crafted iron/gold pickaxes
+                   already were). The episode starts with Terraria's starter
+                   set (Copper Shortsword, Copper Pickaxe, Copper Axe); mining
+                   power is the best pickaxe owned (no hidden tool tier); a
+                   mine action auto-selects (Player.SmartSelect_GetToolStrategy:
+                   axe for trunks, pickaxe otherwise) and Env.held records the
+                   item in hand (observed); stacks hold 9,999 (Item.maxStack,
+                   1.4.4), the observation saturates at OBS_INV_CLIP as before.
+                   Default in tiles.h, where the item list depends on it.
+   TOOL_DAMAGE     every pickaxe / axe use swings the item's useStyle 1 melee
+                   hitbox with its real damage, knockBack and useAnimation
+                   (Item.SetDefaults), hitting NPCs through the sword path
+                   (immunity, variance, crits, knockback). Needs FID_COMBAT
+                   and FID_MINING (the per-tick swing and tool time).
+   BG_WALLS        a background wall per cell (Env.wall, Wall ids in tiles.h)
+                   from worldgen's "Dirt Wall Backgrounds" and "Cave Walls"
+                   passes plus cabin walls; mining never removes one. Blocks
+                   need a solid tile, platform or rope beside, above or below,
+                   or a wall behind them or a neighbour (Player.PlaceThing_
+                   Tiles_BlockPlacementForAssortedThings); torches and
+                   platforms may also hang on the wall behind them. */
+#ifndef TOOL_DAMAGE
+#define TOOL_DAMAGE (FID_COMBAT&&FID_MINING)
+#endif
+#if TOOL_DAMAGE && !(FID_COMBAT&&FID_MINING)
+#error "TOOL_DAMAGE needs FID_COMBAT and FID_MINING"
+#endif
+#ifndef BG_WALLS
+#define BG_WALLS 1
+#endif
 /* ENV_FX: the observational side channel Env.fx (hits, swing start, bodies
    per game tick) for the pixel frontend, which builds with ENV_FX=1. Never
    read by the game, so it cannot change a result; off by default because
@@ -91,6 +125,22 @@ typedef int32_t fix_t;
 #define FIX_ONE 65536
 #define FIXC(v) ((fix_t)((v)*65536.0+((v)<0?-0.5:0.5)))
 #define TILE_FIX (16*FIX_ONE)
+
+/* Mining tools, Item.SetDefaults (case 3509: SetDefaults1(1) then useTime
+   15, pick 35, useAnimation 23, damage 4; case 1: useAnimation 20, useTime
+   13, damage 5, pick 40, knockBack 2; case 3521: useTime 17, pick 55,
+   useAnimation 20, damage 6; case 3506: SetDefaults1(10) then useTime 21,
+   axe 7, useAnimation 30, damage 3, knockBack 4.5 from type 10). All are
+   useStyle 1 with useTurn and autoReuse. Index = pick tier - 1, axe last
+   (the pixel frontend's held-sprite order). */
+enum { TOOL_COPPER_PICK, TOOL_IRON_PICK, TOOL_GOLD_PICK, TOOL_COPPER_AXE, TOOL_COUNT };
+typedef struct { int terraria_id, pick, axe, use_time, use_anim, damage; fix_t knockback; } ToolInfo;
+static const ToolInfo TOOL_INFO[TOOL_COUNT] = {
+ {3509, 35, 0, 15, 23, 4, FIXC(2)},
+ {1,    40, 0, 13, 20, 5, FIXC(2)},
+ {3521, 55, 0, 17, 20, 6, FIXC(2)},
+ {3506,  0, 7, 21, 30, 3, FIXC(4.5)},
+};
 
 /* ---- knobs: world geometry (D6) ----------------------------------------- */
 #ifndef WORLD_W
@@ -468,18 +518,23 @@ _Static_assert(VIEW_W%2==1 && VIEW_H%2==1 && VIEW_W>=11 && VIEW_H>=9,"view is ce
 #define OBS_MAP_0 (OBS_INVLOG_0+(INV_LOG?ITEM_COUNT:0))
 /* Fidelity scalars sit before the per-cell entity block (which consumers
    reshape to the end of the status vector): FID_PHYSICS adds sub-tile offset
-   x/y and velocity x/y, FID_MINING the dig target's accumulated damage. */
+   x/y and velocity x/y, FID_MINING the dig target's accumulated damage,
+   EXPLICIT_TOOLS the held item (one-hot over ITEM_COUNT). */
 #define OBS_FID_0 (OBS_MAP_0+(MINIMAP?MAP_CELLS*MAP_FEATURES:0))
 #define OBS_SUB_X (OBS_FID_0)
 #define OBS_SUB_Y (OBS_FID_0+1)
 #define OBS_VEL_X (OBS_FID_0+2)
 #define OBS_VEL_Y (OBS_FID_0+3)
 #define OBS_DIG (OBS_FID_0+(FID_PHYSICS?4:0))
-#define OBS_FID_COUNT ((FID_PHYSICS?4:0)+(FID_MINING?1:0))
+#define OBS_HELD_0 (OBS_DIG+(FID_MINING?1:0))
+#define OBS_FID_COUNT ((FID_PHYSICS?4:0)+(FID_MINING?1:0)+(EXPLICIT_TOOLS?ITEM_COUNT:0))
 #define OBS_ENTITY_0 (OBS_FID_0+OBS_FID_COUNT)
 /* Visible cells: presence of Blue Slime, Cave Bat, Zombie, Demon Eye,
-   Skeleton, Eye of Cthulhu; health fraction; movement phase. */
-#define OBS_ENTITY_CHANNELS 8
+   Skeleton, Eye of Cthulhu; health fraction; movement phase; with BG_WALLS
+   a ninth channel, 1 where the lit cell has a background wall. */
+#define OBS_MOB_CHANNELS 8
+#define OBS_WALL_CHANNEL OBS_MOB_CHANNELS
+#define OBS_ENTITY_CHANNELS (OBS_MOB_CHANNELS+(BG_WALLS?1:0))
 #define OBS_STATUS (OBS_ENTITY_0+VIEW_CELLS*OBS_ENTITY_CHANNELS)
 #define OBS_INV_CLIP 999
 typedef struct { uint8_t tile[VIEW_CELLS],light[VIEW_CELLS]; float status[OBS_STATUS]; } Obs;
@@ -559,7 +614,9 @@ typedef struct { int16_t x,y,dmg; uint8_t tick,target,slot; bool crit; } FxHit;
 #define FX_PLAYER MAX_MOBS
 #define FX_NONE INT16_MIN
 typedef struct {
- uint8_t tick,n_hits; bool swing; FxHit hit[FX_HITS];
+ /* swing: a use started this step, at game tick swing_tick, with the
+    weapon (swing_tool -1) or TOOL_INFO[swing_tool] (TOOL_DAMAGE). */
+ uint8_t tick,n_hits,swing_tick; bool swing; int8_t swing_tool; FxHit hit[FX_HITS];
 #if FID_TICKED
  int16_t path[FID_TICKS+1][MAX_MOBS+1][2];
 #endif
@@ -573,7 +630,15 @@ typedef struct Env {
  uint8_t sky_cutoff[WORLD_W];
  bool terrain_dirty; int surface[WORLD_W];
  int px,py,facing,jump_left,fall_dist,health;
- uint8_t tool_tier; int16_t inv[ITEM_COUNT]; uint8_t selected;
+#if EXPLICIT_TOOLS
+ /* Player.HeldItem: the item in hand (Item id). Mining auto-selects a tool,
+    attack takes the weapon, place/select the placeable. Mining power comes
+    from the inventory (pick_tier), so there is no hidden tool tier. */
+ uint8_t held;
+#else
+ uint8_t tool_tier;
+#endif
+ int16_t inv[ITEM_COUNT]; uint8_t selected;
  int max_health,weapon,armor,attack_cd,heal_cd,hurt_cd,mine_cd,safe_ticks;
  bool air_jump_used; int drop_ticks,explore_min,explore_max;
  bool mining_tree;
@@ -581,6 +646,11 @@ typedef struct Env {
  uint64_t achievements; uint64_t rng,seed;
  int steps,max_steps; float reward,ep_return;
  bool terminated,truncated,light_dirty; char msg[64];
+#if BG_WALLS
+ /* Background wall per cell (Wall, tiles.h): set by worldgen, never removed
+    in play (no hammer), so it needs no light or object bookkeeping. */
+ uint8_t wall[WORLD_H][WORLD_W];
+#endif
 #if MINIMAP
  /* Explored map: cell seen, solid tile count, crafting station seen. */
  uint8_t map_seen[MAP_CELLS],map_solid[MAP_CELLS],map_station[MAP_CELLS];
@@ -598,6 +668,11 @@ typedef struct Env {
     mobs (bit i) and boss (bit MAX_MOBS) it already hit. kb_left/kb_dir:
     knockback still to apply to the grid player, one cell per action. */
  int item_anim,item_anim_max,attack_cd_ticks,immune_ticks,stab_tick,stab_dir,kb_left,kb_dir; uint32_t stab_hits;
+#if TOOL_DAMAGE
+ /* What the running itemAnimation swings: 0 the weapon, else TOOL_INFO
+    index + 1 (a pickaxe / axe use). */
+ uint8_t swing_tool;
+#endif
 #endif
 #if FID_MINING
  int tool_time,dig_x,dig_y; HitSlot hits[HIT_SLOTS];
@@ -666,6 +741,45 @@ void boss_despawn(Env*,const char *why);
 static inline bool in_bounds(int x,int y) { return x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H; }
 static inline bool has_ach(const Env *e,int a) { return a>=0&&a<ACH_COUNT&&((e->achievements>>a)&1u); }
 static inline Tile tile_at(const Env *e,int x,int y) { return in_bounds(x,y)?(Tile)e->tiles[y][x]:TILE_BEDROCK; }
+/* Mining power: the best pickaxe in the inventory (EXPLICIT_TOOLS), else
+   v9's hidden tool tier. TIER_HAND: no pickaxe. */
+static inline uint8_t pick_tier(const Env *e) {
+#if EXPLICIT_TOOLS
+ return e->inv[ITEM_GOLD_PICK]>0?TIER_GOLD_PICK:e->inv[ITEM_IRON_PICK]>0?TIER_IRON_PICK
+      :e->inv[ITEM_COPPER_PICK]>0?TIER_COPPER_PICK:TIER_HAND;
+#else
+ return e->tool_tier;
+#endif
+}
+/* Trunks need an axe (always owned without EXPLICIT_TOOLS: the hidden one). */
+static inline bool has_axe(const Env *e) {
+#if EXPLICIT_TOOLS
+ return e->inv[ITEM_COPPER_AXE]>0;
+#else
+ (void)e; return true;
+#endif
+}
+/* Auto Select (Player.SmartSelect_GetToolStrategy: tileAxe -> axe, else
+   pickaxe): the TOOL_INFO entry a mine action on `t` uses. Terraria takes the
+   first such item in inventory order; with no slot order the best pickaxe
+   stands first. */
+static inline int mine_tool(const Env *e, Tile t) {
+ int tier=pick_tier(e);
+ return t==TILE_LOG?TOOL_COPPER_AXE:tier>TIER_COPPER_PICK?tier-1:TOOL_COPPER_PICK;
+}
+#if EXPLICIT_TOOLS
+static inline Item tool_item(int tool) {
+ static const Item ITEMS[TOOL_COUNT]={ITEM_COPPER_PICK,ITEM_IRON_PICK,ITEM_GOLD_PICK,ITEM_COPPER_AXE};
+ return ITEMS[tool];
+}
+#endif
+static inline uint8_t wall_at(const Env *e,int x,int y) {
+#if BG_WALLS
+ return in_bounds(x,y)?e->wall[y][x]:(uint8_t)WALL_NONE;
+#else
+ (void)e;(void)x;(void)y; return WALL_NONE;
+#endif
+}
 /* Day/night: episodes start at dawn; night is the last NIGHT_STEPS of each cycle. */
 static inline int day_time(const Env *e) { return e->steps%DAY_CYCLE; }
 static inline bool is_night(const Env *e) { return day_time(e)>=DAY_STEPS; }

@@ -1,5 +1,5 @@
-"""Parity gate for the v10 control build: build-v10-noport (all FID_* ports
-and both tile rules off) must play exactly like v9. Both libraries step the
+"""Parity gate for the v10 control build: build-v10-noport (all FID_* ports,
+both tile rules and the tool/wall knobs off) must play exactly like v9. Both libraries step the
 same seeds with the same uniform legal actions (drawn from v9's mask); every
 step compares the masks, tile and light windows, the status vector outside
 the achievement block, the achievement bits by name, termination and the
@@ -8,7 +8,7 @@ lenses). Build the control as (variants/v10/README.md):
 
     make -C perf/v7 V7=$PWD/variants/v10 BUILD=build-v10-noport VARIANT="-DINV_LOG=1 \\
         -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 \\
-        -DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0"
+        -DTREE_LEAF_VISUAL=0 -DSUPPORT_RULES=0 -DEXPLICIT_TOOLS=0 -DTOOL_DAMAGE=0 -DBG_WALLS=0"
     PYTHONPATH=python .venv/bin/python tools/v10_noport_parity.py \
         perf/v7/build-v9/libterraria.so perf/v7/build-v10-noport/libterraria.so [lanes] [steps]
 """

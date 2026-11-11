@@ -7,7 +7,8 @@
      cc -std=c11 -O2 -Ivariants/v10/include variants/v10/src/{sim,worldgen,light,obs,mobs,boss}.c \
         src/capi.c variants/v10/tests/selftest.c -o /tmp/v10-selftest -lm && /tmp/v10-selftest [worlds]
    (add -DFID_MOBS=0 -DFID_COMBAT=0 -DFID_PHYSICS=0 -DFID_MINING=0 -DFID_TREES=0 -DTREE_LEAF_VISUAL=0
-    -DSUPPORT_RULES=0 for the noport build; -DENV_FX=1 for the side-channel fixture)
+    -DSUPPORT_RULES=0 -DEXPLICIT_TOOLS=0 -DTOOL_DAMAGE=0 -DBG_WALLS=0 for the noport build; -DENV_FX=1
+    for the side-channel fixture)
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -147,7 +148,7 @@ static void test_light_parity(void) {
 /* ---- fixtures ------------------------------------------------------------ */
 
 /* Flat stone arena: open air above row FLOOR, player standing at (60, FLOOR-1),
-   no mobs, no chests. */
+   no mobs, no chests, no walls. */
 #define FLOOR 40
 static void arena(Env *e, int steps) {
     env_reset(e, 1);
@@ -156,6 +157,9 @@ static void arena(Env *e, int steps) {
         e->object_part[y][x] = 0;
     }
     for (int x = 0; x < WORLD_W; x++) e->surface[x] = FLOOR;
+#if BG_WALLS
+    memset(e->wall, 0, sizeof e->wall);
+#endif
     memset(e->mobs, 0, sizeof e->mobs);
     memset(&e->boss, 0, sizeof e->boss);
     e->chest_count = 0;
@@ -660,7 +664,11 @@ static void test_support(void) {
     e->tiles[F - 1][X] = TILE_MUSHROOM; relight(e);
     CHECK(mine_cell(e, X, F) && tile_at(e, X, F - 1) == TILE_AIR && e->inv[ITEM_MUSHROOM] == 1, "mushroom breaks with its ground");
     arena(e, 0);
+#if EXPLICIT_TOOLS
+    e->inv[ITEM_COPPER_PICK] = 1;
+#else
     e->tool_tier = TIER_COPPER_PICK;
+#endif
     env_object_write(e, TILE_LIFE_CRYSTAL, X, F - 1); relight(e);
     CHECK(mine_cell(e, X, F) && tile_at(e, X + 1, F - 2) == TILE_AIR && e->inv[ITEM_LIFE_CRYSTAL] == 1, "life crystal breaks and drops");
     CHECK(light_exact(e) && parts_exact(e), "light/object parts exact after the crystal broke");
@@ -738,6 +746,174 @@ static void test_fx(void) {
 #endif
 }
 
+/* ---- explicit tools, tool swings, background walls ----------------------- */
+
+#if EXPLICIT_TOOLS || BG_WALLS
+static bool tw_mask(const Env *e, int act) { uint8_t m[ACT_COUNT]; env_action_mask(e, m); return m[act]; }
+static int tw_reach(const Env *e, int x, int y) {
+    for (int r = 0; r < REACH_COUNT; r++) if (e->px + REACH_DX[r] == x && e->py + REACH_DY[r] == y) return r;
+    return -1;
+}
+static void tw_relight(Env *e) { e->terrain_dirty = true; light_full(e); }
+#endif
+#if BG_WALLS
+/* Place PLACEABLES[slot] at (x, y): mask verdict and whether it landed. */
+static bool tw_place(Env *e, int slot, int x, int y, bool *legal) {
+    int r = tw_reach(e, x, y);
+    e->selected = (uint8_t)slot; e->inv[PLACEABLES[slot].item] = 5;
+    *legal = tw_mask(e, ACT_PLACE_FIRST + r);
+    env_step(e, ACT_PLACE_FIRST + r);
+    return tile_at(e, x, y) == PLACEABLES[slot].tile;
+}
+#endif
+
+static void test_tools(void) {
+#if EXPLICIT_TOOLS
+    Env *e = new_env(1000000);
+    const int X = 62, F = FLOOR;
+    /* Terraria's starter set; the shortsword in hand; copper mining power. */
+    env_reset(e, 5);
+    int owned = 0;
+    for (int i = 0; i < ITEM_COUNT; i++) owned += e->inv[i];
+    CHECK(owned == 3 && e->inv[ITEM_COPPER_SHORTSWORD] == 1 && e->inv[ITEM_COPPER_PICK] == 1 && e->inv[ITEM_COPPER_AXE] == 1
+          && e->held == ITEM_COPPER_SHORTSWORD && pick_tier(e) == TIER_COPPER_PICK, "starter inventory (%d items)", owned);
+    static Obs o;
+    env_obs(e, &o);
+    CHECK(o.status[OBS_HELD_0 + ITEM_COPPER_SHORTSWORD] == 1.0f && o.status[OBS_INV_0 + ITEM_COPPER_PICK] > 0.0f,
+          "held item and tools observed");
+    /* Auto Select: the axe for a trunk, the best pickaxe for a block. */
+    arena(e, 0);
+    e->tiles[F - 1][X] = TILE_LOG; e->tiles[F - 2][X] = TILE_LOG; tw_relight(e);
+    env_step(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1));
+    CHECK(e->held == ITEM_COPPER_AXE, "trunk auto-selects the axe (held %d)", e->held);
+    arena(e, 0);
+    e->inv[ITEM_COPPER_AXE] = 0;
+    e->tiles[F - 1][X] = TILE_LOG; tw_relight(e);
+    CHECK(!tw_mask(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1)), "no axe: trunk not minable");
+    arena(e, 0);
+    e->tiles[F - 1][X] = TILE_STONE; tw_relight(e);
+    env_step(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1));
+    CHECK(e->held == ITEM_COPPER_PICK, "block auto-selects the copper pickaxe (held %d)", e->held);
+    arena(e, 0);
+    e->inv[ITEM_GOLD_PICK] = 1; e->inv[ITEM_IRON_PICK] = 1;
+    e->tiles[F - 1][X] = TILE_GOLD_ORE; tw_relight(e);
+    env_step(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1));
+    CHECK(e->held == ITEM_GOLD_PICK && pick_tier(e) == TIER_GOLD_PICK, "best pickaxe auto-selected (held %d)", e->held);
+    arena(e, 0);
+    e->inv[ITEM_COPPER_PICK] = 0;
+    e->tiles[F - 1][X] = TILE_DIRT; tw_relight(e);
+    CHECK(!tw_mask(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1)), "no pickaxe: dirt not minable");
+    /* A crafted iron pickaxe becomes the mining tool: two hits of 40 in one
+       15-tick action (useTime 13) instead of copper's one hit of 35. */
+    arena(e, 0);
+    env_object_write(e, TILE_ANVIL, X + 2, F - 1);
+    e->tiles[F - 1][X] = TILE_STONE; tw_relight(e);
+    e->inv[ITEM_IRON_BAR] = IRON_PICK_BARS; e->inv[ITEM_WOOD] = 3;
+    env_step(e, ACT_CRAFT_IRON_PICK);
+    CHECK(e->inv[ITEM_IRON_PICK] == 1 && pick_tier(e) == TIER_IRON_PICK, "iron pickaxe crafted and owned");
+    env_step(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1));
+    CHECK(e->held == ITEM_IRON_PICK, "crafted iron pickaxe in hand for mining (held %d)", e->held);
+#if FID_MINING
+    int dmg = -1;
+    for (int i = 0; i < HIT_SLOTS; i++) if (e->hits[i].ttl > 0 && e->hits[i].x == X && e->hits[i].y == F - 1) dmg = e->hits[i].damage;
+    CHECK(dmg == 80 && e->tool_time > 0, "iron pickaxe: 2 hits of 40 in one action (damage %d)", dmg);
+#endif
+    /* 9,999 stacks; the observation saturates at OBS_INV_CLIP. */
+    arena(e, 0);
+    e->inv[ITEM_STONE] = 9990; env_give(e, ITEM_STONE, 50);
+    env_obs(e, &o);
+    CHECK(e->inv[ITEM_STONE] == 9999 && o.status[OBS_INV_0 + ITEM_STONE] == 1.0f, "stack cap 9999, observation saturates");
+#if TOOL_DAMAGE && ENV_FX
+    /* A pickaxe use swings (fx) and its useAnimation runs past the action. */
+    arena(e, 0);
+    e->tiles[F - 1][X] = TILE_STONE; tw_relight(e);
+    env_step(e, ACT_MINE_FIRST + tw_reach(e, X, F - 1));
+    CHECK(e->fx.swing && e->fx.swing_tool == TOOL_COPPER_PICK && e->item_anim == TOOL_INFO[TOOL_COPPER_PICK].use_anim - FID_TICKS
+          && !tw_mask(e, ACT_ATTACK), "copper pickaxe swing (anim %d)", e->item_anim);
+#endif
+    free(e);
+#else
+    printf("explicit tools: EXPLICIT_TOOLS=0, fixtures skipped\n");
+#endif
+}
+
+static void test_walls(void) {
+#if BG_WALLS
+    Env *e = new_env(1000000);
+    const int X = 62, F = FLOOR;
+    bool legal, ok;
+    enum { SLOT_STONE = 0, SLOT_TORCH_ = 3 };
+    /* Generated walls: none in the sky, dirt walls through the dirt band. */
+    int sky = 0, band = 0, band_cells = 0, cave = 0, cabin = 0;
+    for (int s = 0; s < 64; s++) {
+        env_reset(e, 23000001 + s);
+        for (int x = 0; x < WORLD_W; x++) for (int y = 0; y < WORLD_H; y++) {
+            sky += y <= e->surface[x] && e->wall[y][x] != WALL_NONE;
+            if (y >= e->surface[x] + 3 && y <= e->surface[x] + DIRT_DEPTH) { band_cells++; band += e->wall[y][x] == WALL_DIRT; }
+            cave += e->wall[y][x] >= WALL_CAVE_59 && e->wall[y][x] <= WALL_CAVE_171;
+            cabin += e->wall[y][x] == WALL_PLANKED;
+        }
+    }
+    printf("walls over 64 worlds: %d sky, dirt band %d/%d, %.0f cave-wall and %.0f cabin-wall cells per world\n",
+           sky, band, band_cells, cave / 64.0, cabin / 64.0);
+    CHECK(sky == 0 && band == band_cells && cave > 0 && cabin > 0, "generated walls");
+    /* Open sky: a block needs a neighbour; a wall behind it or beside it is
+       enough; a floor neighbour still makes a bridge. */
+    arena(e, 0);
+    ok = tw_place(e, SLOT_STONE, X, F - 4, &legal);
+    CHECK(!legal && !ok, "block in open sky: mask %d placed %d", legal, ok);
+    ok = tw_place(e, SLOT_STONE, X, F - 1, &legal);
+    CHECK(legal && ok, "block on the floor: mask %d placed %d", legal, ok);
+    arena(e, 0);
+    e->wall[F - 4][X] = WALL_DIRT;
+    ok = tw_place(e, SLOT_STONE, X, F - 4, &legal);
+    CHECK(legal && ok, "block against a wall: mask %d placed %d", legal, ok);
+    arena(e, 0);
+    e->wall[F - 4][X + 1] = WALL_DIRT;
+    ok = tw_place(e, SLOT_STONE, X, F - 4, &legal);
+    CHECK(legal && ok, "block beside a walled cell: mask %d placed %d", legal, ok);
+    /* Underground, against the generated wall: a dug-out pocket in the dirt
+       band of a real world, the target with no tile around it. */
+    env_reset(e, 23000001);
+    {
+        int x = e->px + 2, y = e->surface[x] + 6;
+        for (int yy = y - 4; yy <= y; yy++) for (int xx = x - 3; xx <= x + 1; xx++) { e->tiles[yy][xx] = TILE_AIR; e->object_part[yy][xx] = 0; }
+        e->tiles[y + 1][x - 2] = e->tiles[y + 1][x - 1] = TILE_DIRT;
+        memset(e->mobs, 0, sizeof e->mobs);
+        e->px = x - 2; e->py = y; sync_body(e); tw_relight(e);
+        for (int yy = 0; yy < WORLD_H; yy++) for (int xx = 0; xx < WORLD_W; xx++) e->light[yy][xx] = LIGHT_MAX;
+        int tx = x, ty = y - 3;
+        ok = tw_place(e, SLOT_STONE, tx, ty, &legal);
+        CHECK(e->wall[ty][tx] == WALL_DIRT && legal && ok, "block against the dirt wall underground: mask %d placed %d", legal, ok);
+    }
+#if SUPPORT_RULES
+    /* Torch on the wall alone. */
+    arena(e, 0);
+    ok = tw_place(e, SLOT_TORCH_, X, F - 4, &legal);
+    CHECK(!legal && !ok, "torch in open sky: mask %d placed %d", legal, ok);
+    e->wall[F - 4][X] = WALL_DIRT;
+    ok = tw_place(e, SLOT_TORCH_, X, F - 4, &legal);
+    CHECK(legal && ok, "torch on a wall: mask %d placed %d", legal, ok);
+#endif
+    /* Mining never removes a wall; the wall channel shows lit walls only. */
+    arena(e, 0);
+    e->tiles[F - 1][X] = TILE_STONE; e->wall[F - 1][X] = WALL_DIRT; tw_relight(e);
+    int r = tw_reach(e, X, F - 1);
+    for (int t = 0; t < 12 && tile_at(e, X, F - 1) != TILE_AIR; t++) env_step(e, ACT_MINE_FIRST + r);
+    CHECK(tile_at(e, X, F - 1) == TILE_AIR && e->wall[F - 1][X] == WALL_DIRT, "wall survives mining");
+    static Obs o;
+    env_obs(e, &o);
+    int k = (F - 1 - (e->py - VIEW_H / 2)) * VIEW_W + (X - (e->px - VIEW_W / 2));
+    float *cell = &o.status[OBS_ENTITY_0 + k * OBS_ENTITY_CHANNELS];
+    CHECK(cell[OBS_WALL_CHANNEL] == 1.0f && cell[OBS_WALL_CHANNEL - 1] == 0.0f, "wall channel on a lit wall");
+    e->light[F - 1][X] = 0; env_obs(e, &o);
+    CHECK(cell[OBS_WALL_CHANNEL] == 0.0f, "wall hidden in the dark");
+    free(e);
+#else
+    printf("background walls: BG_WALLS=0, fixtures skipped\n");
+#endif
+}
+
 /* 40 achievements need 64-bit masks end to end, including the info rows. */
 static void test_info_rows(void) {
     Env *e = new_env(0);
@@ -757,9 +933,9 @@ static void test_info_rows(void) {
 int main(int argc, char **argv) {
     int worlds = argc > 1 ? atoi(argv[1]) : 512;
     printf("v10 selftest (FID_MOBS=%d COMBAT=%d PHYSICS=%d MINING=%d TREES=%d, FID_TICKS=%d, TREE_LEAF_VISUAL=%d "
-           "SUPPORT_RULES=%d): Env %zu bytes, obs status %d, actions %d, achievements %d\n", FID_MOBS, FID_COMBAT,
-           FID_PHYSICS, FID_MINING, FID_TREES, FID_TICKS, TREE_LEAF_VISUAL, SUPPORT_RULES, sizeof(Env), OBS_STATUS,
-           ACT_COUNT, ACH_COUNT);
+           "SUPPORT_RULES=%d EXPLICIT_TOOLS=%d TOOL_DAMAGE=%d BG_WALLS=%d): Env %zu bytes, obs status %d, actions %d, "
+           "achievements %d\n", FID_MOBS, FID_COMBAT, FID_PHYSICS, FID_MINING, FID_TREES, FID_TICKS, TREE_LEAF_VISUAL,
+           SUPPORT_RULES, EXPLICIT_TOOLS, TOOL_DAMAGE, BG_WALLS, sizeof(Env), OBS_STATUS, ACT_COUNT, ACH_COUNT);
     test_determinism();
     test_light_parity();
     test_spawns();
@@ -773,6 +949,8 @@ int main(int argc, char **argv) {
     test_support();
     test_tree_leaves();
     test_fx();
+    test_tools();
+    test_walls();
     printf("%s: %d/%d checks passed\n", failures ? "FAILED" : "PASSED", checks - failures, checks);
     return failures != 0;
 }

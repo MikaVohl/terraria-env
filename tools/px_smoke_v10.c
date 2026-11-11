@@ -212,9 +212,64 @@ int main(int argc, char **argv)
         shot(ui, &e, &v, prefix, "combat");
     }
 
+#if TOOL_DAMAGE
+    /* 7. A pickaxe use: mining the ground beside a Blue Slime swings the
+       copper pickaxe sprite through it (damage number from fx). */
+    env_reset(&e, SEED);
+    for (int i = 0; i < MAX_MOBS; i++) e.mobs[i].kind = MOB_NONE;
+    e.facing = 1;
+    /* A flat dirt patch around the spawn body, so the slime is in the open. */
+    for (int x = e.px - 6; x <= e.px + 7; x++) {
+        for (int y = e.py - 8; y <= e.py; y++) { e.tiles[y][x] = TILE_AIR; e.object_part[y][x] = 0; }
+        for (int y = e.py + 1; y <= e.py + 3; y++) { e.tiles[y][x] = TILE_DIRT; e.object_part[y][x] = 0; }
+    }
+    e.terrain_dirty = true; light_full(&e);
+    {
+        int hits = 0;
+        double t0 = 20.0, tick_s = 0.25 / FID_TICKS;
+        memset(&v, 0, sizeof v);
+        v.hover_reach = v.hover_recipe = v.hover_ach = v.hover_slot = v.hover_item = -1;
+        for (int s = 0; s < 8 && !hits; s++, t0 += 0.25) {
+            mob_place(&e.mobs[0], MOB_BLUE_SLIME, SLIME_HP, e.px + 2, e.py);
+            env_step(&e, ACT_MINE_DOWN);
+            px_fx_step(&v, &e, t0, tick_s);
+            hits = e.fx.n_hits;
+        }
+        assert(hits > 0 && v.swing_weapon >= WEAPON_COUNT);
+        sync(&v, &e);
+        v.clock = v.swing_t0 + 0.4 * v.swing_len;
+        shot(ui, &e, &v, prefix, "tool-swing");
+    }
+#endif
+#if BG_WALLS
+    /* 8. Background walls: a shaft dug down from spawn through the dirt
+       band shows the dirt wall behind it (Wall_2), the sky none. */
+    env_reset(&e, SEED);
+    for (int i = 0; i < MAX_MOBS; i++) e.mobs[i].kind = MOB_NONE;
+    for (int s = 0; s < 120 && e.py < e.surface[e.px] + 12; s++) {
+        env_action_mask(&e, mask);
+        env_step(&e, mask[ACT_MINE_DOWN] ? ACT_MINE_DOWN : mask[ACT_MINE_DOWN_INNER_RIGHT] ? ACT_MINE_DOWN_INNER_RIGHT : ACT_NOOP);
+    }
+    {
+        int wy = e.surface[e.px] + 5;
+        assert(e.wall[wy][e.px] == WALL_DIRT && e.tiles[wy][e.px] == TILE_AIR && e.wall[e.surface[e.px] - 1][e.px] == WALL_NONE);
+    }
+    memset(&v, 0, sizeof v);
+    v.hover_reach = v.hover_recipe = v.hover_ach = v.hover_slot = v.hover_item = -1;
+    sync(&v, &e);
+    shot(ui, &e, &v, prefix, "walls");
+#endif
+
     for (int k = 1; k < MOB_KINDS; k++) assert(drawn[k] == 1);
     assert(boss_frames > 0);
     px_shutdown(ui);
-    puts("v10 pixel fixtures passed: steps, all 5 mob kinds, Demon Altar, Eye of Cthulhu (both phases), help, tiered achievements, tree sprites, combat feedback");
+    puts("v10 pixel fixtures passed: steps, all 5 mob kinds, Demon Altar, Eye of Cthulhu (both phases), help, tiered achievements, tree sprites, combat feedback"
+#if TOOL_DAMAGE
+         ", tool swing"
+#endif
+#if BG_WALLS
+         ", background walls"
+#endif
+         );
     return 0;
 }

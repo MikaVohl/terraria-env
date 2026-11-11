@@ -14,6 +14,7 @@ GLYPHS = {"air": ".", "dirt": "#", "grass": '"', "stone": "%", "log": "|", "wood
           "furnace": "F", "anvil": "A", "bedrock": "X", "silver ore": "s", "wood platform": "-", "rope": ":",
           "chest": "C", "empty chest": "u", "life crystal": "H", "mushroom": "m", "demon altar": "D"}
 UNKNOWN = "?"
+WALL_AIR = ","   # v10 BG_WALLS: open cell in front of a background wall
 PLAYER = "@"
 MOBS = ("Blue Slime", "Cave Bat", "Zombie", "Demon Eye", "Skeleton", "Eye of Cthulhu")
 MOB_GLYPHS = ("S", "B", "Z", "Y", "K", "W")
@@ -35,7 +36,9 @@ def cycle_constants(environment_root):
 def legend():
     tiles = ", ".join(f"'{GLYPHS[name]}' {name}" for name in SPEC.tile_names)
     mobs = ", ".join(f"'{g}' {m}" for g, m in zip(MOB_GLYPHS, MOBS))
-    return (f"Map legend: {tiles}; '{UNKNOWN}' unlit/unknown (not visible); '{PLAYER}' your body; mobs drawn on top: {mobs}. "
+    walls = (f"'{WALL_AIR}' open cell in front of a background wall (blocks, torches and platforms may be placed against it); "
+             if SPEC.wall_channel is not None else "")
+    return (f"Map legend: {tiles}; {walls}'{UNKNOWN}' unlit/unknown (not visible); '{PLAYER}' your body; mobs drawn on top: {mobs}. "
             "Rows run top (row 0) to bottom; dy>0 is DOWN, dx>0 is RIGHT.")
 
 
@@ -71,7 +74,9 @@ def text_observation(packet, max_steps, cycle):
     weapon = WEAPONS[round(s["weapon_fraction"]*(len(WEAPONS)-1))]
     armor = ARMORS[round(s["armor_fraction"]*(len(ARMORS)-1))]
     pick = PICKS[round(s["mining_tier_fraction"]*(len(PICKS)-1))]
-    lines.append(f"Health {health}/{max_health}. Weapon {weapon}. Armor {armor}. Pickaxe {pick}. Facing {'right' if s['facing_right'] > .5 else 'left'}.")
+    held = f" Holding {packet['held']}." if "held" in packet else ""
+    lines.append(f"Health {health}/{max_health}. Weapon {weapon}. Armor {armor}. Pickaxe {pick}.{held} "
+                 f"Facing {'right' if s['facing_right'] > .5 else 'left'}.")
     fall = round(s["fall_fraction"]*2*SPEC.fall_safe)
     if fall:
         lines.append(f"FALLING: {fall} tiles so far (falls over {SPEC.fall_safe} tiles hurt).")
@@ -97,6 +102,10 @@ def text_observation(packet, max_steps, cycle):
         lines.append(f"Achievements {len(have)}/{SPEC.n_achievements}: {', '.join(have) or 'none'}.")
     ax, ay = SPEC.view_w//2, SPEC.view_h//2
     grid = [[UNKNOWN if t == SPEC.unknown_tile else GLYPHS[SPEC.tile_names[t]] for t in row] for row in packet["tiles"]]
+    for r, row in enumerate(packet.get("walls", [])):
+        for c, w in enumerate(row):
+            if w and grid[r][c] == GLYPHS["air"]:
+                grid[r][c] = WALL_AIR
     for dy in range(-SPEC.player_h+1, 1):
         for dx in range(SPEC.player_w):
             if 0 <= ay+dy < SPEC.view_h and 0 <= ax+dx < SPEC.view_w:
@@ -105,9 +114,9 @@ def text_observation(packet, max_steps, cycle):
     for entity in packet["visible_entities"]:
         cell, f = entity["cell"], entity["features"]
         row, col = divmod(cell, SPEC.view_w)
-        kinds = [i for i in range(min(len(MOBS), SPEC.entity_channels-2)) if f[i] > .5]
+        kinds = [i for i in range(min(len(MOBS), SPEC.mob_channels-2)) if f[i] > .5]
         for i in kinds:
-            mobs.append(f"{MOBS[i]} at dx={col-ax:+d} dy={row-ay:+d} health {f[SPEC.entity_channels-2]:.2f}")
+            mobs.append(f"{MOBS[i]} at dx={col-ax:+d} dy={row-ay:+d} health {f[SPEC.mob_channels-2]:.2f}")
         if kinds and grid[row][col] != PLAYER:
             grid[row][col] = MOB_GLYPHS[kinds[0]]
     under = [SPEC.tile_names[packet["tiles"][ay+dy][ax+dx]] for dy in range(-SPEC.player_h+1, 1) for dx in range(SPEC.player_w)
@@ -156,6 +165,14 @@ Combat: 'attack' hits mobs in front of you (the direction you face, up to ~2 til
 Night (last 1200 of every 3000 steps; episode starts at dawn): Zombies and Demon Eyes spawn on the surface; Demon Eyes drop lens (about 1 in 3). Underground is safe from them but has Cave Bats; caverns have Skeletons (strong: 50 HP, 16 damage).
 Boss chain: collect 6 lens from Demon Eyes -> craft Suspicious Looking Eye at a demon altar -> at night 'use summon item' -> Eye of Cthulhu (240 HP, phase 2 below half health). Gear up first (better sword, armor, life crystals).
 Typical progression: wood -> workbench -> wooden sword (+ wood breastplate) -> dig down for stone/copper/iron, kill slimes for gel -> torches -> furnace -> bars -> anvil -> metal sword, iron pickaxe, iron chainmail -> caverns (silver, gold, skeletons, altars) -> return to surface -> survive nights."""
+if SPEC.status_held0 is not None:
+    GUIDE += ("\nTools (this build): you start with a copper shortsword, copper pickaxe and copper axe as inventory items. "
+              "A 'mine' action uses the axe on tree trunks and your best pickaxe on everything else; a crafted iron or gold "
+              "pickaxe is used automatically. Pickaxe and axe swings also hit mobs in front of you. 'Holding' shows the item in hand.")
+if SPEC.wall_channel is not None:
+    GUIDE += (f"\nWalls (this build): cells under the surface dirt, some enclosed caves and cabins have background walls "
+              f"('{WALL_AIR}' on open cells). Mining never removes a wall. A block needs a tile beside, above or below it, "
+              "or a wall behind it or a neighbour: no floating blocks in the open sky. Torches and platforms may also hang on a wall.")
 
 
 ACTION_RE = re.compile(r"^\s*(.+?)(?:\s*(?:x|\*)\s*(\d+))?\s*$", re.IGNORECASE)

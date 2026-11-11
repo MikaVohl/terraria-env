@@ -11,7 +11,9 @@
 #include "rng.h"
 #include "fid.h"
 
-#define INV_CAP 999
+/* Item.maxStack: 999 before Terraria 1.4.4, 9999 since (EXPLICIT_TOOLS
+   brings 1.4.4's inventory). The observation saturates at OBS_INV_CLIP. */
+#define INV_CAP (EXPLICIT_TOOLS ? 9999 : 999)
 
 static const char *const ACTION_NAME[ACT_COUNT] = {
     "noop", "left", "right", "jump",
@@ -181,13 +183,11 @@ static void award_place(Env *e, Tile t) {
 }
 
 #if FID_MINING
-/* Item.SetDefaults: Copper Pickaxe 3509 (pick 35, useTime 15), Iron Pickaxe 1
-   (40, 13), Gold Pickaxe 3521 (55, 17), indexed by tool_tier. Trees take the
-   starting Copper Axe 3506 (axe 7 = 35%, useTime 21): (int)(7 * 1.2f) = 8. */
-static const int PICK_POWER[4] = {35, 35, 40, 55};
-static const int PICK_TIME[4] = {15, 15, 13, 17};
-#define AXE_HIT 8
-#define AXE_TIME 21
+/* Item.SetDefaults via TOOL_INFO (env.h): Copper Pickaxe 3509 (pick 35,
+   useTime 15), Iron Pickaxe 1 (40, 13), Gold Pickaxe 3521 (55, 17); tier 0
+   (no pickaxe, only reachable in v9 fixtures) mines like copper. Trees take
+   the starting Copper Axe 3506 (axe 7 = 35%, useTime 21): (int)(7 * 1.2f) = 8. */
+#define AXE_HIT (TOOL_INFO[TOOL_COPPER_AXE].axe * 12 / 10)
 
 /* Player.GetPickaxeDamage for this tile set: dirt takes pick power twice,
    torches (tileNoFail), mushrooms (plants, tileNoFail) and rope (tileRope)
@@ -195,7 +195,7 @@ static const int PICK_TIME[4] = {15, 15, 13, 17};
 static int pick_damage(const Env *e, Tile t) {
     if (t == TILE_LOG) return AXE_HIT;
     if (t == TILE_TORCH || t == TILE_MUSHROOM || t == TILE_ROPE) return 100;
-    int p = PICK_POWER[e->tool_tier];
+    int p = TOOL_INFO[mine_tool(e, t)].pick;
     return t == TILE_DIRT ? 2 * p : p;
 }
 
@@ -233,12 +233,40 @@ static void hit_prune(Env *e) {
 }
 #endif
 
+#if BG_WALLS
+/* ---- background walls (BG_WALLS) -----------------------------------------
+   A wall at (x, y). In `mask` mode a dark cell counts, so the action mask
+   never reveals hidden walls (or the terrain around them). */
+static bool wall_anchor(const Env *e, int x, int y, bool mask) {
+    if (!in_bounds(x, y)) return false;
+    if (mask && e->light[y][x] < DARK_THRESHOLD) return true;
+    return e->wall[y][x] != WALL_NONE;
+}
+
+/* Player.PlaceThing_Tiles_BlockPlacementForAssortedThings, final branch
+   (plain blocks): legal when the tile right, left, below or above is active
+   and tileSolid (platforms are), a beam or rope, or that neighbour has a
+   wall; failing that, when the target itself has a wall. So blocks still
+   build pillars and bridges from existing tiles, but never float in the sky. */
+static bool block_anchored(const Env *e, int x, int y, bool mask) {
+    static const int DX[4] = {1, -1, 0, 0}, DY[4] = {0, 0, 1, -1};
+    for (int i = 0; i < 4; i++) {
+        int nx = x + DX[i], ny = y + DY[i];
+        if (mask && in_bounds(nx, ny) && e->light[ny][nx] < DARK_THRESHOLD) return true;
+        Tile t = tile_at(e, nx, ny);
+        if (tile_solid(t) || t == TILE_PLATFORM || t == TILE_ROPE || wall_at(e, nx, ny) != WALL_NONE) return true;
+    }
+    return wall_anchor(e, x, y, mask);
+}
+#endif
 #if SUPPORT_RULES
 /* ---- tile anchors (SUPPORT_RULES) ----------------------------------------
-   TileObjectData anchors, without walls (this world has none). Placement
-   needs them; WorldGen.TileFrame's Check* calls break a tile that lost them
-   and WorldGen.KillTile drops its item, here straight into the inventory as
-   every mined drop. */
+   TileObjectData anchors. Placement needs them; WorldGen.TileFrame's Check*
+   calls break a tile that lost them and WorldGen.KillTile drops its item,
+   here straight into the inventory as every mined drop. With BG_WALLS a
+   torch (BlockPlacementForAssortedThings: `wall > 0` first) or a platform
+   may also hang on the wall behind it; walls are never removed, so such a
+   tile never loses that anchor. */
 
 /* A solid tile (or a platform where `platform`) anchors. In `mask` mode a
    dark cell may hold anything and counts as an anchor, so the action mask
@@ -250,20 +278,30 @@ static bool anchor(const Env *e, int x, int y, bool mask, bool platform) {
 }
 
 /* Does `t` with its bottom-left cell at (left, bottom) have an anchor? Torch:
-   solid left, right or below. Rope: solid tile or rope above. Platform: solid
-   tile or platform beside it, or a solid tile below. Mushroom: solid below.
-   Furniture, stations, chests, life crystals: solid under every bottom cell
-   (the workbench also stands on platforms). Blocks need nothing. */
+   solid left, right or below (BG_WALLS: or a wall behind). Rope: solid tile
+   or rope above. Platform: solid tile or platform beside it, or a solid tile
+   below (BG_WALLS: or a wall behind). Mushroom: solid below. Furniture,
+   stations, chests, life crystals: solid under every bottom cell (the
+   workbench also stands on platforms). Blocks need nothing here (BG_WALLS
+   checks them in do_place / can_place: block_anchored). */
 static bool supported(const Env *e, Tile t, int left, int bottom, bool mask) {
     switch (t) {
     case TILE_TORCH:
         return anchor(e, left - 1, bottom, mask, false) || anchor(e, left + 1, bottom, mask, false)
-            || anchor(e, left, bottom + 1, mask, false);
+            || anchor(e, left, bottom + 1, mask, false)
+#if BG_WALLS
+            || wall_anchor(e, left, bottom, mask)
+#endif
+            ;
     case TILE_ROPE:
         return anchor(e, left, bottom - 1, mask, false) || tile_at(e, left, bottom - 1) == TILE_ROPE;
     case TILE_PLATFORM:
         return anchor(e, left - 1, bottom, mask, true) || anchor(e, left + 1, bottom, mask, true)
-            || anchor(e, left, bottom + 1, mask, false);
+            || anchor(e, left, bottom + 1, mask, false)
+#if BG_WALLS
+            || wall_anchor(e, left, bottom, mask)
+#endif
+            ;
     case TILE_MUSHROOM:
         return anchor(e, left, bottom + 1, mask, false);
     case TILE_WORKBENCH: case TILE_FURNACE: case TILE_ANVIL: case TILE_CAMPFIRE:
@@ -278,9 +316,15 @@ static bool supported(const Env *e, Tile t, int left, int bottom, bool mask) {
 
 static const char *support_need(Tile t) {
     switch (t) {
+#if BG_WALLS
+    case TILE_TORCH:    return "a solid block beside or below, or a wall behind";
+    case TILE_ROPE:     return "a solid block or rope above";
+    case TILE_PLATFORM: return "a block or platform beside, a block below, or a wall behind";
+#else
     case TILE_TORCH:    return "a solid block beside or below";
     case TILE_ROPE:     return "a solid block or rope above";
     case TILE_PLATFORM: return "a block or platform beside, or a block below";
+#endif
     default:            return "solid ground under it";
     }
 }
@@ -359,6 +403,17 @@ static void do_jump(Env *e) {
 }
 #endif
 
+/* The tools owned reach `t`: the axe for trunks, else a pickaxe of at least
+   the tile's tier (EXPLICIT_TOOLS: and some pickaxe at all; v9's hidden
+   tier 0 mined tier-0 tiles by hand). */
+static bool tool_reaches(const Env *e, Tile t) {
+    if (t == TILE_LOG) return has_axe(e);
+#if EXPLICIT_TOOLS
+    if (pick_tier(e) < TIER_COPPER_PICK) return false;
+#endif
+    return tile_tier(t) <= pick_tier(e);
+}
+
 /* With FID_MINING this is one tool hit (called whenever toolTime reaches 0
    while the mine action is held): Player.PickTile / the axe branch of
    ItemCheck_UseMiningTools_ActuallyUseMiningTool. Returns true when a tile
@@ -383,8 +438,9 @@ static bool do_mine(Env *e, int r) {
         SAY(e, "%s is unbreakable", TILE_INFO[t].name);
         return false;
     }
-    if (tile_tier(t) > e->tool_tier) {
-        SAY(e, "need a %s pickaxe", pick_name(tile_tier(t)));
+    if (!tool_reaches(e, t)) {
+        if (t == TILE_LOG) SAY(e, "need an axe");
+        else SAY(e, "need a %s pickaxe", pick_name(tile_tier(t)));
         return false;
     }
     if(tile_solid(t)&&tile_at(e,tx,ty-1)==TILE_LOG) {
@@ -398,7 +454,7 @@ static bool do_mine(Env *e, int r) {
 
 #if FID_MINING
     e->dig_x = tx; e->dig_y = ty;
-    e->tool_time = t == TILE_LOG ? AXE_TIME : PICK_TIME[e->tool_tier];
+    e->tool_time = TOOL_INFO[mine_tool(e, t)].use_time;
     if (hit_add(e, tx, ty, pick_damage(e, t)) < 100) {
         /* WorldGen.KillTile(fail: true) turns hit grass into dirt. */
         if (t == TILE_GRASS) { e->tiles[ty][tx] = TILE_DIRT; light_tile_changed(e, tx, ty, TILE_GRASS); }
@@ -466,7 +522,7 @@ static bool do_mine(Env *e, int r) {
 #if FID_MINING
     hit_prune(e);
 #else
-    e->mine_cd = t==TILE_LOG?3:4-e->tool_tier;
+    e->mine_cd = t==TILE_LOG?3:4-pick_tier(e);
 #endif
 
 #if !FID_PHYSICS
@@ -485,13 +541,17 @@ static bool do_mine(Env *e, int r) {
 }
 
 /* Blocks need no supporting neighbour on purpose: pillar-jumping upward and
-   bridging across a chasm are both intended traversal tools. With
+   bridging across a chasm are both intended traversal tools (BG_WALLS: they
+   need Terraria's neighbour-or-wall, which pillars and bridges have). With
    SUPPORT_RULES torches, rope, platforms and furniture need their anchors. */
 static bool do_place(Env *e, int r) {
     Placeable p = PLACEABLES[e->selected];
     int tx = e->px + REACH_DX[r];
     int ty = e->py + REACH_DY[r];
 
+#if EXPLICIT_TOOLS
+    e->held = (uint8_t)p.item;
+#endif
     if (e->inv[p.item] <= 0) {
         SAY(e, "no %s to place", ITEM_NAME[p.item]);
         return false;
@@ -507,6 +567,9 @@ static bool do_place(Env *e, int r) {
         if(t!=TILE_AIR) { SAY(e,"%s is in the way",TILE_INFO[t].name);return false; }
         if(tile_solid(p.tile)&&is_body(e,x,y)) { SAY(e,"you are standing there");return false; }
     }
+#if BG_WALLS
+    if(tile_solid(p.tile)&&!block_anchored(e,tx,ty,false)) { SAY(e,"%s needs a tile beside it or a wall behind",TILE_INFO[p.tile].name);return false; }
+#endif
 #if SUPPORT_RULES
     if(!supported(e,p.tile,tx,ty,false)) { SAY(e,"%s needs %s",TILE_INFO[p.tile].name,support_need(p.tile));return false; }
 #endif
@@ -530,6 +593,9 @@ static void do_select(Env *e) {
         int cand = (e->selected + i) % PLACEABLE_COUNT;
         if (e->inv[PLACEABLES[cand].item] > 0) {
             e->selected = (uint8_t)cand;
+#if EXPLICIT_TOOLS
+            e->held = (uint8_t)PLACEABLES[cand].item;
+#endif
             Item it = PLACEABLES[cand].item;
             SAY(e, "selected %s (%d)", ITEM_NAME[it], e->inv[it]);
             return;
@@ -556,9 +622,11 @@ static void do_craft(Env *e, int idx) {
 
     for (int i = 0; i < r->n_in; i++) e->inv[r->in_item[i]] -= (int16_t)r->in_qty[i];
     if (r->out_item >= 0) give(e, r->out_item, r->out_qty);
+#if !EXPLICIT_TOOLS
     /* Ownership is independent of the strongest automatically used pick.
        Crafting iron after gold stays legal and never downgrades mining. */
     if (r->grant_tier > e->tool_tier) e->tool_tier = r->grant_tier;
+#endif
     /* Crafting explicitly chooses this equipment, rather than auto-selecting
        the best item found in a chest. Weapon cycling can select weaker ones. */
     for (int i=0;i<WEAPON_COUNT;i++) if (r->out_item == (int)WEAPON_ITEM[i]) e->weapon=i;
@@ -624,7 +692,7 @@ static bool can_mine(const Env *e, int r) {
 #if SUPPORT_RULES
     if(tile_solid(t)&&ty>0&&tile_at(e,tx,ty-1)==TILE_CHEST&&e->light[ty-1][tx]>=DARK_THRESHOLD) return false;
 #endif
-    return tile_tier(t) <= e->tool_tier;
+    return tool_reaches(e, t);
 }
 
 static bool can_place(const Env *e, int r) {
@@ -641,6 +709,9 @@ static bool can_place(const Env *e, int r) {
         if(e->light[y][x]>=DARK_THRESHOLD&&tile_at(e,x,y)!=TILE_AIR) return false;
         if(tile_solid(p.tile)&&is_body(e,x,y)) return false;
     }
+#if BG_WALLS
+    if(tile_solid(p.tile)&&!block_anchored(e,tx,ty,true)) return false;
+#endif
 #if SUPPORT_RULES
     return supported(e,p.tile,tx,ty,true);
 #else
@@ -890,6 +961,9 @@ static void player_tick(Env *e) {
     bool can_turn = true;
 #if FID_COMBAT
     can_turn = e->item_anim == 0;   /* swords have useTurn = false */
+#if TOOL_DAMAGE
+    can_turn = can_turn || e->swing_tool;   /* pickaxes and the axe have useTurn */
+#endif
 #endif
     if (e->pulley && (left || right || jump || !ph_rope_reach(e))) e->pulley = false;
     if (!e->pulley && (up || down) && ph_rope_reach(e)) {
@@ -1008,20 +1082,49 @@ static const fix_t FID_KNOCKBACK[WEAPON_COUNT] = {FIXC(4), FIXC(5), FIXC(5.5), F
 static void attack_start(Env *e) {
     if (e->item_anim > 0) return;
     e->item_anim = e->item_anim_max = FID_USE_ANIM[e->weapon];
-    FX_SET(e->fx.swing = true);
+    FX_SET(e->fx.swing = true; e->fx.swing_tick = e->fx.tick; e->fx.swing_tool = -1);
+#if TOOL_DAMAGE
+    e->swing_tool = 0;
+#endif
     if (e->weapon == 0) { e->stab_tick = 1; e->stab_dir = e->facing; e->stab_hits = 0; }
 }
+
+#if TOOL_DAMAGE
+/* A pickaxe / axe use (Player.ItemCheck with the auto-selected tool, which
+   has autoReuse): itemAnimation = the tool's useAnimation; its useStyle 1
+   swing then hits NPCs every tick like a sword (swing_tick). */
+static void tool_swing_start(Env *e, int tool) {
+    e->item_anim = e->item_anim_max = TOOL_INFO[tool].use_anim;
+    e->swing_tool = (uint8_t)(tool + 1);
+#if EXPLICIT_TOOLS
+    e->held = (uint8_t)tool_item(tool);
+#endif
+    FX_SET(e->fx.swing = true; e->fx.swing_tick = e->fx.tick; e->fx.swing_tool = (int8_t)tool);
+}
+#endif
 
 /* One tick of ItemCheck melee: ItemCheck_GetMeleeHitbox for useStyle 1 with
    the dedicated-server 32x32 item frame (itemLocation from
    ItemCheck_ApplyUseStyle: overhead, forward, low thirds of the swing), then
    ItemCheck_MeleeHitNPCs (mobs.c / boss.c). The stab is Projectile
    AI_161_RapierStabs: centre = player centre + 2.1*dir*(ai0-1), colliding
-   along 6 velocity steps with width 10 (as a box), one hit per NPC. */
+   along 6 velocity steps with width 10 (as a box), one hit per NPC. With
+   TOOL_DAMAGE a pickaxe / axe swing takes the same useStyle 1 box with the
+   tool's damage and knockBack (TOOL_INFO). */
 static void swing_tick(Env *e) {
     const fix_t ppx = player_fx(e), ppy = player_fy(e);
     const int dir = e->facing;
-    if (e->item_anim > 0 && e->weapon > 0) {
+    int damage = WEAPON_DAMAGE[e->weapon];
+    fix_t knockback = FID_KNOCKBACK[e->weapon];
+    bool swings = e->weapon > 0;
+#if TOOL_DAMAGE
+    if (e->swing_tool) {
+        damage = TOOL_INFO[e->swing_tool - 1].damage;
+        knockback = TOOL_INFO[e->swing_tool - 1].knockback;
+        swings = true;
+    }
+#endif
+    if (e->item_anim > 0 && swings) {
         const int anim = e->item_anim, max = e->item_anim_max;
         const int phase = anim * 1000 < max * 333 ? 2 : anim * 1000 < max * 666 ? 1 : 0;
         const fix_t cx = ppx + (PLAYER_PX_W / 2) * FIX_ONE;
@@ -1032,8 +1135,8 @@ static void swing_tick(Env *e) {
         Y -= H;
         if (phase == 2) { if (dir == -1) X -= 12; W = 44; Y += 16; H = 35; }
         else if (phase == 0) { if (dir == 1) X -= 38; W = 64; Y -= 12; H = 44; }
-        mobs_swing(e, X, Y, W, H, WEAPON_DAMAGE[e->weapon], FID_KNOCKBACK[e->weapon], dir, anim);
-        boss_swing(e, X, Y, W, H, WEAPON_DAMAGE[e->weapon], anim);
+        mobs_swing(e, X, Y, W, H, damage, knockback, dir, anim);
+        boss_swing(e, X, Y, W, H, damage, anim);
     }
     if (e->stab_tick > 0) {
         const int sd = e->stab_dir;
@@ -1119,12 +1222,27 @@ static bool fid_tick(Env *e, int mine_r) {
 #if FID_MOBS
     mobs_contact(e);
 #endif
+#if TOOL_DAMAGE
+    /* A held mine action uses the auto-selected tool whenever no use is
+       running (autoReuse); a sword use still running holds it back, as one
+       item is in hand at a time. Tool hits need that tool's use running. */
+    int tool = -1;
+    if (mine_r >= 0) {
+        tool = mine_tool(e, tile_at(e, e->px + REACH_DX[mine_r], e->py + REACH_DY[mine_r]));
+        if (e->item_anim == 0) tool_swing_start(e, tool);
+    }
+    const bool tool_in_use = e->item_anim > 0 && e->swing_tool == tool + 1;
+#endif
 #if FID_COMBAT
     swing_tick(e);
 #endif
 #if FID_MINING
     if (e->tool_time > 0) e->tool_time--;
+#if TOOL_DAMAGE
+    if (mine_r >= 0 && e->tool_time == 0 && tool_in_use) edited = do_mine(e, mine_r);
+#else
     if (mine_r >= 0 && e->tool_time == 0) edited = do_mine(e, mine_r);
+#endif
 #endif
     mobs_game_tick(e);   /* NPCs after the player: AI + movement, immunity */
 #if FID_COMBAT
@@ -1176,9 +1294,19 @@ void env_reset(Env *e, uint64_t seed) {
 
     e->health    = MAX_HEALTH;
     e->max_health=MAX_HEALTH;
+#if EXPLICIT_TOOLS
+    /* Terraria's starter inventory (Player.SetupStartingItems, non-journey):
+       Copper Shortsword, Copper Pickaxe, Copper Axe; the sword is in hand. */
+    memset(e->inv, 0, sizeof e->inv);
+    e->inv[ITEM_COPPER_SHORTSWORD]=1;
+    e->inv[ITEM_COPPER_PICK]=1;
+    e->inv[ITEM_COPPER_AXE]=1;
+    e->held = ITEM_COPPER_SHORTSWORD;
+#else
     e->tool_tier = TIER_COPPER_PICK;
     memset(e->inv, 0, sizeof e->inv);
     e->inv[ITEM_COPPER_SHORTSWORD]=1;
+#endif
     e->selected     = 0;
     e->achievements = 0;
     e->steps        = 0;
@@ -1215,7 +1343,7 @@ void env_step(Env *e, int action) {
     e->reward = 0.0f;
     if (e->terminated || e->truncated) return;
     e->msg[0] = '\0';
-    FX_SET(e->fx.tick = 0; e->fx.n_hits = 0; e->fx.swing = false);
+    FX_SET(e->fx.tick = 0; e->fx.n_hits = 0; e->fx.swing = false; e->fx.swing_tick = 0; e->fx.swing_tool = -1);
 
     if (action < 0 || action >= ACT_COUNT) action = ACT_NOOP;
 
@@ -1234,8 +1362,17 @@ void env_step(Env *e, int action) {
     if (action >= ACT_MINE_FIRST && action < ACT_MINE_FIRST + REACH_COUNT) {
 #if FID_MINING
         mine_r = action - ACT_MINE_FIRST;
+#if EXPLICIT_TOOLS && !TOOL_DAMAGE
+        e->held = (uint8_t)tool_item(mine_tool(e, tile_at(e, e->px + REACH_DX[mine_r], e->py + REACH_DY[mine_r])));
+#endif
 #else
-        edited = do_mine(e, action - ACT_MINE_FIRST);
+        {
+            int r = action - ACT_MINE_FIRST;
+#if EXPLICIT_TOOLS
+            e->held = (uint8_t)tool_item(mine_tool(e, tile_at(e, e->px + REACH_DX[r], e->py + REACH_DY[r])));
+#endif
+            edited = do_mine(e, r);
+        }
 #endif
     } else if (action >= ACT_PLACE_FIRST && action < ACT_PLACE_FIRST + REACH_COUNT) {
         edited = do_place(e, action - ACT_PLACE_FIRST);
@@ -1246,6 +1383,9 @@ void env_step(Env *e, int action) {
         int slot=action-ACT_SELECT_FIRST;
         if(e->inv[PLACEABLES[slot].item]>0) {
             e->selected=(uint8_t)slot;
+#if EXPLICIT_TOOLS
+            e->held=(uint8_t)PLACEABLES[slot].item;
+#endif
             SAY(e,"selected %s",ITEM_NAME[PLACEABLES[slot].item]);
         } else SAY(e,"item not owned");
     } else {
@@ -1265,9 +1405,17 @@ void env_step(Env *e, int action) {
 #endif
         case ACT_SELECT_NEXT: do_select(e);   break;
 #if FID_COMBAT
-        case ACT_ATTACK: attack_start(e); break;
+        case ACT_ATTACK:
+#if EXPLICIT_TOOLS
+            if (e->item_anim == 0) e->held = (uint8_t)WEAPON_ITEM[e->weapon];
+#endif
+            attack_start(e); break;
 #else
-        case ACT_ATTACK: do_attack(e); break;
+        case ACT_ATTACK:
+#if EXPLICIT_TOOLS
+            if (!e->attack_cd) e->held = (uint8_t)WEAPON_ITEM[e->weapon];
+#endif
+            do_attack(e); break;
 #endif
         case ACT_INTERACT: do_interact(e); break;
         case ACT_HEAL_POTION: do_heal(e,ITEM_LESSER_POTION,50); break;
@@ -1281,6 +1429,9 @@ void env_step(Env *e, int action) {
         case ACT_EQUIP_NEXT:
             for(int i=1;i<WEAPON_COUNT;i++) { int k=(e->weapon+i)%WEAPON_COUNT;
                 if(e->inv[WEAPON_ITEM[k]]) { e->weapon=k; break; } }
+#if EXPLICIT_TOOLS
+            e->held = (uint8_t)WEAPON_ITEM[e->weapon];
+#endif
             break;
 #if FID_PHYSICS
         case ACT_CLIMB_UP: e->hold_up = true; break;

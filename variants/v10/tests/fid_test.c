@@ -34,6 +34,9 @@ static void flat_world(Env *e, int floor_row) {
     }
     for (int x = 0; x < WORLD_W; x++) e->surface[x] = floor_row;
     memset(e->mobs, 0, sizeof e->mobs); memset(&e->boss, 0, sizeof e->boss); e->chest_count = 0;
+#if BG_WALLS
+    memset(e->wall, 0, sizeof e->wall);
+#endif
     e->px = 60; e->py = floor_row - 1; e->facing = 1;
     e->terrain_dirty = true; light_recompute(e);
     for (int y = 0; y < WORLD_H; y++) for (int x = 0; x < WORLD_W; x++) e->light[y][x] = LIGHT_MAX;
@@ -434,10 +437,88 @@ static void test_combat(void) {
 }
 #endif
 
+/* ------------------------------------------------------------ tool damage */
+#if TOOL_DAMAGE
+/* Main.DamageVar at the variance extremes (-15 / +15), half to even. */
+static int var_at(int dmg, int k) {
+    int v = dmg * (100 + k), q = v / 100, rem = v % 100;
+    if (rem > 50 || (rem == 50 && (q & 1))) q++;
+    return q;
+}
+
+static void test_tool_damage(void) {
+    Env *e = &env;
+    static const char *NAME[TOOL_COUNT] = {"copper pickaxe 3509", "iron pickaxe 1", "gold pickaxe 3521", "copper axe 3506"};
+    static const int WANT[TOOL_COUNT][4] = {{4, 23, 15, 2}, {5, 20, 13, 2}, {6, 20, 17, 2}, {3, 30, 21, 4}}; /* damage, useAnimation, useTime, kb (x2 for 4.5) */
+    for (int k = 0; k < TOOL_COUNT; k++) {
+        const ToolInfo *ti = &TOOL_INFO[k];
+        char name[96];
+        snprintf(name, sizeof name, "tool %s constants", NAME[k]);
+        check(ti->damage == WANT[k][0] && ti->use_anim == WANT[k][1] && ti->use_time == WANT[k][2]
+              && ti->knockback == (k == TOOL_COPPER_AXE ? FIXC(4.5) : FIXC(2)), name,
+              "damage %d, useAnimation %d, useTime %d, knockBack %.1f", ti->damage, ti->use_anim, ti->use_time,
+              (double)ti->knockback / FIX_ONE);
+        /* Strikes on a Blue Slime (defense 2): DamageVar, -defense/2, crit x2. */
+        flat_world(e, 60);
+        int def = MOB_DEF[MOB_BLUE_SLIME], lo = 99, hi = 0, bad = 0, n = 20000;
+        int wlo = (2 * var_at(ti->damage, -15) - def) / 2, whi = (2 * var_at(ti->damage, 15) - def) / 2;
+        if (wlo < 1) wlo = 1;
+        for (int i = 0; i < n; i++) {
+            Mob *m = place_mob(e, MOB_BLUE_SLIME, 24, 12);
+            int before = m->hp; mob_strike(e, m, ti->damage, ti->knockback, 1); int d = before - m->hp;
+            if (d < lo) lo = d;
+            if (d > hi) hi = d;
+            bad += !((d >= wlo && d <= whi) || (d % 2 == 0 && d / 2 >= wlo && d / 2 <= whi));
+        }
+        snprintf(name, sizeof name, "tool %s damage on a slime", NAME[k]);
+        check(lo == wlo && hi == 2 * whi && bad == 0, name, "%d-%d, crits to %d (want %d-%d, crit x2 to %d), %d outside",
+              lo, whi, hi, wlo, whi, 2 * whi, bad);
+        /* One use = one useStyle 1 swing: one hit per NPC (immunity = itemAnimation). */
+        flat_world(e, 60);
+        Mob *m = place_mob(e, MOB_BLUE_SLIME, 24, 12);
+        int hits = 0;
+        tool_swing_start(e, k);
+        int anim = e->item_anim;
+        for (int t = 0; t < 40; t++) {
+            int before = m->hp; swing_tick(e);
+            hits += m->hp < before;
+            if (m->immune > 0) m->immune--;
+#if FID_MOBS
+            m->vx = m->vy = 0;
+#endif
+        }
+        snprintf(name, sizeof name, "tool %s swing", NAME[k]);
+        check(anim == ti->use_anim && hits == 1, name, "useAnimation %d, %d hit per use", anim, hits);
+    }
+    /* End to end: holding a mine action on stone swings the pickaxe through a
+       slime in front (knocked away from the player) while the stone takes hits. */
+    flat_world(e, 60);
+    int r = ACT_MINE_FOOT_RIGHT - ACT_MINE_FIRST, tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
+    e->tiles[ty][tx] = TILE_STONE;
+    Mob *m = place_mob(e, MOB_BLUE_SLIME, 24, 12);
+    int hp0 = m->hp;
+    act(e, ACT_MINE_FIRST + r);
+    HitSlot *s = hit_find(e, tx, ty);
+#if EXPLICIT_TOOLS
+    bool held_ok = e->held == ITEM_COPPER_PICK;
+#else
+    bool held_ok = true;
+#endif
+    check(m->hp < hp0 && s && s->damage == 35 && held_ok, "tool mining swing hits a slime",
+          "slime hp %d -> %d, stone damage %d", hp0, m->hp, s ? s->damage : -1);
+}
+#endif
+
 /* ----------------------------------------------------------------- mining */
 #if FID_MINING
 static int hits_to_break(Env *e, Tile t, int tier) {
-    flat_world(e, 60); e->tool_tier = (uint8_t)tier;
+    flat_world(e, 60);
+#if EXPLICIT_TOOLS
+    e->inv[ITEM_COPPER_PICK] = tier == TIER_COPPER_PICK; e->inv[ITEM_IRON_PICK] = tier == TIER_IRON_PICK;
+    e->inv[ITEM_GOLD_PICK] = tier == TIER_GOLD_PICK;
+#else
+    e->tool_tier = (uint8_t)tier;
+#endif
     int r = ACT_MINE_FOOT_RIGHT - ACT_MINE_FIRST;
     int tx = e->px + REACH_DX[r], ty = e->py + REACH_DY[r];
     if (t == TILE_LOG) { e->tiles[ty][tx] = TILE_LOG; e->tiles[ty - 1][tx] = TILE_LOG; }
@@ -464,7 +545,7 @@ static void test_mining(void) {
     const char *pick[4] = {"", "copper", "iron", "gold"};
     for (size_t c = 0; c < sizeof cases / sizeof cases[0]; c++) for (int tier = 1; tier <= 3; tier++) {
         int r = hits_to_break(e, cases[c].t, tier), hits = r / 1000, ticks = r % 1000;
-        int ut = cases[c].t == TILE_LOG ? AXE_TIME : PICK_TIME[tier];
+        int ut = TOOL_INFO[cases[c].t == TILE_LOG ? TOOL_COPPER_AXE : tier - 1].use_time;
         char name[64]; snprintf(name, sizeof name, "mining %s with %s pick", cases[c].name, pick[tier]);
         check(hits == cases[c].want[tier] && ticks == (hits - 1) * ut + 1, name,
               "%d hits, %d ticks = %d actions (want %d hits every %d ticks)", hits, ticks, (ticks + FID_TICKS - 1) / FID_TICKS,
@@ -487,7 +568,7 @@ static void test_mining(void) {
     flat_world(e, 60);
     e->tiles[ty][tx] = TILE_STONE;
     int n = 0; while (tile_at(e, tx, ty) == TILE_STONE && n < 10) { act(e, ACT_MINE_FIRST + r0); n++; }
-    check(n == (2 * PICK_TIME[1] + 1 + FID_TICKS - 1) / FID_TICKS, "mining stone with held action",
+    check(n == (2 * TOOL_INFO[TOOL_COPPER_PICK].use_time + 1 + FID_TICKS - 1) / FID_TICKS, "mining stone with held action",
           "%d actions at %d ticks/action (3 hits, useTime 15: 31 ticks)", n, FID_TICKS);
 }
 #endif
@@ -534,8 +615,8 @@ static void test_trees(void) {
 #endif
 
 int main(void) {
-    printf("v10 port fixtures: MOBS=%d COMBAT=%d PHYSICS=%d MINING=%d TREES=%d, FID_TICKS=%d\n",
-           FID_MOBS, FID_COMBAT, FID_PHYSICS, FID_MINING, FID_TREES, FID_TICKS);
+    printf("v10 port fixtures: MOBS=%d COMBAT=%d PHYSICS=%d MINING=%d TREES=%d, FID_TICKS=%d, EXPLICIT_TOOLS=%d TOOL_DAMAGE=%d\n",
+           FID_MOBS, FID_COMBAT, FID_PHYSICS, FID_MINING, FID_TREES, FID_TICKS, EXPLICIT_TOOLS, TOOL_DAMAGE);
 #if FID_PHYSICS
     test_physics();
 #endif
@@ -544,6 +625,9 @@ int main(void) {
 #endif
 #if FID_COMBAT
     test_combat();
+#endif
+#if TOOL_DAMAGE
+    test_tool_damage();
 #endif
 #if FID_MINING
     test_mining();
