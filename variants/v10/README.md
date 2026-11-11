@@ -19,6 +19,7 @@ sources are untouched. `ENV_VERSION` is 10, so v10 checkpoints never load on oth
 | `tests/selftest.c` | C gates: determinism, save/load, light parity, v9 mechanics with the ports, D24, scripted boss fight, worldgen supply |
 | `tests/fid_test.c` | port fixtures against the real constants on v10's five mobs and the boss |
 | `tests/check_v10.py` | Python gates: SPEC contract, scalar = native autoreset, scoring (max 145), potential goals, evaluation |
+| `tests/combo_test.c` | `COMBO_ACTIONS=1` fixtures: each combo = move + use in one step, masks, determinism, save/load, scripted pillaring |
 
 ## Ports (D22)
 
@@ -152,6 +153,8 @@ jolt. Trees draw `Tree_Tops` crowns and `Tree_Branches` leaves (`TREE_LEAF_VISUA
        -o /tmp/v10-selftest -lm && /tmp/v10-selftest 512
     cc -std=c11 -O2 -I$V/include -I$V/src $V/tests/fid_test.c $V/src/{worldgen,light,obs}.c \
        -o /tmp/v10-fid -lm && /tmp/v10-fid
+    cc -std=c11 -O2 -DCOMBO_ACTIONS=1 -I$V/include -I$V/src $V/tests/combo_test.c $V/src/{worldgen,light,obs}.c \
+       -o /tmp/v10-combo -lm && /tmp/v10-combo
     TERRARIA_LITE_LIB=$PWD/perf/v7/build-v10/libterraria.so PYTHONPATH=python .venv/bin/python $V/tests/check_v10.py
     PYTHONPATH=python .venv/bin/python tools/v10_noport_parity.py \
        perf/v7/build-v9/libterraria.so perf/v7/build-v10-noport/libterraria.so 16 25000
@@ -179,6 +182,7 @@ All compile-time (`VARIANT="-DNAME=value"`). v9's knobs keep their meaning
 | `EXPLICIT_TOOLS` | 1 | pickaxes/axe are items, starter set, Auto Select, `held` item observed, 9,999 stacks (below) |
 | `TOOL_DAMAGE` | `FID_COMBAT && FID_MINING` | pickaxe/axe uses swing a real melee hitbox (below) |
 | `BG_WALLS` | 1 | background walls from worldgen; Terraria's neighbour-or-wall block placement (below) |
+| `COMBO_ACTIONS` | 0 | 15 appended actions holding a movement and doing a use in one step (`docs/reports/COMBO_ACTIONS_2026_11.md`) |
 | `SLIME_HP/DMG/DEF` | 25 / 7 / 2 | Blue Slime |
 | `BAT_HP/DMG/DEF` | 16 / 13 / 2 | Cave Bat (v9 damage 12 without mob/combat ports) |
 | `ZOMBIE_HP/DMG/DEF` | 45 / 14 / 6 | Zombie (v9: 30 / 10) |

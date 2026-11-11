@@ -113,6 +113,19 @@
 #ifndef BG_WALLS
 #define BG_WALLS 1
 #endif
+/* COMBO_ACTIONS: 15 extra actions appended after ACT_SUMMON that hold a
+   movement input (left / right / jump, or left/right + jump) AND perform one
+   use in the same 15-tick step, as a player holding a direction and the use
+   button together. Attack and mine run exactly as their standalone actions
+   (swing from the step start, mine held every tick); a place combo places at
+   the step start when the standalone place would, else at the first tick its
+   target cell takes the block (one per step: pillar while jumping). Legal iff
+   the use is (place combos: the selected item is stocked; the two running
+   jumps: iff jump is). Off by default: the 86 standalone actions and their
+   behaviour are unchanged either way. */
+#ifndef COMBO_ACTIONS
+#define COMBO_ACTIONS 0
+#endif
 /* ENV_FX: the observational side channel Env.fx (hits, swing start, bodies
    per game tick) for the pixel frontend, which builds with ENV_FX=1. Never
    read by the game, so it cannot change a result; off by default because
@@ -426,11 +439,38 @@ typedef enum {
  ACT_EQUIP_NEXT,ACT_CLIMB_UP,ACT_CLIMB_DOWN,ACT_DROP,
  ACT_SELECT_STONE,ACT_SELECT_DIRT,ACT_SELECT_WOOD,ACT_SELECT_TORCH,
  ACT_SELECT_CAMPFIRE,ACT_SELECT_WORKBENCH,ACT_SELECT_FURNACE,ACT_SELECT_ANVIL,
- ACT_SELECT_PLATFORM,ACT_SELECT_ROPE,ACT_SUMMON,ACT_COUNT
+ ACT_SELECT_PLATFORM,ACT_SELECT_ROPE,ACT_SUMMON,
+#if COMBO_ACTIONS
+ ACT_LEFT_ATTACK,ACT_RIGHT_ATTACK,ACT_JUMP_ATTACK,ACT_JUMP_PLACE_DOWN,
+ ACT_LEFT_MINE_HEAD_LEFT,ACT_LEFT_MINE_MIDDLE_LEFT,ACT_LEFT_MINE_FOOT_LEFT,
+ ACT_RIGHT_MINE_HEAD_RIGHT,ACT_RIGHT_MINE_MIDDLE_RIGHT,ACT_RIGHT_MINE_FOOT_RIGHT,
+ ACT_JUMP_MINE_UP,ACT_LEFT_JUMP_PLACE_DOWN_LEFT,ACT_RIGHT_JUMP_PLACE_DOWN_RIGHT,
+ ACT_LEFT_JUMP,ACT_RIGHT_JUMP,
+#endif
+ ACT_COUNT
 } Action;
 #define ACT_SELECT_FIRST ACT_SELECT_STONE
 #define ACT_MINE_FIRST ACT_MINE_UP_LEFT
 #define ACT_PLACE_FIRST ACT_PLACE_UP_LEFT
+#if COMBO_ACTIONS
+#if !FID_PHYSICS
+#error "COMBO_ACTIONS needs FID_PHYSICS (held inputs)"
+#endif
+/* A combo: held movement bits plus the standalone action whose use it
+   performs (ACT_NOOP: movement only). */
+enum { COMBO_L = 1, COMBO_R = 2, COMBO_J = 4 };
+typedef struct { uint8_t move; uint8_t use; } Combo;
+#define ACT_COMBO_FIRST ACT_LEFT_ATTACK
+#define COMBO_COUNT (ACT_COUNT - ACT_COMBO_FIRST)
+static const Combo COMBOS[] = {
+ {COMBO_L, ACT_ATTACK}, {COMBO_R, ACT_ATTACK}, {COMBO_J, ACT_ATTACK}, {COMBO_J, ACT_PLACE_DOWN},
+ {COMBO_L, ACT_MINE_HEAD_LEFT}, {COMBO_L, ACT_MINE_MIDDLE_LEFT}, {COMBO_L, ACT_MINE_FOOT_LEFT},
+ {COMBO_R, ACT_MINE_HEAD_RIGHT}, {COMBO_R, ACT_MINE_MIDDLE_RIGHT}, {COMBO_R, ACT_MINE_FOOT_RIGHT},
+ {COMBO_J, ACT_MINE_UP}, {COMBO_L|COMBO_J, ACT_PLACE_DOWN_LEFT}, {COMBO_R|COMBO_J, ACT_PLACE_DOWN_RIGHT},
+ {COMBO_L|COMBO_J, ACT_NOOP}, {COMBO_R|COMBO_J, ACT_NOOP},
+};
+_Static_assert(sizeof COMBOS / sizeof COMBOS[0] == COMBO_COUNT, "one Combo per combo action");
+#endif
 
 /* Section 8: 38 v9 achievements + D24's two tier-4 stepping stones, in four
    tiers (13/12/8/7, weights 1/3/5/8, max 145). The stepping stones:

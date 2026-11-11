@@ -43,6 +43,13 @@ static const char *const ACTION_NAME[ACT_COUNT] = {
     "select stone","select dirt","select wood","select torch","select campfire",
     "select workbench","select furnace","select anvil","select platform","select rope",
     "use summon item",
+#if COMBO_ACTIONS
+    "left + attack","right + attack","jump + attack","jump + place down",
+    "left + mine head-left","left + mine middle-left","left + mine foot-left",
+    "right + mine head-right","right + mine middle-right","right + mine foot-right",
+    "jump + mine up","left + jump + place down-left","right + jump + place down-right",
+    "left + jump","right + jump",
+#endif
 };
 
 /* ---- helpers ------------------------------------------------------------- */
@@ -816,6 +823,17 @@ void env_action_mask(const Env *e, uint8_t *mask) {
     uint32_t stations=station_mask(e);
     for (int i = 0; i < RECIPE_COUNT; i++)
         mask[RECIPE_FIRST_ACTION + i] = (uint8_t)can_craft(e, i,stations);
+#if COMBO_ACTIONS
+    /* Movement is always held; the use decides (a running jump: the jump).
+       A held place may land on any tick, so it is legal whenever the
+       selected item is stocked (as the standalone place's first check). */
+    for (int i = 0; i < COMBO_COUNT; i++) {
+        int u = COMBOS[i].use;
+        mask[ACT_COMBO_FIRST + i] = u == ACT_NOOP ? mask[ACT_JUMP]
+            : u >= ACT_PLACE_FIRST && u < ACT_PLACE_FIRST + REACH_COUNT ? (uint8_t)(e->inv[PLACEABLES[e->selected].item] > 0)
+            : mask[u];
+    }
+#endif
 }
 
 /* ---- phase 2: physics --------------------------------------------------- */
@@ -1355,6 +1373,35 @@ void env_step(Env *e, int action) {
     const bool jump_was_held = e->hold_jump && e->jump > 0;
     e->hold_left = e->hold_right = e->hold_jump = e->hold_down = e->hold_up = false;
 #endif
+#if COMBO_ACTIONS
+    /* A combo holds its movement exactly as left/right/jump alone would (left
+       or right without jump keeps a running jump going), then performs its use
+       through the standalone action below, at the same ticks. Swords fix the
+       facing when the swing starts (useTurn = false); Player.Update turns
+       before ItemCheck in the same tick, so a combo's swing faces its run.
+       A place combo holds the use button with the block for the whole step:
+       it places at the step start when the standalone place would, else at
+       the end of the first tick where the target cell (relative to the body
+       then) takes the block, at most one block per step. Jumping off a floor
+       thus drops a block into the cell the feet just left (Terraria's
+       one-block-per-jump pillar), which no step-start placement can reach. */
+    int combo_place_r = -1;
+    if (action >= ACT_COMBO_FIRST) {
+        const Combo c = COMBOS[action - ACT_COMBO_FIRST];
+        e->hold_left = (c.move & COMBO_L) != 0;
+        e->hold_right = (c.move & COMBO_R) != 0;
+        if (c.move & COMBO_J) {
+            if (!jump_was_held) e->release_jump = true;
+            e->hold_jump = true;
+        } else e->hold_jump = jump_was_held;
+#if FID_COMBAT
+        if (c.use == ACT_ATTACK && e->item_anim == 0 && (c.move & (COMBO_L | COMBO_R)))
+            e->facing = (c.move & COMBO_L) ? -1 : 1;
+#endif
+        if (c.use >= ACT_PLACE_FIRST && c.use < ACT_PLACE_FIRST + REACH_COUNT) combo_place_r = c.use - ACT_PLACE_FIRST;
+        action = c.use;
+    }
+#endif
     int mine_r = -1;    /* FID_MINING: the use button is held on this reach slot */
 
     /* The three action blocks are contiguous, so a range test dispatches them
@@ -1376,6 +1423,9 @@ void env_step(Env *e, int action) {
 #endif
     } else if (action >= ACT_PLACE_FIRST && action < ACT_PLACE_FIRST + REACH_COUNT) {
         edited = do_place(e, action - ACT_PLACE_FIRST);
+#if COMBO_ACTIONS
+        if (edited) combo_place_r = -1;   /* placed at the step start, as alone */
+#endif
     } else if (action >= RECIPE_FIRST_ACTION
                && action < RECIPE_FIRST_ACTION + RECIPE_COUNT) {
         do_craft(e, action - RECIPE_FIRST_ACTION);
@@ -1470,6 +1520,15 @@ void env_step(Env *e, int action) {
     for (int t = 0; t < FID_TICKS; t++) {
         FX_SET(e->fx.tick = (uint8_t)t);
         edited |= fid_tick(e, mine_r);
+#if COMBO_ACTIONS
+        if (combo_place_r >= 0) {
+            /* Held place: retry silently (keep the step-start message). */
+            char said[sizeof e->msg];
+            memcpy(said, e->msg, sizeof said);
+            if (do_place(e, combo_place_r)) { edited = true; combo_place_r = -1; }
+            else memcpy(e->msg, said, sizeof said);
+        }
+#endif
         fx_path(e, t + 1);
     }
 #else
