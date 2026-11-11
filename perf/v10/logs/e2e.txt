@@ -1,0 +1,24 @@
+perf/v10/e2e/pairA_base.log: Completed pairA_base: 300.6s train_sps 255880 collect 138.9 opt 123.1
+perf/v10/e2e/pairA_new.log: Completed pairA_new: 248.8s train_sps 321407 collect 90.0 opt 118.5
+perf/v10/e2e/pairB_base.log: Completed pairB_base: 304.4s train_sps 253853 collect 142.3 opt 121.8
+perf/v10/e2e/pairB_new.log: Completed pairB_new: 246.4s train_sps 322139 collect 91.7 opt 116.3
+perf/v10/e2e/solo_base.log: Completed solo_base: 294.5s train_sps 263317 collect 138.3 opt 116.3
+perf/v10/e2e/solo_new.log: Completed solo_new: 249.4s train_sps 320485 collect 91.7 opt 117.4
+PPO: 1024 envs x 128 steps = batch 131072, 512 iterations, 67,108,864 env steps
+pairA_base: 33,554,432 15.484/40 score=16.90% t1-4=92/21/11/1 death=50.8% bench=124 stone=121 furnace=0 peak-y=109.4 (180.0s)
+pairA_base: 67,108,864 16.609/40 score=18.44% t1-4=97/25/11/1 death=37.5% bench=127 stone=124 furnace=0 peak-y=113.5 (300.2s)
+PPO: 1024 envs x 128 steps = batch 131072, 512 iterations, 67,108,864 env steps
+pairA_new: 33,554,432 15.633/40 score=16.70% t1-4=94/21/10/1 death=55.5% bench=128 stone=112 furnace=2 peak-y=103.0 (151.8s)
+pairA_new: 67,108,864 16.781/40 score=19.20% t1-4=95/29/11/1 death=54.7% bench=126 stone=120 furnace=12 peak-y=107.3 (248.4s)
+PPO: 1024 envs x 128 steps = batch 131072, 512 iterations, 67,108,864 env steps
+pairB_base: 33,554,432 14.148/40 score=15.01% t1-4=86/20/6/2 death=70.3% bench=124 stone=84 furnace=5 peak-y=79.7 (180.3s)
+pairB_base: 67,108,864 18.148/40 score=22.67% t1-4=96/36/14/3 death=52.3% bench=125 stone=123 furnace=53 peak-y=109.4 (304.0s)
+PPO: 1024 envs x 128 steps = batch 131072, 512 iterations, 67,108,864 env steps
+pairB_new: 33,554,432 15.180/40 score=16.63% t1-4=91/21/7/3 death=54.7% bench=122 stone=115 furnace=2 peak-y=97.2 (150.6s)
+pairB_new: 67,108,864 17.484/40 score=21.50% t1-4=94/33/14/3 death=57.8% bench=124 stone=121 furnace=43 peak-y=105.1 (246.0s)
+PPO: 1024 envs x 128 steps = batch 131072, 512 iterations, 67,108,864 env steps
+solo_base: 33,554,432 15.406/40 score=16.57% t1-4=92/22/10/1 death=52.3% bench=125 stone=112 furnace=0 peak-y=102.9 (173.7s)
+solo_base: 67,108,864 16.852/40 score=19.39% t1-4=95/28/13/1 death=36.7% bench=125 stone=124 furnace=2 peak-y=115.8 (294.1s)
+PPO: 1024 envs x 128 steps = batch 131072, 512 iterations, 67,108,864 env steps
+solo_new: 33,554,432 15.508/40 score=17.09% t1-4=92/22/8/3 death=56.2% bench=125 stone=114 furnace=15 peak-y=94.3 (149.4s)
+solo_new: 67,108,864 17.461/40 score=21.15% t1-4=94/33/13/2 death=53.9% bench=126 stone=122 furnace=42 peak-y=105.5 (249.1s)

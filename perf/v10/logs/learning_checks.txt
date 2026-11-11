@@ -1,0 +1,40 @@
+ctl-901: 33,554,432 16.039/40 score=17.91% t1-4=93/25/9/2 death=49.2% bench=125 stone=122 furnace=19 peak-y=100.6 (156.9s)
+ctl-901: 67,108,864 17.250/40 score=20.58% t1-4=94/33/11/2 death=49.2% bench=126 stone=117 furnace=58 peak-y=95.9 (263.6s)
+ctl-901: 100,663,296 19.125/40 score=25.24% t1-4=94/44/16/3 death=57.8% bench=124 stone=118 furnace=95 peak-y=101.4 (371.7s)
+ctl-901: 134,217,728 20.492/40 score=28.03% t1-4=97/50/21/3 death=56.2% bench=127 stone=124 furnace=107 peak-y=108.4 (476.7s)
+Completed ctl-901: 477.1s
+ctl-902: 33,554,432 15.781/40 score=16.89% t1-4=95/21/11/1 death=39.8% bench=125 stone=119 furnace=1 peak-y=110.1 (153.3s)
+ctl-902: 67,108,864 17.961/40 score=21.81% t1-4=96/35/14/1 death=51.6% bench=127 stone=124 furnace=41 peak-y=110.6 (253.5s)
+ctl-902: 100,663,296 19.945/40 score=26.49% t1-4=97/47/20/2 death=53.9% bench=128 stone=125 furnace=98 peak-y=112.7 (363.2s)
+ctl-902: 134,217,728 20.328/40 score=27.65% t1-4=97/48/24/1 death=48.4% bench=128 stone=125 furnace=107 peak-y=115.2 (468.9s)
+Completed ctl-902: 469.3s
+ctl2-901: 33,554,432 15.008/40 score=16.17% t1-4=90/21/9/1 death=39.8% bench=119 stone=117 furnace=0 peak-y=106.6 (150.8s)
+ctl2-901: 67,108,864 16.586/40 score=18.38% t1-4=97/26/11/1 death=46.9% bench=128 stone=123 furnace=3 peak-y=110.7 (254.3s)
+ctl2-901: 100,663,296 18.180/40 score=22.68% t1-4=96/36/14/3 death=64.1% bench=126 stone=120 furnace=44 peak-y=102.2 (359.9s)
+ctl2-901: 134,217,728 19.914/40 score=26.13% t1-4=98/45/20/2 death=57.8% bench=128 stone=127 furnace=86 peak-y=113.7 (464.0s)
+Completed ctl2-901: 464.4s
+ctl2-902: 33,554,432 15.375/40 score=16.20% t1-4=93/20/10/0 death=37.5% bench=126 stone=120 furnace=0 peak-y=112.2 (150.6s)
+ctl2-902: 67,108,864 16.609/40 score=18.55% t1-4=97/26/12/1 death=35.2% bench=128 stone=123 furnace=1 peak-y=114.0 (250.7s)
+ctl2-902: 100,663,296 18.805/40 score=24.26% t1-4=95/40/19/2 death=51.6% bench=125 stone=123 furnace=73 peak-y=111.7 (356.7s)
+ctl2-902: 134,217,728 19.789/40 score=25.92% t1-4=98/45/19/1 death=46.9% bench=128 stone=127 furnace=88 peak-y=113.9 (464.9s)
+Completed ctl2-902: 465.3s
+e2048-901: 33,554,432 15.273/40 score=17.69% t1-4=87/25/10/2 death=63.3% bench=111 stone=116 furnace=32 peak-y=100.5 (150.2s)
+e2048-901: 67,108,864 19.133/40 score=25.12% t1-4=95/43/17/3 death=54.7% bench=128 stone=124 furnace=92 peak-y=106.1 (237.1s)
+e2048-901: 100,663,296 19.164/40 score=25.01% t1-4=96/43/17/3 death=57.0% bench=126 stone=120 furnace=89 peak-y=103.6 (332.7s)
+e2048-901: 134,217,728 20.297/40 score=27.57% t1-4=97/49/20/3 death=56.2% bench=126 stone=123 furnace=102 peak-y=108.0 (425.4s)
+Completed e2048-901: 425.8s
+e2048-902: 33,554,432 15.906/40 score=17.26% t1-4=95/21/12/1 death=47.7% bench=126 stone=120 furnace=2 peak-y=113.2 (138.3s)
+e2048-902: 67,108,864 18.203/40 score=22.94% t1-4=95/37/15/3 death=63.3% bench=126 stone=120 furnace=51 peak-y=107.6 (228.6s)
+e2048-902: 100,663,296 18.594/40 score=24.19% t1-4=94/41/16/3 death=64.1% bench=126 stone=107 furnace=83 peak-y=100.3 (320.1s)
+e2048-902: 134,217,728 20.109/40 score=26.55% t1-4=98/47/20/2 death=64.1% bench=128 stone=127 furnace=112 peak-y=110.1 (415.8s)
+Completed e2048-902: 416.1s
+mb8-901: 33,554,432 15.352/40 score=16.38% t1-4=93/21/8/2 death=41.4% bench=124 stone=119 furnace=4 peak-y=99.1 (142.7s)
+mb8-901: 67,108,864 16.336/40 score=19.06% t1-4=92/29/10/3 death=62.5% bench=122 stone=114 furnace=37 peak-y=96.4 (224.2s)
+mb8-901: 100,663,296 18.117/40 score=22.20% t1-4=95/38/12/2 death=57.8% bench=127 stone=121 furnace=69 peak-y=103.3 (309.0s)
+mb8-901: 134,217,728 18.672/40 score=23.50% t1-4=96/41/15/2 death=55.5% bench=128 stone=126 furnace=82 peak-y=106.8 (393.6s)
+Completed mb8-901: 394.0s
+mb8-902: 33,554,432 14.836/40 score=15.60% t1-4=90/20/8/0 death=48.4% bench=122 stone=124 furnace=2 peak-y=108.5 (133.0s)
+mb8-902: 67,108,864 17.086/40 score=19.81% t1-4=95/31/12/0 death=53.9% bench=127 stone=122 furnace=40 peak-y=108.0 (214.2s)
+mb8-902: 100,663,296 18.555/40 score=23.16% t1-4=97/38/17/1 death=48.4% bench=126 stone=125 furnace=59 peak-y=113.4 (300.0s)
+mb8-902: 134,217,728 19.336/40 score=25.12% t1-4=97/43/20/1 death=58.6% bench=128 stone=124 furnace=83 peak-y=112.4 (385.9s)
+Completed mb8-902: 386.3s

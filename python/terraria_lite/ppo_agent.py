@@ -19,6 +19,7 @@ import argparse
 import copy
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import numpy as np
@@ -808,6 +809,47 @@ def train(cfg: Config, checkpoint_callback=None):
             # (truncated BPTT over the T steps).
             with torch.no_grad():
                 snapshot = actor.snapshot(mem_state)
+        # Shaping aids feed only rew_b, which nothing reads before GAE, so a
+        # step's training reward is completed later than the step itself:
+        # finish_rewards(t) runs while the GPU samples step t+1 (it reads only
+        # step t's host rows, which the simulator rewrites only after that
+        # sampling's action fetch), and the potential's numerics (finish(),
+        # after its decode stage) run on one worker thread during the next
+        # simulator step, which releases the GIL. store_rewards(t) then adds
+        # the shaping in the same order as before. Same values, bit for bit.
+        # Archive restarts and SIL read or rewrite lane state: kept in order.
+        overlap = archive is None and sil is None
+        pool = ThreadPoolExecutor(1) if overlap and potential is not None else None
+
+        def finish_rewards(t, obs, r, term, trunc, final, ended):
+            if sil is not None:
+                sil.add_step(obs_b[t].cpu().numpy(), act_b[t].cpu().numpy(),
+                             msk_b[t].cpu().numpy(), r, ended)
+            if achievement_rewards is not None:
+                r = achievement_rewards.step(r, obs, final, ended)
+            if novelty_b is not None:
+                novelty_b[t]=torch.as_tensor(obs,device=collect_device)
+                ended_lanes=np.flatnonzero(ended)
+                if len(ended_lanes): novelty_b[t,torch.as_tensor(ended_lanes,device=collect_device)]=torch.as_tensor(final[ended_lanes],device=collect_device)
+            if shaper is not None:
+                r = r + progress_coef * shaper.step(obs, final, term, trunc)
+            if novelty is not None:
+                r = r + cfg.novelty_coef * novelty.step(obs, final, ended)
+            shaping = None
+            if potential is not None:
+                prepared = potential.prepare(obs, final, ended)
+                shaping = pool.submit(potential.finish, prepared) if pool is not None else potential.finish(prepared)
+            if archive is not None:
+                archive.observe(envs.envs, obs, cell_keys(obs))
+            return t, r, shaping, term, trunc, final
+
+        def store_rewards(t, r, shaping, term, trunc, final):
+            if shaping is not None:
+                r = r + (shaping.result() if pool is not None else shaping)
+            rew_b[t] = upload("reward", r)
+            _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device, expand_collect)
+
+        pending = finishing = None
         for t in range(T):
             obs_b[t] = next_raw if cfg.compact_obs else next_obs
             done_b[t] = next_done
@@ -827,28 +869,21 @@ def train(cfg: Config, checkpoint_callback=None):
                     a = torch.multinomial(probs, 1, True).squeeze(-1)   # as Categorical.sample
                     logp = logits.gather(-1, a[:, None]).squeeze(-1)
             act_b[t], logp_b[t], val_b[t] = a, logp, v
+            # Overlapping the sampling just launched. Each store's staged reward
+            # upload is followed by an action fetch (a stream sync) before the
+            # next store reuses the staging buffer.
+            if finishing is not None:
+                store_rewards(*finishing)
+                finishing = None
+            if pending is not None:
+                finishing, pending = finish_rewards(*pending), None
 
             obs, msk, r, term, trunc, final, finished = envs.step(a.cpu().numpy())
             ended = term | trunc
-            if sil is not None:
-                sil.add_step(obs_b[t].cpu().numpy(), act_b[t].cpu().numpy(),
-                             msk_b[t].cpu().numpy(), r, ended)
-            if achievement_rewards is not None:
-                r = achievement_rewards.step(r, obs, final, ended)
-            if novelty_b is not None:
-                novelty_b[t]=torch.as_tensor(obs,device=collect_device)
-                ended_lanes=np.flatnonzero(ended)
-                if len(ended_lanes): novelty_b[t,torch.as_tensor(ended_lanes,device=collect_device)]=torch.as_tensor(final[ended_lanes],device=collect_device)
-            if shaper is not None:
-                r = r + progress_coef * shaper.step(obs, final, term, trunc)
-            if novelty is not None:
-                r = r + cfg.novelty_coef * novelty.step(obs, final, ended)
-            if potential is not None:
-                r = r + potential.step(obs, final, ended)
-            if archive is not None:
-                archive.observe(envs.envs, obs, cell_keys(obs))
-            rew_b[t] = upload("reward", r)
-            _absorb_truncation(cfg, actor, rew_b, term, trunc, final, t, collect_device, expand_collect)
+            pending = (t, obs, r, term, trunc, final, ended)
+            if not overlap:
+                store_rewards(*finish_rewards(*pending))
+                pending = None
 
             if memory is not None:
                 memory.reset(np.flatnonzero(ended))
@@ -879,6 +914,14 @@ def train(cfg: Config, checkpoint_callback=None):
                 ep_deaths.append(1.0 if info["health"] <= 0 else 0.0)
                 ep_masks.append(info["achievement_mask"])
 
+        if finishing is not None:
+            store_rewards(*finishing)
+        if pending is not None:
+            if collect_device.type == "cuda":
+                torch.cuda.current_stream(collect_device).synchronize()   # the staged reward upload ran
+            store_rewards(*finish_rewards(*pending))
+        if pool is not None:
+            pool.shutdown()
         torch.set_num_threads(threads)
         collection_seconds += time.perf_counter() - phase_start
         phase_start = time.perf_counter()

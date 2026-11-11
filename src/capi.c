@@ -13,7 +13,9 @@
  * metadata before loading a policy trained on another taxonomy.
  *
  * Native batching is synchronous, does not autoreset, and partitions independent
- * caller-owned lanes. No global mutable simulator state is shared by workers.
+ * caller-owned lanes. No global mutable simulator state is shared by workers;
+ * the only global cache is the autoreset prefetch (fresh reset states keyed by
+ * seed and episode limit, see "reset prefetch"), which cannot change results.
  */
 #include <math.h>
 #include <stdlib.h>
@@ -222,7 +224,10 @@ TL_API void tl_action_mask(const Env *e, unsigned char *mask)
     if (e && mask) env_action_mask(e, mask);
 }
 
-/* Independent lanes, caller-owned buffers, no autoreset or shared RNG. */
+/* Independent lanes, caller-owned buffers, no autoreset or shared RNG. Lanes
+   are interleaved over workers statically, so a pool thread keeps stepping the
+   same Envs and finds them in its own caches (claiming chunks from a shared
+   counter instead was 12% slower per step on eg18 for that reason). */
 typedef struct {
  Env **envs; int n,workers; const int *actions; Obs *obs; float *flat;
  uint8_t *masks; float *rewards; int *ends;
@@ -332,6 +337,90 @@ TL_API void tl_batch_step_flat(Env **envs,int n,const int *actions,float *obs,
  run_batch(&b);
 }
 
+/* ---- reset prefetch -------------------------------------------------------
+   env_reset(e, seed) keeps only e->max_steps and rebuilds everything else from
+   the seed (memset, then worldgen), so the reset state is a pure function of
+   (seed, max_steps) and a byte copy of an Env reset elsewhere with the same
+   pair is the identical state. Autoreset seeds are consecutive, so after each
+   batch call one background thread generates the next PF_SLOTS seeds while
+   the caller is busy elsewhere (policy inference, shaping); a later reset of
+   a prefetched seed is then a memcpy instead of a world generation on the
+   critical path. Misses (not ready yet, other seeds or episode limits) reset
+   in place as before. TL_RESET_PREFETCH=0 disables it. */
+#if defined(__unix__) || defined(__APPLE__)
+#include <pthread.h>
+#define PF_SLOTS 8
+enum { PF_FREE, PF_QUEUED, PF_BUSY, PF_READY, PF_TAKEN };
+typedef struct { Env *env; unsigned long long seed; int max_steps, state; } PfSlot;
+static pthread_mutex_t pf_mu=PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t pf_cv=PTHREAD_COND_INITIALIZER;
+static PfSlot pf[PF_SLOTS];
+static int pf_mode=-1;                    /* -1 unknown, 0 off, 1 on */
+static void *pf_main(void *arg) {
+ (void)arg;
+ pthread_mutex_lock(&pf_mu);
+ for(;;) {
+  int s=-1;
+  for(int k=0;k<PF_SLOTS;k++) if(pf[k].state==PF_QUEUED) { s=k; break; }
+  if(s<0) { pthread_cond_wait(&pf_cv,&pf_mu); continue; }
+  pf[s].state=PF_BUSY;
+  Env *e=pf[s].env; unsigned long long seed=pf[s].seed; e->max_steps=pf[s].max_steps;
+  pthread_mutex_unlock(&pf_mu);
+  env_reset(e,(uint64_t)seed);
+  pthread_mutex_lock(&pf_mu);
+  pf[s].state=PF_READY;
+ }
+ return NULL;
+}
+/* Ask for seeds [first, first+PF_SLOTS) at this episode limit. */
+static void pf_request(unsigned long long first,int max_steps) {
+ pthread_mutex_lock(&pf_mu);
+ if(pf_mode<0) {
+  const char *v=getenv("TL_RESET_PREFETCH");
+  pf_mode=!(v && v[0]=='0');
+  for(int k=0;pf_mode && k<PF_SLOTS;k++) if(!(pf[k].env=calloc(1,sizeof(Env)))) pf_mode=0;
+  pthread_t t;
+  if(pf_mode && pthread_create(&t,NULL,pf_main,NULL)) pf_mode=0;
+  if(pf_mode) pthread_detach(t);
+ }
+ if(pf_mode) {
+  for(unsigned long long s=first;s<first+PF_SLOTS;s++) {
+   int have=0;
+   for(int k=0;k<PF_SLOTS && !have;k++)
+    have=pf[k].state!=PF_FREE && pf[k].seed==s && pf[k].max_steps==max_steps;
+   if(have) continue;
+   for(int k=0;k<PF_SLOTS;k++) {
+    PfSlot *p=&pf[k];
+    const int stale=p->state==PF_FREE || ((p->state==PF_QUEUED || p->state==PF_READY)
+                    && (p->seed<first || p->seed>=first+PF_SLOTS || p->max_steps!=max_steps));
+    if(stale) { p->seed=s; p->max_steps=max_steps; p->state=PF_QUEUED; break; }
+   }
+  }
+  pthread_cond_signal(&pf_cv);
+ }
+ pthread_mutex_unlock(&pf_mu);
+}
+/* Copy the prefetched reset state of (seed, e->max_steps) into e; 0 on a miss. */
+static int pf_take(Env *e,unsigned long long seed) {
+ if(pf_mode!=1) return 0;
+ PfSlot *hit=NULL;
+ pthread_mutex_lock(&pf_mu);
+ for(int k=0;k<PF_SLOTS && !hit;k++)
+  if(pf[k].state==PF_READY && pf[k].seed==seed && pf[k].max_steps==e->max_steps) hit=&pf[k];
+ if(hit) hit->state=PF_TAKEN;
+ pthread_mutex_unlock(&pf_mu);
+ if(!hit) return 0;
+ memcpy(e,hit->env,sizeof *e);
+ pthread_mutex_lock(&pf_mu);
+ hit->state=PF_FREE;
+ pthread_mutex_unlock(&pf_mu);
+ return 1;
+}
+#else
+static void pf_request(unsigned long long first,int max_steps) { (void)first; (void)max_steps; }
+static int pf_take(Env *e,unsigned long long seed) { (void)e; (void)seed; return 0; }
+#endif
+
 /* ---- native autoreset ---------------------------------------------------
    The Python VecTerraria contract, without a Python loop over finished lanes:
    step every lane (as above), then, for each lane whose episode ended (lane
@@ -360,7 +449,8 @@ static void reset_lane(void *context,size_t worker) {
   inf[4]=(int)(uint32_t)(e->achievements>>32);
 #endif
   r->info_return[i]=e->ep_return;
-  env_reset(e,(uint64_t)(r->next_seed+(unsigned long long)k));
+  const unsigned long long seed=r->next_seed+(unsigned long long)k;
+  if(!pf_take(e,seed)) env_reset(e,(uint64_t)seed);
   if(r->flat) { Obs tmp; env_obs(e,&tmp); encode_flat(&tmp,(float*)o); }
   else env_obs(e,(Obs*)o);
   env_action_mask(e,r->masks+(size_t)i*ACT_COUNT);
@@ -382,6 +472,7 @@ TL_API int tl_batch_step_autoreset(Env **envs,int n,const int *actions,void *obs
   ResetCall r={envs,lanes,count,workers<count?workers:count,flat,next_seed,obs,final_obs,masks,info,info_return};
   run_workers(reset_lane,&r,&r.workers);
  }
+ pf_request(next_seed+(unsigned long long)count,envs[0]->max_steps);
  return count;
 }
 

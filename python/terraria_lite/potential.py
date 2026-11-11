@@ -128,10 +128,16 @@ class RecipePotential:
         self._key = self._val = None
         self.previous = self.phi(initial_obs)
 
-    def _phi_rows(self, inv, vis, ach=None, y=None, boss=None) -> np.ndarray:
+    def _held(self, inv, vis) -> np.ndarray:
+        """Per-recipe held fraction sums (ingredients plus visible station), (rows, recipes)."""
         held = np.where(self.need > 0, np.minimum(inv[:, None, :] / np.maximum(self.need, 1), 1.0), 0.0).sum(-1)
         has_station = self.station >= 0
         held[:, has_station] += vis[:, self.station[has_station]]
+        return held
+
+    def _phi_rows(self, inv, vis, ach=None, y=None, boss=None, held=None) -> np.ndarray:
+        if held is None:
+            held = self._held(inv, vis)
         if self.mode == "mean":
             return self.coef * (held / self.terms).mean(-1)
         prog = held / self.terms
@@ -173,8 +179,10 @@ class RecipePotential:
         if self.mode == "frontier_surface" or self.altar:
             inputs["y"] = d["depth_rows"]
         if self.boss:
-            s = _status(np.atleast_2d(obs)).astype(np.float64)
-            inputs["boss"] = np.stack((s[:, SPEC.status_night], s[:, SPEC.status_boss], s[:, SPEC.status_boss + 1]), 1)
+            # Only the three columns the goals read are widened (float32 -> float64 per element,
+            # the same values as widening the whole status row first).
+            s = _status(np.atleast_2d(obs))[:, [SPEC.status_night, SPEC.status_boss, SPEC.status_boss + 1]]
+            inputs["boss"] = s.astype(np.float64)
         return inputs
 
     def _phi_from(self, inputs: dict) -> np.ndarray:
@@ -195,14 +203,27 @@ class RecipePotential:
             memo.append(np.where(uses_y, y, -1)[:, None])
         if "boss" in inputs:
             memo.append(inputs["boss"])
-        key = np.concatenate([np.minimum(inv[:, self._items], self._cap), vis] + memo, 1)
+        recipe_key = np.concatenate((np.minimum(inv[:, self._items], self._cap), vis), 1)
+        key = np.concatenate([recipe_key] + memo, 1)
         extra = {k: v for k, v in inputs.items() if k not in ("inv", "vis")}
         if self._key is None or len(self._key) != len(key):
-            self._key, self._val = key, self._phi_rows(inv, vis, **extra)
+            self._held_rows = self._held(inv, vis)
+            self._key, self._val = key, self._phi_rows(inv, vis, **extra, held=self._held_rows.copy())
             return self._val.copy()
         stale = np.flatnonzero((key != self._key).any(1))
         if len(stale):
-            self._val[stale] = self._phi_rows(inv[stale], vis[stale], **{k: v[stale] for k, v in extra.items()})
+            # Two levels: the per-recipe part (the costly rows x recipes x items
+            # term) depends only on recipe_key, the first columns of the key, so
+            # it is recomputed only for rows whose recipe_key changed; rows that
+            # moved (y, for the altar / climb goals) or changed achievements reuse
+            # it. Every row is computed by the same expressions as before, so the
+            # values are unchanged bit for bit.
+            width = recipe_key.shape[1]
+            recipe_stale = stale[(key[stale, :width] != self._key[stale, :width]).any(1)]
+            if len(recipe_stale):
+                self._held_rows[recipe_stale] = self._held(inv[recipe_stale], vis[recipe_stale])
+            self._val[stale] = self._phi_rows(inv[stale], vis[stale], **{k: v[stale] for k, v in extra.items()},
+                                              held=self._held_rows[stale])
             self._key[stale] = key[stale]
         return self._val.copy()
 
@@ -212,15 +233,25 @@ class RecipePotential:
     def step(self, next_obs: np.ndarray, final_obs: np.ndarray, ended: np.ndarray) -> np.ndarray:
         """phi of each lane's reached state (the terminal observation where the
         episode ended), without materialising the mixed observation batch."""
-        inputs = self._inputs(next_obs)
-        if ended.any():
+        return self.finish(self.prepare(next_obs, final_obs, ended))
+
+    def prepare(self, next_obs: np.ndarray, final_obs: np.ndarray, ended: np.ndarray):
+        """step's decode stage: reads the observation rows, returns arrays that
+        no longer alias them, and leaves the potential's state untouched (so the
+        trainer can run finish() on another thread while the rows are rewritten)."""
+        return self._inputs(next_obs), (self._inputs(final_obs[ended]) if ended.any() else None), ended
+
+    def finish(self, prepared) -> np.ndarray:
+        """step's remaining stage, from prepare()'s output; calls must come in step order."""
+        inputs, final_inputs, ended = prepared
+        if final_inputs is not None:
             reached_inputs = {k: x.copy() for k, x in inputs.items()}
-            for k, f in self._inputs(final_obs[ended]).items():
+            for k, f in final_inputs.items():
                 reached_inputs[k][ended] = f
             reached = self._phi_from(reached_inputs)
         else:
             reached = self._phi_from(inputs)
         reached[ended] = 0.0
         shaping = self.gamma * reached - self.previous
-        self.previous = self._phi_from(inputs) if ended.any() else reached
+        self.previous = self._phi_from(inputs) if final_inputs is not None else reached
         return shaping.astype(np.float32)
