@@ -11,7 +11,7 @@ programs talk to, the desktop recorder, and the run records.
       screens/             screenshots taken by programs or the harness
       manifest.json, result.json, desktop.mp4, extended-score.json, audit.json
 
-The proxy (agent.sock) is the only socket a program can reach. It whitelists the tb-api-1.0 ops, journals every
+The proxy (agent.sock) is the only socket a program can reach. It whitelists the tb-api ops, journals every
 action with wall-clock start/end (so published scoring attributes milestones to the agent), and releases all keys
 when a program disconnects. game.sock (the mod) is reachable only from the harness.
 """
@@ -33,12 +33,12 @@ from terrariabench.linux_control import (XGameControl, desktop_environment, isol
 
 TML = Path.home() / ".local/share/Steam/steamapps/common/tModLoader"
 TMOD = ROOT / "runs/terrabot-build/tml/Mods/TerraBot.tmod"
-API_VERSION = "tb-api-1.0"
+API_VERSION = "tb-api-1.0-rc1"
 SIZE = 1024
 READ_OPS = {"me", "inventory", "time", "world", "tiles", "find_tiles", "npcs", "items", "events", "recipes", "chest"}
 ACTION_OPS = {"input", "stop", "select", "craft", "equip", "take", "put", "close_chest"}
 OTHER_OPS = {"wait", "screenshot"}
-TEST_OPS = {"truth_tiles", "truth_npcs"}
+TEST_OPS = {"truth_tiles", "truth_npcs", "truth_edit", "truth_give", "truth_morning"}
 
 
 def launch(profile, log, telemetry, *, display, extra_env):
@@ -221,7 +221,7 @@ class Session:
             "started_unix": time.time(),
             "labels": {"saw": "structured state via tb (map-revealed tiles + lit on-screen tiles, visible NPCs/items, own "
                               "player and inventory), program output, events, optional screenshot",
-                       "could_do": "write Python programs against tb-api-1.0: control flags for N ticks with a cursor, "
+                       "could_do": f"write Python programs against {API_VERSION}: control flags for N ticks with a cursor, "
                                    "real item use, real recipes/stations, equip, chest UI transfers, pathfinder (library)",
                        "helped_by": self.manifest.get("helped_by", "nobody")}})
         (self.run / "manifest.json").write_text(json.dumps(self.manifest, indent=2))

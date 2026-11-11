@@ -66,7 +66,7 @@ class SandboxTest(unittest.TestCase):
                           "\nprint(tb.API_VERSION)\nimport sys\nprint(sys.flags.isolated)")
         self.assertEqual(r["exit"], "ok", r)
         self.assertEqual(r["returncode"], 0)
-        self.assertEqual(r["stdout"].split(), ['{"pi":', '3.14}', "tb-api-1.0", "1"])
+        self.assertEqual(r["stdout"].split(), ['{"pi":', '3.14}', "tb-api-1.0-rc1", "1"])
         self.assertEqual(r["traceback_tail"], "")
         self.assertEqual(r["name"], "program")
         self.assertTrue((self.ws / "programs" / "program.py").exists())

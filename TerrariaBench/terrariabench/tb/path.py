@@ -34,8 +34,9 @@ Water: no node may have water in its head rows (y-2, y-1); water in the feet row
 
 Costs (ticks, roughly the time the move takes): walk 6, step 9, jump = simulated air time + 8, fall
     sqrt(80*rows) + 6 (+400 + 60/row beyond 25 rows), drop 10 + fall time, climb 8/row, door +30, mining +40 per
-    cell, pillar 70 (+ mining), swim 150 + 20/column. Heuristic: max(columns*16/3, rows up*16/5.01,
-    rows down*16/10) (top run / jump / fall speeds), which no move beats, so A* is admissible.
+    cell, pillar 20 (+ mining; the held pillar lands a row every ~15-20 ticks), swim 150 + 20/column. Heuristic:
+    max(columns*16/3, rows up*16/5.01, rows down*16/10) (top run / jump / fall speeds), which no move beats, so A*
+    is admissible.
 """
 from __future__ import annotations
 
@@ -67,20 +68,30 @@ DOES
 - dig=True: mines solid or unrevealed cells in the way (sideways, diagonal step-up, straight down) with the best
   pickaxe via tb.mine; cells it fails to mine are remembered for the rest of the goto and avoided on replanning.
   Unrevealed cells count as solid: standable, and passable only by digging.
-- place=True: pillars straight up by jumping and placing a solid block (inventory items with place_solid: dirt,
-  stone, wood, bricks...; sand-like blocks and ores last) under the feet, one row per block, up to the number of
-  such blocks in the inventory.
-- lava is never entered. Water: the head (top two body rows) is never planned under water; wading with only the
-  feet in water is fine; ponds up to 20 columns wide are crossed by a surface swim (walk in, tap jump while
-  wet to keep the head up, climb out onto a bank at most 4 rows above the surface); cells next to water or lava
-  are never mined.
+- place=True: pillars straight up with Terraria's held use: jump with the use button held and the cursor on the
+  cell the feet are leaving, so the block lands the first tick the cell is clear of the body (Collision.EmptyTile);
+  after each landed block the cursor moves one row up (one or more rows per jump), then it lands on the top block
+  and jumps again. Blocks: inventory items with place_solid (dirt, stone, wood, bricks...; sand-like blocks and
+  ores last), one per row, up to the number of such blocks. Before each jump it mines the ceiling cells the jump
+  needs (dig=True; without dig a ceiling stops the plan) and any torch, rope or plant in the pillar column (a
+  platform there is kept and stood on). Running out of blocks stops goto with last_error 'out of blocks...'; a
+  plan that would need more blocks than held fails with 'out of blocks: the path needs N blocks...'.
+- lava is never entered. Water (traversal only): the head (top two body rows) is never planned under water;
+  wading with only the feet in water is fine; falls must not end with the head under water; a body of water is
+  entered only by a surface swim that has a dry exit: walk in, tap jump while wet to keep the head up, cross up to
+  20 columns and climb out onto a bank at most 4 rows above the surface. Deep pools or flooded shafts with no
+  such exit are never entered; cells next to water or lava are never mined.
 - closed-loop execution: short input bursts, aligns before jumps/climbs/pillars, keeps running across
   consecutive walk steps, replans after any deviation, failure or stall (~1.5 s without progress), up to a budget;
   far goals (window > 40000 cells) are approached by planning to the nearest reachable point and replanning.
-- returns False on timeout, no path, death or exhausted replans; releases all keys on exit.
+- returns False on timeout, no path, out of blocks, death or exhausted replans (tb.path.last_error says which);
+  releases all keys on exit.
 DOES NOT
-- dive, swim through underwater passages, or manage breath beyond keeping the head up while surface swimming;
-  use grappling hooks, mounts, wings, rocket boots or any movement accessory.
+- watch or manage breath: it never dives on purpose, but if the player ends up under water (knocked in, a cave
+  floods, a step fails mid-swim) goto does nothing about it. Staying alive in water is the program's job (me():
+  breath, breath_max, submerged).
+- dive or swim through underwater passages; use grappling hooks, mounts, wings, rocket boots or any movement
+  accessory.
 - place ropes or platforms, build bridges over gaps, or place blocks anywhere except straight under the feet.
 - dig while jumping, dig diagonally downward, or dig through tiles it knows need high pickaxe power (dungeon
   and lihzahrd bricks, altars, ebonstone/crimstone/pearlstone, hellstone, obsidian, meteorite, hardmode ores).
@@ -98,7 +109,7 @@ W_PX, H_PX = 20, 42
 SAFE_FALL = 25
 
 # ---------------------------------------------------------------- costs (ticks)
-WALK, STEP, CLIMB, PILLAR, DOOR, MINE = 6.0, 9.0, 8.0, 70.0, 30.0, 40.0
+WALK, STEP, CLIMB, PILLAR, DOOR, MINE = 6.0, 9.0, 8.0, 20.0, 30.0, 40.0
 JUMP_EXTRA, DROP_EXTRA, DEEP_FALL, DEEP_FALL_ROW = 8.0, 10.0, 400.0, 60.0
 MAX_FALL_ROWS = 150
 MAX_UP, MAX_DOWN, MAX_SIDE = 4, 6, 4
@@ -582,6 +593,12 @@ class _Dead(Exception):
     pass
 
 
+class _NoBlocks(Exception):
+    """Pillaring ran out of placeable blocks: goto gives up (replanning cannot help)."""
+
+
+last_error = None  # why the last tb.goto returned False (str), None after a success
+
 def _goal_dist(n, goal):
     x, y = n
     gx, gy = goal
@@ -877,25 +894,111 @@ class _Exec:
         if tb.tiles(c[0], c[1], c[0], c[1]).at(*c).solid:
             raise _Fail(f"door at {c} did not open")
 
-    def pillar(self, step):
-        for c in step.mine:
-            self.mine_cell(c)
+    def block(self):
+        """Hold a placeable solid block (keeps the held one while it lasts); raises _NoBlocks if none is left."""
+        p = _state()
+        h = p.get("held")
+        if h and _is_block(h):
+            return h["name"]
         item = _pick_block()
         if item is None:
-            raise _Fail("no blocks")
-        (fx, fy), (cx, cy) = step.frm, step.place
-        for _ in range(3):
-            _align(fx + 1.0)
-            tb.select(item)
-            _hold(["jump"], 12)
-            try:
-                tb.place(item, cx, cy, ticks=3)
-            except tb.TbError:
-                pass
-            p = _land(fx + 1.0)
-            if p["foot_y"] <= fy - 1:
+            raise _NoBlocks("out of blocks to pillar with")
+        tb.select(item)
+        return item
+
+    def clear_column(self, x, c, f, top, planned):
+        """Before a pillar jump with the feet in row f: mine the ceiling cells the jump needs (row f-3 over both body
+        columns; planned cells in row f-4 as well when they can be reached) and any non-solid tile (torch, rope,
+        plant...) in the pillar column where a block must land (rows f..max(top+1, f-4)). Cells beyond row f-3 are
+        best effort (they may be out of reach; the next jump starts closer). Returns the rows of that column that
+        already support the feet (platforms: kept, they hold the feet like a placed block)."""
+        g = tb.tiles(x - 1, f - 6, x + 2, f)
+        cells = [(x, f - 3), (x + 1, f - 3)] + sorted(cc for cc in planned if cc[1] == f - 4)
+        for cc in cells:
+            cell = g.at(*cc)
+            if cell.known and not cell.solid:
+                continue
+            if not self.dig:
+                raise _Fail(f"ceiling at {cc}")
+            wet = any(g.liquid(cc[0] + i, cc[1] + j) for i, j in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+            if cc not in planned and wet:
+                raise _Fail(f"ceiling at {cc} next to liquid")
+            if cc[1] == f - 3 and (cell.known or cc in planned):
+                self.mine_cell(cc)
+            elif cell.known:
+                self.try_mine(cc)
+        plat = set()
+        for r in range(f, max(top + 1, f - 4) - 1, -1):
+            cell = g.at(c, r)
+            if cell.platform:
+                plat.add(r)
+            elif cell.known and cell.type >= 0 and not cell.solid:
+                if r >= f - 3:
+                    self.mine_cell((c, r))
+                else:
+                    self.try_mine((c, r))
+        return plat
+
+    @staticmethod
+    def try_mine(c):
+        try:
+            tb.mine(*c, timeout_ticks=120)
+        except tb.TbError:
+            pass
+
+    def pillar_run(self, steps):
+        """Held pillar (Terraria's held use): jump with the use button held and the cursor on the cell the feet
+        are leaving, so a block lands the first tick that cell is clear of the body; after each landed block the
+        cursor moves one row up (several rows per jump when the item's use time allows); land on the top block and
+        repeat until the feet are in the last step's row. Raises _NoBlocks when the blocks run out."""
+        x, y0 = steps[0].frm
+        c, top = steps[0].place[0], steps[-1].to[1]
+        planned = {cc for s in steps for cc in s.mine}
+        tx = x + 1.0
+        _align(tx)
+        stuck, best = 0, y0
+        while True:
+            if _time.monotonic() > self.deadline:
+                raise _Fail("timeout while pillaring")
+            p = _state()
+            f = p["foot_y"]
+            if f <= top:
                 return
-        raise _Fail("pillar block not placed")
+            if abs(p["x"] - tx) * 16 > 4:
+                _align(tx)
+            plat = self.clear_column(x, c, f, top, planned)
+            item = self.block()
+            target = f
+            s = _state()
+            n = s["held"]["stack"] if s.get("held") else 0
+            t, landed = 0, False
+            while t < 240:
+                while target > top and target in plat:
+                    target -= 1
+                keys = _key(_hcontrol((tx - s["x"]) * 16, s["vx"]))
+                keys += (["jump"] if t < JUMP_TICKS else []) + (["use"] if target > top else [])
+                _hold(keys, 2, aim=(c + 0.5, target + 0.5))
+                t += 2
+                s = _state()
+                held = s.get("held")
+                m = held["stack"] if held and held["name"] == item else 0
+                if m < n:
+                    target -= 1  # the block landed: move the cursor one row up
+                n = m
+                if t > 4 and s["vy"] == 0 and s["on_ground"]:
+                    landed = True
+                    break
+                if m == 0 and target > top:
+                    break  # this stack is used up: land, then take the next block (or stop: out of blocks)
+            if not landed:
+                _land(tx)
+            f2 = _state()["foot_y"]
+            if f2 < best:
+                best, stuck = f2, 0
+            else:
+                stuck += 1
+                if stuck >= 4:
+                    raise _Fail(f"pillar stalled at row {f2}")
 
     def dig_step(self, step):
         for c in step.mine:
@@ -913,7 +1016,9 @@ class _Exec:
         if n != target and p["on_ground"] and n[1] == target[1] and abs(n[0] - target[0]) <= 1:
             _align(target[0] + 1.0)
             n = node_of(_state())
-        if n != target:
+        if n != target and not (n[0] == target[0] and n[1] == target[1] + 1 and p["on_ground"]
+                                and (p["top"] + p["height"]) * 16 - (target[1] + 1) * 16 <= 8.5):
+            # (feet sunk up to 8 px into the floor cell: standing on a half block or slope there counts as arrived)
             raise _Fail(f"at {n}, expected {target}")
 
     def execute(self, steps):
@@ -949,7 +1054,10 @@ class _Exec:
             elif st.kind == "swim":
                 _swim(st)
             elif st.kind == "pillar":
-                self.pillar(st)
+                while j + 1 < len(steps) and steps[j + 1].kind == "pillar" and \
+                        steps[j + 1].frm[0] == st.frm[0] and steps[j + 1].place[0] == st.place[0]:
+                    j += 1
+                self.pillar_run(steps[i:j + 1])
             else:  # dig, door
                 self.dig_step(st)
             self.check(steps[j].to)
@@ -964,33 +1072,57 @@ class _Exec:
         return _state()
 
     def goto(self, goal, near):
+        global last_error
         fails = 0
         last_start = None
+        why = "none"
         while _time.monotonic() < self.deadline and fails <= MAX_FAILS:
             p = self.settle()
             s = node_of(p)
             if _goal_dist(s, goal) <= near:
+                last_error = None
                 return True
             if s == last_start:
                 fails += 1
             last_start = s
             steps = self.plan(p, goal, near, partial=True)
             if not steps:
+                last_error = self.no_path(p, goal, near)
                 return False
             try:
                 self.execute(steps)
-            except _Fail:
+            except _Fail as e:
                 fails += 1
+                why = f"step failed: {e}"
+            except _NoBlocks as e:
+                last_error = str(e)
+                return False
+        last_error = f"too many failed steps (last: {why})" if fails > MAX_FAILS else f"timeout (last: {why})"
         return False
+
+    def no_path(self, p, goal, near):
+        if self.place:
+            have = sum(placeable_blocks().values())
+            s = node_of(p)
+            x0, y0, x1, y1 = self.window(s, goal)
+            steps = plan(tb.tiles(x0, y0, x1, y1), s, goal, dig=self.dig, place=True, near=near, blocks=10 ** 6,
+                         no_dig=self.no_dig, partial=False) if x0 <= goal[0] <= x1 and y0 <= goal[1] <= y1 else None
+            if steps:
+                need = sum(st.kind == "pillar" for st in steps)
+                return f"out of blocks: the path needs {need} blocks to pillar, {have} in the inventory"
+        return "no path on the known tiles"
 
 
 def goto(x, y, *, dig=True, place=True, near=0, timeout=60.0):
     """Move the player to stand with feet in row y with column x inside its body (within `near` tiles).
-    True on arrival; False on no path, timeout, death or too many failed replans. See CAPABILITIES."""
+    True on arrival; False on no path, out of blocks, timeout, death or too many failed replans (reason in
+    last_error). See CAPABILITIES."""
+    global last_error
     ex = _Exec(dig, place, timeout)
     try:
         return ex.goto((int(x), int(y)), int(near))
     except _Dead:
+        last_error = "died"
         return False
     finally:
         try:

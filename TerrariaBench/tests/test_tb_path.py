@@ -1,5 +1,6 @@
 """Offline tests for tb.path: the A* planner on ASCII grids and the executor against a small fake game."""
 import math
+import time
 import unittest
 
 import terrariabench.tb as tb
@@ -301,6 +302,7 @@ class FakeGame:
         self.vx = self.vy = 0.0
         self.on_ground, self.jumpcnt, self.prev_jump, self.rope = True, 0, False, None
         self.life, self.dead, self.tick, self.fall_top, self.breath = 100, False, 0, self.top, 200
+        self.item_time = 0  # ticks until the held item can be used again (blocks: one per 15-tick use animation)
         self.progress = {}
         self.items = [{"slot": 0, "name": "Copper Pickaxe", "type": 3509, "stack": 1, "pick": 35, "axe": 0,
                        "hammer": 0, "damage": 4, "place_tile": None, "place_solid": False, "use_animation": 15}]
@@ -438,6 +440,8 @@ class FakeGame:
             self.vy = 0.0
 
     def use(self, keys, aim, first):
+        if self.item_time > 0:
+            self.item_time -= 1
         if aim is None:
             return
         ax, ay = int(math.floor(aim[0])), int(math.floor(aim[1]))
@@ -445,15 +449,17 @@ class FakeGame:
         reach = abs(ax + 0.5 - cx) <= 6.5 and abs(ay + 0.5 - cy) <= 5.5
         it = self.items[self.held]
         if "use" in keys and reach:
-            if it["pick"] > 0 and self.solid(ax, ay):
+            if it["pick"] > 0 and self.cell(ax, ay)[0] >= 0:
                 self.progress[(ax, ay)] = self.progress.get((ax, ay), 0) + 1
-                if self.progress[(ax, ay)] >= 20:
+                if self.progress[(ax, ay)] >= (20 if self.solid(ax, ay) else 1):
                     self.cells[(ax, ay)] = (-1, 0)
-            elif first and it["place_solid"] and it["stack"] > 0 and self.cell(ax, ay)[0] == -1 and \
+            elif self.item_time == 0 and it["place_solid"] and it["stack"] > 0 and self.cell(ax, ay)[0] == -1 and \
                     (ax, ay) not in self.box(self.left, self.top) and \
                     any(self.cell(ax + i, ay + j)[0] >= 0 for i, j in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                # held use: the block lands the first tick the cell is free of the body (Collision.EmptyTile)
                 self.cells[(ax, ay)] = (0, SOLID)
                 it["stack"] -= 1
+                self.item_time = 15
         if "use_tile" in keys and reach and self.cell(ax, ay)[0] == 10:
             y = ay
             while self.cell(ax, y - 1)[0] == 10:
@@ -496,7 +502,7 @@ class FakeGame:
                     break
                 self.step(keys, a.get("aim"), i == 0)
                 self.tick += 1
-            self.prev_jump = False  # keys are released after the burst
+            # no released-key gap: a hold sent right after the previous one continues on the next update (as the mod)
             return self.state(a["ticks"])
         if op == "stop":
             self.prev_jump = False
@@ -586,6 +592,48 @@ class ExecutorTests(unittest.TestCase):
         self.assertTrue(ok)
         self.assert_at_goal(game)
         self.assertLess(game.items[1]["stack"], 20)
+
+    @staticmethod
+    def shaft(depth, torches=(), platform=None, ceiling=0, w=24, sx=10):
+        """A 2-wide shaft `depth` rows deep in solid ground, start at its bottom, goal on the surface to the left.
+        torches: rows (from the top of the shaft) with a non-solid tile in the shaft's left column; platform: a
+        row with a platform across the shaft; ceiling: solid rows closing the shaft's top."""
+        rows = sky(4, w) + ["...G" + "." * (w - 4)]
+        for r in range(depth):
+            mid = "t." if r in torches else "--" if r == platform else ".."
+            if r < ceiling:
+                mid = "##"
+            rows.append("#" * sx + ("@." if r == depth - 1 else mid) + "#" * (w - sx - 2))
+        return rows + ["#" * w] * 2
+
+    def test_held_pillar_climbs_deep_shaft(self):
+        rows = self.shaft(60, torches=(7, 23, 40), platform=30)
+        t0 = time.monotonic()
+        game, steps, ok = self.run_game(rows, blocks=80, dig=True, place=True)
+        self.assertLess(time.monotonic() - t0, 15)
+        self.assertGreaterEqual(kinds(steps).count("pillar"), 45)
+        self.assertTrue(ok, path.last_error)
+        self.assert_at_goal(game)
+        used = 80 - game.items[1]["stack"]
+        self.assertLessEqual(used, 60)
+        self.assertLess(game.tick / 60, 60 * 0.6)  # well under the old ~1.2 s per row
+
+    def test_held_pillar_digs_ceiling(self):
+        rows = self.shaft(20, ceiling=2)
+        game, steps, ok = self.run_game(rows, blocks=40, dig=True, place=True)
+        self.assertTrue(ok, path.last_error)
+        self.assert_at_goal(game)
+        game, steps, ok = self.run_game(rows, blocks=40, dig=False, place=True)
+        self.assertFalse(ok)
+        self.assertEqual(path.last_error, "no path on the known tiles")
+
+    def test_out_of_blocks_is_reported(self):
+        rows = self.shaft(20)
+        game, steps, ok = self.run_game(rows, blocks=12, dig=False, place=True)
+        self.assertFalse(ok)
+        self.assertIn("out of blocks", path.last_error)
+        self.assertRegex(path.last_error, r"needs \d+ blocks to pillar, 0 in the inventory")
+        self.assertFalse(game.dead)
 
     def test_rope_and_door(self):
         rows = ["................",

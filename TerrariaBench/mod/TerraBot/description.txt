@@ -1,5 +1,5 @@
-Bot API (tb-api-1.0) for the TerrariaBench programmatic track. Inert unless TERRABOT_SOCKET is set before launch.
-Reads are limited to tiles revealed on the player's own map plus lit on-screen tiles, and to visible NPCs
-(position, type, health; no AI state). Actions use the player's control flags, the cursor and the real
-item-use, crafting (Main.CraftItem), equip (ItemSlot.SwapEquip) and chest UI code. Never edits the world,
-spawns items or moves the player directly.
+Bot API (tb-api-1.0-rc1) for the TerrariaBench programmatic track. Inert unless TERRABOT_SOCKET is set before launch.
+Reads are limited to lit on-screen tiles (live) plus tiles revealed on the player's own map (as the map remembers
+them), and to visible NPCs (position, type, health; no AI state). Actions use the player's control flags, the
+cursor and the real item-use, crafting (Main.CraftItem), equip (ItemSlot.SwapEquip) and chest UI code. Never edits
+the world, spawns items or moves the player directly (test-only ops exist only with TERRABOT_TEST=1).

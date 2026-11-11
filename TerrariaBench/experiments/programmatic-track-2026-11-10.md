@@ -199,6 +199,10 @@ Results:
 - **No LLM auditor was run.**
 
 ## Open questions / issues
+Follow-up 2026-11-11 ([`programmatic-track-2026-11-11.md`](programmatic-track-2026-11-11.md), `tb-api-1.0-rc1`):
+long climbs fixed (held pillar, 5/5 live from 55–80 rows), leak closed (map memory), breath exposed; the swim
+step is still offline-only and the scripted anvil is still missing.
+
 1. **Scripted proof to a placed anvil is still missing.** Fix: dig a larger room (or place stations on revealed cave
    floors) and choose the ore type from what is held (fixed in `05_build.py` after proof-10). A re-run needs a slot.
    The LLM pilot already showed the chain is reachable through the API.

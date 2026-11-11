@@ -1,4 +1,4 @@
-"""TerraBot LLM agent loop (programmatic track, tb-api-1.0).
+"""TerraBot LLM agent loop (programmatic track, tb-api-1.0-rc1).
 
 The model writes a short Python program against `tb`; it runs in the sandbox while the game keeps going; the model
 then reads the printed output, the new game events, a status summary and (on request) a screenshot, and writes the
@@ -49,7 +49,7 @@ def api_reference():
     lines.append("tb.store: dict persisted across programs (JSON values). tb.TbError: raised when the game refuses a call.")
     lines.append("Grid (from tb.tiles): " + "; ".join(
         f"{n}{inspect.signature(getattr(Grid, n))}" for n in ("at", "known", "solid", "platform", "empty", "liquid", "kind",
-                                                              "find", "render")) + "\n    " + (inspect.getdoc(Grid.render) or ""))
+                                                              "remembered", "find", "render")) + "\n    " + (inspect.getdoc(Grid.render) or ""))
     from tb import path
     lines.append("Pathfinder capabilities (tb.goto / tb.path_to):\n" + getattr(path, "CAPABILITIES", ""))
     return "\n\n".join(lines)
@@ -57,7 +57,7 @@ def api_reference():
 
 SYSTEM = """You are playing Terraria (the real game, tModLoader 1.4.4, single player, Classic difficulty, normal enemies,
 a world you have never seen, a fresh character) by writing Python programs against the `tb` bot library
-(API contract tb-api-1.0).
+(API contract tb-api-1.0-rc1).
 
 Goal: defeat the Eye of Cthulhu. Progress along the way is also scored (wood, work bench, torches, furnace, metal bars,
 anvil, life crystals, ...), as are deaths, game time and wall time. The game runs in real time: it keeps going while
@@ -73,9 +73,14 @@ How a turn works:
   replace helper modules. Add screenshot="yes" to <program ...> to receive a screenshot after it ends.
 - Values persist between programs in tb.store (a dict).
 
-Rules of the API: you only see what the player has seen (tiles revealed on its map or lit on screen; NPCs and items
-on screen). Actions use the player's own controls and the game's real item-use, crafting, equip and chest code:
-reach limits, tool power, recipes and crafting stations are the game's own. There are no teleports or cheats.
+Rules of the API: you only see what the player has seen (tiles lit on screen as they are now; other revealed tiles as
+the player's map remembers them, which may be out of date; NPCs and items on screen). Actions use the player's own
+controls and the game's real item-use, crafting, equip and chest code: reach limits, tool power, recipes and crafting
+stations are the game's own. There are no teleports or cheats.
+
+The library only moves you (tb.goto: walking, jumps, digging, pillaring, surface swims); it never keeps you alive.
+Enemies, falls, lava and drowning are yours to handle: in water, tb.me() gives breath, breath_max and submerged
+(head in liquid; at 0 breath you lose ~17 life/s), and nothing in tb reacts to them unless your program does.
 
 API reference (coordinates in tiles, y grows downward; 60 ticks per second):
 
@@ -234,7 +239,8 @@ def status(link):
     inv = link.call("inventory")
     held = p["held"]["name"] if p["held"] else None
     return (f"Player at x={p['x']:.1f} y={p['y']:.1f} (feet row {p['foot_y']}), {p['layer']}, life {p['life']}/{p['life_max']}"
-            f"{' DEAD (respawn in %ds)' % (p['respawn_ticks'] // 60) if p['dead'] else ''}, holding {held}, "
+            f"{' DEAD (respawn in %ds)' % (p['respawn_ticks'] // 60) if p['dead'] else ''}"
+            f"{', HEAD UNDER WATER breath %d/%d' % (p['breath'], p['breath_max']) if p.get('submerged') else ''}, holding {held}, "
             f"stations near: {p['stations_near'] or 'none'}. Time {t['clock']} ({'day' if t['day'] else 'night'}), "
             f"game updates {t['game_updates']}.\nInventory: " + ", ".join(f"{i['name']} x{i['stack']}" for i in inv))
 

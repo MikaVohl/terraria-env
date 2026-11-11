@@ -1,12 +1,15 @@
-"""Tile grid returned by tb.tiles(): only cells revealed on the player's map (or lit on screen) are known."""
+"""Tile grid returned by tb.tiles(): only cells revealed on the player's map (or lit on screen) are known. Cells lit
+on screen show the live tile; other known cells show what the player's map remembers (flag REMEMBERED)."""
 from collections import namedtuple
 
-SOLID, PLATFORM, WATER, LAVA, HONEY, WALL, HALF, SLOPE, ACTUATED = 1, 2, 4, 8, 16, 32, 64, 128, 256
+SOLID, PLATFORM, WATER, LAVA, HONEY, WALL, HALF, SLOPE, ACTUATED, REMEMBERED = 1, 2, 4, 8, 16, 32, 64, 128, 256, 512
 UNKNOWN, EMPTY = -2, -1
 
-Cell = namedtuple("Cell", "x y known type kind solid platform liquid wall")
+Cell = namedtuple("Cell", "x y known type kind solid platform liquid wall remembered")
 Cell.__doc__ = ("One tile. known=False: never revealed (type -2, kind 'Unknown'). type -1 / kind 'Empty': no tile. "
-                "solid: blocks movement. platform: standable from above, passable from below. liquid: None/'water'/'lava'/'honey'.")
+                "solid: blocks movement. platform: standable from above, passable from below. liquid: None/'water'/'lava'/'honey'. "
+                "remembered: not lit on screen now; the state is the player's map memory (may be out of date; the map "
+                "shows a tile OR liquid OR wall, so liquid under a tile, walls behind tiles, slopes and half blocks are unknown).")
 
 
 class Grid:
@@ -54,10 +57,14 @@ class Grid:
         t = self.type(x, y)
         return "Unknown" if t == UNKNOWN else "Empty" if t == EMPTY else self.names.get(t, str(t))
 
+    def remembered(self, x, y):
+        """Known only from the player's map memory (not lit on screen now): may be out of date."""
+        return bool(self.flag(x, y) & REMEMBERED)
+
     def at(self, x, y):
         f = self.flag(x, y)
         return Cell(x, y, self.known(x, y), self.type(x, y), self.kind(x, y), bool(f & SOLID), bool(f & PLATFORM),
-                    self.liquid(x, y), bool(f & WALL))
+                    self.liquid(x, y), bool(f & WALL), bool(f & REMEMBERED))
 
     def find(self, kind):
         """[(x, y)] of known cells whose kind matches (case-insensitive)."""

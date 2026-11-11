@@ -11,15 +11,17 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
+using Terraria.Map;
 using Terraria.ModLoader;
 using Terraria.UI;
 
 namespace TerraBot;
 
-// tb-api-1.0 (draft). Inert unless TERRABOT_SOCKET is set. A Unix-socket JSON-lines server whose requests run on the
+// tb-api-1.0-rc1. Inert unless TERRABOT_SOCKET is set. A Unix-socket JSON-lines server whose requests run on the
 // game thread. Fairness rules (see terrariabench/tb/CONTRACT.md):
-//  * reads: tiles only where revealed on the player's own map (WorldMap.IsRevealed) or lit on screen; NPCs and items
-//    only when on screen and lit (or within 4 tiles); NPC fields are position, type, name and health, never AI state;
+//  * reads: tiles lit on screen show their live state; other tiles show what the player's own map remembers
+//    (Main.Map, only where revealed); NPCs and items only when on screen and lit (or within 4 tiles); NPC fields
+//    are position, type, name and health, never AI state;
 //  * actions: the player's control flags + cursor for N game updates (movement, item use, tile interaction), and the
 //    real UI code for inventory-only steps: hotbar select, Main.CraftItem, ItemSlot.SwapEquip, chest transfers with a
 //    chest the player opened itself. Nothing edits tiles, spawns items or moves the player directly.
@@ -61,7 +63,7 @@ public static class Server
         listener.Listen(8);
         running = true;
         new Thread(AcceptLoop) { IsBackground = true, Name = "TerraBot accept" }.Start();
-        log.Info($"TerraBot tb-api-1.0 listening on {path}");
+        log.Info($"TerraBot {Api.Version} listening on {path}");
     }
 
     public static void Stop()
@@ -141,7 +143,7 @@ public sealed class Hold
 
 public static class Api
 {
-    public const string Version = "tb-api-1.0";
+    public const string Version = "tb-api-1.0-rc1";
     public static readonly string[] KeyNames = { "left", "right", "up", "down", "jump", "use", "use_tile", "quick_heal", "quick_mana", "quick_buff", "hook" };
     public const int MaxHoldTicks = 600;
     public static Hold Current;
@@ -251,8 +253,45 @@ public static class Api
             case "close_chest": Act(job, CloseChest(p)); return;
             case "truth_tiles": if (!Server.TestMode) break; Finish(job, Tiles(p, I(a, "x0"), I(a, "y0"), I(a, "x1"), I(a, "y1"), true)); return;
             case "truth_npcs": if (!Server.TestMode) break; Finish(job, Npcs(p, F(a, "radius", 300f), true)); return;
+            case "truth_edit": if (!Server.TestMode) break; Finish(job, TruthEdit(a)); return;
+            case "truth_give": if (!Server.TestMode) break; Finish(job, TruthGive(p, S(a, "item"), Math.Clamp(I(a, "n", 1), 1, 9999))); return;
+            case "truth_morning": if (!Server.TestMode) break; Main.dayTime = true; Main.time = 0; Finish(job, Time()); return;
         }
         Fail(job, "unknown op " + job.Op);
+    }
+
+    // Test mode only (map-memory leak test): change one cell behind the player's back, without TileFrame and so
+    // without a map update, as an unseen change would. Returns the previous state for restoring.
+    static Dictionary<string, object> TruthEdit(JsonElement a)
+    {
+        int x = I(a, "x"), y = I(a, "y");
+        if (!WorldGen.InWorld(x, y, 1)) throw new ArgumentException("truth_edit: out of world");
+        Tile t = Main.tile[x, y];
+        var old = new Dictionary<string, object> { ["type"] = t.HasTile ? t.TileType : -1, ["liquid"] = (int)t.LiquidAmount };
+        if (a.TryGetProperty("type", out var tv) && tv.ValueKind == JsonValueKind.Number)
+        {
+            int type = tv.GetInt32();
+            t.HasTile = type >= 0;
+            if (type >= 0) t.TileType = (ushort)type;
+        }
+        if (a.TryGetProperty("liquid", out var lv) && lv.ValueKind == JsonValueKind.Number)
+        {
+            t.LiquidAmount = (byte)Math.Clamp(lv.GetInt32(), 0, 255);
+            t.LiquidType = LiquidID.Water;
+        }
+        return old;
+    }
+
+    // Test mode only (live pathfinder tests on dev worlds): items as setup (torches, blocks) without the hours of
+    // gathering, given at the player like a pickup.
+    static Dictionary<string, object> TruthGive(Player p, string name, int n)
+    {
+        int type = -1;
+        for (int t = 1; t < ItemLoader.ItemCount && type < 0; t++)
+            if (string.Equals(Lang.GetItemNameValue(t), name, StringComparison.OrdinalIgnoreCase)) type = t;
+        if (type < 0) throw new ArgumentException($"truth_give: unknown item '{name}'");
+        p.QuickSpawnItem(p.GetSource_Misc("TerraBotTest"), type, n);
+        return new Dictionary<string, object> { ["item"] = Lang.GetItemNameValue(type), ["n"] = n };
     }
 
     static void Act(Job job, Dictionary<string, object> r)
@@ -278,8 +317,69 @@ public static class Api
         return x * 16 + 16 > s.Left && x * 16 < s.Right && y * 16 + 16 > s.Top && y * 16 < s.Bottom && Lighting.Brightness(x, y) > 0.03f;
     }
 
-    public static bool Known(int x, int y) =>
-        WorldGen.InWorld(x, y, 1) && ((Main.Map != null && Main.Map.IsRevealed(x, y)) || OnScreenLit(x, y));
+    // Map memory: Main.Map[x, y].Type is a MapHelper lookup index (tile option, wall, liquid or background); this
+    // inverts it once to the tile type (>= 0), MapWall, MapLiquid - liquidType, or MapAir (background/unmapped).
+    const int MapAir = -1, MapWall = -3, MapLiquid = -10;
+    public const int Remembered = 512;
+    static int[] mapIndex;
+
+    static int[] BuildMapIndex()
+    {
+        var a = new int[MapHelper.LookupCount()];
+        Array.Fill(a, MapAir);
+        void Set(int k, int v) { if (k > 0 && k < a.Length) a[k] = v; }
+        for (int t = 0; t < Math.Min(MapHelper.tileLookup.Length, MapHelper.tileOptionCounts.Length); t++)
+            for (int o = 0; o < MapHelper.tileOptionCounts[t]; o++) Set(MapHelper.tileLookup[t] + o, t);
+        for (int w = 1; w < Math.Min(MapHelper.wallLookup.Length, MapHelper.wallOptionCounts.Length); w++)
+            for (int o = 0; o < MapHelper.wallOptionCounts[w]; o++) Set(MapHelper.wallLookup[w] + o, MapWall);
+        var f = typeof(MapHelper).GetField("liquidPosition", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        int liquid = Convert.ToInt32(f.GetValue(null));
+        for (int l = 0; l < LiquidID.Count; l++) Set(liquid + l, MapLiquid - l);
+        return a;
+    }
+
+    static int LiquidFlag(int liquidType) => liquidType == LiquidID.Lava ? 8 : liquidType == LiquidID.Honey ? 16 : 4;
+
+    // One cell as the player knows it: lit on screen (or truth) -> the live tile; revealed elsewhere -> what the
+    // player's map shows (flag 512; slopes, half blocks, liquids under tiles and walls behind tiles are not on the
+    // map); otherwise unknown (-2). flags: 1 solid, 2 platform, 4 water, 8 lava, 16 honey, 32 wall, 64 half block,
+    // 128 sloped, 256 actuated, 512 remembered.
+    static void CellView(int x, int y, bool truth, out int type, out int flags)
+    {
+        type = -2; flags = 0;
+        if (!WorldGen.InWorld(x, y, 1)) return;
+        if (truth || OnScreenLit(x, y))
+        {
+            Tile t = Main.tile[x, y];
+            bool has = t.HasTile;
+            type = has ? t.TileType : -1;
+            if (has && !t.IsActuated && Main.tileSolid[t.TileType] && !Main.tileSolidTop[t.TileType]) flags |= 1;
+            if (has && !t.IsActuated && Main.tileSolidTop[t.TileType]) flags |= 2;
+            if (t.LiquidAmount > 0) flags |= LiquidFlag(t.LiquidType);
+            if (t.WallType > 0) flags |= 32;
+            if (has && t.IsHalfBlock) flags |= 64;
+            if (has && t.Slope != SlopeType.Solid) flags |= 128;
+            if (has && t.IsActuated) flags |= 256;
+            return;
+        }
+        if (Main.Map == null || !Main.Map.IsRevealed(x, y)) return;
+        mapIndex ??= BuildMapIndex();
+        int m = Main.Map[x, y].Type;
+        int v = m < mapIndex.Length ? mapIndex[m] : MapAir;
+        flags = Remembered;
+        if (v >= 0)
+        {
+            type = v;
+            if (Main.tileSolid[v] && !Main.tileSolidTop[v]) flags |= 1;
+            if (Main.tileSolidTop[v]) flags |= 2;
+        }
+        else
+        {
+            type = -1;
+            if (v == MapWall) flags |= 32;
+            else if (v <= MapLiquid) flags |= LiquidFlag(MapLiquid - v);
+        }
+    }
 
     static bool EntityVisible(Player p, Rectangle box)
     {
@@ -335,7 +435,9 @@ public static class Api
             ["vx"] = R(p.velocity.X), ["vy"] = R(p.velocity.Y), ["on_ground"] = onGround, ["dir"] = p.direction, ["fall_tiles"] = fall,
             ["life"] = p.statLife, ["life_max"] = p.statLifeMax2, ["mana"] = p.statMana, ["mana_max"] = p.statManaMax2,
             ["defense"] = (int)p.statDefense, ["dead"] = p.dead, ["respawn_ticks"] = p.dead ? p.respawnTimer : 0,
-            ["breath"] = p.breath, ["breath_max"] = p.breathMax, ["wet"] = p.wet, ["lava"] = p.lavaWet, ["immune_ticks"] = p.immune ? p.immuneTime : 0,
+            ["breath"] = p.breath, ["breath_max"] = p.breathMax, ["breath_ticks_per_point"] = p.breathCDMax,
+            ["submerged"] = Collision.DrownCollision(p.position, p.width, p.height, p.gravDir),
+            ["wet"] = p.wet, ["lava"] = p.lavaWet, ["immune_ticks"] = p.immune ? p.immuneTime : 0,
             ["potion_sickness_ticks"] = p.potionDelay,
             ["held"] = h.IsAir ? null : ItemView(h, p.selectedItem), ["selected_slot"] = p.selectedItem,
             ["item_busy_ticks"] = Math.Max(p.itemAnimation, p.itemTime),
@@ -368,7 +470,7 @@ public static class Api
         ["eye_of_cthulhu_defeated"] = NPC.downedBoss1, ["difficulty"] = Main.GameMode, ["test_mode"] = Server.TestMode,
     };
 
-    // flags: 1 solid, 2 platform (solid top), 4 water, 8 lava, 16 honey, 32 wall, 64 half block, 128 sloped, 256 actuated
+    // flags: see CellView
     static object Tiles(Player p, int x0, int y0, int x1, int y1, bool truth)
     {
         if (x1 < x0) (x0, x1) = (x1, x0);
@@ -382,20 +484,10 @@ public static class Api
             for (int c = 0; c < w; c++)
             {
                 int x = x0 + c, y = y0 + r, k = r * w + c;
-                if (!truth && !Known(x, y)) { type[k] = -2; continue; }
-                Tile t = Main.tile[x, y];
-                bool has = t.HasTile;
-                type[k] = has ? t.TileType : -1;
-                if (has && !names.ContainsKey(t.TileType.ToString())) names[t.TileType.ToString()] = TileName(t.TileType);
-                int f = 0;
-                if (has && !t.IsActuated && Main.tileSolid[t.TileType] && !Main.tileSolidTop[t.TileType]) f |= 1;
-                if (has && !t.IsActuated && Main.tileSolidTop[t.TileType]) f |= 2;
-                if (t.LiquidAmount > 0) f |= t.LiquidType == LiquidID.Lava ? 8 : t.LiquidType == LiquidID.Honey ? 16 : 4;
-                if (t.WallType > 0) f |= 32;
-                if (has && t.IsHalfBlock) f |= 64;
-                if (has && t.Slope != SlopeType.Solid) f |= 128;
-                if (has && t.IsActuated) f |= 256;
+                CellView(x, y, truth, out int tt, out int f);
+                type[k] = tt;
                 flags[k] = f;
+                if (tt >= 0 && !names.ContainsKey(tt.ToString())) names[tt.ToString()] = TileName(tt);
             }
         return new Dictionary<string, object> { ["x0"] = x0, ["y0"] = y0, ["w"] = w, ["h"] = hgt, ["t"] = type, ["f"] = flags, ["names"] = names };
     }
@@ -415,9 +507,8 @@ public static class Api
         for (int x = cx - radius; x <= cx + radius; x++)
             for (int y = cy - radius; y <= cy + radius; y++)
             {
-                if (!WorldGen.InWorld(x, y, 1)) continue;
-                Tile t = Main.tile[x, y];
-                if (!t.HasTile || !types.Contains(t.TileType) || !Known(x, y)) continue;
+                CellView(x, y, false, out int tt, out _);
+                if (tt < 0 || !types.Contains(tt)) continue;
                 found.Add(((x - cx) * (x - cx) + (y - cy) * (y - cy), x, y));
             }
         return found.OrderBy(f => f.d2).Take(limit).Select(f => new[] { f.x, f.y }).ToArray();

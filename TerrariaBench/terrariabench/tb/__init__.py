@@ -1,9 +1,9 @@
-"""tb: the TerrariaBench programmatic-track bot library (API contract tb-api-1.0, draft; see CONTRACT.md).
+"""tb: the TerrariaBench programmatic-track bot library (API contract tb-api-1.0-rc1; see CONTRACT.md).
 
 Coordinates are tiles (1 tile = 16 px); x grows right, y grows DOWN. Time is game updates ("ticks", 60 per second).
 Every action goes through the player's own controls or the game's real item-use / crafting / equip / chest code.
-World reads only return what the player has seen: tiles revealed on its map or lit on screen, NPCs and dropped items
-on screen. Errors the game reports raise tb.TbError.
+World reads only return what the player has seen: tiles lit on screen (live) or revealed on its map (as the map
+remembers them, flag REMEMBERED), NPCs and dropped items on screen. Errors the game reports raise tb.TbError.
 """
 import json
 import math
@@ -14,7 +14,7 @@ import time as _time
 from ._rpc import TbError, call
 from .grid import Cell, Grid
 
-API_VERSION = "tb-api-1.0"
+API_VERSION = "tb-api-1.0-rc1"
 TICKS_PER_SECOND = 60
 __all__ = ["me", "inventory", "time", "world", "tiles", "find_tiles", "npcs", "items_near", "events", "recipes", "chest",
            "hold", "walk", "jump", "stop", "sleep", "face", "goto", "path_to", "select", "use_at", "mine", "place",
@@ -42,9 +42,14 @@ def _obj(v):
 # ---------------------------------------------------------------- read
 def me():
     """Player state: x, y (centre, tiles), tile_x, foot_y (row the feet are in), left, top, width, height, vx, vy
-    (px/tick), on_ground, dir (-1/1), fall_tiles, life, life_max, mana, mana_max, defense, dead, respawn_ticks, breath,
-    wet, lava, immune_ticks, potion_sickness_ticks, held (item or None), selected_slot, item_busy_ticks, reach_tiles
-    [x, y], buffs, armor, accessories, layer, biomes, stations_near, chest_open, inventory_open, spawn, tick."""
+    (px/tick), on_ground, dir (-1/1), fall_tiles, life, life_max, mana, mana_max, defense, dead, respawn_ticks,
+    breath, breath_max, breath_ticks_per_point, submerged, wet, lava, immune_ticks, potion_sickness_ticks, held (item
+    or None), selected_slot, item_busy_ticks, reach_tiles [x, y], buffs, armor, accessories, layer, biomes,
+    stations_near, chest_open, inventory_open, spawn, tick.
+    Breath (the game's own rule): while `submerged` (head in liquid, Collision.DrownCollision) breath drops by 1 every
+    breath_ticks_per_point ticks (7: 200 breath = ~23 s); at 0 the player loses 2 life every 7 ticks (~17 life/s);
+    out of liquid breath refills by 3 per tick. Nothing in tb (goto included) watches breath: staying alive in
+    water is the program's job."""
     return _obj(call("me"))
 
 
@@ -76,7 +81,8 @@ def world():
 
 
 def tiles(x0, y0, x1, y1):
-    """Grid of the rectangle (inclusive corners, at most 40000 cells). Unrevealed cells are Unknown."""
+    """Grid of the rectangle (inclusive corners, at most 40000 cells). Unrevealed cells are Unknown; cells lit on
+    screen show the live tile, other revealed cells what the player's map remembers (Grid.remembered(x, y))."""
     return Grid.from_reply(call("tiles", x0=int(x0), y0=int(y0), x1=int(x1), y1=int(y1)))
 
 
@@ -161,8 +167,9 @@ def face(x):
 
 def goto(x, y, dig=True, place=True, near=0, timeout=60.0):
     """Walk to stand with feet in row y at column x (within `near` tiles) using the pathfinder: walking, auto step-up,
-    jumps, falls, platforms, ropes, and, if allowed, digging through blocks (dig) and pillaring up (place). Returns
-    True on arrival, False if no path or not reached in `timeout` wall seconds. See tb.path for capabilities."""
+    jumps, falls, platforms, ropes, surface swims, and, if allowed, digging through blocks (dig) and pillaring up
+    (place). Returns True on arrival, False if no path, out of blocks, death or not reached in `timeout` wall seconds;
+    the reason of the last False is in tb.path.last_error. Never manages breath. See tb.path.CAPABILITIES."""
     from . import path
     return path.goto(x, y, dig=dig, place=place, near=near, timeout=timeout)
 
@@ -210,22 +217,21 @@ def _tile(x, y):
 
 def mine(x, y, timeout_ticks=600):
     """Break the tile at (x, y) with the best pickaxe (axe for trees, hammer for altars) in the inventory.
-    Must be within reach. Returns True when the tile is gone (for a tree: when the trunk above it has fallen; a
-    stump may stay). False if it did not break within timeout_ticks or the player died."""
+    Must be within reach. Returns True when the tile is gone, or, for a tree tile with trunk above it, when that
+    trunk has fallen (the stump may stay; mining a stump itself only returns True once the stump is gone).
+    False if it did not break within timeout_ticks or the player died."""
     cell = _tile(x, y)
     if not cell.known:
         raise TbError(f"mine({x}, {y}): tile not revealed")
     if cell.type < 0:
         return True
-    tree = cell.kind == "Trees"
+    trunk_above = cell.kind == "Trees" and _tile(x, y - 1).kind == "Trees"
 
     def done():
         if _tile(x, y).type < 0:
             return True
-        return tree and _tile(x, y - 1).kind != "Trees"
+        return trunk_above and _tile(x, y - 1).kind != "Trees"
 
-    if tree and done():
-        return True
     tool = _tool_for(cell.kind)
     if tool is None:
         raise TbError(f"mine({x}, {y}): no suitable tool for {cell.kind}")

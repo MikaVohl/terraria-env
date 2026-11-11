@@ -12,7 +12,7 @@ Checks every run against the evidence the agent cannot write:
   * crafting provenance: each `craft` action that succeeded has a matching observer `crafted` journal entry
     (RecipeItemCreationContext, i.e. the real recipe code);
   * attribution: every checkpoint the published scorer credits is preceded by an agent tb-api action;
-  * forbidden ops: the proxy journal contains only tb-api-1.0 action ops; no test-only ops in a scored run;
+  * forbidden ops: the proxy journal contains only tb-api action ops; no test-only ops in a scored run;
   * harness health: program timeouts/errors, game crash (no end event), API errors.
 Flags are reported, never silently fixed.
 """
