@@ -1,8 +1,10 @@
-"""Record the whole desktop for every run that starts, into <run>/desktop.mp4. Passive and unattended.
+"""Record every run that starts into <run>/desktop.mp4 (+ recording.json). Passive and unattended.
 
 Uses live_panel.active_run() to find the run whose owned game is alive; starts record_desktop.py
-for it and stops when the run writes result.json or its game exits.
+for it (whole desktop via grim, or the run's isolated game display with audio when its manifest names
+game_display) and stops when the run writes result.json or its game exits.
 """
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -32,8 +34,11 @@ def main():
         if run and recorder is None and not (run / "desktop.mp4").exists():
             current = run
             # Frozen-clock runs take about twice their game time in wall time; result.json ends the recording.
+            # Isolated-display runs (manifest game_display) record their own game window and audio instead.
+            manifest = json.loads((run / "manifest.json").read_text()) if (run / "manifest.json").exists() else {}
+            source = ["--display", manifest["game_display"]] if manifest.get("game_display") else ["--fps", fps]
             recorder = subprocess.Popen([str(ROOT / ".venv/bin/python"), str(ROOT / "tools/record_desktop.py"),
-                                         str(run / "desktop.mp4"), "--fps", fps, "--until-file", str(run / "result.json"),
+                                         str(run / "desktop.mp4"), *source, "--until-file", str(run / "result.json"),
                                          "--max-seconds", "14400"])
             print(f"recording {run}", flush=True)
         time.sleep(1)

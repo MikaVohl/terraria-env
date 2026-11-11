@@ -8,9 +8,9 @@ Jobs are ~/tb-queue/dg-jobs/*.sh, taken in name order by the first free slot. He
 The job runs with TB_DISPLAY set to the slot's X display. A job starts only if
     campaign spend (tools/pilot_spend.py, incl. live accounting) + extra spend (~/tb-queue/dg-extra.json)
     + caps of running jobs + its own cap  <=  budget
-for every provider; otherwise it moves to skipped/. While a job runs, its slot's headless output is recorded to
-<run>/desktop.mp4. Afterwards: run_evidence, extended_score and clock_check. ~/tb-queue/dg-STOP ends the queue
-after the running jobs (no new starts).
+for every provider; otherwise it moves to skipped/. While a job runs, its slot's game window and audio are recorded to
+<run>/desktop.mp4 + recording.json (tools/record_desktop.py --display). Afterwards: run_evidence, extended_score and
+clock_check. ~/tb-queue/dg-STOP ends the queue after the running jobs (no new starts).
 """
 import argparse
 import json
@@ -116,8 +116,8 @@ def main():
                     break
                 time.sleep(.5)
             if run.exists():
-                recorder = subprocess.Popen([PY, str(ROOT / "tools/record_desktop.py"), str(run / "desktop.mp4"), "--fps", "5",
-                                             "--output-name", slot["output"], "--until-file", str(run / "result.json"),
+                recorder = subprocess.Popen([PY, str(ROOT / "tools/record_desktop.py"), str(run / "desktop.mp4"),
+                                             "--display", slot["display"], "--until-file", str(run / "result.json"),
                                              "--max-seconds", "14400"], cwd=ROOT, stdin=subprocess.DEVNULL,
                                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             running[i] = (target, proc, recorder, caps, run, time.time())

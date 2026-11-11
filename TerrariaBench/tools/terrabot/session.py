@@ -28,7 +28,8 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from terrariabench.linux_control import XGameControl, desktop_environment, quiet_desktop, stop_owned_game  # noqa: E402
+from terrariabench.linux_control import (XGameControl, desktop_environment, isolated_audio_env, quiet_desktop,  # noqa: E402
+                                         stop_owned_game)
 
 TML = Path.home() / ".local/share/Steam/steamapps/common/tModLoader"
 TMOD = ROOT / "runs/terrabot-build/tml/Mods/TerraBot.tmod"
@@ -56,7 +57,7 @@ def launch(profile, log, telemetry, *, display, extra_env):
         env.pop(name, None)
     env.pop("WAYLAND_DISPLAY", None)
     env.update(DISPLAY=display, SDL_VIDEODRIVER="x11", FNA_MOUSE_DISABLE_GLOBAL_ACCESS="1",
-               TERRARIABENCH_TELEMETRY_DIR=str(telemetry), **extra_env)
+               TERRARIABENCH_TELEMETRY_DIR=str(telemetry), **isolated_audio_env(display, env), **extra_env)
     quiet_desktop()
     with log.open("w") as stream:
         proc = subprocess.Popen(["bash", "LaunchUtils/ScriptCaller.sh", "-tmlsavedirectory", str(profile), "-skipselect"],
@@ -190,10 +191,10 @@ class Proxy:
 
 
 class Session:
-    def __init__(self, run, fixture, *, display=":15", output="HEADLESS-24", test_mode=False, record=True,
+    def __init__(self, run, fixture, *, display=":15", test_mode=False, record=True,
                  manifest=None):
         self.run = Path(run).resolve()
-        self.fixture, self.display, self.output = Path(fixture).resolve(), display, output
+        self.fixture, self.display = Path(fixture).resolve(), display
         self.test_mode, self.record, self.manifest = test_mode, record, dict(manifest or {})
         self.pid = self.game = self.recorder = self.proxy = self.link = None
 
@@ -263,8 +264,8 @@ class Session:
         self.game.setup_window()
         if self.record:
             self.recorder = subprocess.Popen(
-                [sys.executable, str(ROOT / "tools/record_desktop.py"), str(self.run / "desktop.mp4"), "--fps", "5",
-                 "--output-name", self.output, "--until-file", str(self.run / "result.json"), "--max-seconds", "30000"],
+                [sys.executable, str(ROOT / "tools/record_desktop.py"), str(self.run / "desktop.mp4"), "--display", self.display,
+                 "--until-file", str(self.run / "result.json"), "--max-seconds", "30000"],
                 cwd=ROOT, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.proxy = Proxy(self.run, game_sock, capture=self.game.capture, allow_test_ops=self.test_mode)
         self.log("in world; proxy at", self.proxy.path)

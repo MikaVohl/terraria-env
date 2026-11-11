@@ -2,28 +2,37 @@
 
 For every run in RUNS this script
 
-1. copies the run's desktop recording and its small records from Omarchy
-   (`desktop.mp4`, `clock.jsonl`, `result.json`, `telemetry/*.jsonl`) into site/media/raw/<run>/;
-2. places the recording on the wall clock. tools/record_desktop.py writes the MP4 with wall-clock
-   frame timestamps starting at 0, so video time = unix - (birth time of desktop.mp4) + offset.
-   For paused-clock runs the offset is fitted: ffmpeg's freezedetect finds the stretches where the
-   game window does not change, and the offset (searched in [-3 s, 3 s]) is the one that puts the
-   most of the logged freeze intervals (clock.jsonl: `freeze` / `thaw` around every model call,
-   the SIGSTOP / SIGCONT of the game) on still video. The fit and its recall are stored;
+1. copies the run's recording and its small records from Omarchy
+   (`desktop.mp4`, `recording.json` if present, `clock.jsonl`, `result.json`, `telemetry/*.jsonl`) into
+   site/media/raw/<run>/;
+2. places the recording on the wall clock: video time = unix - video start + offset. The video start is
+   recording.json `video_start_unix` (TerrariaBench tools/record_desktop.py, since 2026-11-11); older
+   recordings have no sidecar and start at the birth time of desktop.mp4 (their wall-clock frame
+   timestamps start at 0). For paused-clock runs the offset is fitted: ffmpeg's freezedetect finds the
+   stretches where the game window does not change, and the offset (searched in [-3 s, 3 s]) is the one
+   that puts the most of the logged freeze intervals (clock.jsonl: `freeze` / `thaw` around every model
+   call, the SIGSTOP / SIGCONT of the game) on still video. The fit and its recall are stored;
 3. keeps only game time: from the observer journal's `start` event to the end of the evaluation
    (result.json `evaluation_end_unix`, but at most 1 s after the journal's last line: the journal
    stops when the player leaves the world), minus every freeze interval
    in paused mode. The kept length is checked against the played game time (result.json
    `game_seconds`): the script stops if they differ by more than 2 %;
-4. crops the 1024x1024 game window out of the 1100x1100 desktop, resamples to 10 frames/s,
-   scales to 960x960 and encodes H.264 (CRF 27, faststart, no audio) plus a poster frame;
-5. writes site/data/videos.json (durations, offsets, recall, kept segments count) for the pages.
+4. two recording formats:
+   - old (no recording.json, `source` grim): 1100x1100 desktop, silent. The 1024x1024 game window is
+     cropped out and resampled to 10 frames/s; the output has no audio;
+   - new (`source` x11grab): the 1024x1024 game window itself at 30 frames/s with the game's audio
+     (AAC). No crop; the output keeps 30 frames/s and the audio, cut with the same frame selection
+     (for every kept frame the audio samples of its 1/30 s, placed via recording.json
+     `audio_start_unix`), so sound stays in sync across the freeze cuts;
+   both scaled to 960x960, H.264 (CRF 27, faststart) plus a poster frame;
+5. writes site/data/videos.json (durations, offsets, recall, kept segments count, fps, audio) for the pages.
 
 Real-time runs are not shortened: only the launch before the journal start and the seconds after
 the evaluation end are dropped, so the video length equals the 20 game-minutes as well.
 
     python3 site/tools/fetch_videos.py            # every run in RUNS (skips existing outputs)
     python3 site/tools/fetch_videos.py --force c2-opus-pa-w401
+    python3 site/tools/fetch_videos.py --adhoc rectest-2026-11-11/single-d31   # any run; prints the row only
 
 Needs ssh access to mika@omarchy, ffmpeg/ffprobe on PATH and numpy.
 """
@@ -44,7 +53,8 @@ SITE = Path(__file__).resolve().parents[1]
 MEDIA = SITE / "media"
 RAW = MEDIA / "raw"
 OUT_JSON = SITE / "data" / "videos.json"
-FPS = 10
+FPS = 10  # old desktop recordings; new game-window recordings keep their own rate (recording.json fps)
+AUDIO_RATE = 48000
 SIZE = 960
 CRF = 27
 
@@ -85,10 +95,22 @@ def fetch(campaign: str, run: str) -> Path:
     dst.mkdir(parents=True, exist_ok=True)
     files = [f"{HOST}:{d}/{f}" for f in ("desktop.mp4", "result.json", "telemetry")]
     sh("rsync", "-a", *files, str(dst) + "/")
-    subprocess.run(["rsync", "-a", f"{HOST}:{d}/clock.jsonl", str(dst) + "/"], capture_output=True)  # real-time runs have none
+    for optional in ("clock.jsonl", "recording.json"):  # real-time runs have no clock.jsonl, old recordings no sidecar
+        subprocess.run(["rsync", "-a", f"{HOST}:{d}/{optional}", str(dst) + "/"], capture_output=True)
     birth = sh("ssh", HOST, f"stat -c %.W {d}/desktop.mp4").strip()
     (dst / "birth.txt").write_text(birth + "\n")
     return dst
+
+
+def recording(dst: Path) -> dict:
+    """Recording format: new game-window recordings (x11grab) carry their start, fps and audio start in recording.json."""
+    p = dst / "recording.json"
+    meta = json.loads(p.read_text()) if p.exists() else {"source": "grim"}
+    meta.setdefault("video_start_unix", float((dst / "birth.txt").read_text()))
+    window_only = meta["source"] == "x11grab"
+    meta["out_fps"] = round(meta["fps"]) if window_only else FPS
+    meta["audio_delay"] = meta["audio_start_unix"] - meta["video_start_unix"] if window_only and meta.get("audio_start_unix") else None
+    return meta
 
 
 def journal(dst: Path) -> tuple[float, float]:
@@ -178,30 +200,57 @@ def keep_segments(t_start, t_end, fr_video):
     return segs
 
 
-def encode(raw: Path, crop, segs, out: Path):
-    """Decode at a constant FPS (frame i shows video time i / FPS), keep the frames inside the segments, encode them.
-    The selection runs in Python because an ffmpeg select expression with hundreds of terms is too deep to parse."""
-    x, y = crop
+def encode(raw: Path, crop, segs, out: Path, fps: int, audio_delay: float | None):
+    """Decode at a constant fps (frame i shows video time i / fps), keep the frames inside the segments, encode them.
+    The selection runs in Python because an ffmpeg select expression with hundreds of terms is too deep to parse.
+    With audio (audio sample time 0 = video time audio_delay), every kept frame takes the samples of its 1 / fps s,
+    so the cut audio stays in sync with the cut video."""
     frame = SIZE * SIZE * 3 // 2  # yuv420p
-    dec = subprocess.Popen(["ffmpeg", "-v", "error", "-i", str(raw), "-vf", f"crop=1024:1024:{x}:{y},fps={FPS},scale={SIZE}:{SIZE}:flags=lanczos",
-                            "-pix_fmt", "yuv420p", "-f", "rawvideo", "-"], stdout=subprocess.PIPE)
-    enc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", f"{SIZE}x{SIZE}", "-r", str(FPS),
-                            "-i", "-", "-an", "-c:v", "libx264", "-preset", "slow", "-crf", str(CRF), "-movflags", "+faststart", str(out)],
-                           stdin=subprocess.PIPE)
     starts = np.array([a for a, _ in segs])
     ends = np.array([b for _, b in segs])
+
+    def kept(i):
+        t = i / fps
+        k = np.searchsorted(starts, t, side="right") - 1
+        return k >= 0 and t < ends[k]
+
+    audio_in = []
+    if audio_delay is not None:
+        pcm, cut = raw.with_name("audio.s16"), raw.with_name("audio_kept.s16")
+        sh("ffmpeg", "-v", "error", "-y", "-i", str(raw), "-map", "0:a", "-ac", "2", "-ar", str(AUDIO_RATE), "-f", "s16le", str(pcm))
+        src = np.memmap(pcm, np.int16, "r").reshape(-1, 2)
+        per = AUDIO_RATE // fps
+        with cut.open("wb") as stream:
+            for i in range(int(probe(raw) * fps) + 2):
+                if kept(i):
+                    a = round((i / fps - audio_delay) * AUDIO_RATE)
+                    chunk = np.zeros((per, 2), np.int16)
+                    lo, hi = max(a, 0), min(a + per, len(src))
+                    if hi > lo:
+                        chunk[lo - a:hi - a] = src[lo:hi]
+                    stream.write(chunk.tobytes())
+        del src
+        pcm.unlink()
+        audio_in = ["-f", "s16le", "-ar", str(AUDIO_RATE), "-ac", "2", "-i", str(cut)]
+    vf = (f"crop=1024:1024:{crop[0]}:{crop[1]}," if crop else "") + f"fps={fps},scale={SIZE}:{SIZE}:flags=lanczos"
+    dec = subprocess.Popen(["ffmpeg", "-v", "error", "-i", str(raw), "-vf", vf, "-pix_fmt", "yuv420p", "-f", "rawvideo", "-"],
+                           stdout=subprocess.PIPE)
+    enc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "yuv420p", "-s", f"{SIZE}x{SIZE}", "-r", str(fps),
+                            "-i", "-", *audio_in, *(["-c:a", "aac", "-b:a", "128k", "-shortest"] if audio_in else ["-an"]),
+                            "-c:v", "libx264", "-preset", "slow", "-crf", str(CRF), "-movflags", "+faststart", str(out)],
+                           stdin=subprocess.PIPE)
     i = 0
     while buf := dec.stdout.read(frame):
         if len(buf) < frame:
             break
-        t = i / FPS
-        k = np.searchsorted(starts, t, side="right") - 1
-        if k >= 0 and t < ends[k]:
+        if kept(i):
             enc.stdin.write(buf)
         i += 1
     enc.stdin.close()
     if dec.wait() or enc.wait():
         raise SystemExit(f"{raw}: ffmpeg failed")
+    if audio_in:
+        raw.with_name("audio_kept.s16").unlink()
 
 
 def probe(p: Path) -> float:
@@ -218,19 +267,20 @@ def process(campaign: str, run: str, why: str, force: bool) -> dict | None:
     if force or not (dst / "desktop.mp4").exists():
         fetch(campaign, run)
     raw = dst / "desktop.mp4"
-    birth = float((dst / "birth.txt").read_text())
+    meta = recording(dst)
+    start, fps = meta["video_start_unix"], meta["out_fps"]
     dur = probe(raw)
     res = json.loads((dst / "result.json").read_text()) if (dst / "result.json").exists() else {}
     j_start, j_last = journal(dst)
     end_unix = min(res.get("evaluation_end_unix") or j_last, j_last + 1)
     fr = freezes(dst)
-    crop = window(raw, dur / 2)
+    crop = None if meta["source"] == "x11grab" else window(raw, dur / 2)  # new recordings are the game window itself
     offset, recall = 0.0, None
     if fr:
-        offset, recall = fit_offset(fr, stills(raw, crop, dur), birth, dur)
+        offset, recall = fit_offset(fr, stills(raw, crop or (0, 0), dur), start, dur)
         if recall < 0.9:
             raise SystemExit(f"{run}: freeze fit recall {recall:.3f} < 0.9; check the recording")
-    to_v = lambda u: u - birth + offset  # noqa: E731
+    to_v = lambda u: u - start + offset  # noqa: E731
     fr_v = [(to_v(a), min(to_v(b), dur)) for a, b in fr]
     segs = keep_segments(max(0.0, to_v(j_start)), min(dur, to_v(end_unix)), fr_v)
     kept = sum(b - a for a, b in segs)
@@ -238,7 +288,7 @@ def process(campaign: str, run: str, why: str, force: bool) -> dict | None:
     if abs(kept - game_s) > 0.02 * game_s + 2:
         raise SystemExit(f"{run}: kept {kept:.1f} s of video but the run played {game_s:.1f} game-s")
     if force or not out.exists():
-        encode(raw, crop, segs, out)
+        encode(raw, crop, segs, out, fps, meta["audio_delay"])
         mid = min(40.0, probe(out) / 2)  # early in the run: daylight on the surface, before the first descent
         sh("ffmpeg", "-v", "error", "-y", "-ss", f"{mid:.2f}", "-i", str(out), "-frames:v", "1", "-vf", "scale=480:480", "-q:v", "4", str(poster))
     trimmed = probe(out)
@@ -248,9 +298,11 @@ def process(campaign: str, run: str, why: str, force: bool) -> dict | None:
         "raw_s": round(dur, 1), "trimmed_s": round(trimmed, 1), "kept_s": round(kept, 1), "game_s": round(game_s, 1),
         "freezes": len(fr), "frozen_cut_s": round(sum(min(b, dur) - a for a, b in fr_v if b > 0), 1),
         "offset_s": offset, "freeze_recall": None if recall is None else round(recall, 4), "segments": len(segs),
-        "crop": list(crop), "size_mb": round(out.stat().st_size / 2**20, 1),
+        "crop": list(crop) if crop else None, "fps": fps, "audio": meta["audio_delay"] is not None,
+        "size_mb": round(out.stat().st_size / 2**20, 1),
     }
-    print(f"{run}: raw {dur:.0f} s -> {trimmed:.0f} s (game {game_s:.0f} s, {len(fr)} freezes, offset {offset:+.2f} s, recall {recall})", flush=True)
+    print(f"{run}: raw {dur:.0f} s -> {trimmed:.0f} s (game {game_s:.0f} s, {len(fr)} freezes, offset {offset:+.2f} s, recall {recall}, "
+          f"{meta['source']}, {fps} fps, audio {row['audio']})", flush=True)
     return row
 
 
@@ -258,8 +310,13 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("runs", nargs="*", help="only these runs (default: all)")
     p.add_argument("--force", action="store_true", help="copy and encode again")
+    p.add_argument("--adhoc", metavar="CAMPAIGN/RUN", help="process any run (e.g. a test); prints its row, videos.json untouched")
     a = p.parse_args()
     MEDIA.mkdir(exist_ok=True)
+    if a.adhoc:
+        campaign, run = a.adhoc.split("/")
+        print(json.dumps(process(campaign, run, "ad hoc", a.force)))
+        return
     old = {r["run"]: r for r in json.loads(OUT_JSON.read_text())["videos"]} if OUT_JSON.exists() else {}
     rows = []
     for campaign, run, why in RUNS:
@@ -275,7 +332,7 @@ def main():
     OUT_JSON.write_text(json.dumps({
         "_note": "Generated by site/tools/fetch_videos.py. Videos live in site/media/ (gitignored). trimmed_s is the encoded length; "
                  "for paused runs every logged freeze (model call) is cut, so trimmed_s should match game_s.",
-        "fps": FPS, "size": SIZE, "crf": CRF, "videos": rows}, indent=1) + "\n")
+        "fps": FPS, "size": SIZE, "crf": CRF, "videos": rows}, indent=1) + "\n")  # fps: old recordings; rows carry their own
     print(f"wrote {OUT_JSON} ({len(rows)} videos)")
 
 

@@ -1,11 +1,13 @@
 """Isolated game displays for parallel runs: one headless Hyprland output + one rootful Xwayland server each.
 
-    python tools/isolated_displays.py up 4      # displays :11..:14 on new outputs; writes ~/tb-queue/displays.json
-    python tools/isolated_displays.py down      # stops those Xwayland servers and removes the outputs
+    python tools/isolated_displays.py up 4      # displays :11..:14 on new outputs + sinks; writes ~/tb-queue/displays.json
+    python tools/isolated_displays.py down      # stops those Xwayland servers, removes the outputs and sinks
 
 Each game runs as the only X client of its display (launch(display=...)); XGameControl injects input with that
 server's XTEST and reads screenshots from it, so instances share neither focus nor input. The headless output keeps
-each Xwayland window visible (frame callbacks at 60 Hz) and is what tools/record_desktop.py records per instance.
+each Xwayland window visible (frame callbacks at 60 Hz). Each display also gets its own null audio sink tb_game_NN
+(linux_control.ensure_game_sink): the game plays there, and tools/record_desktop.py --display records the display's
+game window plus that sink's monitor.
 """
 import json
 import subprocess
@@ -14,7 +16,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from terrariabench.linux_control import desktop_environment  # noqa: E402
+from terrariabench.linux_control import desktop_environment, ensure_game_sink, remove_game_sink  # noqa: E402
 
 STATE_DIR = Path.home() / "tb-queue"
 
@@ -61,7 +63,7 @@ def up(n, first=11, geometry="1024x1024", name="displays"):
         hypr(env, "dispatch", f'hl.dsp.window.resize({{window="{address}",x={w},y={h},relative=false}})')
         hypr(env, "dispatch", f'hl.dsp.window.move({{window="{address}",x={m["x"] + 20},y={m["y"] + 20},relative=false}})')
         displays.append({"display": display, "xwayland_pid": proc.pid, "output": m["name"], "window": window["address"],
-                         "geometry": geometry})
+                         "geometry": geometry, "audio_sink": ensure_game_sink(display, env)})
     state.write_text(json.dumps(displays, indent=2) + "\n")
     print(json.dumps(displays, indent=2))
 
@@ -75,6 +77,7 @@ def down(name="displays"):
         if cmdline.exists() and cmdline.read_bytes().startswith(b"Xwayland\0" + d["display"].encode()):
             subprocess.run(["kill", str(d["xwayland_pid"])])
         hypr(env, "output", "remove", d["output"])
+        remove_game_sink(d["display"], env)
     state.unlink()
     print(f"removed {len(displays)} isolated displays")
 

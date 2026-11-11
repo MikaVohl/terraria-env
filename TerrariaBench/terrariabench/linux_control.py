@@ -64,6 +64,62 @@ def desktop_environment():
     return env
 
 
+GAME_SINK_PREFIX, DESKTOP_SINK = "tb_game_", "tb_desktop"
+
+
+def game_sink(display):
+    """PulseAudio/PipeWire sink name of an isolated display's game, e.g. ":11" -> "tb_game_11"."""
+    return GAME_SINK_PREFIX + display.lstrip(":").replace(".", "_")
+
+
+def _pactl(env, *args):
+    return subprocess.check_output(["pactl", *args], env=env, text=True, timeout=10)
+
+
+def _sinks(env):
+    return {line.split("\t")[1] for line in _pactl(env, "list", "short", "sinks").splitlines() if "\t" in line}
+
+
+def ensure_game_sink(display, env=None):
+    """Create the display's null sink once (idempotent, serialised by a lock file) and return its name.
+
+    Each isolated game plays into its own null sink: nothing reaches the desktop's speakers and the recorder
+    takes that sink's monitor, so parallel instances never hear each other. Omarchy has no audio hardware, so
+    WirePlumber would make the first game sink the desktop default and route every other stream into that game's
+    recording; a separate null sink tb_desktop then takes the default."""
+    import fcntl
+    env = env or desktop_environment()
+    sink = game_sink(display)
+    with open(Path(env["XDG_RUNTIME_DIR"]) / "terrariabench-sinks.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        sinks = _sinks(env)
+        for name in (DESKTOP_SINK, sink):
+            if name not in sinks:
+                _pactl(env, "load-module", "module-null-sink", f"sink_name={name}",
+                       f"sink_properties=device.description=TerrariaBench-{name}")
+        if _pactl(env, "get-default-sink").strip().startswith(GAME_SINK_PREFIX):
+            _pactl(env, "set-default-sink", DESKTOP_SINK)
+    return sink
+
+
+def remove_game_sink(display, env=None):
+    """Unload the display's sink; the last one also takes tb_desktop with it (the desktop default falls back)."""
+    env = env or desktop_environment()
+    modules = _pactl(env, "list", "short", "modules").splitlines()
+    remaining = {s for s in _sinks(env) if s.startswith(GAME_SINK_PREFIX)} - {game_sink(display)}
+    for name in (game_sink(display),) + (() if remaining else (DESKTOP_SINK,)):
+        for line in modules:
+            if "module-null-sink" in line and f"sink_name={name}" in line.split():
+                _pactl(env, "unload-module", line.split("\t")[0])
+
+
+def isolated_audio_env(display, env=None):
+    """Environment routing an isolated game's audio to its own sink. tModLoader's bundled SDL2 2.28 (FNA/FAudio) already
+    picks its PulseAudio backend (pipewire-pulse), which honours PULSE_SINK; SDL_AUDIODRIVER pins that choice because its
+    PipeWire backend would ignore PULSE_SINK."""
+    return {"SDL_AUDIODRIVER": "pulseaudio", "PULSE_SINK": ensure_game_sink(display, env)}
+
+
 LAYOUT_MARGIN = 10
 
 
@@ -115,6 +171,7 @@ def launch(profile, log, telemetry, *, skipselect=False, width=WIDTH, height=HEI
         # Isolated instance: the game is the only client of its own rootful Xwayland server (see XGameControl).
         env.pop("WAYLAND_DISPLAY", None)
         env["DISPLAY"], env["SDL_VIDEODRIVER"] = display, "x11"
+        env.update(isolated_audio_env(display, env))
     else:
         # Native Wayland avoids Xwayland's grabbed-pointer coordinate mismatch.
         env["SDL_VIDEODRIVER"] = "wayland"

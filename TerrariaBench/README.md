@@ -85,6 +85,22 @@ telemetry, usage, `result.json`, and an `index.html` replay. The agent can read
 sanitized checkpoints, not private heartbeat inventory/position data. Dedicated
 client termination can leave an open journal; results disclose this.
 
+Run videos (`tools/record_desktop.py`, started by `tools/parallel_queue.py`,
+`tools/record_runs.py` and TerraBot sessions) are `<run>/desktop.mp4` plus
+`recording.json` (source, fps, size, audio sink, `video_start_unix`,
+`audio_start_unix`, ffmpeg version). Isolated-display runs (since 2026-11-11)
+record only the game's own Xwayland display: the 1024×1024 window the model
+sees, at 30 fps (NVENC, `x11grab`), with the game's audio. `launch(display=...)`
+sends each game to its own PipeWire null sink `tb_game_NN` (`PULSE_SINK`,
+SDL's PulseAudio backend; `tb_desktop` stays the desktop default), and the
+recorder records that sink's monitor, so parallel games never hear each other;
+during paused-clock freezes the track is silent. With five parallel games the
+recorders added about 6 points of CPU (user 41→47 %), 4 points of GPU SM plus
+36 % NVENC, left game speed unchanged (62–64 updates/s) and raised the
+harness screenshot time from 88–97 ms to 104–114 ms (median). Shared-desktop
+runs keep the older grim recording of the whole output (1100×1100, silent,
+timestamps from the first frame).
+
 ## Local checks and historical tools
 
 ```sh

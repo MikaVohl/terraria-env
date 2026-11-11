@@ -272,12 +272,11 @@ def main():
     p.add_argument("--wall-minutes", type=float, default=60)
     p.add_argument("--max-turns", type=int, default=200)
     p.add_argument("--display", default=":15")
-    p.add_argument("--output", default="HEADLESS-24")
     a = p.parse_args()
     run_name = Path(a.run).name
     model = Model(a.model, a.reasoning, run_name, a.usd_cap, a.ledger_cap)
     system = SYSTEM.replace("{api}", api_reference())
-    s = Session(a.run, a.fixture, display=a.display, output=a.output, manifest={
+    s = Session(a.run, a.fixture, display=a.display, manifest={
         "agent_kind": "llm", "model": a.model, "reasoning": a.reasoning, "usd_cap": a.usd_cap,
         "wall_minutes": a.wall_minutes, "helped_by": "nobody (generic API + pathfinder library; no strategy hints)"}).start()
     s.proxy.agent_kind = "llm"

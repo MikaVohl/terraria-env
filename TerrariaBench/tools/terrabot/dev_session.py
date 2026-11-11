@@ -15,9 +15,8 @@ p = argparse.ArgumentParser()
 p.add_argument("--fixture", required=True)
 p.add_argument("--run", required=True)
 p.add_argument("--display", default=":15")
-p.add_argument("--output", default="HEADLESS-24")
 a = p.parse_args()
-s = Session(a.run, a.fixture, display=a.display, output=a.output, test_mode=True, record=False,
+s = Session(a.run, a.fixture, display=a.display, test_mode=True, record=False,
             manifest={"agent_kind": "dev", "purpose": "interactive development"}).start()
 try:
     while not (s.run / "STOP").exists():

@@ -52,7 +52,7 @@ def run_in_session(session, code, name, workspace, timeout, log):
 
 
 def live_test(a):
-    s = Session(a.run, a.fixture, display=a.display, output=a.output, test_mode=True, record=False,
+    s = Session(a.run, a.fixture, display=a.display, test_mode=True, record=False,
                 manifest={"agent_kind": "test", "purpose": "live API tests"}).start()
     try:
         env = {**os.environ, "TB_SOCKET": str(s.proxy.path)}
@@ -68,7 +68,7 @@ def live_test(a):
 
 def scripted(a):
     progs = sorted(p for p in Path(a.programs).glob("*.py"))
-    s = Session(a.run, a.fixture, display=a.display, output=a.output, record=not a.no_record,
+    s = Session(a.run, a.fixture, display=a.display, record=not a.no_record,
                 manifest={"agent_kind": "scripted", "programs_dir": str(a.programs), "helped_by":
                           "human-written scripted programs (proof that the public API suffices); no LLM"}).start()
     s.proxy.agent_kind = "scripted"
@@ -97,7 +97,6 @@ def main():
         q.add_argument("--fixture", required=True)
         q.add_argument("--run", required=True)
         q.add_argument("--display", default=":15")
-        q.add_argument("--output", default="HEADLESS-24")
         if name == "live-test":
             q.add_argument("--extra", nargs="*", help="more test scripts run with TB_SOCKET set")
         else:
