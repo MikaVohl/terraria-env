@@ -116,8 +116,8 @@ goto calls in these runs returned False:
   the map does. The game itself refreshes revealed map cells when a tile is re-framed anywhere (the full-screen map
   shows such changes too).
 - **Darkness:** in the dark, cells stay unknown, and `tb.mine` refuses unrevealed tiles. Digging needs torches.
-- **Scripted proof:** a placed anvil is still missing. Ore finding (13/15 iron) and the harness python must be fixed
-  before a rerun.
+- **Scripted proof:** the anvil was placed once (proof-16, world 41100107) and has not been repeated on other
+  worlds. Ore finding and survival stay the fragile steps.
 - **Live test flakiness:** `live_tests.py` assumes an undisturbed fresh spawn. Slimes can break 3 checks.
 
 ## Follow-up 2026-11-11 (afternoon): live swim and placed anvil (unpaid)
