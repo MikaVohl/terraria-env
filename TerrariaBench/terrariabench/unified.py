@@ -89,6 +89,11 @@ def _post(path, payload, key, timeout):
             retry_after = float(error.headers.get("Retry-After")) if error.headers else None
         except (TypeError, ValueError):
             retry_after = None
+        if error.code == 429:
+            # Rate limiter rejection: the request never reached the model, so it is not billed (A14).
+            # Handled like an unsent request: released reservation, outage freeze, retry.
+            raise ProviderError("unified HTTP 429 (rate limited before the model ran); not billed",
+                                retryable=True, retry_after=retry_after, sent=False) from None
         raise ProviderError(f"unified HTTP {error.code}; charge uncertain",
                             retryable=error.code in RETRYABLE_HTTP | {529}, retry_after=retry_after) from None
     except urllib.error.URLError as error:
