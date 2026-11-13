@@ -146,6 +146,11 @@ on the player); mobs, the boss and the player flash red on a hit, the player bli
 its i-frames; the player and mobs follow their per-tick path, so knockback shows its real
 jolt. Trees draw `Tree_Tops` crowns and `Tree_Branches` leaves (`TREE_LEAF_VISUAL`).
 
+Torches use the original `Tiles_4` upright and side-mounted frames. The pixel renderer
+chooses the mount from current supports, following `WorldGen.CheckTorch`: floor first,
+then left, then right; background-wall-only mounts stay upright. This is visual only;
+the simulation, observations, action masks and PPO checkpoints are unchanged.
+
 ## Tests
 
     V=variants/v10
