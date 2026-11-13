@@ -5,7 +5,7 @@
 # otherwise the job is moved to skipped/. Finished jobs move to done/ with their exit code.
 set -u
 Q=~/tb-queue
-P=~/Projects/TerrariaBench
+P=~/Projects/terraria-lite/TerrariaBench
 CAMPAIGN=${CAMPAIGN:-$P/runs/pilot-30min}
 BUDGET_GATEWAY=${BUDGET_GATEWAY:-68}
 BUDGET_OPENROUTER=${BUDGET_OPENROUTER:-4.8}

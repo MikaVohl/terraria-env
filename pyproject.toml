@@ -7,7 +7,12 @@ requires-python = ">=3.11"
 
 # numpy is the only hard requirement: the ctypes binding works without a
 # trainer, so the environment stays runnable before you have picked one.
-dependencies = ["numpy>=1.24"]
+dependencies = [
+    "jupyterlab>=4.6.5",
+    "matplotlib>=3.11.2",
+    "numpy>=1.24",
+    "pandas>=3.1.0",
+]
 
 [project.optional-dependencies]
 # Everything needed to actually train. Kept optional so `uv sync` without it

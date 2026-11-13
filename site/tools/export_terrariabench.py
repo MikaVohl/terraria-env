@@ -50,7 +50,7 @@ QUOTES = [
 REMOTE = r"""
 import json, sys
 from pathlib import Path
-camp = Path.home() / "Projects/TerrariaBench/runs" / sys.argv[1]
+camp = Path.home() / "Projects/terraria-lite/TerrariaBench/runs" / sys.argv[1]
 want = json.loads(sys.argv[2])
 out = {}
 for d in sorted(p for p in camp.iterdir() if p.is_dir()):
@@ -88,7 +88,7 @@ def landscape_rows() -> list[dict]:
     local = EXP / "results" / CAMPAIGN / "summary.json"
     if local.exists():
         return json.loads(local.read_text())
-    ssh(f"cd ~/Projects/TerrariaBench && .venv/bin/python tools/campaign_table.py runs/{CAMPAIGN} --json /tmp/site-{CAMPAIGN}.json > /dev/null")
+    ssh(f"cd ~/Projects/terraria-lite/TerrariaBench && .venv/bin/python tools/campaign_table.py runs/{CAMPAIGN} --json /tmp/site-{CAMPAIGN}.json > /dev/null")
     return json.loads(ssh(f"cat /tmp/site-{CAMPAIGN}.json"))
 
 

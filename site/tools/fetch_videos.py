@@ -48,7 +48,7 @@ from pathlib import Path
 import numpy as np
 
 HOST = "mika@omarchy"
-REMOTE = "Projects/TerrariaBench/runs"
+REMOTE = "Projects/terraria-lite/TerrariaBench/runs"
 SITE = Path(__file__).resolve().parents[1]
 MEDIA = SITE / "media"
 RAW = MEDIA / "raw"

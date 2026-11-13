@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>terraria-lite · watching a reinforcement learner</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="loading">
+
+<!-- Fixed visual layers. The story column scrolls over them and drives them. -->
+<canvas id="world"></canvas>
+<div id="cursor-hint"></div>
+
+<div id="hud" class="layer">
+  <div class="hud-top">
+    <div id="mode-badge" class="badge">YOU ARE PLAYING</div>
+    <div id="hud-hearts"></div>
+    <div id="hud-stats" class="mono"></div>
+  </div>
+  <div id="hud-msg" class="mono"></div>
+  <div class="hud-bottom">
+    <div id="hud-inv"></div>
+    <div id="hud-crafts"></div>
+  </div>
+  <div id="hud-ach"></div>
+</div>
+
+<div id="agent-panel" class="layer panel">
+  <div class="panel-title">POLICY · LIVE <span id="ckpt-label" class="muted"></span></div>
+  <canvas id="agent-probs" class="chart" style="height:150px"></canvas>
+  <canvas id="agent-value" class="chart" style="height:80px"></canvas>
+  <canvas id="agent-entropy" class="chart" style="height:60px"></canvas>
+  <canvas id="agent-return" class="chart" style="height:60px"></canvas>
+  <div id="agent-unlocks" class="unlock-feed"></div>
+</div>
+
+<div id="grid-panel" class="layer panel">
+  <div class="panel-title">PARALLEL ROLLOUTS <span class="muted" id="grid-workers"></span></div>
+  <div class="bigstats">
+    <div><b id="g-envs">0</b><span>agents</span></div>
+    <div><b id="g-sps">0</b><span>env steps / s</span></div>
+    <div><b id="g-steps">0</b><span>steps so far</span></div>
+    <div><b id="g-eps">0</b><span>episodes</span></div>
+    <div><b id="g-ach">–</b><span>mean achievements</span></div>
+  </div>
+  <div class="ckpt-pick" id="ckpt-pick"></div>
+  <div class="ckpt-pick" id="pace-pick"><button class="on" data-max="0">watchable pace</button><button data-max="1">as fast as this machine can</button></div>
+  <canvas id="g-hist" class="chart" style="height:90px"></canvas>
+  <canvas id="g-achbars" class="chart" style="height:120px"></canvas>
+</div>
+
+<div id="train-panel" class="layer panel">
+  <div class="panel-title">TRAINING RUN · <span class="muted" id="train-src"></span></div>
+  <canvas id="train-curve" class="chart" style="height:220px"></canvas>
+  <canvas id="train-ach" class="chart" style="height:260px"></canvas>
+  <div class="bigstats small" id="train-stats"></div>
+</div>
+
+<!-- The lab: one replayed episode, Agent and Environment side by side. -->
+<div id="lab" class="layer">
+  <header id="lab-head" class="mono"></header>
+  <section id="lab-env" class="lab-col">
+    <div class="col-title">ENVIRONMENT <span class="muted">C simulator · wasm</span></div>
+    <canvas id="lab-world"></canvas>
+    <div id="lab-env-machine"></div>
+    <canvas id="lab-mem"></canvas>
+  </section>
+  <section id="lab-mid">
+    <svg id="exchange" viewBox="0 0 160 420" preserveAspectRatio="xMidYMid meet"></svg>
+  </section>
+  <section id="lab-agent" class="lab-col">
+    <div class="col-title">AGENT <span class="muted">PPO policy · wasm</span></div>
+    <canvas id="lab-net-mini"></canvas>
+    <canvas id="lab-probs-mini"></canvas>
+  </section>
+
+  <div id="zoom-obs" class="zoom"></div>
+  <div id="zoom-act" class="zoom"></div>
+  <div id="zoom-rew" class="zoom"></div>
+  <div id="zoom-net" class="zoom"></div>
+  <div id="zoom-sim" class="zoom"></div>
+  <div id="zoom-outro" class="zoom"></div>
+</div>
+
+<nav id="chapters"></nav>
+<div id="loader"><div class="mono">loading the simulator and Terraria textures…</div></div>
+
+<main id="story">
+
+<section class="chapter" id="play" data-title="Play" style="height:260vh">
+  <div class="step first">
+    <p class="kicker mono">terraria-lite · an RL field guide</p>
+    <h1>Can a neural network learn to play a game it has never been told the rules of?</h1>
+    <p>This is <b>terraria-lite</b>: a 128×96-tile world with trees, caves, ore, slimes, bats, and a crafting tree 19 recipes deep. It is a C program, compiled to WebAssembly, running in this tab.</p>
+    <p class="controls mono"><kbd>A</kbd><kbd>D</kbd> walk · <kbd>W</kbd> jump · <b>click</b> a highlighted cell to mine · <b>right-click</b> to place · <kbd>E</kbd> cycle block · <kbd>F</kbd> attack · craft from the panel</p>
+    <p>Chop a tree (click the trunk next to you), build a workbench. Every new <b>achievement</b> is worth exactly <b>+1</b>, and there are 32.</p>
+  </div>
+  <div class="step">
+    <p>Nothing here is a mock-up. Each step you take is one call to <code>env_step(e, action)</code>, the same function the training cluster called <b>2.1 billion times</b> for the agent you are about to meet.</p>
+    <p class="muted">Keep scrolling to hand over the controls.</p>
+  </div>
+</section>
+
+<section class="chapter" id="agent" data-title="Agent" style="height:300vh">
+  <div class="step">
+    <p class="kicker mono">the agent takes over</p>
+    <h2>Same world, same state, new player.</h2>
+    <p>A trained <b>policy network</b> now picks every action. Each tick it receives an observation, outputs a probability for each of the <b>83 actions</b>, and one is <b>sampled</b>.</p>
+  </div>
+  <div class="step">
+    <p>The panel shows its mind, live:</p>
+    <ul>
+      <li><b>π(a|s)</b>: the top actions it is considering right now.</li>
+      <li><b>V(s)</b>: the critic's estimate of the discounted reward still to come. During training this included a recipe-progress bonus, so it runs higher than the achievements left.</li>
+      <li><b>entropy</b>: how undecided it is.</li>
+    </ul>
+  </div>
+  <div class="step">
+    <p>Nobody told it that trees give wood or that a furnace needs stone. It learned what pays from reward alone, over about <b>731,000 practice episodes</b>.</p>
+    <p class="muted">Try the checkpoint buttons above the charts: the untrained network flails, while the 2.1B-step one plays with purpose.</p>
+  </div>
+</section>
+
+<section class="chapter" id="scale" data-title="Scale" style="height:340vh">
+  <div class="step">
+    <p class="kicker mono">scale</p>
+    <h2>One agent learns slowly. So we run hundreds.</h2>
+    <p>Reinforcement learning is <b>hungry</b>. Each policy update in training used <b>1,024 worlds</b> stepped in lock-step, 128 steps each: 131,072 decisions per update.</p>
+  </div>
+  <div class="step">
+    <p>Here: <b id="s-envs">256</b> independent worlds, each with its own seed, each played by the same network. They are spread across <b id="s-workers">N</b> Web Workers, and each worker owns its own copy of the simulator and the policy.</p>
+    <p>When an episode ends (3,000 steps, or death), the world is <b>reset in place</b> with the next seed. This is <code>tl_batch_step_autoreset</code>, in the browser.</p>
+  </div>
+  <div class="step">
+    <p>Switch checkpoints and watch the aggregate distribution move. The <b>mean achievements</b> number is computed only from episodes that finished in this tab. At watchable pace an episode takes minutes; switch to full speed to finish some.</p>
+  </div>
+</section>
+
+<section class="chapter" id="train" data-title="Training" style="height:220vh">
+  <div class="step">
+    <p class="kicker mono">the training run</p>
+    <h2>2.1 billion steps, about two hours.</h2>
+    <p>This is the real log of the run behind this policy: PPO on one AMD datacenter GPU at about <b>296,000 steps/s</b>. Every 134M steps the checkpoint was scored on 128 held-out validation worlds.</p>
+  </div>
+  <div class="step">
+    <p>The curve rises fast, then <b>flattens near 25.7 / 32</b>. Five achievements were <b>never</b> earned: the iron and gold pickaxes, the iron chainmail, the wood breastplate, and climbing back to the surface after descending deep.</p>
+    <p class="muted">That plateau is the open research question. To see why, we need to zoom in on a single decision.</p>
+  </div>
+</section>
+
+<section class="chapter" id="zoom" data-title="One episode" style="height:140vh">
+  <div class="step">
+    <p class="kicker mono">zoom in</p>
+    <h2>Pick one world. Slow it down.</h2>
+    <p>From here on, <b>scrolling advances time</b>. You are watching one episode on validation seed <b class="mono" id="z-seed">23000001</b>, recorded by the trained policy, one step per notch.</p>
+  </div>
+</section>
+
+<section class="chapter" id="loop" data-title="The loop" style="height:280vh">
+  <div class="step">
+    <p class="kicker mono">the RL loop</p>
+    <h2>Agent ⇄ Environment</h2>
+    <p>Every step is one round trip:</p>
+    <ol>
+      <li>the environment emits an <b class="c-obs">observation</b> <i>o<sub>t</sub></i>,</li>
+      <li>the agent answers with an <b class="c-act">action</b> <i>a<sub>t</sub> ~ π(·|o<sub>t</sub>)</i>,</li>
+      <li>the environment advances and pays a <b class="c-rew">reward</b> <i>r<sub>t+1</sub></i>.</li>
+    </ol>
+  </div>
+  <div class="step">
+    <p>That is the whole interface. The agent never sees the C structs, the RNG, or the map. It only sees numbers going in and one integer going out.</p>
+    <p>Next we open each of the three arrows in turn.</p>
+  </div>
+</section>
+
+<section class="chapter" id="obs" data-title="Observation" style="height:520vh">
+  <div class="step">
+    <p class="kicker mono c-obs">observation · 1/4</p>
+    <h2>State is not observation.</h2>
+    <p>The <b>state</b> is everything the simulator knows: all 12,288 tiles, lighting, every mob and chest, the RNG. That is <b id="o-bytes">51,040</b> bytes.</p>
+    <p>The agent gets an <b>11×9 window</b> around itself. Unlit cells are <b>unknown</b>, the same as being in the dark. This makes it a <i>partially observable</i> problem.</p>
+  </div>
+  <div class="step">
+    <p class="kicker mono c-obs">observation · 2/4</p>
+    <h2>99 cells → 2,376 numbers</h2>
+    <p>Each cell's tile is <b>one-hot encoded</b>: 24 slots (23 tile kinds plus <i>unknown</i>), exactly one of them set to 1. A neural network can't treat "stone = 3" as a quantity, so each kind gets its own input.</p>
+    <p>Next come 99 more numbers: the <b>light level</b> of each cell, from 0 to 1.</p>
+  </div>
+  <div class="step">
+    <p class="kicker mono c-obs">observation · 3/4</p>
+    <h2>The status vector: 488 numbers</h2>
+    <p>Health, tool tier, facing, fall distance, depth, time left… then the <b>inventory</b>: 33 item slots, each count squashed as <code>√(n / 999)</code> so that 1 vs 5 wood is visible, while 900 vs 999 barely is.</p>
+  </div>
+  <div class="step">
+    <p class="kicker mono c-obs">observation · 4/4</p>
+    <p>Then the 32 <b>achievement bits</b>. Reward depends on which ones are already earned, so the agent must be able to see them.</p>
+    <p>Last, 4 numbers per visible cell for <b>creatures</b>: slime, bat, health, and movement phase. <b>2,963 numbers</b> in total. Hover the strip at the top to read any index and its value.</p>
+  </div>
+</section>
+
+<section class="chapter" id="action" data-title="Action" style="height:360vh">
+  <div class="step">
+    <p class="kicker mono c-act">action</p>
+    <h2>83 buttons, most of them greyed out.</h2>
+    <p>Move, jump, <b>mine</b> or <b>place</b> at any of 20 cells around the body, 19 recipes, attack, eat, select a block… An <b>action mask</b> from the simulator marks which actions would do anything right now. Masked actions get probability exactly 0.</p>
+  </div>
+  <div class="step">
+    <p>The policy's output is a <b>distribution</b>, not a choice. Bar height is π(a|s). The ring marks the action that was actually <b>sampled</b>. Sampling, rather than always taking the top action, is how a policy keeps exploring.</p>
+    <p>Mining and placing are scored <i>per target cell</i> by one shared head: the heat map around the player.</p>
+  </div>
+</section>
+
+<section class="chapter" id="reward" data-title="Reward" style="height:360vh">
+  <div class="step">
+    <p class="kicker mono c-rew">reward</p>
+    <h2>+1, rarely.</h2>
+    <p>The environment pays <b>+1 the first time</b> each of the 32 achievements happens, and <b>−1 for dying</b>. Most steps pay nothing.</p>
+    <p>The goal is the <b>return</b>: the sum of future rewards, with each one discounted by γ per step. Here γ = 0.999, so a reward 700 steps away still counts for about half.</p>
+  </div>
+  <div class="step">
+    <p>The <b>critic</b> V(s) tries to predict that discounted return from the observation alone. The chart compares its prediction (coral) with what actually happened later in this episode (white).</p>
+    <p>The gap between the two, step by step, is the learning signal: the <b>advantage</b>.</p>
+  </div>
+</section>
+
+<section class="chapter" id="net" data-title="Policy net" style="height:520vh">
+  <div class="step">
+    <p class="kicker mono c-agent">inside the agent · forward</p>
+    <h2>472,718 numbers decide each move.</h2>
+    <p>The <b>"targets"</b> network: each of the 99 cells goes through a small shared MLP (29 → 32 → 32). All cells plus the status vector feed a global trunk (3,260 → 128 → 128, tanh).</p>
+  </div>
+  <div class="step">
+    <p>Three heads read the trunk:</p>
+    <ul>
+      <li>an <b>actor</b> for the 43 non-spatial actions,</li>
+      <li>a shared <b>target scorer</b> that rates mine and place at each of the 20 reach cells using its 3×3 neighbourhood,</li>
+      <li>a <b>critic</b> that outputs V(s).</li>
+    </ul>
+    <p>Colours are the real activations for this step, computed in your browser.</p>
+  </div>
+  <div class="step">
+    <p class="kicker mono c-agent">backward</p>
+    <h2>Which way should each weight move?</h2>
+    <p>Backpropagation sends ∇ log π(a<sub>t</sub>|o<sub>t</sub>), the direction that makes the sampled action <i>more likely</i>, back through every layer. Blue and coral show its sign at each unit.</p>
+    <p>Arriving at the input, it shows which cells mattered for this decision.</p>
+  </div>
+  <div class="step">
+    <p class="kicker mono c-agent">PPO</p>
+    <h2>Push by the advantage, but not too far.</h2>
+    <p>PPO multiplies that gradient by the advantage <i>Â<sub>t</sub></i>. Positive means "better than expected, do it more"; negative means "do it less". The probability ratio is <b>clipped</b> to [0.8, 1.2], so one batch can't drag the policy too far from the one that collected it.</p>
+    <p>Repeat 16 minibatches × 4 epochs, collect fresh data, and do it again: 16,384 times.</p>
+  </div>
+</section>
+
+<section class="chapter" id="csim" data-title="Simulator" style="height:420vh">
+  <div class="step">
+    <p class="kicker mono c-env">inside the environment</p>
+    <h2>The whole world is one struct.</h2>
+    <p><code>Env</code> holds every byte of state in fixed-size arrays: no pointers, no allocation, no globals. Each pixel on the right is <b>one byte</b> of it, read live from WebAssembly memory.</p>
+    <p>Bytes that changed on the last step flash. A typical step touches somewhere between a handful and a few hundred of its 51,040 bytes.</p>
+  </div>
+  <div class="step">
+    <p>Because state is plain bytes, a snapshot is a single <code>memcpy</code>. That is how this page scrubs backwards: it restores a saved <code>Env</code> and replays the recorded actions.</p>
+    <p>Randomness comes from one <b>PCG32</b> stream inside the struct. Same seed and same actions give the same bytes, here and on the cluster. <code>tools/viz_parity.py</code> checks the wasm build against the native library, bit for bit.</p>
+  </div>
+  <div class="step">
+    <p>Speed is the other half of the story. Below, this tab benchmarks the simulator alone, with random legal actions and no policy.</p>
+  </div>
+</section>
+
+<section class="chapter" id="outro" data-title="The plateau" style="height:240vh">
+  <div class="step">
+    <p class="kicker mono">the plateau</p>
+    <h2>25.7 out of 32, and stuck.</h2>
+    <p>The trained agent reliably earns 27 of the achievements. The 5 it never earns all require <b>planning beyond its horizon</b>: saving 10 iron bars for a pickaxe (whose reward arrives hundreds of steps after the mining), hoarding 30 wood, or returning to the surface on purpose.</p>
+    <p>A scripted player that knows the recipes scores <b>31.97</b>. More steps (16B), bigger networks, and memory did not close the gap. That makes this a good testbed.</p>
+  </div>
+  <div class="step last">
+    <p class="muted mono">Built from the terraria-lite repo: <code>variants/v8</code> (default knobs, bit-identical to frozen v7) compiled with clang → wasm32, and policy checkpoints exported from the eg15 run <code>pot_e1024_max2-2001</code>. Art is Terraria's own, read from your local install (<code>make -C viz textures</code>); none of it is in the repository.</p>
+  </div>
+</section>
+
+</main>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

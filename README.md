@@ -9,6 +9,29 @@ rope, platforms, Cloud in a Bottle, healing, Life Crystals, campfires, and four
 ordinary ores. It uses original Terraria art from your local installation.
 The mechanics remain intentionally simplified.
 
+## Current checkout and build targets
+
+Omarchy is the main working machine. The canonical checkout is
+`/home/mika/Projects/terraria-lite`, a symlink to the storage-backed directory
+`/mnt/storage/data/projects/terraria-lite`. Active official-game tools use
+`/home/mika/Projects/terraria-lite/TerrariaBench`. The older standalone
+`/home/mika/Projects/TerrariaBench` is preserved for historical raw runs, not
+used as the source checkout. Run data, checkpoints, local environments and
+commercial game assets remain outside Git.
+
+The introductory v4 description and dated studies below describe historical
+environment profiles; they do not select the current build target. Root
+`make all lib` and `make terraria-px` build `src/`, while
+`make terraria-px-v10` explicitly builds `variants/v10`. The browser builds
+`variants/v8` with its default knobs, matching frozen v7. Historical reports
+and run manifests retain their original paths and version labels.
+
+On Linux, the browser uses LLVM/LLD from `PATH` and needs an explicit local
+texture directory, for example
+`make -C viz serve TEXTURES="$HOME/.local/share/Steam/steamapps/common/Terraria/ExtractedTextures"`.
+Use the actual extracted directory from your installation; details and
+toolchain overrides are in [viz/README.md](viz/README.md).
+
 **October 18 exploration study (v4, mechanics unchanged):** [results](docs/reports/EXPLORATION_2026_10_18.md),
 [numeric evidence](docs/reports/EXPLORATION_2026_10_18.json). Training-only aids and policy
 inputs screened against a paired PPO control at 16M. **Potential-based recipe
@@ -156,6 +179,13 @@ folder. The default local Steam location is detected; `--textures DIR` selects
 another folder. No Terraria textures are copied into this repository or
 redistributed. `--scale N` selects integer zoom, reduced automatically to fit
 the display.
+
+In a browser, `make -C viz serve` opens a scroll-through visualisation: the v8
+core compiled to WebAssembly (bit-identical to v7), which you play and then
+watch a trained policy play, followed by 256 agents in parallel and a
+step-by-step look at the observation, actions, rewards, network and simulator
+state. It uses the same local Terraria textures as `terraria-px`, via a
+gitignored symlink. See `viz/README.md`.
 
 Left click mines, right click places; click recipes to craft and inventory slots
 to select placeables. Keyboard controls:

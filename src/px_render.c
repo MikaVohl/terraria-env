@@ -696,9 +696,10 @@ static bool load_player(PxUi *ui, const char *dir)
     return ok;
 }
 
-/* Measured original-sheet crops: the torch cell is 22 px wide with the sprite
-   offset inside it; leaf crops are opaque interior patches of tree canopy. */
-static const int TORCH_SRC[1][4]  = {{3, 2, 16, 16}};
+/* Original Tiles_4 frames: upright, attached left, attached right. The side
+   crops keep the stems flush with their supporting cell; the upright crop
+   stays unchanged for floor and background-wall attachments. */
+static const int TORCH_SRC[3][4] = {{3, 2, 16, 16}, {22, 0, 16, 16}, {48, 0, 16, 16}};
 /* Forest bark in Tiles_5, three original 20px trunk frames (22px pitch). */
 static const int TRUNK_SRC[3][4]  = {{0,0,20,20},{0,22,20,20},{0,44,20,20}};
 
@@ -722,7 +723,7 @@ static bool load_terraria(PxUi *ui, const char *dir)
            load_grid(ui, TILE_BEDROCK,    dir, "Tiles_25", 100) &&
 
            load_crops (ui, TILE_LEAVES,    dir, "Tree_Tops_0", LEAF_SRC,  4, false) &&
-           load_crops (ui, TILE_TORCH,     dir, "Tiles_4",     TORCH_SRC, 1, false) &&
+           load_crops (ui, TILE_TORCH,     dir, "Tiles_4",     TORCH_SRC, 3, false) &&
            load_object(ui,TILE_CAMPFIRE,dir,"Tiles_215",0,0,3,2) &&
            load_object(ui,TILE_PLATFORM,dir,"Tiles_19",0,0,1,1) &&
            load_object(ui,TILE_ROPE,dir,"Tiles_213",0,0,1,1) &&
@@ -1290,6 +1291,15 @@ static bool sky_neighbour(const Env *e, int x, int y)
     return in_bounds(x, y) && e->tiles[y][x] == TILE_AIR && bg_is_sky(e, x, y);
 }
 
+/* WorldGen.CheckTorch priority: floor, left, right, then background wall.
+   Read current supports so mining an anchor also updates the visible mount. */
+static int torch_frame(const Env *e, int x, int y)
+{
+    if (tile_solid(tile_at(e, x, y + 1))) return 0;
+    if (tile_solid(tile_at(e, x - 1, y))) return 1;
+    return tile_solid(tile_at(e, x + 1, y)) ? 2 : 0;
+}
+
 static void draw_world(PxUi *ui, const Env *e, const PxView *v)
 {
     int camx = cam_px(v->cam_x), camy = cam_px(v->cam_y);
@@ -1384,7 +1394,9 @@ static void draw_world(PxUi *ui, const Env *e, const PxView *v)
                 continue;
             }
 #endif
-            src.x = (int)(hash2(tx, ty, 0x5EEDu) % (uint32_t)a->nvar) * PX_TILE;
+            int variant = t == TILE_TORCH ? torch_frame(e, tx, ty)
+                : (int)(hash2(tx, ty, 0x5EEDu) % (uint32_t)a->nvar);
+            src.x = variant * PX_TILE;
             src.y = a->masked ? tile_mask(e, tx, ty) * PX_TILE : 0;
             src.w = PX_TILE;
             src.h = PX_TILE;

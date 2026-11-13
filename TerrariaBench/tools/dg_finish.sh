@@ -2,7 +2,7 @@
 # Close the default-game campaign unattended: wait until the parallel queue is empty, build the tables and the
 # ledger, stop the queue, and remove the isolated displays (Xwayland servers + headless outputs).
 set -u
-Q=~/tb-queue; P=~/Projects/TerrariaBench; C=runs/default-game-2026-11-08
+Q=~/tb-queue; P=~/Projects/terraria-lite/TerrariaBench; C=runs/default-game-2026-11-08
 cd $P
 while [ -n "$(ls $Q/dg-jobs/*.sh $Q/dg-running/*.sh 2>/dev/null)" ]; do sleep 30; done
 sleep 60  # the queue runs evidence/extended score/clock check after the last job

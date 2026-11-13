@@ -1,7 +1,16 @@
 # TerrariaBench
 
 An independent benchmark subproject for agents playing the real Terraria game
-on `mika@Omarchy`, using screenshots and real keyboard/mouse inputs.
+on `mika@omarchy`, using screenshots and real keyboard/mouse inputs.
+
+The active worker source is `/home/mika/Projects/terraria-lite/TerrariaBench`,
+inside the canonical main checkout `/home/mika/Projects/terraria-lite`.
+That logical checkout points to `/mnt/storage/data/projects/terraria-lite`
+on the data volume. The older standalone `/home/mika/Projects/TerrariaBench`
+is retained for historical raw runs, not used as the active source checkout;
+experiment reports and frozen run manifests retain their original paths.
+Commands below use the checkout's local worker `.venv`, not a copied macOS
+environment. Install its dependencies from `requirements-worker.txt`.
 
 **Current work: exploratory design experiments.** Latest: [reference profile via the gateway](experiments/reference-gw.md)
 (Haiku/Sonnet/Opus 5.5, checkpoint visibility, 10–45-minute runs). Before that: [real-time planner/executor agents](experiments/planner-executor.md)
@@ -56,7 +65,7 @@ reconstructed loop; it does not establish comparative model performance.
 ## Run on Omarchy
 
 ```sh
-cd /home/mika/Projects/TerrariaBench
+cd /home/mika/Projects/terraria-lite/TerrariaBench
 .venv/bin/python -m terrariabench run --fixture runs/fixtures/reference-reconstructed-v1 --output runs/NEW-UNIQUE-RUN --model google/gemini-3.8-flash --mode calibration --calls 12 --seconds 180 --usd .25
 .venv/bin/python -m terrariabench.reference_audit runs/NEW-UNIQUE-RUN
 ```

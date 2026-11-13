@@ -86,6 +86,9 @@ shows.
   blocks/slopes, `tb.path.last_error`, out-of-blocks reported, `tb.mine` on a stump no longer returns True before
   the stump is gone; pathfinder pillar cost 70 → 20 ticks/row (measured); test-only ops `truth_edit`, `truth_give`,
   `truth_morning`; agent prompt states that the library is traversal only and breath is the agent's job.
+  Surface swims end on a dry bank; a slope alone cannot support a node with its feet in water.
+  The executor carries same-direction approach steps into the swim and does not jump back into water
+  after reaching the exit. Breath management and recovery from deep water remain the agent's job.
 - tb-api-1.0 (draft, 2026-11-10): first build.
 
 ## Game conditions

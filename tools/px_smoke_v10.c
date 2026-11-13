@@ -286,10 +286,42 @@ int main(int argc, char **argv)
     shot(ui, &e, &v, prefix, "walls");
 #endif
 
+    /* 9. Torch mounts, left to right: floor, left, right, background wall,
+       floor + left (floor wins), left + right (left wins). */
+    env_reset(&e, SEED);
+    for (int i = 0; i < MAX_MOBS; i++) e.mobs[i].kind = MOB_NONE;
+    for (int y = 45; y <= 57; y++) for (int x = 36; x <= 64; x++) {
+        e.tiles[y][x] = y == 57 ? TILE_STONE : TILE_AIR;
+        e.object_part[y][x] = 0;
+#if BG_WALLS
+        e.wall[y][x] = WALL_NONE;
+#endif
+    }
+    for (int x = 40; x <= 60; x += 4) e.tiles[50][x] = TILE_TORCH;
+    e.tiles[51][40] = TILE_STONE;
+    e.tiles[50][43] = TILE_STONE;
+    e.tiles[50][49] = TILE_STONE;
+#if BG_WALLS
+    for (int y = 48; y <= 52; y++) for (int x = 51; x <= 53; x++) e.wall[y][x] = WALL_PLANKED;
+#else
+    e.tiles[51][52] = TILE_STONE;
+#endif
+    e.tiles[51][56] = e.tiles[50][55] = TILE_STONE;
+    e.tiles[50][59] = e.tiles[50][61] = TILE_STONE;
+    e.px = 50; e.py = 56;
+    e.pos_x = e.px * TILE_FIX;
+    e.pos_y = (e.py + 1) * TILE_FIX - PLAYER_PX_H * FIX_ONE;
+    e.terrain_dirty = e.light_dirty = true;
+    memset(&v, 0, sizeof v);
+    v.hover_reach = v.hover_recipe = v.hover_ach = v.hover_slot = v.hover_item = -1;
+    sync(&v, &e);
+    centre(&v, 50.0f, 51.0f);
+    shot(ui, &e, &v, prefix, "torches");
+
     for (int k = 1; k < MOB_KINDS; k++) assert(drawn[k] == 1);
     assert(boss_frames > 0);
     px_shutdown(ui);
-    puts("v10 pixel fixtures passed: steps, all 5 mob kinds, Demon Altar, Eye of Cthulhu (both phases), help, tiered achievements, tree sprites, combat feedback"
+    puts("v10 pixel fixtures passed: steps, all 5 mob kinds, Demon Altar, Eye of Cthulhu (both phases), help, tiered achievements, tree sprites, combat feedback, torch mounts"
 #if TOOL_DAMAGE
          ", tool swing"
 #endif

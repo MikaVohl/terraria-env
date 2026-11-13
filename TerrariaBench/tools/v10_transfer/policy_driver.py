@@ -382,7 +382,7 @@ def main():
     bridge = Bridge(os.environ["TERRARIA_LITE_LIB"])
     mapper = Mapper()
     server = subprocess.Popen(
-        ["ssh", a.host, f"cd ~/Projects/TerrariaBench && .venv/bin/python -u tools/v10_transfer/game_server.py "
+        ["ssh", a.host, f"cd ~/Projects/terraria-lite/TerrariaBench && .venv/bin/python -u tools/v10_transfer/game_server.py "
                         f"--fixture {a.fixture} --output runs/v10-poc/{a.run} --display {a.display}"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
     log = open(a.log, "w")
