@@ -7,8 +7,8 @@ For every run in RUNS this script
    site/media/raw/<run>/;
 2. places the recording on the wall clock: video time = unix - video start + offset. The video start is
    recording.json `video_start_unix` (TerrariaBench tools/record_desktop.py, since 2026-11-11); older
-   recordings have no sidecar and start at the birth time of desktop.mp4 (their wall-clock frame
-   timestamps start at 0). For paused-clock runs the offset is fitted: ffmpeg's freezedetect finds the
+   recordings use preserved `birth.txt` from the original file, never the creation time of a migrated copy.
+   For paused-clock runs the offset is fitted: ffmpeg's freezedetect finds the
    stretches where the game window does not change, and the offset (searched in [-3 s, 3 s]) is the one
    that puts the most of the logged freeze intervals (clock.jsonl: `freeze` / `thaw` around every model
    call, the SIGSTOP / SIGCONT of the game) on still video. The fit and its recall are stored;
@@ -34,7 +34,7 @@ the evaluation end are dropped, so the video length equals the 20 game-minutes a
     python3 site/tools/fetch_videos.py --force c2-opus-pa-w401
     python3 site/tools/fetch_videos.py --adhoc rectest-2026-11-11/single-d31   # any run; prints the row only
 
-Needs ssh access to mika@omarchy, ffmpeg/ffprobe on PATH and numpy.
+Needs local run data or ssh access to mika@omarchy, ffmpeg/ffprobe on PATH and numpy.
 """
 from __future__ import annotations
 
@@ -50,6 +50,7 @@ import numpy as np
 HOST = "mika@omarchy"
 REMOTE = "Projects/terraria-lite/TerrariaBench/runs"
 SITE = Path(__file__).resolve().parents[1]
+LOCAL_RUNS = SITE.parent / "TerrariaBench" / "runs"
 MEDIA = SITE / "media"
 RAW = MEDIA / "raw"
 OUT_JSON = SITE / "data" / "videos.json"
@@ -85,20 +86,30 @@ def sh(*cmd: str, **kw) -> str:
 
 def remote_ok(campaign: str, run: str) -> bool:
     """A run is finished once it has result.json (or, for runs that crashed without one, termination.json)."""
+    local = LOCAL_RUNS / campaign / run
+    if local.is_dir():
+        video = local / "desktop.mp4"
+        return video.is_file() and video.stat().st_size > 0 and any(
+            (local / name).exists() for name in ("result.json", "termination.json"))
     d = f"{REMOTE}/{campaign}/{run}"
     return subprocess.run(["ssh", HOST, f"test -s {d}/desktop.mp4 && (test -e {d}/result.json || test -e {d}/termination.json)"]).returncode == 0
 
 
 def fetch(campaign: str, run: str) -> Path:
-    d = f"{REMOTE}/{campaign}/{run}"
+    local = LOCAL_RUNS / campaign / run
+    source = str(local) + "/" if local.is_dir() else f"{HOST}:{REMOTE}/{campaign}/{run}/"
     dst = RAW / run
     dst.mkdir(parents=True, exist_ok=True)
-    files = [f"{HOST}:{d}/{f}" for f in ("desktop.mp4", "result.json", "telemetry")]
-    sh("rsync", "-a", *files, str(dst) + "/")
-    for optional in ("clock.jsonl", "recording.json"):  # real-time runs have no clock.jsonl, old recordings no sidecar
-        subprocess.run(["rsync", "-a", f"{HOST}:{d}/{optional}", str(dst) + "/"], capture_output=True)
-    birth = sh("ssh", HOST, f"stat -c %.W {d}/desktop.mp4").strip()
-    (dst / "birth.txt").write_text(birth + "\n")
+    include = [f"--include=/{name}" for name in
+               ("desktop.mp4", "result.json", "termination.json", "clock.jsonl", "recording.json", "birth.txt")]
+    sh("rsync", "-a", *include, "--include=/telemetry/***", "--exclude=*", source, str(dst) + "/")
+    recording_file = dst / "recording.json"
+    if recording_file.exists():
+        meta = json.loads(recording_file.read_text())
+        if "video_start_unix" in meta:
+            (dst / "birth.txt").write_text(str(meta["video_start_unix"]) + "\n")
+    if not (dst / "birth.txt").exists():
+        raise ValueError(f"{run}: recording start missing; restore birth.txt from the original recording before export")
     return dst
 
 
@@ -106,7 +117,8 @@ def recording(dst: Path) -> dict:
     """Recording format: new game-window recordings (x11grab) carry their start, fps and audio start in recording.json."""
     p = dst / "recording.json"
     meta = json.loads(p.read_text()) if p.exists() else {"source": "grim"}
-    meta.setdefault("video_start_unix", float((dst / "birth.txt").read_text()))
+    if "video_start_unix" not in meta:
+        meta["video_start_unix"] = float((dst / "birth.txt").read_text())
     window_only = meta["source"] == "x11grab"
     meta["out_fps"] = round(meta["fps"]) if window_only else FPS
     meta["audio_delay"] = meta["audio_start_unix"] - meta["video_start_unix"] if window_only and meta.get("audio_start_unix") else None

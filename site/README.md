@@ -29,6 +29,11 @@ defaults. `LLVM=<clang directory>` and `LLD=<wasm-ld directory>` override them
 historical and experimental profiles; its live browser still builds the
 default v8 core, not v9/v10.
 
+Export and video tools prefer the local `TerrariaBench/runs` directories when present,
+and use SSH only for data on another machine. Migrated legacy recordings keep their
+original start in `birth.txt`; `recording.json` remains authoritative when present.
+Do not substitute a copied file's new creation time for the recording start.
+
 ## Pages
 
 | Page | What it shows |

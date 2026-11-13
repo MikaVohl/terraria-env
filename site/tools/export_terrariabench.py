@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -50,7 +51,7 @@ QUOTES = [
 REMOTE = r"""
 import json, sys
 from pathlib import Path
-camp = Path.home() / "Projects/terraria-lite/TerrariaBench/runs" / sys.argv[1]
+camp = Path(sys.argv[1])
 want = json.loads(sys.argv[2])
 out = {}
 for d in sorted(p for p in camp.iterdir() if p.is_dir()):
@@ -88,8 +89,14 @@ def landscape_rows() -> list[dict]:
     local = EXP / "results" / CAMPAIGN / "summary.json"
     if local.exists():
         return json.loads(local.read_text())
-    ssh(f"cd ~/Projects/terraria-lite/TerrariaBench && .venv/bin/python tools/campaign_table.py runs/{CAMPAIGN} --json /tmp/site-{CAMPAIGN}.json > /dev/null")
-    return json.loads(ssh(f"cat /tmp/site-{CAMPAIGN}.json"))
+    campaign = TB / "runs" / CAMPAIGN
+    output = Path(f"/tmp/site-{CAMPAIGN}.json")
+    if campaign.is_dir():
+        subprocess.run([sys.executable, str(TB / "tools/campaign_table.py"), str(campaign),
+                        "--json", str(output)], check=True, capture_output=True, text=True)
+        return json.loads(output.read_text())
+    ssh(f"cd ~/Projects/terraria-lite/TerrariaBench && .venv/bin/python tools/campaign_table.py runs/{CAMPAIGN} --json {output} > /dev/null")
+    return json.loads(ssh(f"cat {output}"))
 
 
 def run_notes(md: Path) -> dict[str, str]:
@@ -159,7 +166,12 @@ def catalogs() -> dict:
 def main():
     rows = landscape_rows()
     want = [[r, s] for r, s, _ in QUOTES]
-    extra = json.loads(ssh(f"python3 - {CAMPAIGN} '{json.dumps(want)}' <<'EOF'\n{REMOTE}\nEOF"))
+    campaign = TB / "runs" / CAMPAIGN
+    if campaign.is_dir():
+        extra = json.loads(subprocess.run([sys.executable, "-c", REMOTE, str(campaign), json.dumps(want)],
+                                          check=True, capture_output=True, text=True).stdout)
+    else:
+        extra = json.loads(ssh(f"python3 - ~/Projects/terraria-lite/TerrariaBench/runs/{CAMPAIGN} '{json.dumps(want)}' <<'EOF'\n{REMOTE}\nEOF"))
     notes = run_notes(EXP / f"{CAMPAIGN}.md")
     runs = [slim(r, notes, extra) for r in rows]
 

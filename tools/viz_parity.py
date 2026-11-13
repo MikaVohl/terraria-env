@@ -11,7 +11,7 @@ browser runs the same game, bit for bit.
 Compare against a build without LIGHT_WINDOW: that patch leaves Env.light stale
 outside the observation window (observations agree, whole-state bytes do not).
 """
-import ctypes, hashlib, subprocess, sys
+import ctypes, hashlib, shutil, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,7 +55,8 @@ for ep in range(4):
         if term.value or trunc.value:
             break
 native = h.hexdigest()
-web = subprocess.run(["node", str(ROOT / "tools/viz_parity.mjs"), str(wasm)], capture_output=True, text=True,
+node = shutil.which("node") or str(Path.home() / ".local/bin/node")
+web = subprocess.run([node, str(ROOT / "tools/viz_parity.mjs"), str(wasm)], capture_output=True, text=True,
                      check=True).stdout.strip()
 print(f"native {native[:16]}  wasm {web[:16]}  env_bytes {env_bytes}")
 sys.exit(0 if native == web else 1)

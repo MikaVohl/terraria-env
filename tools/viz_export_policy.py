@@ -11,7 +11,7 @@ Float16 halves the download; the page widens to float32 on load. The parity
 check below compares the wasm forward pass with PyTorch on the same rounded
 weights.
 """
-import json, subprocess, sys
+import json, shutil, subprocess, sys
 from pathlib import Path
 
 import numpy as np
@@ -95,7 +95,8 @@ def check(path: Path, state):
     tmp = ROOT / "viz/data/.parity_obs.bin"
     tmp.write_bytes(obs_bytes)
     try:
-        res = subprocess.run(["node", str(ROOT / "tools/viz_policy_check.mjs"), str(path), str(tmp), str(len(raw))],
+        node = shutil.which("node") or str(Path.home() / ".local/bin/node")
+        res = subprocess.run([node, str(ROOT / "tools/viz_policy_check.mjs"), str(path), str(tmp), str(len(raw))],
                              capture_output=True, text=True, check=True).stdout
     finally:
         tmp.unlink()

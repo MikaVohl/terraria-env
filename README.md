@@ -32,6 +32,11 @@ location with `make -C viz serve TEXTURES="/path/to/ExtractedTextures"`.
 Use the actual extracted directory from your installation; details and
 toolchain overrides are in [viz/README.md](viz/README.md).
 
+On the configured Omarchy account, `ssh eg18` reaches the GPU worker through the
+imported jump-host configuration. SSH keys and known hosts stay private in `~/.ssh`,
+not in Git. Migration backups, including the Mac run copies, research-branch bundle
+and assistant history, are under `/mnt/storage/data/projects/terraria-migration-backup`.
+
 **October 18 exploration study (v4, mechanics unchanged):** [results](docs/reports/EXPLORATION_2026_10_18.md),
 [numeric evidence](docs/reports/EXPLORATION_2026_10_18.json). Training-only aids and policy
 inputs screened against a paired PPO control at 16M. **Potential-based recipe
