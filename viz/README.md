@@ -15,9 +15,9 @@ from that checkout. This browser intentionally uses the default v8 core;
 dated v4/v7 studies and newer v9/v10 environment documentation describe
 other profiles, not a change to this build target.
 
-The art is Terraria's own. `make -C viz textures` points the gitignored `viz/textures` symlink at a local install's `ExtractedTextures`. The default is the macOS Steam path; pass `TEXTURES=<dir>` for any other. Nothing from the game is copied into the repository, so the page only works on a machine that has the game, and can't be published as-is. If a sheet is missing, loading stops with an error naming the file; there is no substitute art.
+The art is Terraria's own. `make -C viz textures` points the gitignored `viz/textures` symlink at a local install's `ExtractedTextures`. The default follows the platform's usual Steam path; pass `TEXTURES=<dir>` for a nonstandard extraction location. Original game textures are never tracked or published in Git, so the page only works on a machine that has the extracted art. If a sheet is missing, loading stops with an error naming the file; there is no substitute art.
 
-On Linux, pass the actual extracted-art directory explicitly, for example:
+On Linux, the default is the local Steam extraction path. Override it when needed, for example:
 
 ```sh
 make -C viz serve TEXTURES="$HOME/.local/share/Steam/steamapps/common/Terraria/ExtractedTextures"

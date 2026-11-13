@@ -14,9 +14,11 @@
 ifeq ($(shell uname -s),Darwin)
 LLVM   ?= /opt/homebrew/opt/llvm/bin
 LLD    ?= /opt/homebrew/opt/lld/bin
+TEXTURES ?= $(HOME)/Library/Application Support/Steam/steamapps/common/Terraria/ExtractedTextures
 else
 LLVM   ?= $(patsubst %/,%,$(dir $(shell command -v clang)))
-LLD    ?= $(or $(patsubst %/,%,$(dir $(shell command -v wasm-ld))),/usr/bin)
+LLD    ?= $(patsubst %/,%,$(dir $(or $(shell command -v wasm-ld),$(wildcard $(HOME)/.local/bin/wasm-ld),/usr/bin/wasm-ld)))
+TEXTURES ?= $(HOME)/.local/share/Steam/steamapps/common/Terraria/ExtractedTextures
 endif
 CORE   := ../variants/v8
 SRC    := $(addprefix $(CORE)/src/,sim.c worldgen.c light.c obs.c) wasm/web.c wasm/policy.c
@@ -30,20 +32,20 @@ LDFLAGS := -fuse-ld=$(LLD)/wasm-ld -Wl,--no-entry -Wl,--export-dynamic -Wl,--all
 terraria.wasm: $(SRC) $(wildcard $(CORE)/include/*.h wasm/shim/*.h)
 	$(LLVM)/clang $(CFLAGS) $(SRC) $(LDFLAGS) -o $@
 
-TEXTURES ?= $(HOME)/Library/Application Support/Steam/steamapps/common/Terraria/ExtractedTextures
 textures:
 	@test -f "$(TEXTURES)/Tiles_0.png" || { echo "textures: no Tiles_0.png in $(TEXTURES)"; \
 	  echo "textures: pass TEXTURES=<Terraria ExtractedTextures directory>"; exit 1; }
 	ln -sfn "$(TEXTURES)" textures
 
 CKPT ?= /tmp/vizck
+UV ?= $(or $(shell command -v uv),$(wildcard $(HOME)/.local/bin/uv),uv)
 policies:
 	$(MAKE) -C ../perf/v7 V7=$(abspath $(CORE)) BUILD=mac-v8-plain
-	cd .. && TERRARIA_LITE_LIB=$$PWD/perf/v7/mac-v8-plain/libterraria.so uv run python tools/viz_export_policy.py $(CKPT) viz/data
+	cd .. && TERRARIA_LITE_LIB=$$PWD/perf/v7/mac-v8-plain/libterraria.so $(UV) run python tools/viz_export_policy.py $(CKPT) viz/data
 
 parity: terraria.wasm
 	$(MAKE) -C ../perf/v7 V7=$(abspath $(CORE)) BUILD=mac-v8-plain
-	cd .. && uv run python tools/viz_parity.py
+	cd .. && $(UV) run python tools/viz_parity.py
 
 serve: terraria.wasm textures
 	python3 -m http.server 8777

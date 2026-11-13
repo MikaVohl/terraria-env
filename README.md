@@ -26,9 +26,9 @@ environment profiles; they do not select the current build target. Root
 `variants/v8` with its default knobs, matching frozen v7. Historical reports
 and run manifests retain their original paths and version labels.
 
-On Linux, the browser uses LLVM/LLD from `PATH` and needs an explicit local
-texture directory, for example
-`make -C viz serve TEXTURES="$HOME/.local/share/Steam/steamapps/common/Terraria/ExtractedTextures"`.
+On Linux, the browser finds LLVM/LLD in `PATH` or the user-local linker directory;
+textures default to the local Steam extraction path. Override a nonstandard
+location with `make -C viz serve TEXTURES="/path/to/ExtractedTextures"`.
 Use the actual extracted directory from your installation; details and
 toolchain overrides are in [viz/README.md](viz/README.md).
 

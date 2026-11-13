@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-worker = ["evdev>=1.9,<2; sys_platform == 'linux'", "Pillow>=12,<13"]
+worker = ["evdev>=1.9,<2; sys_platform == 'linux'", "Pillow>=12,<13", "python-xlib>=0.33,<1; sys_platform == 'linux'"]
 
 [project.scripts]
 terrariabench = "terrariabench.__main__:main"

@@ -21,9 +21,9 @@ The official-Terraria videos are not committed. `tools/fetch_videos.py` copies e
 
 A module page cannot load from `file://`, so the site has to be served. The interactive parts need a local Terraria install for the art, exactly like `viz/` (see `viz/README.md`; pass `TEXTURES=<ExtractedTextures dir>` if it is not at the default Steam path). Without textures, tables and charts still render (without item icons); the live canvases show an error message instead.
 
-On Linux, set the local extracted-art directory explicitly, for example
-`make -C site serve TEXTURES="$HOME/.local/share/Steam/steamapps/common/Terraria/ExtractedTextures"`.
-The browser's build uses Linux LLVM/LLD from `PATH`; macOS retains the Homebrew
+The texture default follows the local Steam path on macOS or Linux. Override a nonstandard extraction location with
+`make -C site serve TEXTURES="/path/to/ExtractedTextures"`.
+The browser's build finds Linux LLVM/LLD from `PATH` (or the user-local linker); macOS retains the Homebrew
 defaults. `LLVM=<clang directory>` and `LLD=<wasm-ld directory>` override them
 (see `viz/README.md`). The website's versioned environment pages describe
 historical and experimental profiles; its live browser still builds the

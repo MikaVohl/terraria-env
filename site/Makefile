@@ -9,7 +9,8 @@
 # (viz/textures symlink); pass TEXTURES=<ExtractedTextures dir> if it is not at the
 # default Steam path.
 PORT     ?= 8778
-TEXTURES ?= $(HOME)/Library/Application Support/Steam/steamapps/common/Terraria/ExtractedTextures
+TEXTURES ?= $(if $(filter Darwin,$(shell uname -s)),$(HOME)/Library/Application Support/Steam/steamapps/common/Terraria/ExtractedTextures,$(HOME)/.local/share/Steam/steamapps/common/Terraria/ExtractedTextures)
+UV ?= $(or $(shell command -v uv),$(wildcard $(HOME)/.local/bin/uv),uv)
 
 serve: viz
 	@echo "site: http://localhost:$(PORT)"
@@ -20,7 +21,7 @@ viz:
 	@test -e ../viz/textures/Tiles_0.png || $(MAKE) -C ../viz textures TEXTURES="$(TEXTURES)"
 
 data:
-	cd .. && uv run --no-project --with pandas,numpy python site/tools/export_data.py
+	cd .. && $(UV) run --no-project --with pandas,numpy python site/tools/export_data.py
 
 .PHONY: serve viz data
 
@@ -28,6 +29,6 @@ official:
 	python3 tools/export_terrariabench.py
 
 videos:
-	cd .. && uv run --no-project --with numpy python site/tools/fetch_videos.py
+	cd .. && $(UV) run --no-project --with numpy python site/tools/fetch_videos.py
 
 .PHONY: official videos

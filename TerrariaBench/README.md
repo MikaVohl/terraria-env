@@ -10,7 +10,8 @@ on the data volume. The older standalone `/home/mika/Projects/TerrariaBench`
 is retained for historical raw runs, not used as the active source checkout;
 experiment reports and frozen run manifests retain their original paths.
 Commands below use the checkout's local worker `.venv`, not a copied macOS
-environment. Install its dependencies from `requirements-worker.txt`.
+environment. From this directory, run `uv sync --locked --extra worker` to install
+the locked Linux input, screenshot and X11 dependencies.
 
 **Current work: exploratory design experiments.** Latest: [reference profile via the gateway](experiments/reference-gw.md)
 (Haiku/Sonnet/Opus 5.5, checkpoint visibility, 10–45-minute runs). Before that: [real-time planner/executor agents](experiments/planner-executor.md)
